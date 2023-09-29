@@ -8,6 +8,11 @@ Es aprender todo lo que podemos hacer solo con la base de datos
 
 ### Cambiar el nombre a una base de datos:
     ALTER DATABASE "mytestdba" RENAME TO "myoldtestdba";
+
+## Borrar una base de datos 
+**Es importante que cuando se borre una base de datos no este nadie conectado, y para esto puede usar metodos de monitoreo para validar primero que no este nadie conectado**
+
+        Drop databases "mydbatest"
  
 ### Consutar los nombres de las base de datos:
      \l  
