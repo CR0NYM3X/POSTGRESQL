@@ -1,1 +1,26 @@
-asd
+## Objetivo
+
+El objetivo es recopilar información del servidor y la base de datos en caso de requerirse y enseñaremos los comandos necesarios para realizar este procedimiento 
+
+
+
+
+--Sobre sistema operativo linux
+--info cpu lscpu
+--info ram lshw -short
+--info discos conectados lsblk
+--info ram mas claro free -m
+--info discos mas claro df -H:
+--info sistema oparativo uname -a
+--info cpu       cat /proc/cpuinfo
+--info versionso cat /etc/redhat-release
+--info ram       cat /proc/meminfo
+
+
+
+********version de bd   :   select version()
+********version de so   :    lsb_release -d  || uname -a  | cat /etc/os-release | cat /etc/redhat-release
+********ram :  vmstat -s -S M  | cat  /proc/meminfo 	| free -h | free -m 
+******** cpu 			: htop | 	list cpu  | lscpu | cat /proc/cpuinfo  | sudo lshw -class CPU  | cat /proc/cpuinfo | grep "model name"
+******** tamaño de la bd personal : 	
+SELECT  datname, pg_size_pretty(pg_database_size( datname)) AS size FROM pg_database;   
