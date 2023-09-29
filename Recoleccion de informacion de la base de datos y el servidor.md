@@ -65,8 +65,19 @@ psql -c "SELECT  datname, pg_size_pretty(pg_database_size( datname)) AS size FRO
  psql -c "show max_connections"
 ```
 
-### Total de conexiones a la base de datos, Activas, inactivas pero conectadas
+### Total de conexiones a la base de datos, Activas, inactivas 
+```sh
+*- Total de conexiones: 
+SELECT count(*) pid FROM pg_stat_activity
 
+*- Total de conexion inactivas pero que no estan realizando ninguna consulta o movimiento
+SELECT count(*) pid FROM pg_stat_activity WHERETRIM(state)='idle';
+
+*- Solo conexiones Activa
+SELECT count(*) pid FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle';
+
+
+```
 
 ### Saber el puerto de la base de datos 
 ```sh
