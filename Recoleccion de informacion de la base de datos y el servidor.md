@@ -68,3 +68,6 @@ psql -c "SELECT  datname, pg_size_pretty(pg_database_size( datname)) AS size FRO
 ### Total de conexiones a la base de datos, Activas, inactivas pero conectadas
 
 
+### Saber el puerto de la base de datos 
+psql -xc "SELECT * FROM pg_settings WHERE name = 'port'"
+cat  postgresql.conf | grep "port ="
