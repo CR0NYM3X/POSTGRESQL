@@ -6,6 +6,7 @@
 .- Base de datos <br>
 
 .- Tablas <br>
+.- esquemas <br>
 .- Funciones <br>
 .- Triggers<br>
 .- Type<br>
