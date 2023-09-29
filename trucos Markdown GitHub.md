@@ -58,7 +58,7 @@ Esto es código en línea: `print("Hola, mundo")`
 ```python
 def mi_funcion():
     print("Hola, mundo")
-	
+	```
 ### Texto tachado	
 Esto es ~~texto tachado~~.
 
