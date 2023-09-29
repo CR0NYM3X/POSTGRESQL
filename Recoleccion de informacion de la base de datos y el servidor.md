@@ -37,6 +37,11 @@ df -lh:
 lsblk
 ```
 
+### Espacios de archivos 
+```sh
+du -lh /etc/
+```
+
 
 ### CPU / Procesador
 ```sh
