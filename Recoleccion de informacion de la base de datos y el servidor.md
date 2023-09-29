@@ -69,5 +69,7 @@ psql -c "SELECT  datname, pg_size_pretty(pg_database_size( datname)) AS size FRO
 
 
 ### Saber el puerto de la base de datos 
+```sh
 psql -xc "SELECT * FROM pg_settings WHERE name = 'port'"
 cat  postgresql.conf | grep "port ="
+```
