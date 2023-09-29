@@ -15,14 +15,14 @@ Es aprender todo lo que podemos hacer solo con la base de datos
 
 ### Ver el tamaño de la base de datos:
 
-    *ver el tamaño y una descripción más completa de la base de datos*
-      \l+ 
+-  **ver el tamaño y una descripción más completa de la base de datos**
+    - \l+ 
 
-     *- ver el tamaño de todas las base de datos :
-       SELECT  datname, pg_size_pretty(pg_database_size( datname)) AS size FROM pg_database;
+- **ver el tamaño de todas las base de datos :**
+    - SELECT  datname, pg_size_pretty(pg_database_size( datname)) AS size FROM pg_database;
 
-     *- ver especificamente una base de datos :
-       SELECT  datname, pg_size_pretty(pg_database_size( datname)) AS size FROM pg_database where datname = 'mydbatest' ;
+- **ver especificamente una base de datos :**
+    - SELECT  datname, pg_size_pretty(pg_database_size( datname)) AS size FROM pg_database where datname = 'mydbatest' ;
  
 
 ### Cambiar la ruta de archivo, donde se guarda la base de datos:
