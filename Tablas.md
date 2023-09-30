@@ -41,13 +41,13 @@ pg_relation_size(relid) DESC;
 ## Crear una tabla :
 
 ```sh
-CREATE TABLE nombre_de_la_tabla (
+CREATE TABLE public.nombre_de_la_tabla (
     id serial PRIMARY KEY,
     nombre VARCHAR (255),
     edad INT
 );
 ```
-
+  - **`public.nombre_de_la_tabla`** colocamos el schema.mi_tabla si no se coloca el esquema por default es el esquema public
   - **`id serial PRIMARY KEY`** *crea una columna llamada "id" que es una clave primaria (primary key) y se incrementa automáticamente (serial) cada vez que se inserta una fila.* <br>
 - **`nombre VARCHAR(255)`** *crea una columna llamada "nombre" con un tipo de dato VARCHAR que puede almacenar hasta 255 caracteres.*<br>
 - **`edad INT`** *crea una columna llamada "edad" con un tipo de dato INT para almacenar números enteros.
