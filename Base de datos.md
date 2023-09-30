@@ -31,7 +31,7 @@ Es aprender todo lo que podemos hacer solo con la base de datos
  
 
 ### Cambiar la ruta de archivo, donde se guarda la base de datos:
-ALTER DATABASE mydbatest SET TABLESPACE my_tablespace_test;
+        ALTER DATABASE mydbatest SET TABLESPACE my_tablespace_test;
 
  ## saber el tipo de encoding 
         select datname, pg_encoding_to_char(encoding)  from pg_database;
