@@ -12,6 +12,7 @@
 .- Type<br>
 .- View <br>
 .- Sequences <br>
+.- index <br>
 .- usuarios, accesos y  permisos<br>
 .- namespace<br>
 .- tablespace<br>
