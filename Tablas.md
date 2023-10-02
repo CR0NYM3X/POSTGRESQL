@@ -37,6 +37,13 @@ FROM pg_catalog.pg_statio_user_tables where relname='asuntos' -- tabla
 ORDER BY pg_total_relation_size(relid) DESC,
 pg_relation_size(relid) DESC;
 ```
+## Ver el nombre y descripcion de las columnas de una tabla:
+ ```sh
+ select  a.column_name, is_nullable, data_type, udt_name, character_maximum_length, column_default,b.constraint_name  
+	FROM information_schema.columns  a  
+	left join (SELECT constraint_name,table_name,column_name FROM information_schema.key_column_usage ) b on a.table_name=b.table_name and a.column_name = b.column_name    
+ where a.table_name= 'mytablanew'  ;
+```
 
 ## Crear una tabla :
 
