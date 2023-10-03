@@ -1,3 +1,4 @@
+Presionar para ir al final[^1].
 # Objetivo:
 Es aprender a crear usuarios, administrar y asignarle los permisos necesarios para el uso de la base de datos.
 
@@ -201,8 +202,8 @@ select	'\\c ' || datname || ';' || CHR(10) || 'grant select on all tables in sch
 ### Asignar permisos de execucioó en funciones  psql  v8.1 
  psql dbrelojchecador -c "SELECT  'GRANT EXECUTE ON FUNCTION '|| proname || '(' || pg_catalog.oidvectortypes(proargtypes) || ')' ||  ' to ' || CHR(34) || **`'myusertest'`** ||  CHR(34) || ';'   as qweads FROM pg_proc where proname in(SELECT routine_name FROM information_schema.routines WHERE routine_type = 'FUNCTION' AND specific_schema = 'public')  "  | grep -v '-' | grep -v 'rela' | grep -v 'Name' | grep -v 'rows)' | grep -v 'table_name' | grep -v 'qweads'  > /tmp/funciones.sql %%  psql **`mydbatest`** < /tmp/funciones.sql
 
-Esto es un ejemplo de una nota al pie de página[^1].
-[^1]: Esta es la nota al pie de página.
+
+[^1]: Presionar para ir al inicio 
 
 
 
