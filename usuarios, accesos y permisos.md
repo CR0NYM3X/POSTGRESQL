@@ -40,7 +40,6 @@ CREATE USER testuserdba WITH PASSWORD '123456789'; -- no se recomienda colocar e
  drop role testuserdba;
  ```
 
-
 ### Cambiar passowd
 ```sh
 \password testuserdba 
@@ -62,10 +61,6 @@ ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 ```sh
 ALTER TABLE public.mitablanew OWNER TO testuserdba; 
 ALTER DATABASE mydba  OWNER TO testuserdba;
-
-REASSIGN OWNED BY "testuserdba" to postgres; -- Cambiar de owner
-REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";  -- quita el owner de un usuario en la base de datos mydbatest
-
 ```
 
 ### Ver privilegios de un usuario:
@@ -79,92 +74,91 @@ where grantee= 'testuserdba' group by  grantee,table_catalog  limit 10;
 ```sh
 ALTER user  "sysutileria" WITH SUPERUSER; 
 ALTER USER "sysutileria" WITH NOSUPERUSER;
+
+REASSIGN OWNED BY "testuserdba" to postgres; -- Cambiar de owner
+REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";  -- quita el owner de un usuario en la base de datos mydbatest
 ```
 
-### Asignar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:
+### Asignar Permisos lógicos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:
 
-`Base de datos`:
-```sh
-GRANT CONNECT ON DATABASE "tiendavirtual" TO "testuserdba";
-grant all privileges on database tu_bd to tu_usuario;
-```
 
-`Tablas`:
 ```sh
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "testuserdba";
-grant SELECT, UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, RULE on all tables in schema public to "testuserdba";
-```
+DATABASE:
+  GRANT CONNECT ON DATABASE "tiendavirtual" TO "testuserdba";
+  grant all privileges on database tu_bd to tu_usuario;
 
-`Sequences`:
-```sh
-GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
-GRANT USAGE ON SEQUENCE nombre_secuencia TO testuserdba; 
-```
+TABLES:
+  GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "testuserdba";
+  grant SELECT, UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, RULE on all tables in schema public to "testuserdba";
 
-`Esquemas`:
-```sh
-GRANT USAGE ON SCHEMA public TO testuserdba;
-GRANT USAGE, SELECT ON SEQUENCE mi_secuencia TO testuserdba;
-```
+SEQUENCES:
+  GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
+  GRANT USAGE ON SEQUENCE nombre_secuencia TO testuserdba; 
 
-`Funciones`:
-```sh
-grant ALL PRIVILEGES  on all functions in schema public to "testuserdba";
-grant execute on all functions in schema public to "testuserdba";
-GRANT EXECUTE ON FUNCTION public.fun_obtenercontactoscopiaweb(int, varchar) TO "testuserdba";
-```
+SCHEMA:
+  GRANT USAGE ON SCHEMA public TO testuserdba;
+  GRANT USAGE, SELECT ON SEQUENCE mi_secuencia TO testuserdba;
 
-`Indice`:
-```sh
-GRANT CREATE ON TABLE mi_tabla TO mi_usuario;
-```
+FUNCTIONS:
+  grant ALL PRIVILEGES  on all functions in schema public to "testuserdba";
+  grant execute on all functions in schema public to "testuserdba";
+  GRANT EXECUTE ON FUNCTION public.fun_obtenercontactoscopiaweb(int, varchar) TO "testuserdba";
 
-`Type`:
-```sh
-GRANT USAGE ON TYPE mi_tipo_de_dato TO mi_usuario;
-```
+Index:
+  GRANT CREATE ON TABLE mi_tabla TO mi_usuario;
 
-`View`:
-```sh
-GRANT SELECT ON mi_vista TO mi_usuario;
-```
+Type:
+  GRANT USAGE ON TYPE mi_tipo_de_dato TO mi_usuario;
 
-`trigger`:
-```sh
-GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
+View:
+  GRANT SELECT ON mi_vista TO mi_usuario;
+
+trigger:
+  GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
 ```
 
 ### Revokar o eliminar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:
 
-
-### Revocar/ Eliminar  Derechos 
-
-`Tabla`
 ```sh
-revoke all on all tables in schema public from "testuserdba";
-REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "testuserdba";
+DATABASE:
+  REVOKE ALL PRIVILEGES ON DATABASE mytestdba FROM "92096883";
+
+TABLES:
+  revoke all on all tables in schema public from "testuserdba";
+  REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "testuserdba";
+  REVOKE ALL PRIVILEGES ON TABLE nombre_de_tabla FROM nombre_del_rol;
+
+SEQUENCES:
+  REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM "testuserdba";
+  REVOKE ALL PRIVILEGES ON SEQUENCE nombre_de_secuencia FROM nombre_del_rol;
+
+SCHEMA :
+  REVOKE ALL PRIVILEGES ON SCHEMA nombre_del_esquema FROM nombre_del_rol;
+
+FUNCTIONS:
+  revoke execute on all functions in schema public from testuserdba;
+  REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public FROM "testuserdba";
+  REVOKE ALL PRIVILEGES ON FUNCTION nombre_de_funcion(int, varchar) FROM nombre_del_rol;
+
+Index:
+  REVOKE ALL PRIVILEGES ON INDEX nombre_del_indice FROM nombre_del_rol;
+
+Type:
+  REVOKE ALL PRIVILEGES ON TYPE nombre_del_tipo FROM nombre_del_rol;
+
+View:
+  REVOKE ALL PRIVILEGES ON VIEW nombre_de_vista FROM nombre_del_rol;
+
+trigger:
+  REVOKE ALL PRIVILEGES ON TRIGGER nombre_del_disparador FROM nombre_del_rol;
+
 ```
 
-`Funciones`
-```sh
-revoke execute on all functions in schema public from testuserdba;
-REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public FROM "testuserdba";
-```
+### Asignar Permisos a la base de datos, nivel sistema operativo:
+`pg_hba.conf` Este archivo se utiliza para definir las políticas de autenticación y controlar quién puede conectarse a la base de datos, desde dónde pueden conectarse y qué métodos de autenticación deben utilizarse para la conexión. <br>
 
-`SEQUENCES`
-```sh
-REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM "testuserdba";
-```
-
-
-`DATABASE`
-```sh
-REVOKE ALL PRIVILEGES ON DATABASE mytestdba FROM "92096883";
-```
-
-`SCHEMA`
-```sh
-REVOKE ALL PRIVILEGES ON schema public  FROM "92096883";
-```
+| TYPE | DATABASE |USER | ADDRESS | METHOD | 
+|--------------|--------------|--------------|--------------|--------------|
+| host    | mydbatest    | myusertest    | 192.168.1.0/32    | md5   |
 
 
