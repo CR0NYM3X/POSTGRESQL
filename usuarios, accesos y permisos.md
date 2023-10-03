@@ -98,6 +98,9 @@ SEQUENCES:
 
 SCHEMA:
   GRANT USAGE ON SCHEMA public TO testuserdba;
+  GRANT ALL PRIVILEGES ON SCHEMA mi_esquema TO mi_usuario;
+  GRANT SELECT ON SCHEMA mi_esquema TO mi_rol;
+  ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuario; -- Esto otorgará automáticamente el derecho de SELECT en todas las tablas futuras creadas en el esquema "mi_esquema" al usuario "mi_usuario".  
 
 FUNCTIONS:
   grant ALL PRIVILEGES  on all functions in schema public to "testuserdba";
