@@ -13,9 +13,9 @@
 .- Sequences <br>
 .- index <br>
 .- usuarios, accesos y  permisos * <br>
-.- tablespace<br>
+.- tablespace *<br>
 .- Logs<br>
-.- Monitoreo<br>
+.- Monitoreo * <br>
 .- Respaldo y Recuperación <br>
 .- Alta Disponibilidad y Escalabilidad<br>
 .- Migración de Datos y Actualizaciones<br>
