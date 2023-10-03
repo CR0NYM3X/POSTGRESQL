@@ -191,15 +191,14 @@ where table_schema= 'public' and
 psql ingresos_historica -c "SELECT 'grant select on table ' || table_name ||   ' to ' || CHR(34) || **`'myusertest'`** ||  CHR(34) || ';' as qweads FROM information_schema.tables WHERE table_schema='public' order by table_name;" | grep -v '-' | grep -v 'rela' | grep -v 'Name' | grep -v 'rows)' | grep -v 'table_name' | grep -v 'qweads'  > /tmp/dbaaplicaciones.sql &&  psql **`mydba`** < /tmp/dbaaplicaciones.sql
 
 - Opcion #2<br>
-psql   snisef   -c "\dt" | grep -v '-' | grep -v 'rela' | grep -v 'Name' | awk '{print " SELECT ON TABLE "$3 " FROM **`myusertest`**;" }' > /tmp/usuarios.sql
-psql snisef < /tmp/usuarios.sql
+psql   snisef   -c "\dt" | grep -v '-' | grep -v 'rela' | grep -v 'Name' | awk '{print " SELECT ON TABLE "$3 " FROM **`myusertest`**;" }' > /tmp/usuarios.sql && psql snisef < /tmp/usuarios.sql
 
 ###  Asignar todos los permisos en las tablas en todas la bases de datos, versiones  v9.0
 select	'\\c ' || datname || ';' || CHR(10) || 'grant select on all tables in schema public to **`"myusertest"`**;'
 || CHR(10) || 'GRANT CONNECT ON DATABASE "'|| datname ||'" TO  **`"myusertest"`**;'  as qweads from pg_database where not datname ilike 'template%' and not datname ilike 'postgres';
 
 
-### Asignar permisos de execucioó en funciones  psql  v8.1 
+### Asignar permisos de execución en funciones  psql  v8.1 
  psql dbrelojchecador -c "SELECT  'GRANT EXECUTE ON FUNCTION '|| proname || '(' || pg_catalog.oidvectortypes(proargtypes) || ')' ||  ' to ' || CHR(34) || **`'myusertest'`** ||  CHR(34) || ';'   as qweads FROM pg_proc where proname in(SELECT routine_name FROM information_schema.routines WHERE routine_type = 'FUNCTION' AND specific_schema = 'public')  "  | grep -v '-' | grep -v 'rela' | grep -v 'Name' | grep -v 'rows)' | grep -v 'table_name' | grep -v 'qweads'  > /tmp/funciones.sql %%  psql **`mydbatest`** < /tmp/funciones.sql
 
 
