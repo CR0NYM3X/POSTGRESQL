@@ -8,11 +8,14 @@ Es recopilar información del servidor y la base de datos en caso de requerirse,
 
 ### versión de sistema Operativo linux
 ```sh
+cat /etc/redhat-release
+cat /etc/os-release
 lsb_release -d
 uname -a
-cat /etc/os-release
-cat /etc/redhat-release
 ```
+## Obtener el hostname del servidor:
+    hostname 
+
 
 ### versión de la base de datos 
 ```sh
