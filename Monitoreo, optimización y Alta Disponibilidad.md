@@ -74,24 +74,72 @@ ps aux | grep postgres
 ps aux | grep data -- este te sirve para saber que binarios esta utilizando 
 ```
 
-## Vacum
-VACUUM FULL;  -->  liberar espacio en disco ocupado por registros eliminados y para prevenir la fragmentación. 
-VACUUM ANALYZE;
+## Vacum [documentación Oficial](https://www.postgresql.org/docs/current/sql-vacuum.html)
 
-## Reindex
-REINDEX DATABASE $DB_NAME;
-REINDEX TABLE nombre_de_tabla;
+Actualiza las estadísticas utilizadas por el planificador para determinar la forma más eficiente de ejecutar una consulta.
+  ```sh 
+  VACUUM ANALYZE;
+ ```
+
+Realiza una limpieza básica, marcando las filas obsoletas para su eliminación y liberando espacio, pero no recupera espacio inmediatamente.
+```sh
+VACUUM;
+  ```
+
+Recupera espacio inmediatamente eliminando las filas obsoletas y compactando la tabla. Este proceso bloquea la tabla durante su ejecución.
+  ```sh
+VACUUM FULL table_name;  -- individual
+VACUUM FULL -- en todas las tablas 
+  ```
+
+Actualiza las estadísticas de la tabla, lo que puede ayudar al planificador de consultas a tomar decisiones más informadas.
+  ```sh
+ANALYZE table_name; --- individual
+ANALYZE;
+  ```
+Congela todas las filas de la tabla, lo que es útil cuando se necesita garantizar que una tabla no cambie para realizar copias de seguridad.
+  ```sh
+VACUUM FREEZE table_name; -- individual
+VACUUM FREEZE;  -- completa
+  ```
 
 
-ANALYZE; ---> actualizar las estadísticas de la base de datos.
-pg_repack -U $DB_USER -d $DB_NAME --> Esta herramienta se utiliza para reorganizar físicamente las tablas y sus índices, reduciendo la fragmentación y mejorando el rendimiento.
-ALTER TABLE tabla_nombre SET (pg_prewarm.compress=true);
 
 
 
--- Muestra el tiempo de ejecucion de una consulta
+## Reindex [documentación oficial](https://www.postgresql.org/docs/current/sql-reindex.html)
+Se utiliza para reconstruir los índices de una tabla o base de datos. La principal razón para utilizar REINDEX es mantener o mejorar el rendimiento de las consultas en la base de datos y como por ejemplo: <br>
+
+**`Fragmentación de índices:`** Con el tiempo, los índices de una tabla pueden volverse fragmentados debido a las inserciones, actualizaciones y eliminaciones de registros. La fragmentación puede hacer que las consultas sean más lentas. REINDEX reconstruye los índices para eliminar la fragmentación y restaurar el rendimiento.
+
+**`Recuperación de índices dañados:`** Si un índice se daña debido a una falla del sistema, un cierre abrupto de la base de datos u otras circunstancias, REINDEX puede ayudar a restaurar la integridad de los índices.
+
+**`Mantenimiento preventivo:`** Realizar un REINDEX periódicamente como parte del mantenimiento de la base de datos puede ayudar a evitar problemas de rendimiento en el futuro. Esto es especialmente importante en bases de datos que experimentan un alto volumen de cambios en los datos.
+
+**`Optimización del rendimiento:`** En ocasiones, puede ser beneficioso realizar un REINDEX después de realizar cambios importantes en la estructura de la tabla o en los datos, como la eliminación masiva de registros o la reorganización de datos. Esto puede ayudar a optimizar el rendimiento de las consultas.
+
+**`Restauración de la consistencia:`** Si se detectan problemas de consistencia en los índices, como duplicados incorrectos, REINDEX puede ayudar a restablecer la consistencia
+
+
+
+**REINDEX de una tabla específica:**
+``` sh
+REINDEX TABLE table_name;
+```
+**REINDEX de toda la base de datos**
+``` sh
+REINDEX DATABASE database_name;
+```
+
+
+## Muestra el tiempo de ejecucion de una consulta en el momento
 EXPLAIN select version(); --  para analizar el plan de ejecución de una consulta
 EXPLAIN ANALYZE  select version();
+
+
+## 
+pg_repack -U $DB_USER -d $DB_NAME --> Esta herramienta se utiliza para reorganizar físicamente las tablas y sus índices, reduciendo la fragmentación y mejorando el rendimiento.
+ALTER TABLE tabla_nombre SET (pg_prewarm.compress=true);
 
 
 ## Ver maximas conexiones que permite el postgresql
@@ -170,7 +218,13 @@ ORDER BY pg_total_relation_size(schemaname || '.' || relname) DESC;
  pg_statio_user_tables
  pg_stat_all_indexes
  pg_stat_sys_indexes
- pg_stat_user_indexes
+ 
+Monitoreo de la fragmentación de índices: PostgreSQL almacena información sobre la fragmentación de índices en la vista pg_stat_user_indexes. Puedes usar esta vista para verificar el nivel de fragmentación de tus índices. Por ejemplo, si la columna idx_scan (número de escaneos) es alta y la columna idx_tup_read (número de tuplas leídas) es baja, esto puede indicar fragmentación. Aquí tienes una consulta de ejemplo:
+SELECT relname, indexrelname, idx_scan, idx_tup_read
+  FROM pg_stat_user_indexes
+WHERE idx_scan > 0 AND idx_tup_read < 1000;
+
+
  pg_statio_user_indexes
  pg_statio_all_sequences
  pg_statio_sys_sequences
