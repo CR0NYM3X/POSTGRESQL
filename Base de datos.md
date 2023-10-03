@@ -5,6 +5,12 @@ Es aprender todo lo que podemos hacer solo con la base de datos
 
 ### Crear una base de datos:
     CREATE DATABASE "mytestdba" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'C' LC_CTYPE = 'en_US';
+    
+    --- Parametros adicionales que le puedes agregar en el with
+       OWNER = postgesql
+       ENCODING = 'UTF8' LC_CTYPE = 'en_US.UTF-8';
+       TABLESPACE = pg_default
+       CONNECTION LIMIT = -1;
 
 ### Cambiar el nombre a una base de datos:
     ALTER DATABASE "mytestdba" RENAME TO "myoldtestdba";
