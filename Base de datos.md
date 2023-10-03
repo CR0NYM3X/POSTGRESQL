@@ -22,7 +22,7 @@ Es aprender todo lo que podemos hacer solo con la base de datos
  
 ### Consutar los nombres de las base de datos:
      \l  
-     select datname from pg_database:
+     select datname from pg_database;
 
 ### Ver el tamaño de la base de datos:
 
