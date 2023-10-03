@@ -1,5 +1,7 @@
 # Objetivo:
-Aprenderemos todo lo que se puede hacer con una tabla 
+Aprenderemos todo lo que se puede hacer con una tabla [documentacion oficial para crear tablas](https://www.postgresql.org/docs/current/sql-createtable.html)
+
+
 
 # Ejemplos:
 
