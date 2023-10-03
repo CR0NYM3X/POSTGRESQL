@@ -3,6 +3,10 @@ Es aprender todo lo que podemos hacer solo con la base de datos
 
 # Ejemplos 
 
+### Consutar los nombres de las base de datos:
+     \l  
+     select datname from pg_database;
+
 ### Crear una base de datos:
     CREATE DATABASE "mytestdba" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'C' LC_CTYPE = 'en_US';
     
@@ -19,10 +23,9 @@ Es aprender todo lo que podemos hacer solo con la base de datos
 **Es importante que cuando se borre una base de datos no este nadie conectado, y para esto puede usar metodos de monitoreo para validar primero que no este nadie conectado**
 
         Drop databases "mydbatest"
- 
-### Consutar los nombres de las base de datos:
-     \l  
-     select datname from pg_database;
+
+### Ver el limite de conexiones que se permiten por Base de datos:
+        select datname,datconnlimit from pg_database; -- si es -1 es ilimitado, si tiene algún número se especificó un límite  
 
 ### Ver el tamaño de la base de datos:
 
