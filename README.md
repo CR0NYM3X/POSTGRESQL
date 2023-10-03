@@ -15,9 +15,8 @@
 .- usuarios, accesos y  permisos * <br>
 .- tablespace *<br>
 .- Logs<br>
-.- Monitoreo * <br>
+.- Monitoreo, optimización y Alta Disponibilidad * <br>
 .- Respaldo y Recuperación <br>
-.- Alta Disponibilidad y Escalabilidad<br>
 .- Migración de Datos y Actualizaciones<br>
 .- pgbouncer
 
