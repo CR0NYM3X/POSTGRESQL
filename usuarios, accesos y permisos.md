@@ -80,7 +80,7 @@ REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";  -- quita el owner 
 ```
 
 ### Asignar Permisos lógicos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:
-
+*El privilegio **`USAGE`** solo sirve para Secuencias, Esquemas  y Funciones,  el privilegio USAGE no permite modificar, solo para consultar o ejecutar*
 
 ```sh
 DATABASE:
@@ -171,4 +171,40 @@ select * from pg_hba_file_rules  where address  in('10.0.30.5');
 select * from pg_hba_file_rules  where user_name in('{testuserdba}');
 select * from pg_hba_file_rules  where  database   in('{testuserdba}');
 ```
+
+---
+
+### Comparación de privilegios 
+
+```sh
+select  (select count(*) from  information_schema.tables WHERE table_schema='public' ) as Cnt_tb_total,(select count(*)  
+ from information_schema.table_privileges 
+where table_schema= 'public' and 
+  grantee= '90229492' --- aquí cambiamos el usuario 
+  and privilege_type='SELECT' -- privilegio que quieres validar: SELECT, UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, RULE
+) as Cnt_TB_Privilege;
+```
+
+### Asignar permisos de lectura en tablas versiones v8.1 
+- Opcion #1<br>
+psql ingresos_historica -c "SELECT 'grant select on table ' || table_name ||   ' to ' || CHR(34) || **`'myusertest'`** ||  CHR(34) || ';' as qweads FROM information_schema.tables WHERE table_schema='public' order by table_name;" | grep -v '-' | grep -v 'rela' | grep -v 'Name' | grep -v 'rows)' | grep -v 'table_name' | grep -v 'qweads'  > /tmp/dbaaplicaciones.sql &&  psql **`mydba`** < /tmp/dbaaplicaciones.sql
+
+- Opcion #2<br>
+psql   snisef   -c "\dt" | grep -v '-' | grep -v 'rela' | grep -v 'Name' | awk '{print " SELECT ON TABLE "$3 " FROM **`myusertest`**;" }' > /tmp/usuarios.sql
+psql snisef < /tmp/usuarios.sql
+
+###  Asignar todos los permisos en las tablas en todas la bases de datos, versiones  v9.0
+select	'\\c ' || datname || ';' || CHR(10) || 'grant select on all tables in schema public to **`"myusertest"`**;'
+|| CHR(10) || 'GRANT CONNECT ON DATABASE "'|| datname ||'" TO  **`"myusertest"`**;'  as qweads from pg_database where not datname ilike 'template%' and not datname ilike 'postgres';
+
+
+### Asignar permisos de execucioó en funciones  psql  v8.1 
+ psql dbrelojchecador -c "SELECT  'GRANT EXECUTE ON FUNCTION '|| proname || '(' || pg_catalog.oidvectortypes(proargtypes) || ')' ||  ' to ' || CHR(34) || **`'myusertest'`** ||  CHR(34) || ';'   as qweads FROM pg_proc where proname in(SELECT routine_name FROM information_schema.routines WHERE routine_type = 'FUNCTION' AND specific_schema = 'public')  "  | grep -v '-' | grep -v 'rela' | grep -v 'Name' | grep -v 'rows)' | grep -v 'table_name' | grep -v 'qweads'  > /tmp/funciones.sql %%  psql **`mydbatest`** < /tmp/funciones.sql
+
+Esto es un ejemplo de una nota al pie de página[^1].
+[^1]: Esta es la nota al pie de página.
+
+
+
+
 
