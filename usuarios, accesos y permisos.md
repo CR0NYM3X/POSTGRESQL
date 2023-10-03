@@ -40,14 +40,13 @@ CREATE USER testuserdba WITH PASSWORD '123456789'; -- no se recomienda colocar e
  drop role testuserdba;
  ```
 
- 
 
-### Cambiar passowrd
+### Cambiar passowd
 ```sh
 \password testuserdba 
 ALTER USER "testuserdba" PASSWORD '12345'
 ALTER USER "testuserdba" PASSWORD 'md5a3cc0871123278d59269d85dbbd772893';  
-```sh
+```
 
 ### Cambiar la fecha de expiracion:
 ```sh
@@ -61,8 +60,12 @@ ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 
 ### Agregar owner a los objetos  
 ```sh
-ALTER TABLE public.mitablanew OWNER TO testuserdba;<br>
+ALTER TABLE public.mitablanew OWNER TO testuserdba; 
 ALTER DATABASE mydba  OWNER TO testuserdba;
+
+REASSIGN OWNED BY "testuserdba" to postgres; -- Cambiar de owner
+REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";  -- quita el owner de un usuario en la base de datos mydbatest
+
 ```
 
 ### Ver privilegios de un usuario:
@@ -132,5 +135,36 @@ GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
 ```
 
 ### Revokar o eliminar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:
+
+
+### Revocar/ Eliminar  Derechos 
+
+`Tabla`
+```sh
+revoke all on all tables in schema public from "testuserdba";
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "testuserdba";
+```
+
+`Funciones`
+```sh
+revoke execute on all functions in schema public from testuserdba;
+REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public FROM "testuserdba";
+```
+
+`SEQUENCES`
+```sh
+REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM "testuserdba";
+```
+
+
+`DATABASE`
+```sh
+REVOKE ALL PRIVILEGES ON DATABASE mytestdba FROM "92096883";
+```
+
+`SCHEMA`
+```sh
+REVOKE ALL PRIVILEGES ON schema public  FROM "92096883";
+```
 
 
