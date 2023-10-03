@@ -164,4 +164,11 @@ trigger:
 |--------------|--------------|--------------|--------------|--------------|
 | host    | mydbatest    | myusertest    | 192.168.1.0/32    | md5   |
 
+### Ver si hay un error en el archivo pg_hba.conf
+```sh
+select * from pg_hba_file_rules where error is not null; ---- si no muestra registros, todo esta bien, si muestra registros en el campo "line_number" te dira la linea que presenta el error
+select * from pg_hba_file_rules  where address  in('10.0.30.5');
+select * from pg_hba_file_rules  where user_name in('{testuserdba}');
+select * from pg_hba_file_rules  where  database   in('{testuserdba}');
+```
 
