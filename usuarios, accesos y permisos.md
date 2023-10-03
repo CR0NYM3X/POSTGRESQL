@@ -93,11 +93,11 @@ TABLES:
 
 SEQUENCES:
   GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
-  GRANT USAGE ON SEQUENCE nombre_secuencia TO testuserdba; 
+  GRANT USAGE ON SEQUENCE nombre_secuencia TO testuserdba;
+  GRANT USAGE, SELECT ON SEQUENCE mi_secuencia TO testuserdba;
 
 SCHEMA:
   GRANT USAGE ON SCHEMA public TO testuserdba;
-  GRANT USAGE, SELECT ON SEQUENCE mi_secuencia TO testuserdba;
 
 FUNCTIONS:
   grant ALL PRIVILEGES  on all functions in schema public to "testuserdba";
