@@ -3,23 +3,24 @@ Presionar para ir al final[^1].<br>
 ---
 # Índice 
 
-- [Formas de Consultar o Buscar un usuario role](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role)
-- [Crear un usuario10.44.172.115](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=de%20la%20contrase%C3%B1a-,Crear%20un%20usuario%3A,-CREATE%20USER%20%22)
-- [Comentar un usuario](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=ver%20la%20contrase%C3%B1a-,Comentar%20un%20usuario,-COMMENT%20ON%20ROLE)
-- [Eliminar un usuario](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=usuario.%27%3B-,Eliminar%20un%20usuario,-drop%20user%20testuserdba)
-- [Cambiar passowd](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#cambiar-passowd)
-- [Cambiar la fecha de expiracion10.44.172.115](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Cambiar%20la%20fecha%20de%20expiracion%3A)
-- [Limitar el número de conexion por usuario10.44.172.115](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Limitar%20el%20n%C3%BAmero%20de%20conexion%20por%20usuario%3A)
-- [Agregar owner a los objetos](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Agregar%20owner%20a%20los%20objetos)
-- [Ver la cantidad y tipo de privilegios de un usuario10.44.172.115](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Ver%20la%20cantidad%20y%20tipo%20de%20privilegios%20de%20un%20usuario%3A)
-- [Agregar y Quitar super Usuario a un usuario/role](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Agregar%20y%20Quitar%20super%20Usuario%20a%20un%20usuario/role)
-- [Asignar Permisos lógicos a objetos10.44.172.115 Funciones, Tablas, type, view, index, sequence, triggers10.44.172.115](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Asignar%20Permisos%20l%C3%B3gicos%20a%20objetos%3A%20%5BFunciones%2C%20Tablas%2C%20type%2C%20view%2C%20index%2C%20sequence%2C%20triggers%5D%3A)
-- [Revokar o eliminar Permisos a objetos10.44.172.115 Funciones, Tablas, type, view, index, sequence, triggers10.44.172.115](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Revokar%20o%20eliminar%20Permisos%20a%20objetos%3A%20%5BFunciones%2C%20Tablas%2C%20type%2C%20view%2C%20index%2C%20sequence%2C%20triggers%5D%3A)
-- [Asignar Permisos a la base de datos, nivel sistema operativo](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Asignar%20Permisos%20a%20la%20base%20de%20datos%2C%20nivel%20sistema%20operativo)
-- [Ver todos los privilegios que se tienen en todas las base de datos](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Ver%20todos%20los%20privilegios%20que%20se%20tienen%20en%20todas%20las%20base%20de%20datos)
-- [Asignar permisos de lectura en tablas versiones v8.1](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Asignar%20permisos%20de%20lectura%20en%20tablas%20versiones%20v8.1)
-- [Asignar permisos de execución en funciones psql v8.1](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=Asignar%20permisos%20de%20execuci%C3%B3n%20en%20funciones%20psql%20v8.1)
-- [Asignar todos los permisos en las tablas en todas la bases de datos, versiones v9.0](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-todos-los-permisos-en-las-tablas-en-todas-la-bases-de-datos-versiones--v90)
+- [Buscar un usuario role](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role)
+- [Crear un usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#crear-un-usuario)
+- [Comentar un usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#comentar-un-usuario)
+- [Eliminar un usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#eliminar-un-usuario)
+- [Cambiar passowd  de usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#cambiar-passowd)
+- [Cambiar la fecha de expiracion](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#cambiar-la-fecha-de-expiracion)
+- [Limitar el número de conexion por usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#limitar-el-n%C3%BAmero-de-conexion-por-usuario)
+- [Agregar owner a los objetos](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#agregar-owner-a-los-objetos)
+- [Ver la cantidad y tipo de privilegios de un usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ver-la-cantidad-y-tipo-de--privilegios-de-un-usuario)
+- [Agregar y Quitar super Usuario a un usuario/role](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#agregar-y-quitar-super-usuario-a-un-usuariorole)
+- [Asignar Permisos lógicos a objetos Funciones, Tablas, type, view, index, sequence, triggers](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-permisos-l%C3%B3gicos-a-objetos-funciones-tablas-type-view-index-sequence-triggers)
+- [Revokar o eliminar Permisos a objetos Funciones, Tablas, type, view, index, sequence, triggers](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#revokar-o-eliminar-permisos-a-objetos-funciones-tablas-type-view-index-sequence-triggers--1)
+- [Asignar acceso por IP a la base de datos, nivel sistema operativo](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-permisos-a-la-base-de-datos-nivel-sistema-operativo)
+- [Ver si hay un error en el archivo pg_hba.conf](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ver-si-hay-un-error-en-el-archivo-pg_hbaconf)
+- [Ver todos los privilegios que se tienen en todas las base de datos](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ver-todos-los-privilegios-que-se-tienen-en-todas-las-base-de-datos)
+- [Asignar permisos de lectura en tablas versiones v8.1](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-permisos-de-lectura-en-tablas-versiones-v81)
+- [Asignar permisos de execución en funciones psql v8.1](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-permisos-de-execuci%C3%B3n-en-funciones--psql--v81)
+- [Asignar todos los permisos en las tablas en todas la bases de datos, versiones v9.0](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-todos-los-permisos-en-las-tablas-en-todas-la-bases-de-datos-versiones--v90)
 
 ---
 
@@ -37,7 +38,7 @@ Es necesario aclarar que las querys pueden variar dependiendo la version de la d
 CRUD = Create, Read, Update, Delete
 
 
-### Formas de Consultar o Buscar un usuario role
+###  Buscar un usuario o role
 ```sh
  \du+ "testuserdba"    -- descripción general
  select * from pg_user where usename ilike '%testuserdba%';  -- descripción general
@@ -72,7 +73,7 @@ ALTER USER "testuserdba" PASSWORD '12345'
 ALTER USER "testuserdba" PASSWORD 'md5a3cc0871123278d59269d85dbbd772893';  
 ```
 
-### Cambiar la fecha de expiracion:
+### Cambiar la fecha de expiracion de acceso:
 ```sh
 ALTER USER "testuserdba" WITH VALID UNTIL '2023-11-11';
 ```
@@ -193,7 +194,7 @@ trigger:
 
 ```
 
-### Asignar Permisos a la base de datos, nivel sistema operativo:
+### Asignar acceso por IP a la base de datos, nivel sistema operativo:
 `pg_hba.conf` Este archivo se utiliza para definir las políticas de autenticación y controlar quién puede conectarse a la base de datos, desde dónde pueden conectarse y qué métodos de autenticación deben utilizarse para la conexión. <br>
 
 | TYPE | DATABASE |USER | ADDRESS | METHOD | 
