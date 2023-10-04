@@ -4,7 +4,7 @@ trucos Markdown GitHub
 
 ---
 
-- [Sección 1](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/trucos%20Markdown%20GitHub.md#formas-de-consultar-o-buscar-un-usuario-role)
+- [Sección 1](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/trucos%20Markdown%20GitHub.md#enlaces)
   - [Subsección 1.1](#subsección-11)
   - [Subsección 1.2](#subsección-12)
 - [Sección 2](#sección-2)
