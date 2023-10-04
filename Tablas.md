@@ -10,6 +10,15 @@ Aprenderemos todo lo que se puede hacer con una tabla [documentacion oficial par
 ALTER TABLE my_table SET TABLESPACE my_tablespace;
 ```
 
+## Saber la cantidad de filas de una tabla
+ ```sh
+
+#Para tablas que tienen pocos registros:
+select count(*) from my_tabla;
+
+#En caso de que la tabla tenga millones de registros puedes usar la siguiente consulta: 
+select reltuples::bigint  from pg_class where relname = 'my_tabla' ;
+```
 ## Buscar tablas :
  ```sh
 \dt  'mytabla_de_prueba'
