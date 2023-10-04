@@ -1,4 +1,3 @@
-Presionar para ir al final[^1].<br>
 
 ---
 # Índice 
@@ -270,9 +269,6 @@ select	'\\c ' || datname || ';' || CHR(10) || 'grant select on all tables in sch
 || CHR(10) || 'GRANT CONNECT ON DATABASE "'|| datname ||'" TO  **`"myusertest"`**;'  as qweads from pg_database where not datname ilike 'template%' and not datname ilike 'postgres';
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
-
-
-[^1]: Presionar para ir al inicio 
 
 
 
