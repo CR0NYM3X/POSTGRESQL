@@ -10,11 +10,11 @@
 - [Cambiar passowd  de usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#cambiar-passowd)
 - [Cambiar la fecha de expiracion](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#cambiar-la-fecha-de-expiracion-de-acceso)
 - [Limitar el número de conexion por usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#limitar-el-n%C3%BAmero-de-conexion-por-usuario)
-- [Agregar owner a la base de datos y los objetos](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#agregar-owner-a-la-base-de-datos-y-los-objetos)
 - [Ver la cantidad y tipo de privilegios de un usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ver-la-cantidad-y-tipo-de--privilegios-de-un-usuario)
-- [Agregar y Quitar super Usuario a un usuario/role](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#agregar-y-quitar-super-usuario-a-un-usuariorole)
-- [Asignar Permisos lógicos a objetos Funciones, Tablas, type, view, index, sequence, triggers](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-permisos-l%C3%B3gicos-a-objetos-funciones-tablas-type-view-index-sequence-triggers)
-- [Revokar o eliminar Permisos a objetos Funciones, Tablas, type, view, index, sequence, triggers](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#revokar-o-eliminar-permisos-a-objetos-funciones-tablas-type-view-index-sequence-triggers)
+- [Asignar o Cambiar de owner en la base de datos y los objetos](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#agregar-owner-a-la-base-de-datos-y-los-objetos)
+- [Asignar o Remover SuperUser a un usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#agregar-y-quitar-super-usuario-a-un-usuariorole)
+- [Asignar Permisos lógicos SELECT, UPDATE, DELETE etc](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-permisos-l%C3%B3gicos-select-update-delete-etc)
+- [Revokar o eliminar Permisos lógicos SELECT, UPDATE, DELETE etc](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#revokar-o-eliminar-permisos-a-objetos-funciones-tablas-type-view-index-sequence-triggers)
 - [Asignar acceso por IP a la base de datos, nivel sistema operativo](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-acceso-por-ip-a-la-base-de-datos-nivel-sistema-operativo)
 - [Ver si hay un error en el archivo pg_hba.conf](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ver-si-hay-un-error-en-el-archivo-pg_hbaconf)
 - [Ver todos los privilegios que se tienen en todas las base de datos](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ver-todos-los-privilegios-que-se-tienen-en-todas-las-base-de-datos)
@@ -91,7 +91,23 @@ ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
-### Agregar owner a la base de datos y los objetos  
+### Ver la cantidad y tipo de  privilegios de un usuario:
+
+```sh
+select '' as usuario,'Cnt_total_tablas' as privilege_type,count(*) as Total_Privilege
+  from  information_schema.tables
+WHERE table_schema='public' 
+union all 
+select grantee,privilege_type,count(*)
+  from information_schema.table_privileges
+where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, privilege_type;
+
+```
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+
+
+
+### Asignar owner a la base de datos y los objetos  
 ```sh
 #Esta consulta se utiliza para cambiar el propietario de todos los objetos dentro de una base de datos específica al nuevo propietario:
 REASSIGN OWNED BY "my_user_old_owner" to "my_user_new_owner";  
@@ -123,29 +139,16 @@ ALTER SCHEMA nombre_de_esquema OWNER TO nuevo_propietario;
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
-### Ver la cantidad y tipo de  privilegios de un usuario:
 
-```sh
-select '' as usuario,'Cnt_total_tablas' as privilege_type,count(*) as Total_Privilege
-  from  information_schema.tables
-WHERE table_schema='public' 
-union all 
-select grantee,privilege_type,count(*)
-  from information_schema.table_privileges
-where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, privilege_type;
-
-```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Agregar y Quitar super Usuario a un usuario/role
 ```sh
 ALTER user  "sysutileria" WITH SUPERUSER; 
 ALTER USER "sysutileria" WITH NOSUPERUSER;
-
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
-### Asignar Permisos lógicos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:
+### Asignar Permisos lógicos SELECT, UPDATE, DELETE etc:
 *El privilegio **`USAGE`** solo sirve para Secuencias, Esquemas  y Funciones,  el privilegio USAGE no permite modificar, solo para consultar o ejecutar*
 
 ```sh
