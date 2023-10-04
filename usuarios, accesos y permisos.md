@@ -1,4 +1,7 @@
-Presionar para ir al final[^1].
+Presionar para ir al final[^1].<br>
+
+- [Sección 1](#sección-1)
+
 # Objetivo:
 Es aprender a crear usuarios, administrar y asignarle los permisos necesarios para el uso de la base de datos.
 
@@ -129,7 +132,10 @@ trigger:
   GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
 ```
 
-### Revokar o eliminar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:
+# Sección 1
+Contenido de la sección 1...
+
+### Revokar o eliminar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:  [^1]
 
 ```sh
 DATABASE:
