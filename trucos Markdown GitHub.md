@@ -2,6 +2,30 @@
 trucos Markdown GitHub
 
 
+---
+
+- [Sección 1](#sección-1)
+  - [Subsección 1.1](#subsección-11)
+  - [Subsección 1.2](#subsección-12)
+- [Sección 2](#sección-2)
+
+
+# Sección 1
+Contenido de la sección 1...
+
+## Subsección 1.1
+Contenido de la subsección 1.1...
+
+## Subsección 1.2
+Contenido de la subsección 1.2...
+
+# Sección 2
+Contenido de la sección 2...
+
+
+### salto del linea
+\<br>
+
 Énfasis y negritas:
 *Texto en cursiva*
 **Texto en negrita**
@@ -55,14 +79,14 @@ Esto es un ejemplo de una nota al pie de página[^1].
 
 Esto es código en línea: `print("Hola, mundo")`
 
-```python
+```sh python
 def mi_funcion():
     print("Hola, mundo")
-	```
+```
 ### Texto tachado	
 Esto es ~~texto tachado~~.
 
-### 
+### este es como cuando pones codigo pero no sale opcion para copiar
 <pre>
 
 **Esto es un bloque de código sin resaltado de sintaxis.**
@@ -74,6 +98,6 @@ Esto es ~~texto tachado~~.
 
 ### CEntrar texto
 $$
-bueno
+bueno bueno bueno
 $$
 
