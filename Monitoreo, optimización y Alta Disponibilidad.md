@@ -39,7 +39,7 @@ $$
 
 ## Consulta todo en una sola query:
 ```sh
-echo "IP" && hostname -I && postgres --version && echo "Numero máximo de conexiones" && psql -At -c "show max_connections;" && echo "Numero de conexiones" && ps -ef | grep -i postgres -wc  && echo "Numero de conexiones en idle" &&  ps -ef | grep -i idle -wc && echo "Unidades" && df -lh&& echo "Mostrar BD Postgres " && psql postgres -c "\\l+" && echo " -- Fecha" && date && echo " -- Mostrar procesos" && psql -xc "SELECT query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle' ORDER BY query_start ASC;"
+echo "IP" && hostname -I && postgres --version && echo "Numero máximo de conexiones" && psql -At -c "show max_connections;" && echo "Numero de conexiones" && ps -ef | grep -i postgres -wc  && echo "Numero de conexiones en idle" &&  ps -ef | grep -i idle -wc && echo "Unidades" && df -lh&& echo "Mostrar BD Postgres " && psql postgres -c "\\l+" && echo " -- Fecha" && date && echo " -- Mostrar procesos" && psql -xc "select  query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle' ORDER BY query_start ASC;"
 ```
 
 ## Ver el estatus de postgresql 
@@ -61,34 +61,34 @@ cat  /sysf/data/postgresql.conf | grep max_connections
 
 - Límite de Conexiones por Base de datos:
 ```sh
-select datname,datconnlimit from pg_database; -- si es -1 es ilimitado, si tiene algún número se especificó un límite  
+select  datname,datconnlimit from pg_database; -- si es -1 es ilimitado, si tiene algún número se especificó un límite  
 ```
 
 - Límite de Conexiones por Usuario:
 ```sh
-select rolname,rolconnlimit from pg_authid ; -- si es -1 es ilimitado, si tiene algún número se especificó un límite  
+select  rolname,rolconnlimit from pg_authid ; -- si es -1 es ilimitado, si tiene algún número se especificó un límite  
 ```
 
 ## Ver la cantidad total de conexiones
 
 - Ver el total de conexiones  Activas y Inactivas nivel Base de datos:
 ```sh
-  select count(*)  FROM pg_stat_activity; -- el total de conexiones Activas y Inactivas en todas las base de datos 
-  select count(*)  FROM pg_stat_activity WHERE pg_stat_activity.datname = 'MYDBATEST'; --- el total de conexiones realizadas que tiene una base de datos 
-  select count(*)  FROM pg_stat_activity WHERE pg_stat_activity.usename = 'myusertest'; --- el total de conexiones realizadas que tiene un usuario
+  select  count(*)  FROM pg_stat_activity; -- el total de conexiones Activas y Inactivas en todas las base de datos 
+  select  count(*)  FROM pg_stat_activity WHERE pg_stat_activity.datname = 'MYDBATEST'; --- el total de conexiones realizadas que tiene una base de datos 
+  select  count(*)  FROM pg_stat_activity WHERE pg_stat_activity.usename = 'myusertest'; --- el total de conexiones realizadas que tiene un usuario
 ```
 
 - Saber las cantidades de conexiones **`activas`** en un postgresql version > 9 nivel Base de datos:
 ```sh
-SELECT count(*) pid FROM pg_stat_activity WHERE  TRIM(state)!='idle';
+select  count(*) pid FROM pg_stat_activity WHERE  TRIM(state)!='idle';
 ```
 - Saber las cantidades de conexiones **`activas`** en un postgresql version <9 nivel Base de datos:
 ```sh
-SELECT  count(*)  FROM pg_stat_activity where  current_query  !=  '<IDLE>' ;
+select   count(*)  FROM pg_stat_activity where  current_query  !=  '<IDLE>' ;
 ```
 -  Saber las cantidades de conexiones **`Inactivas`** en un postgresql version > 9 nivel Base de datos:
 ```sh
-SELECT count(*) pid FROM pg_stat_activity WHERE  TRIM(state) ='idle';
+select  count(*) pid FROM pg_stat_activity WHERE  TRIM(state) ='idle';
 ```
 
 - Ver el total de conexiones **`activas`** nivel S.O:
@@ -120,7 +120,7 @@ Puedes configurar el tiempo máximo que una conexión puede permanecer inactiva 
 
 2. Ver las conexiones **`activas`** y identificar cual esta generando bloques en base al tiempo que tiene ejecutandose, y cerrar la conexión con el PID:
 ```sh
- psql -xc  "SELECT query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle' ORDER BY query_start ASC;"
+ psql -xc  "select  query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle' ORDER BY query_start ASC;"
 ```
 
 
@@ -133,7 +133,7 @@ Cerrar Conexiones IDLE nivel S.O:
 ```
 **Opción #2 Cerrar solo una conexiones, nivel Base de datos**<br>
 ```sh
-SELECT pg_terminate_backend(123456)  -- El número 123456 es el PID de la conexión a cerrar
+select  pg_terminate_backend(123456)  -- El número 123456 es el PID de la conexión a cerrar
 ```
 
 **Opción #3 Cerrar todas las conexiones IDLE nivel S.O**<br>
@@ -142,73 +142,50 @@ SELECT pg_terminate_backend(123456)  -- El número 123456 es el PID de la conexi
 ```
 **Opción #4 Cerrar todas las conexiones IDLE nivel Base de datos**<br>
 ```sh
-SELECT pg_terminate_backend (pg_stat_activity.pid) FROM pg_stat_activity WHERE  pg_stat_activity.datname = 'MYDBATEST';
+select  pg_terminate_backend (pg_stat_activity.pid) FROM pg_stat_activity WHERE  pg_stat_activity.datname = 'MYDBATEST';
 ```
 
 
 
 
 ## Buscar bloqueos 
-SELECT   l.mode AS bloqueo_modo,  l.granted AS concedido,  l.pid AS proceso_id,  a.usename AS usuario,  l.relation::regclass AS tabla,  l.page AS pagina,  l.tuple AS tupla FROM  pg_locks l JOIN   pg_stat_activity a ON l.pid = a.pid WHERE   NOT l.granted;
+select    l.mode AS bloqueo_modo,  l.granted AS concedido,  l.pid AS proceso_id,  a.usename AS usuario,  l.relation::regclass AS tabla,  l.page AS pagina,  l.tuple AS tupla FROM  pg_locks l JOIN   pg_stat_activity a ON l.pid = a.pid WHERE   NOT l.granted;
 
 
 
+
+## Mostrar el tiempo de ejecucion de una consulta en el momento
+EXPLAIN select  version();  <br>
+EXPLAIN ANALYZE  select  version();
 
 
 
 ## Todos los stat para monitorear 
 ```sh
- pg_statistic
- pg_replication_origin_status
- pg_statio_all_indexes
- pg_statistic_ext
- pg_stats
- pg_prepared_statements
- pg_statio_sys_indexes
- pg_stat_all_tables
- pg_stat_xact_all_tables
- pg_stat_sys_tables
- pg_stat_xact_sys_tables
+
+## Consultas:
+-- Proporciona estadísticas sobre las consultas ejecutadas en la base de datos,  el número de veces que una consulta se ha ejecutado y el tiempo total que ha pasado en la caché.
+ como tiempos de ejecución y frecuencia de uso. Ayuda a identificar consultas lentas o ineficientes para optimizar el rendimiento.
+
+select   total_exec_time, min_exec_time,max_exec_time ,calls FROM pg_stat_statements where query ilike '%select %' and not query ilike '%GRANT%' ORDER BY total_plan_time DESC, calls desc limit 10;
+select   query, calls, total_time, rows, mean_time FROM pg_stat_statements ORDER BY total_time DESC;
+
+
+
+## Usuarios :
+select  * from  pg_stat_activity;
+select  * from  pg_stat_get_activity;
  
- --- Obtener información sobre el tamaño y estado de las tablas: 
-
-SELECT schemaname || '.' || relname AS table_full_name,
-       pg_size_pretty(pg_total_relation_size(schemaname || '.' || relname)) AS size,
-       pg_size_pretty(pg_relation_size(schemaname || '.' || relname)) AS table_size,
-       pg_size_pretty(pg_total_relation_size(schemaname || '.' || relname) - pg_relation_size(schemaname || '.' || relname)) AS index_size,
-       pg_total_relation_size(schemaname || '.' || relname) - pg_relation_size(schemaname || '.' || relname) AS "index_overhead_bytes"
-FROM pg_stat_user_tables
-ORDER BY pg_total_relation_size(schemaname || '.' || relname) DESC;
-
  
- pg_stat_xact_user_tables
- pg_statio_all_tables
- pg_statio_sys_tables
- pg_statio_user_tables
- pg_stat_all_indexes
- pg_stat_sys_indexes
- 
-Monitoreo de la fragmentación de índices: PostgreSQL almacena información sobre la fragmentación de índices en la vista pg_stat_user_indexes. Puedes usar esta vista para verificar el nivel de fragmentación de tus índices. Por ejemplo, si la columna idx_scan (número de escaneos) es alta y la columna idx_tup_read (número de tuplas leídas) es baja, esto puede indicar fragmentación. Aquí tienes una consulta de ejemplo:
-SELECT relname, indexrelname, idx_scan, idx_tup_read
-  FROM pg_stat_user_indexes
-WHERE idx_scan > 0 AND idx_tup_read < 1000;
+## Replication:
+select  * from  pg_replication_origin_status; -- Puedes monitorear el estado de la replicación y verificar la sincronización de los orígenes de replicación.
+select  * from  pg_stat_replication;
+select  * from  pg_stat_wal_receiver;
 
+ ## Base de datos: 
+ select  * from  pg_stat_database_conflicts;
 
- pg_statio_user_indexes
- pg_statio_all_sequences
- pg_statio_sys_sequences
- pg_statio_user_sequences
- pg_stat_activity
- pg_stat_get_activity
- pg_stat_replication
- pg_stat_wal_receiver
- pg_stat_subscription
- pg_stat_ssl
- 
-
- -- Mostrar el tamaño y estadísticas de todas las bases de datos:
-
-SELECT datname AS database_name,
+select  datname AS database_name,
        pg_size_pretty(pg_database_size(datname)) AS size,
        numbackends AS num_connections,
        xact_commit AS transactions_committed,
@@ -221,31 +198,67 @@ SELECT datname AS database_name,
        tup_updated AS tuples_updated,
        tup_deleted AS tuples_deleted,
        stats_reset AS statistics_reset
-FROM pg_stat_database;
+FROM pg_stat_database;  -- Mostrar el tamaño y estadísticas de todas las bases de datos:
+
+
+ ## Tablas: 
+ select  * from  pg_stat_all_tables;
+ select  * from  pg_stat_xact_all_tables;
+ select  * from  pg_stat_sys_tables;
+ select  * from  pg_stat_xact_sys_tables;
+ select  * from  pg_stat_xact_user_tables;
+ select  * from  pg_statio_all_tables;
+ select  * from  pg_statio_sys_tables;
+ select  * from  pg_statio_user_tables;
+
+select  schemaname || '.' || relname AS table_full_name,
+       pg_size_pretty(pg_total_relation_size(schemaname || '.' || relname)) AS size,
+       pg_size_pretty(pg_relation_size(schemaname || '.' || relname)) AS table_size,
+       pg_size_pretty(pg_total_relation_size(schemaname || '.' || relname) - pg_relation_size(schemaname || '.' || relname)) AS index_size,
+       pg_total_relation_size(schemaname || '.' || relname) - pg_relation_size(schemaname || '.' || relname) AS "index_overhead_bytes"
+FROM pg_stat_user_tables
+ORDER BY pg_total_relation_size(schemaname || '.' || relname) DESC; --- Obtener información sobre el tamaño y estado de las tablas:  
+
+
+## Index:
+ select  * from  pg_stat_all_indexes;
+ select  * from  pg_stat_sys_indexes;
+ select  * from  pg_statio_user_indexes;
+ select  * from  pg_statio_all_indexes;
+ select  * from  pg_statio_sys_indexes;
+
+select  relname, indexrelname, idx_scan, idx_tup_read
+  FROM pg_stat_user_indexes
+WHERE idx_scan > 0 AND idx_tup_read < 1000; -- Monitoreo de la fragmentación de índices: PostgreSQL almacena información sobre la fragmentación de índices en la vista pg_stat_user_indexes. Puedes usar esta vista para verificar el nivel de fragmentación de tus índices.
 
  
+## Sequences:
+select  * from  pg_statio_all_sequences;
+select  * from  pg_statio_sys_sequences;
+select  * from  pg_statio_user_sequences;
+  
+ ## Vacum:
+ select  * from   pg_stat_progress_vacuum
  
- pg_stat_database_conflicts
- pg_stat_user_functions
- pg_stat_xact_user_functions
- pg_stat_archiver
- pg_stat_bgwriter
- pg_stat_progress_vacuum
-pg_stat_monitor
-
-Proporciona estadísticas sobre las consultas ejecutadas en la base de datos,  el número de veces que una consulta se ha ejecutado y el tiempo total que ha pasado en la caché. como tiempos de ejecución y frecuencia de uso. Ayuda a identificar consultas lentas o ineficientes para optimizar el rendimiento.
-
-->   SELECT    total_exec_time, min_exec_time,max_exec_time ,calls FROM pg_stat_statements where query ilike '%select%' and not query ilike '%GRANT%' ORDER BY total_plan_time DESC, calls desc limit 10;  
-
-SELECT query, calls, total_time, rows, mean_time FROM pg_stat_statements ORDER BY total_time DESC;
+ ## Function:
+ select  * from   pg_stat_user_functions;
+ select  * from   pg_stat_xact_user_function;
+ 
+ ## Extras:
+ select  * from  pg_stat_archiver;
+ select  * from  pg_stat_bgwriter;
+ select  * from  pg_stat_monitor;
+ select  * from  pg_statistic;
+ select  * from  pg_statistic_ext;
+ select  * from  pg_stats;
+ select  * from  pg_prepared_statements;
+ select  * from  pg_stat_subscription;
+ select  * from  pg_stat_ssl;
 
 
 ```
 
 
-## Mostrar el tiempo de ejecucion de una consulta en el momento
-EXPLAIN select version();  <br>
-EXPLAIN ANALYZE  select version();
 
 
 
