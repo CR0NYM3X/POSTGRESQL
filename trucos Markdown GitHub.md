@@ -40,7 +40,7 @@ Copy code
 1. Primer elemento
 2. Segundo elemento
 
-### Enlaces: 
+## Enlaces: 
 [Google](https://www.google.com)
 
 ### Imágenes
