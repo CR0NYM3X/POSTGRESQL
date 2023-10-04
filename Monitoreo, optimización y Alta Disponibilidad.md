@@ -25,39 +25,16 @@ Monitorear una base de datos es una práctica importante en la administración d
 4 .- Validar maximo de conexiones y cuantas conexiones hay en ese momento y eliminar consultas bloqueadas <br>
 5 .- Verificar el tiempo que tiene encendido el servidor <br>
 6 .- realizar Reindexacion , vacum full  en caso de requerirse <br>
-7 .- Ver el tamaño de las base de datos y tablas y tratar de optimizar como la db y tb <br>
-8 .- Validar los tiempo de ejecucion de una query y compararlos con dias anteriores  <br>
-
-
-
-**`Optimización de consultas lentas:`**
-Caso: Un sistema de comercio electrónico tiene consultas que están tomando mucho tiempo en ejecutarse, lo que afecta el rendimiento del sitio web.
-Solución: Utiliza herramientas como EXPLAIN y EXPLAIN ANALYZE para analizar el plan de ejecución de las consultas lentas. Identifica cuellos de botella, utiliza índices adecuados, ajusta las consultas y, si es necesario, considera denormalizar la estructura de datos para mejorar el rendimiento.
-
-**`Recuperación después de fallos:`**
-Caso: La base de datos experimenta un fallo en el disco, lo que resulta en la corrupción de algunos archivos.
-Solución: Usa la herramienta pg_resetxlog para intentar recuperar la base de datos a un estado consistente. Si esto no funciona, restaura una copia de seguridad y aplica los registros de transacciones (WAL logs) para llevar la base de datos al estado más actualizado posible.
-
-**`Gestión de espacio en disco:`**
-Caso: El espacio en disco disponible para la base de datos se está agotando rápidamente.
-Solución: es una herramienta externa que ayuda a optimizar y reorganizar las tablas en una base de datos PostgreSQL sin bloquear la tabla para operaciones DML (Data Manipulation Language) durante un tiempo significativo. para evitar llenar el disco con archivos de registro innecesarios. ---> pg_repack [opciones] nombre_base_de_datos --table: Permite especificar una tabla específica para ser reorganizada.  --no-order: Realiza la reorganización sin tratar de ordenar las filas. --quiet: Ejecuta pg_repack en modo silencioso.
-
-**`Copias de seguridad y restauración:`**
-Caso: Se necesita realizar una copia de seguridad completa y restaurar la base de datos en caso de pérdida de datos.
-Solución: Emplea herramientas como pg_dump para realizar copias de seguridad y pg_restore para restaurar la base de datos. Configura una estrategia de copia de seguridad regular y verifica la capacidad de restaurar desde las copias de seguridad en un entorno de prueba.
-
-**`Monitoreo de rendimiento en tiempo real:`**
-Caso: Se requiere supervisar el rendimiento de la base de datos en tiempo real para detectar problemas rápidamente.
-Solución: Utiliza herramientas como pg_stat_statements para analizar el rendimiento de las consultas, y herramientas de monitoreo como pg_stat_monitor o soluciones de terceros como pgAdmin para obtener métricas en tiempo real sobre el rendimiento y la actividad de la base de datos.
-
-**`Resolución de bloqueos y conflictos:`**
-Caso: Los usuarios informan de bloqueos y conflictos al intentar acceder a ciertos registros simultáneamente.
-Solución: Utiliza las vistas pg_locks y pg_stat_activity para identificar los bloqueos actuales y las transacciones en conflicto. Luego, usa técnicas como aumentar el nivel de aislamiento de transacción o reescribir consultas para evitar bloqueos.
-
-
+7 .- Ver el tamaño de las base de datos, tablas y tratar de optimizar como la db y tb <br>
+8 .- Validar los tiempo de ejecucion de una consulta y compararlos con dias anteriores  <br>
 
 # Ejemplos de uso:
 
+<!--  ################################################################### MONITOREO #################################################################################### -->
+---
+$$ 
+MONITOREO 
+$$
 
 
 ## Consulta todo en una sola query:
@@ -74,81 +51,63 @@ ps aux | grep postgres
 ps aux | grep data -- este te sirve para saber que binarios esta utilizando 
 ```
 
-## Vacum [documentación Oficial](https://www.postgresql.org/docs/current/sql-vacuum.html)
+## Ver Máximo o Límite conexiones 
 
-Actualiza las estadísticas utilizadas por el planificador para determinar la forma más eficiente de ejecutar una consulta.
-  ```sh 
-  VACUUM ANALYZE;
- ```
-
-Realiza una limpieza básica, marcando las filas obsoletas para su eliminación y liberando espacio, pero no recupera espacio inmediatamente.
+- Límite de Conexiones por postgresql:
 ```sh
-VACUUM;
-  ```
-
-Recupera espacio inmediatamente eliminando las filas obsoletas y compactando la tabla. Este proceso bloquea la tabla durante su ejecución.
-  ```sh
-VACUUM FULL table_name;  -- individual
-VACUUM FULL -- en todas las tablas 
-  ```
-
-Actualiza las estadísticas de la tabla, lo que puede ayudar al planificador de consultas a tomar decisiones más informadas.
-  ```sh
-ANALYZE table_name; --- individual
-ANALYZE;
-  ```
-Congela todas las filas de la tabla, lo que es útil cuando se necesita garantizar que una tabla no cambie para realizar copias de seguridad.
-  ```sh
-VACUUM FREEZE table_name; -- individual
-VACUUM FREEZE;  -- completa
-  ```
-
-
-
-
-
-## Reindex [documentación oficial](https://www.postgresql.org/docs/current/sql-reindex.html)
-Se utiliza para reconstruir los índices de una tabla o base de datos. La principal razón para utilizar REINDEX es mantener o mejorar el rendimiento de las consultas en la base de datos y como por ejemplo: <br>
-
-**`Fragmentación de índices:`** Con el tiempo, los índices de una tabla pueden volverse fragmentados debido a las inserciones, actualizaciones y eliminaciones de registros. La fragmentación puede hacer que las consultas sean más lentas. REINDEX reconstruye los índices para eliminar la fragmentación y restaurar el rendimiento.
-
-**`Recuperación de índices dañados:`** Si un índice se daña debido a una falla del sistema, un cierre abrupto de la base de datos u otras circunstancias, REINDEX puede ayudar a restaurar la integridad de los índices.
-
-**`Mantenimiento preventivo:`** Realizar un REINDEX periódicamente como parte del mantenimiento de la base de datos puede ayudar a evitar problemas de rendimiento en el futuro. Esto es especialmente importante en bases de datos que experimentan un alto volumen de cambios en los datos.
-
-**`Optimización del rendimiento:`** En ocasiones, puede ser beneficioso realizar un REINDEX después de realizar cambios importantes en la estructura de la tabla o en los datos, como la eliminación masiva de registros o la reorganización de datos. Esto puede ayudar a optimizar el rendimiento de las consultas.
-
-**`Restauración de la consistencia:`** Si se detectan problemas de consistencia en los índices, como duplicados incorrectos, REINDEX puede ayudar a restablecer la consistencia
-
-
-
-**REINDEX de una tabla específica:**
-``` sh
-REINDEX TABLE table_name;
-```
-**REINDEX de toda la base de datos**
-``` sh
-REINDEX DATABASE database_name;
+show max_connections; 
+cat  /sysf/data/postgresql.conf | grep max_connections
 ```
 
+- Límite de Conexiones por Base de datos:
+```sh
+select datname,datconnlimit from pg_database; -- si es -1 es ilimitado, si tiene algún número se especificó un límite  
+```
 
-## Muestra el tiempo de ejecucion de una consulta en el momento
-EXPLAIN select version(); --  para analizar el plan de ejecución de una consulta
-EXPLAIN ANALYZE  select version();
+- Límite de Conexiones por Usuario:
+```sh
+select rolname,rolconnlimit from pg_authid ; -- si es -1 es ilimitado, si tiene algún número se especificó un límite  
+```
 
+## Ver la cantidad total de conexiones
 
-## 
-pg_repack -U $DB_USER -d $DB_NAME --> Esta herramienta se utiliza para reorganizar físicamente las tablas y sus índices, reduciendo la fragmentación y mejorando el rendimiento.
-ALTER TABLE tabla_nombre SET (pg_prewarm.compress=true);
+- Ver el total de conexiones  Activas y Inactivas nivel Base de datos:
+```sh
+  select count(*)  FROM pg_stat_activity; -- el total de conexiones Activas y Inactivas en todas las base de datos 
+  select count(*)  FROM pg_stat_activity WHERE pg_stat_activity.datname = 'MYDBATEST'; --- el total de conexiones realizadas que tiene una base de datos 
+  select count(*)  FROM pg_stat_activity WHERE pg_stat_activity.usename = 'myusertest'; --- el total de conexiones realizadas que tiene un usuario
+```
 
+- Saber las cantidades de conexiones **`activas`** en un postgresql version > 9 nivel Base de datos:
+```sh
+SELECT count(*) pid FROM pg_stat_activity WHERE  TRIM(state)!='idle';
+```
+- Saber las cantidades de conexiones **`activas`** en un postgresql version <9 nivel Base de datos:
+```sh
+SELECT  count(*)  FROM pg_stat_activity where  current_query  !=  '<IDLE>' ;
+```
+-  Saber las cantidades de conexiones **`Inactivas`** en un postgresql version > 9 nivel Base de datos:
+```sh
+SELECT count(*) pid FROM pg_stat_activity WHERE  TRIM(state) ='idle';
+```
 
-## Ver maximas conexiones que permite el postgresql
-show max_connections; -- cat  /sysx/data/postgresql.conf | grep max_connections
+- Ver el total de conexiones **`activas`** nivel S.O:
+```sh
+  ps -fea | grep -i postgresql -wc --- Este checa todas las conexiones de todas las bases de datos 
+  ps -fea | grep -i MYDBATEST -wc  --- este solo verifica las conexiones de la base de datos que se especificó
+  ps -fea | grep  "postgres: usertest" | grep -v "color"  --- este solo verifica las conexiones de usuario que se especificó
+```
 
+- Ver el total de conexiones **`Inactivas`** nivel S.O
+```sh
+ ps -fea | grep -i idle -wc
+```
 
-## Buscar procesos trabados 
+## Verificar conexiones que presentan bloqueos
 
-idle" se refiere a un estado en el que una conexión a la base de datos se encuentra inactiva. Esto significa que la conexión está establecida, pero no se está ejecutando ninguna consulta o transacción en ese momento. Las conexiones "idle" son comunes en entornos de bases de datos donde varios clientes se conectan y desconectan de la base de datos.
+Estatus: `"IDLE"` se refiere a un estado en el que una conexión a la base de datos se encuentra inactiva. Esto significa que la conexión está establecida, pero no se está ejecutando ninguna consulta o transacción en ese momento. Las conexiones "idle" son comunes en entornos de bases de datos donde varios clientes se conectan y desconectan de la base de datos.<br>
+
+Estatus: `"Active"` se refiere a el estado de una conexión a base de datos que se encuentra activa y que en ese preciso momento está realizando una consulta o movimiento.
 
 Es importante entender el concepto de conexiones "idle" en PostgreSQL porque pueden consumir recursos del sistema, como conexiones TCP/IP y memoria, incluso cuando no están realizando ninguna tarea activa. Por lo tanto, es fundamental administrar y controlar estas conexiones para evitar problemas de rendimiento y recursos agotados.
 
@@ -159,28 +118,38 @@ Puedes configurar el tiempo máximo que una conexión puede permanecer inactiva 
 
 `idle_in_transaction_session_timeout = 60000  # 60 segundos (valor en milisegundos)`
 
-psql -xc "SELECT query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle' ORDER BY query_start ASC;"
+2. Ver las conexiones **`activas`** y identificar cual esta generando bloques en base al tiempo que tiene ejecutandose, y cerrar la conexión con el PID:
+```sh
+ psql -xc  "SELECT query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle' ORDER BY query_start ASC;"
+```
 
-SELECT  count(*)  FROM pg_stat_activity where  current_query  !=  '<IDLE>' limit 5;
 
-SELECT count(*) pid FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle'; --> significa que la conexión está abierta pero no está realizando ninguna operación en ese momento.
+
+## Cerrar conexiones Activas o IDLE
+**Opción #1 Cerrar solo una conexiones, nivel S.O**<br>
+Cerrar Conexiones IDLE nivel S.O:
+   ```sh
+     Kill 123456 -- El número es el PID de la conexión 
+```
+**Opción #2 Cerrar solo una conexiones, nivel Base de datos**<br>
+```sh
+SELECT pg_terminate_backend(123456)  -- El número 123456 es el PID de la conexión a cerrar
+```
+
+**Opción #3 Cerrar todas las conexiones IDLE nivel S.O**<br>
+   ```sh
+     ps -ef | grep idle | awk '{print " kill " $2}' | bash 
+```
+**Opción #4 Cerrar todas las conexiones IDLE nivel Base de datos**<br>
+```sh
+SELECT pg_terminate_backend (pg_stat_activity.pid) FROM pg_stat_activity WHERE  pg_stat_activity.datname = 'MYDBATEST';
+```
+
+
+
 
 ## Buscar bloqueos 
 SELECT   l.mode AS bloqueo_modo,  l.granted AS concedido,  l.pid AS proceso_id,  a.usename AS usuario,  l.relation::regclass AS tabla,  l.page AS pagina,  l.tuple AS tupla FROM  pg_locks l JOIN   pg_stat_activity a ON l.pid = a.pid WHERE   NOT l.granted;
-
-## Cerrar procesos Trabados o IDLE
-
---- aqui  podemos ver los clientes  que estan conectados a db SAJ  desde linux
-: ps -fea | grep MYDBA  
-
---cerrar los procesos con linux
- ps -ef | grep idle | awk '{print " kill " $2}' | bash 
-
---- aqui   podemos ver los clientes  que estan conectados a db SAJ  desde la base de datos 
-select pid,client_addr, state  FROM pg_stat_activity WHERE pg_stat_activity.datname = 'merca360';
-
---cerrar los procesos con DBa
-SELECT pg_terminate_backend (pg_stat_activity.pid) FROM pg_stat_activity WHERE  pg_stat_activity.datname = 'SAJ'; 
 
 
 
@@ -274,6 +243,23 @@ SELECT query, calls, total_time, rows, mean_time FROM pg_stat_statements ORDER B
 ```
 
 
+## Mostrar el tiempo de ejecucion de una consulta en el momento
+EXPLAIN select version();  <br>
+EXPLAIN ANALYZE  select version();
+
+
+
+
+
+
+<!--  ################################################################### OPTIMIZACIÓN  #################################################################################### -->
+
+---
+
+ 
+$$ 
+OPTIMIZACIÓN 
+$$
 
 ## Parametros del postgresql.conf para una buena optimización 
 cat /sysx/data/postgresql.conf | grep -Ei "shared_buffers|effective_cache_size|work_mem|maintenance_work_mem|temp_buffers|max_connections" <br>
@@ -287,3 +273,70 @@ cat /sysx/data/postgresql.conf | grep -Ei "shared_buffers|effective_cache_size|w
 `temp_buffers:` Define cuánta memoria se usa para operaciones temporales.<br>
 
 `max_connections:` Limita el número máximo de conexiones simultáneas a la base de datos, lo que puede afectar la cantidad de memoria utilizada por las conexiones en caché.
+
+
+
+
+## Reindex [documentación oficial](https://www.postgresql.org/docs/current/sql-reindex.html)
+Se utiliza para reconstruir los índices de una tabla o base de datos. La principal razón para utilizar REINDEX es mantener o mejorar el rendimiento de las consultas en la base de datos y una des las ventajas son: <br>
+
+**`Fragmentación de índices:`** Con el tiempo, los índices de una tabla pueden volverse fragmentados debido a las inserciones, actualizaciones y eliminaciones de registros. La fragmentación puede hacer que las consultas sean más lentas. REINDEX reconstruye los índices para eliminar la fragmentación y restaurar el rendimiento.
+
+**`Recuperación de índices dañados:`** Si un índice se daña debido a una falla del sistema, un cierre abrupto de la base de datos u otras circunstancias, REINDEX puede ayudar a restaurar la integridad de los índices.
+
+**`Mantenimiento preventivo:`** Realizar un REINDEX periódicamente como parte del mantenimiento de la base de datos puede ayudar a evitar problemas de rendimiento en el futuro. Esto es especialmente importante en bases de datos que experimentan un alto volumen de cambios en los datos.
+
+**`Optimización del rendimiento:`** En ocasiones, puede ser beneficioso realizar un REINDEX después de realizar cambios importantes en la estructura de la tabla o en los datos, como la eliminación masiva de registros o la reorganización de datos. Esto puede ayudar a optimizar el rendimiento de las consultas.
+
+**`Restauración de la consistencia:`** Si se detectan problemas de consistencia en los índices, como duplicados incorrectos, REINDEX puede ayudar a restablecer la consistencia
+
+
+
+**REINDEX de una tabla específica:**
+``` sh
+REINDEX TABLE table_name;
+```
+
+**REINDEX de toda la base de datos**
+``` sh
+REINDEX DATABASE database_name;
+```
+
+
+## Vacum [documentación Oficial](https://www.postgresql.org/docs/current/sql-vacuum.html)
+
+Actualiza las estadísticas utilizadas por el planificador para determinar la forma más eficiente de ejecutar una consulta.
+  ```sh 
+  VACUUM ANALYZE;
+ ```
+
+Realiza una limpieza básica, marcando las filas obsoletas para su eliminación y liberando espacio, pero no recupera espacio inmediatamente.
+```sh
+VACUUM;
+  ```
+
+Recupera espacio inmediatamente eliminando las filas obsoletas y compactando la tabla. Este proceso bloquea la tabla durante su ejecución.
+  ```sh
+VACUUM FULL table_name;  -- individual
+VACUUM FULL -- en todas las tablas 
+  ```
+
+Actualiza las estadísticas de la tabla, lo que puede ayudar al planificador de consultas a tomar decisiones más informadas.
+  ```sh
+ANALYZE table_name; --- individual
+ANALYZE;
+  ```
+Congela todas las filas de la tabla, lo que es útil cuando se necesita garantizar que una tabla no cambie para realizar copias de seguridad.
+  ```sh
+VACUUM FREEZE table_name; -- individual
+VACUUM FREEZE;  -- completa
+  ```
+
+
+## Tools de optimización:
+
+[Documentación Oficial PG_REPACK](https://github.com/reorg/pg_repack) <br>
+[Documentación Extra](https://pgxn.org/dist/pg_repack/doc/pg_repack.html) <br>
+pg_repack -U $DB_USER -d $DB_NAME --> Esta herramienta se utiliza para reorganizar físicamente las tablas y sus índices, reduciendo la fragmentación y mejorando el rendimiento.
+
+
