@@ -17,7 +17,7 @@ ALTER TABLE my_table SET TABLESPACE my_tablespace;
 select count(*) from my_tabla;
 
 #En caso de que la tabla tenga millones de registros puedes usar la siguiente consulta: 
-select reltuples::bigint  from pg_class where relname = 'my_tabla' ;
+select relname as tabla,reltuples::bigint as cnt_filas   from pg_class where relname in('my_tabla#1','my_tabla#2') ;
 ```
 ## Buscar tablas :
  ```sh
