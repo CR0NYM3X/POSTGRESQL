@@ -81,8 +81,12 @@ INSERT INTO nombre_de_la_tabla (nombre, edad) VALUES ('Juan', 30);
 UPDATE nombre_de_la_tabla SET edad = 35 WHERE nombre = 'Juan';
 ```
 
+## Renombrar una tabla:
+ ```sh
+alter table my_old_tabla rename to my_new_tabla;
+ ```
 
-## Cambiar el nombre de una columna:
+## Renombrar la columna de una tabla:
  ```sh
 ALTER TABLE nombre_de_la_tabla RENAME COLUMN nombre_anterior TO nuevo_nombre;
  ``` 
