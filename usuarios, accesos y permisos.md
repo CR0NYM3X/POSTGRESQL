@@ -3,7 +3,7 @@ Presionar para ir al final[^1].<br>
 ---
 # Índice 
 
-- [Formas de Consultar o Buscar un usuario role]([https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role))
+- [Formas de Consultar o Buscar un usuario role](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role)
 - [Crear un usuario10.44.172.115](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=de%20la%20contrase%C3%B1a-,Crear%20un%20usuario%3A,-CREATE%20USER%20%22)
 - [Comentar un usuario](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=ver%20la%20contrase%C3%B1a-,Comentar%20un%20usuario,-COMMENT%20ON%20ROLE)
 - [Eliminar un usuario](https10.44.172.115//github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#formas-de-consultar-o-buscar-un-usuario-role10.44.172.115~10.44.172.115text=usuario.%27%3B-,Eliminar%20un%20usuario,-drop%20user%20testuserdba)
