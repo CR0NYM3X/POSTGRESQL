@@ -94,8 +94,33 @@ ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 
 ### Agregar owner a la base de datos y los objetos  
 ```sh
-ALTER TABLE public.mitablanew OWNER TO testuserdba; 
-ALTER DATABASE mydba  OWNER TO testuserdba;
+#Esta consulta se utiliza para cambiar el propietario de todos los objetos dentro de una base de datos específica al nuevo propietario:
+REASSIGN OWNED BY "my_user_old_owner" to "my_user_new_owner";  
+
+#Cambiar el Propietario de una Base de Datos:
+alter DATABASE nombre_de_basedatos OWNER TO nuevo_propietario;
+ 
+#Cambiar el Propietario de una Tabla:
+ALTER TABLE nombre_de_tabla OWNER TO nuevo_propietario;
+ 
+#Cambiar el Propietario de una Función:
+ALTER FUNCTION nombre_de_funcion(argumentos) OWNER TO nuevo_propietario;
+
+#Cambiar el Propietario de un Trigger:
+ALTER TABLE nombre_de_tabla OWNER TO nuevo_propietario;
+
+# Cambiar el Propietario de un Tipo (Type):
+ALTER TYPE nombre_de_tipo OWNER TO nuevo_propietario;
+
+#. Cambiar el Propietario de una Vista:
+ALTER VIEW nombre_de_vista OWNER TO nuevo_propietario;
+
+#Cambiar el Propietario de una Secuencia (Sequence):
+ALTER SEQUENCE nombre_de_secuencia OWNED BY nuevo_propietario;
+
+#Cambiar el Propietario de un Esquema (Schema):
+ALTER SCHEMA nombre_de_esquema OWNER TO nuevo_propietario;
+
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
@@ -118,8 +143,6 @@ where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, priv
 ALTER user  "sysutileria" WITH SUPERUSER; 
 ALTER USER "sysutileria" WITH NOSUPERUSER;
 
-REASSIGN OWNED BY "testuserdba" to postgres; -- Cambiar de owner
-REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";  -- quita el owner de un usuario en la base de datos mydbatest
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
@@ -168,6 +191,9 @@ trigger:
 ### Revokar o eliminar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:  
 
 ```sh
+Remove Owner Database
+REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";
+
 DATABASE:
   REVOKE ALL PRIVILEGES ON DATABASE mytestdba FROM "92096883";
 
