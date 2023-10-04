@@ -4,19 +4,19 @@ trucos Markdown GitHub
 
 ---
 
-- [Sección 1](#sección-1)
+- [Sección 1](#jose-pedro)
   - [Subsección 1.1](#subsección-11)
   - [Subsección 1.2](#subsección-12)
 - [Sección 2](#sección-2)
 
 
-# Sección 1
+# jose pedro
 Contenido de la sección 1...
 
 ## Subsección 1.1
 Contenido de la subsección 1.1...
 
-## Subsección 1.2
+### Subsección 1.2
 Contenido de la subsección 1.2...
 
 # Sección 2
