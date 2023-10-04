@@ -48,7 +48,7 @@ CRUD = Create, Read, Update, Delete
  select * from pg_authid where rolname ilike '%testuserdba%';  -- Puedes ver el limite de conexiones por usuario  en el campo: rolconnlimit
  select * from pg_shadow where usename ilike '%testuserdba%';  -- Aqui puedes ver el hash de la contraseña  
  ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Crear un usuario:
 ```sh
@@ -57,20 +57,20 @@ CREATE role "testuserdba";  -- es lo mismo role que user
 CREATE USER "testuserdba" login VALID UNTIL  '2023-11-15'; --- fecha de expiracion  
 CREATE USER testuserdba WITH PASSWORD '123456789'; -- no se recomienda colocar el password en con el create, por que en los log o el historial  puedes ver la contraseña
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Comentar un usuario 
 ```sh
   COMMENT ON ROLE testuserdba IS 'Esta es la descripción del usuario.';
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
  
 ### Eliminar un usuario 
 ```sh
  drop user testuserdba;
  drop role testuserdba;
  ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Cambiar passowd
 ```sh
@@ -78,26 +78,26 @@ CREATE USER testuserdba WITH PASSWORD '123456789'; -- no se recomienda colocar e
 ALTER USER "testuserdba" PASSWORD '12345'
 ALTER USER "testuserdba" PASSWORD 'md5a3cc0871123278d59269d85dbbd772893';  
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Cambiar la fecha de expiracion de acceso:
 ```sh
 ALTER USER "testuserdba" WITH VALID UNTIL '2023-11-11';
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Limitar el número de conexion por usuario:
 ```sh
 ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Agregar owner a los objetos  
 ```sh
 ALTER TABLE public.mitablanew OWNER TO testuserdba; 
 ALTER DATABASE mydba  OWNER TO testuserdba;
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Ver la cantidad y tipo de  privilegios de un usuario:
 
@@ -111,7 +111,7 @@ select grantee,privilege_type,count(*)
 where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, privilege_type;
 
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Agregar y Quitar super Usuario a un usuario/role
 ```sh
@@ -121,7 +121,7 @@ ALTER USER "sysutileria" WITH NOSUPERUSER;
 REASSIGN OWNED BY "testuserdba" to postgres; -- Cambiar de owner
 REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";  -- quita el owner de un usuario en la base de datos mydbatest
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Asignar Permisos lógicos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:
 *El privilegio **`USAGE`** solo sirve para Secuencias, Esquemas  y Funciones,  el privilegio USAGE no permite modificar, solo para consultar o ejecutar*
@@ -163,7 +163,7 @@ View:
 trigger:
   GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Revokar o eliminar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:  
 
@@ -201,7 +201,7 @@ trigger:
   REVOKE ALL PRIVILEGES ON TRIGGER nombre_del_disparador FROM nombre_del_rol;
 
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Asignar acceso por IP a la base de datos, nivel sistema operativo:
 `pg_hba.conf` Este archivo se utiliza para definir las políticas de autenticación y controlar quién puede conectarse a la base de datos, desde dónde pueden conectarse y qué métodos de autenticación deben utilizarse para la conexión. <br>
@@ -209,7 +209,7 @@ trigger:
 | TYPE | DATABASE |USER | ADDRESS | METHOD | 
 |--------------|--------------|--------------|--------------|--------------|
 | host    | mydbatest    | myusertest    | 192.168.1.0/32    | md5   |
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Ver si hay un error en el archivo pg_hba.conf
 ```sh
@@ -218,13 +218,13 @@ select * from pg_hba_file_rules  where address  in('10.0.30.5');
 select * from pg_hba_file_rules  where user_name in('{testuserdba}');
 select * from pg_hba_file_rules  where  database   in('{testuserdba}');
 ```
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
----
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+
 
 
 
 ## Ver todos los privilegios que se tienen en todas las base de datos:
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 
 ### Asignar permisos de lectura en tablas versiones v8.1 
@@ -233,16 +233,16 @@ psql **`mydba`** -c "SELECT 'grant select on table ' || table_name ||   ' to ' |
 
 - `Opción #2`<br>
 psql   **`mydba`**   -c "\dt" | grep -v '-' | grep -v 'rela' | grep -v 'Name' | awk '{print " SELECT ON TABLE "$3 " FROM **`myusertest`**;" }' > /tmp/usuarios.sql && psql snisef < /tmp/usuarios.sql
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Asignar permisos de execución en funciones  psql  v8.1 
  psql **`mydba`** -c "SELECT  'GRANT EXECUTE ON FUNCTION '|| proname || '(' || pg_catalog.oidvectortypes(proargtypes) || ')' ||  ' to ' || CHR(34) || **`'myusertest'`** ||  CHR(34) || ';'   as qweads FROM pg_proc where proname in(SELECT routine_name FROM information_schema.routines WHERE routine_type = 'FUNCTION' AND specific_schema = 'public')  "  | grep -v '-' | grep -v 'rela' | grep -v 'Name' | grep -v 'rows)' | grep -v 'table_name' | grep -v 'qweads'  > /tmp/funciones.sql %%  psql **`mydbatest`** < /tmp/funciones.sql
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ###  Asignar todos los permisos en las tablas en todas la bases de datos, versiones  v9.0
 select	'\\c ' || datname || ';' || CHR(10) || 'grant select on all tables in schema public to **`"myusertest"`**;'
 || CHR(10) || 'GRANT CONNECT ON DATABASE "'|| datname ||'" TO  **`"myusertest"`**;'  as qweads from pg_database where not datname ilike 'template%' and not datname ilike 'postgres';
-<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+<br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 
 
