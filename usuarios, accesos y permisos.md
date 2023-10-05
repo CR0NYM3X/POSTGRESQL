@@ -31,6 +31,15 @@
 	- [Configuración del servidor extranjero](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios,%20accesos%20y%20permisos.md#configuraci%C3%B3n-del-servidor-extranjero)
 	
 	- [Creación de una tabla externa](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios,%20accesos%20y%20permisos.md#creaci%C3%B3n-de-una-tabla-externa)
+
+- [Grupos lógicos en postgresql](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#grupos--l%C3%B3gicos--en-postgresql)
+
+	- [Ver los grupos existentes](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#ver-los-grupos-existentes)
+	- [Crear un grupo](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#crear-un-grupo)
+	- [Agregar un usuario a un grupo](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#agregar--un-usuario-a-un-grupo)
+	- [Eliminar un grupo](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#eliminar-un-grupo)
+	- [Ver los miembros de un grupo específico](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#ver-los-miembros-de-un-grupo-espec%C3%ADfico)
+	- [Ejemplos de grupos](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#ejemplos-de-grupos)
 ---
 
 # Objetivo:
@@ -347,3 +356,63 @@ OPTIONS (table_name 'tabla_remota');
 Aquí, tabla_externa es una tabla en la base de datos local que se conecta a tabla_remota en el servidor remoto.
 
 Este es un ejemplo básico de cómo configurar pg_user_mapping para permitir que un usuario local acceda a una base de datos remota a través de FDW en PostgreSQL. Ten en cuenta que la seguridad es importante, y en un entorno de producción, deberías asegurarte de que las credenciales de usuario estén protegidas adecuadamente.
+
+---
+
+
+# Grupos  lógicos  en postgresql: 
+son conjuntos lógicos de roles de usuarios que se utilizan para simplificar la administración de permisos y la gestión de roles en una base de datos. Los grupos permiten asignar permisos a un conjunto de usuarios de una manera más eficiente, en lugar de otorgar permisos individuales a cada usuario.
+
+
+### Ver los grupos existentes:
+```sh
+SELECT * FROM pg_group;
+```
+
+### Crear un grupo
+```sh
+CREATE GROUP mi_grupo;
+```
+    
+### Agregar  un usuario a un grupo
+```sh
+  GRANT mi_grupo TO mi_usuario;
+```
+  
+### Eliminar un grupo 
+```sh
+  DROP GROUP mi_grupo;
+``` 
+ 
+### Ver los miembros de un grupo específico:
+```sh
+SELECT roleid::regrole AS group_name, member::regrole AS member_name FROM pg_auth_members WHERE roleid = 'mi_grupo';
+```
+
+
+### Ejemplos de grupos 
+```sh
+#Asignación de permisos: Imagina que tienes una base de datos con múltiples tablas y deseas dar a un conjunto de usuarios los mismos permisos en varias tablas. En lugar de otorgar permisos a cada usuario individualmente, puedes crear un grupo y asignar permisos al grupo. Luego, simplemente agregas a los usuarios al grupo y heredarán los permisos del grupo.
+
+-- Crear un grupo y otorgar permisos
+CREATE GROUP grupo_ventas;
+GRANT SELECT, INSERT, UPDATE ON tabla_ventas TO grupo_ventas;
+
+-- Agregar usuarios al grupo
+ALTER ROLE usuario1 IN GROUP grupo_ventas;
+ALTER ROLE usuario2 IN GROUP grupo_ventas;
+
+
+#Control de acceso: Los grupos también se pueden utilizar para controlar el acceso a ciertos recursos de la base de datos. Por ejemplo, puedes restringir el acceso a una aplicación específica a través de un grupo y luego agregar o eliminar usuarios de ese grupo según sea necesario.
+
+
+-- Crear un grupo para la aplicación de informes
+CREATE GROUP app_informes;
+
+-- Otorgar permisos de acceso a la aplicación al grupo
+GRANT CONNECT ON DATABASE mydb TO app_informes;
+
+-- Agregar o quitar usuarios de la aplicación del grupo según sea necesario
+ALTER ROLE usuario1 IN GROUP app_informes;
+
+``` 
