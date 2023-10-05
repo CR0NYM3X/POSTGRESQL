@@ -393,8 +393,8 @@ SELECT roleid::regrole AS group_name, member::regrole AS member_name FROM pg_aut
 ### Ejemplos de grupos 
 ```sh
 #Asignación de permisos: Imagina que tienes una base de datos con múltiples tablas y deseas dar a un conjunto de usuarios
-los mismos permisos en varias tablas. En lugar de otorgar permisos a cada usuario individualmente, puedes crear un grupo
- y asignar permisos al grupo. Luego, simplemente agregas a los usuarios al grupo y heredarán los permisos del grupo.
+#los mismos permisos en varias tablas. En lugar de otorgar permisos a cada usuario individualmente, puedes crear un grupo
+# y asignar permisos al grupo. Luego, simplemente agregas a los usuarios al grupo y heredarán los permisos del grupo.
 
 -- Crear un grupo y otorgar permisos
 CREATE GROUP grupo_ventas;
@@ -406,8 +406,8 @@ ALTER ROLE usuario2 IN GROUP grupo_ventas;
 
 
 #Control de acceso: Los grupos también se pueden utilizar para controlar el acceso a ciertos recursos de la base de datos.
- Por ejemplo, puedes restringir el acceso a una aplicación específica a través de un grupo y luego agregar o eliminar
-usuarios de ese grupo según sea necesario.
+# Por ejemplo, puedes restringir el acceso a una aplicación específica a través de un grupo y luego agregar o eliminar
+#usuarios de ese grupo según sea necesario.
 
 
 -- Crear un grupo para la aplicación de informes
