@@ -122,7 +122,10 @@ Puedes configurar el tiempo máximo que una conexión puede permanecer inactiva 
 ```sh
  psql -xc  "select  query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle' ORDER BY query_start ASC;"
 ```
-
+3. Ver las conexiones que tengan más de 5 minutos en postgresql 8
+```sh
+ SELECT procpid ,  usename, pg_stat_activity.query_start, now() - pg_stat_activity.query_start AS query_time, current_query FROM pg_stat_activity WHERE (now() - pg_stat_activity.query_start) > interval '5 minutes'
+```
 
 
 ## Cerrar conexiones Activas o IDLE
