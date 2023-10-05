@@ -32,14 +32,14 @@
 	
 	- [Creación de una tabla externa](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios,%20accesos%20y%20permisos.md#creaci%C3%B3n-de-una-tabla-externa)
 
-- [Grupos lógicos en postgresql](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#grupos--l%C3%B3gicos--en-postgresql)
+- [Grupos lógicos en postgresql](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#grupos--l%C3%B3gicos--en-postgresql)
 
-	- [Ver los grupos existentes](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#ver-los-grupos-existentes)
-	- [Crear un grupo](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#crear-un-grupo)
-	- [Agregar un usuario a un grupo](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#agregar--un-usuario-a-un-grupo)
-	- [Eliminar un grupo](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#eliminar-un-grupo)
-	- [Ver los miembros de un grupo específico](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#ver-los-miembros-de-un-grupo-espec%C3%ADfico)
-	- [Ejemplos de grupos](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/usuarios%2C%20accesos%20y%20permisos.md#ejemplos-de-grupos)
+	- [Ver los grupos existentes](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ver-los-grupos-existentes)
+	- [Crear un grupo](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#crear-un-grupo)
+	- [Agregar un usuario a un grupo](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#agregar--un-usuario-a-un-grupo)
+	- [Eliminar un grupo](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#eliminar-un-grupo)
+	- [Ver los miembros de un grupo específico](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ver-los-miembros-de-un-grupo-espec%C3%ADfico)
+	- [Ejemplos de grupos](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ejemplos-de-grupos)
 ---
 
 # Objetivo:
