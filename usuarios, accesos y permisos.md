@@ -303,60 +303,6 @@ select	'\\c ' || datname || ';' || CHR(10) || 'grant select on all tables in sch
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 
-
-
-
-
-
---- 
-
-# Mapeo de usuario para permitir que un usuario local acceda a una base de datos remota a través de Foreign Data Wrapper (FDW).
-Supongamos que tenemos una base de datos local llamada "mydb" y queremos configurar una conexión FDW para acceder a una base de datos remota en un servidor diferente. A continuación, se muestra cómo podríamos configurar pg_user_mapping para este escenario:
-
-
-## Creación de la tabla de mapeo de usuario:
-Primero, creamos una entrada en la tabla pg_user_mapping. Supongamos que tenemos un usuario local llamado "usuario_local" y queremos mapearlo a un usuario remoto "usuario_remoto" en el servidor remoto con la dirección IP "192.168.1.100". Aquí está el SQL para crear la entrada de mapeo:
-
-```sh
-INSERT INTO pg_user_mapping (usename, srvname, umoptions)
-VALUES ('usuario_local', 'servidor_remoto', '{"user":"usuario_remoto", "password":"contrasena_remota"}');
-```
-
-- `usename:` Es el nombre de usuario local en la base de datos actual.
-- `srvname:` Es el nombre del servidor remoto que ya debe estar configurado en PostgreSQL.
-- `umoptions:` Aquí especificamos las opciones de mapeo, incluyendo el nombre de usuario remoto y su contraseña para la autenticación en el servidor remoto.
-
-
-## Hacer que no pida password al autenticarse con FDW
-UPDATE pg_user_mapping SET umoptions='{user=my_user , password_required=false}' where umuser=123456
-
-
-## Configuración del servidor extranjero:
-
-Antes de configurar pg_user_mapping, debes asegurarte de que el servidor extranjero esté configurado en PostgreSQL. Puedes hacerlo utilizando SQL similar al siguiente:
-
-```sh
-CREATE SERVER servidor_remoto
-FOREIGN DATA WRAPPER postgres_fdw
-OPTIONS (host '192.168.1.100', dbname 'basedatos_remota', port '5432');
-```
-Esto define el servidor remoto y especifica su dirección IP, el nombre de la base de datos remota y el puerto.
-
-## Creación de una tabla externa:
-Una vez que hayas configurado el mapeo de usuario y el servidor remoto, puedes crear una tabla externa en la base de datos local que se relacione con una tabla en la base de datos remota utilizando el Foreign Data Wrapper. Esto permitirá acceder a datos remotos como si estuvieran en la base de datos local.
-```sh
-CREATE FOREIGN TABLE tabla_externa (
-    id integer,
-    nombre character varying
-)
-SERVER servidor_remoto
-OPTIONS (table_name 'tabla_remota');
-```
-
-Aquí, tabla_externa es una tabla en la base de datos local que se conecta a tabla_remota en el servidor remoto.
-
-Este es un ejemplo básico de cómo configurar pg_user_mapping para permitir que un usuario local acceda a una base de datos remota a través de FDW en PostgreSQL. Ten en cuenta que la seguridad es importante, y en un entorno de producción, deberías asegurarte de que las credenciales de usuario estén protegidas adecuadamente.
-
 ---
 
 
@@ -420,3 +366,84 @@ GRANT CONNECT ON DATABASE mydb TO app_informes;
 ALTER ROLE usuario1 IN GROUP app_informes;
 
 ``` 
+
+
+
+
+--- 
+
+# Mapeo de usuario para permitir que un usuario local acceda a una base de datos remota a través de Foreign Data Wrapper (FDW).
+Supongamos que tenemos una base de datos local llamada "mydb" y queremos configurar una conexión FDW para acceder a una base de datos remota en un servidor diferente. A continuación, se muestra cómo podríamos configurar pg_user_mapping para este escenario:
+
+
+# consultar informacion de los FDW
+
+``` sh
+#Tambien sirve para ver los server FDW
+ \des
+ 
+# Verificar los usuarios user fdw 
+select * from pg_user_mapping;
+
+#Validar si esta instalada la extension postgres_fdw y si no hay que crearla 
+ select * from pg_available_extensions where name ilike '%fdw%'; 
+ 
+#Ver si se creo la extension 
+ select * from pg_extension;
+ 
+# saber las tablas tienen FDW
+ SELECT * FROM information_schema.tables WHERE table_schema = 'public'  AND table_type ilike '%FOREIGN%'; 
+ 
+#saber los nombres de los servidores
+ SELECT * FROM information_schema.foreign_servers;
+ 
+#Saber las DBA_remota a la que se conecta el servidor 
+SELECT srvname, unnest(srvoptions) AS option FROM pg_foreign_server:
+
+
+```
+
+
+
+## Creación de la tabla de mapeo de usuario:
+Primero, creamos una entrada en la tabla pg_user_mapping. Supongamos que tenemos un usuario local llamado "usuario_local" y queremos mapearlo a un usuario remoto "usuario_remoto" en el servidor remoto con la dirección IP "192.168.1.100". Aquí está el SQL para crear la entrada de mapeo:
+
+```sh
+INSERT INTO pg_user_mapping (usename, srvname, umoptions)
+VALUES ('usuario_local', 'servidor_remoto', '{"user":"usuario_remoto", "password":"contrasena_remota"}');
+```
+
+- `usename:` Es el nombre de usuario local en la base de datos actual.
+- `srvname:` Es el nombre del servidor remoto que ya debe estar configurado en PostgreSQL.
+- `umoptions:` Aquí especificamos las opciones de mapeo, incluyendo el nombre de usuario remoto y su contraseña para la autenticación en el servidor remoto.
+
+
+## Hacer que no pida password al autenticarse con FDW
+UPDATE pg_user_mapping SET umoptions='{user=my_user , password_required=false}' where umuser=123456
+
+
+## Configuración del servidor extranjero:
+
+Antes de configurar pg_user_mapping, debes asegurarte de que el servidor extranjero esté configurado en PostgreSQL. Puedes hacerlo utilizando SQL similar al siguiente:
+
+```sh
+CREATE SERVER servidor_remoto
+FOREIGN DATA WRAPPER postgres_fdw
+OPTIONS (host '192.168.1.100', dbname 'basedatos_remota', port '5432');
+```
+Esto define el servidor remoto y especifica su dirección IP, el nombre de la base de datos remota y el puerto.
+
+## Creación de una tabla externa:
+Una vez que hayas configurado el mapeo de usuario y el servidor remoto, puedes crear una tabla externa en la base de datos local que se relacione con una tabla en la base de datos remota utilizando el Foreign Data Wrapper. Esto permitirá acceder a datos remotos como si estuvieran en la base de datos local.
+```sh
+CREATE FOREIGN TABLE tabla_externa (
+    id integer,
+    nombre character varying
+)
+SERVER servidor_remoto
+OPTIONS (table_name 'tabla_remota');
+```
+
+Aquí, tabla_externa es una tabla en la base de datos local que se conecta a tabla_remota en el servidor remoto.
+
+Este es un ejemplo básico de cómo configurar pg_user_mapping para permitir que un usuario local acceda a una base de datos remota a través de FDW en PostgreSQL. Ten en cuenta que la seguridad es importante, y en un entorno de producción, deberías asegurarte de que las credenciales de usuario estén protegidas adecuadamente.
