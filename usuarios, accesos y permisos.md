@@ -22,6 +22,14 @@
 - [Asignar permisos de execución en funciones psql v8.1](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-permisos-de-execuci%C3%B3n-en-funciones--psql--v81)
 - [Asignar todos los permisos en las tablas en todas la bases de datos, versiones v9.0](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-todos-los-permisos-en-las-tablas-en-todas-la-bases-de-datos-versiones--v90)
 
+
+- [Mapeo de usuario atraves de FDW](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios,%20accesos%20y%20permisos.md#mapeo-de-usuario-para-permitir-que-un-usuario-local-acceda-a-una-base-de-datos-remota-a-trav%C3%A9s-de-foreign-data-wrapper-fdw)
+	- [Crear la tabla de mapeo de usuario](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios,%20accesos%20y%20permisos.md#creaci%C3%B3n-de-la-tabla-de-mapeo-de-usuario)
+	- [Hacer que no pida password al autenticarse con FDW](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios,%20accesos%20y%20permisos.md#hacer-que-no-pida-password-al-autenticarse-con-fdw)
+	
+	- [Configuración del servidor extranjero](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios,%20accesos%20y%20permisos.md#configuraci%C3%B3n-del-servidor-extranjero)
+	
+	- [Creación de una tabla externa](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios,%20accesos%20y%20permisos.md#creaci%C3%B3n-de-una-tabla-externa)
 ---
 
 # Objetivo:
