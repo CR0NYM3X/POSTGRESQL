@@ -512,6 +512,15 @@ Ahora, podemos consultar la tabla externa como si estuviera en ServidorA:
 SELECT * FROM empleados_remote;
 ```
 
+### Info extra de fdw 
+```sh
+ GRANT USAGE ON FOREIGN SERVER foreigndb_fdw TO localuser;
+ IMPORT FOREIGN SCHEMA public LIMIT TO (account_metrics) FROM SERVER foreigndb_fdw INTO public;
+ 
+ 
+ DROP OWNED BY usuario_a;
+ DROP EXTENSION IF EXISTS postgres_fdw CASCADE;
+```
 
 ### BIBLIOGRAFIA:
 [FDW English](https://towardsdatascience.com/how-to-set-up-a-foreign-data-wrapper-in-postgresql-ebec152827f3)<br>
