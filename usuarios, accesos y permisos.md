@@ -385,10 +385,10 @@ ALTER ROLE usuario1 IN GROUP app_informes;
 # Verificar los usuarios user fdw 
 select * from pg_user_mapping;
 
-#Validar si esta instalada la extension postgres_fdw y si no hay que crearla 
+# Validar si esta instalada en los binarios y se puede usar la extension postgres_fdw
  select * from pg_available_extensions where name ilike '%fdw%'; 
  
-#Ver si se creo la extension 
+#Ver si se creo la extension
  select * from pg_extension;
  
 # saber las tablas tienen FDW
