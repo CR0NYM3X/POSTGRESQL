@@ -393,13 +393,14 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
  select * from pg_extension;
  
 # saber las tablas tienen FDW
- SELECT * FROM information_schema.tables WHERE table_schema = 'public'  AND table_type ilike '%FOREIGN%'; 
+ select * from information_schema.foreign_tables;
+ select * FROM information_schema.tables WHERE table_schema = 'public'  AND table_type ilike '%FOREIGN%'; 
  
 #saber los nombres de los servidores
- SELECT * FROM information_schema.foreign_servers;
+ select * FROM information_schema.foreign_servers;
  
 #Saber las DBA_remota a la que se conecta el servidor 
-SELECT srvname, unnest(srvoptions) AS option FROM pg_foreign_server:
+ select srvname, unnest(srvoptions) AS option FROM pg_foreign_server:
 
 
 ```
@@ -514,14 +515,26 @@ SELECT * FROM empleados_remote;
 
 ### Info extra de fdw 
 ```sh
+ CREATE SCHEMA Person;
+
  GRANT USAGE ON FOREIGN SERVER foreigndb_fdw TO localuser;
  IMPORT FOREIGN SCHEMA public LIMIT TO (account_metrics) FROM SERVER foreigndb_fdw INTO public;
+ IMPORT FOREIGN SCHEMA Person  FROM SERVER miserver  INTO Person;
  
  
  DROP OWNED BY usuario_a;
  DROP EXTENSION IF EXISTS postgres_fdw CASCADE;
+ DROP SERVER servidor_remoto CASCADE;
+ DROP USER MAPPING FOR usuario_local SERVER servidor_remoto;
+
+ REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM fdwuser;
+
+\dx
+
+
 ```
 
 ### BIBLIOGRAFIA:
 [FDW English](https://towardsdatascience.com/how-to-set-up-a-foreign-data-wrapper-in-postgresql-ebec152827f3)<br>
+https://dbsguru.com/steps-to-setup-a-foreign-data-wrapperpostgres_fdw-in-postgresql/
 [FDW Español](https://blogvisionarios.com/articulos-data/virtualizacion-datos-postgresql-foreign-data-wrappers/)
