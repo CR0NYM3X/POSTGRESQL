@@ -383,7 +383,8 @@ ALTER ROLE usuario1 IN GROUP app_informes;
  \des
  
 # Verificar los usuarios user fdw 
-select * from pg_user_mapping;
+select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left join pg_user on usesysid= umuser;
+
 
 # Validar si esta instalada en los binarios y se puede usar la extension postgres_fdw
  select * from pg_available_extensions where name ilike '%fdw%'; 
