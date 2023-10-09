@@ -15,6 +15,7 @@
 .- usuarios, accesos y  permisos * <br>
 .- tablespace *<br>
 .- Logs<br>
+.- Aplicar Relgas en tablas <br>
 .- Monitoreo, optimización y Alta Disponibilidad * <br>
 .- Respaldo y Recuperación <br>
 .- Migración de Datos y Actualizaciones<br>
@@ -26,3 +27,5 @@
 ### Postgres.conf
 
 ```
+
+https://www.sqlservercentral.com/articles/rules-in-postgresql
