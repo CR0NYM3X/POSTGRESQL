@@ -90,6 +90,12 @@ select provolatile,proparallel,security_type  FROM pg_proc a inner join informat
 SELECT routines.routine_name, routines.specific_name, routine_type, grantee, privilege_type FROM information_schema.routines LEFT JOIN information_schema.routine_privileges ON routines.specific_name = routine_privileges.specific_name WHERE grantee = 'nombre_del_usuario' AND routine_name = 'fun_actualiza_datos';
 ```
 
+###  Asignar los privilegios a funciones 
+Para realizar esta actividad podemos consultar el archivo [usuarios, accesos y permisos.md](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#asignar-permisos-l%C3%B3gicos-select-update-delete-etc)
+
+
+
+
 
 ### ver todos los parámetros de una funcion 
 ```
