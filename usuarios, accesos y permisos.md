@@ -249,7 +249,6 @@ DATABASE:
   REVOKE ALL PRIVILEGES ON DATABASE mytestdba FROM "92096883";
 
 TABLES:
-  revoke all on all tables in schema public from "testuserdba";
   REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "testuserdba";
   REVOKE ALL PRIVILEGES ON TABLE nombre_de_tabla FROM nombre_del_rol;
 
