@@ -18,6 +18,9 @@
 .- Aplicar Relgas en tablas <br>
 .- **Monitoreo, optimización y Alta Disponibilidad** <br>
 .- **Respaldo y Restauración** <br>
+.- Replica streaming <br>
+.- PITR (point-in-time recovery) <br>
+.- Seguridad<br>
 .- Migración de Datos y Actualizaciones<br>
 .- pgbouncer
 
