@@ -32,12 +32,12 @@ Para resolver este problema, vamos a configurar un Foreign Data Wrapper en Servi
 
 - **`Server#1 Postgresql Local : `** <br>
 IP: 10.0.0.100  <br>
-User: "user_srv1_fdw" <br>
+User: "user_serv1_fdw" <br>
 DB: mydb_fdw
 
 - **`Server#2 Postgresql Remoto :`** <br>
 IP: 10.0.0.200  <br>
-User:  user_ser2_fdw <br> 
+User:  user_serv2_fdw <br> 
 DB: sanatudeuda <br>
 tb: cat_plazos
 
@@ -48,6 +48,9 @@ tb: cat_plazos
 \des -- ver Servidores fdw
 
 
+
+
+
 ### Configuración del Server#2 Postgresql Remoto :
 
 ### Paso 1 - Verificar acceso acceso al puerto:
@@ -55,8 +58,13 @@ tb: cat_plazos
 ```sh
 telnet 10.0.0.100 5432
 ```
+### Paso 2 - Verificar que permita conexiones Remotas 
+Asegurémonos de que Servidor#2 permita conexiones remotas, Modifiquemos el archivo postgresql.conf en Servidor#2 esté de esta manera :
+```
+listen_addresses = '*'
+```
 
-### Paso 2 - Crear Usuario remoto
+### Paso 3 - Crear Usuario remoto
 
 - Nos conectamos a la base de datos que compartira la información:
 ```
@@ -65,29 +73,29 @@ psql -U postgres -d sanatudeuda
 
 - Creamos el usuario remoto que se va conectar al servidor#2 a extraer la información
 ```
-CREATE USER user_ser2_fdw WITH ENCRYPTED PASSWORD '1234567890';
+CREATE USER user_serv2_fdw WITH ENCRYPTED PASSWORD '1234567890';
 ```
 
 Info Extra
 ```sh
-grant SELECT  on all tables in schema public to "user_ser2_fdw"; 
-GRANT CONNECT ON DATABASE "sanatudeuda" TO "user_ser2_fdw"; --- no se agrego
-ALTER user  "user_ser2_fdw" WITH SUPERUSER;   --- no se agrego
+grant SELECT  on all tables in schema public to "user_serv2_fdw"; 
+GRANT CONNECT ON DATABASE "sanatudeuda" TO "user_serv2_fdw"; --- no se agrego
+ALTER user  "user_serv2_fdw" WITH SUPERUSER;   --- no se agrego
 ```
 
-### Paso 3 - Agregar el usuario al archivo PG_HBA 
+### Paso 4 - Agregar el usuario al archivo PG_HBA 
 - Agregarmos el usuario al pg_gba para especificar la ip del servidor que se va conectar y consultar la información
 ```sh
-host    sanatudeuda      user_ser2_fdw            10.0.0.100/32            md5
+host    sanatudeuda      user_serv2_fdw            10.0.0.100/32            md5
 ```
 
-### Paso 4 -  Recargar las configuraciones postgresql
+### Paso 5 -  Recargar las configuraciones postgresql
 - Realizamos el reinicio para que el postgres detecte los cambios en el archivo pg_hba
 ```sh
 /usr/pgsql-13/bin/pg_ctl reload -D /sysm/data
 ``` 
 
-### Paso 5 - Obtener la estructura de una tabla en caso de requerirse
+### Paso 6 - Obtener la estructura de una tabla en caso de requerirse
 - Con la estructura de la tabla la usaremos al momento de configurar el servidor#1
 ```
  pg_dump -s -t cat_plazos -d sanatudeuda  --no-owner --no-reconnect  --no-privileges  --no-comments  > /tmp/struct.sql
@@ -112,7 +120,7 @@ host    sanatudeuda      user_ser2_fdw            10.0.0.100/32            md5
 - Tenemos que verificar que en el servidor#1 tengamos acceso al puerto del servidor#2 ya que si no se tiene acceso no se podrá realizar la conexión entre servidores 
 ```sh
   telnet 10.0.0.200 5432
-  psql -U user_ser2_fdw -h 10.0.0.200 -d sanatudeuda -p6432
+  psql -U user_serv2_fdw -h 10.0.0.200 -d sanatudeuda -p6432
 ```
 
 
@@ -131,23 +139,23 @@ CREATE DATABASE "mydb_fdw" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_C
 ### Paso 3 - Creamos el usuario local 
 - Aqui vamos a crear el usuario que se va conectar al servidor#1 para realizar las consultas en el servidor#2
 ```
-create user user_srv1_fdw  with login  password '9876543120';
-GRANT CONNECT ON DATABASE "mydb_fdw" TO "user_srv1_fdw";
+create user user_serv1_fdw  with login  password '9876543120';
+GRANT CONNECT ON DATABASE "mydb_fdw" TO "user_serv1_fdw";
 ```
 
 Info Extra
 ```
-grant SELECT  on all tables in schema public to "user_srv1_fdw"; --- no se agrego
+grant SELECT  on all tables in schema public to "user_serv1_fdw"; --- no se agrego
 
 # Agregar super usuario:
-Si no agregar como super usuario a user_srv1_fdw te dira esto
+Si no agregar como super usuario a user_serv1_fdw te dira esto
 DETAIL:  Non-superuser cannot connect if the server does not request a password.
 HINT:  Target server's authentication method must be changed or password_required=false set in the user mapping attributes.
 
-ALTER user  "user_srv1_fdw" WITH SUPERUSER; ---
+ALTER user  "user_serv1_fdw" WITH SUPERUSER; ---
 
 # esto es si no lo agregamos como super user
-UPDATE pg_user_mapping SET umoptions='{user=user_ser2_fdw , password_required=false}' where umuser=667623;
+UPDATE pg_user_mapping SET umoptions='{user=user_serv2_fdw , password_required=false}' where umuser=667623;
 
 ```
 
@@ -190,11 +198,11 @@ select srvname, unnest(srvoptions) AS option FROM pg_foreign_server;
 
 
 ### Paso 5 - Creamos el user mapping
-- Aqui mapeamos el usuario, esto quiere decir que le indicamos al user_srv1_fdw con que user se va conectar al servidor#2 Remoto
+- Aqui mapeamos el usuario, esto quiere decir que le indicamos al user_serv1_fdw con que user se va conectar al servidor#2 Remoto
 ```
-CREATE USER MAPPING FOR user_srv1_fdw
+CREATE USER MAPPING FOR user_serv1_fdw
     SERVER "Server#2"
-    OPTIONS (user 'user_ser2_fdw', password '1234567890');
+    OPTIONS (user 'user_serv2_fdw', password '1234567890');
 ```
 
 - Verificamos que si se haya creado 
@@ -205,7 +213,7 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 
 Info Extra |  Otorgamos permiso USAGE
 ```
-GRANT USAGE ON FOREIGN SERVER "Server#2" TO user_srv1_fdw; --- no se realizó
+GRANT USAGE ON FOREIGN SERVER "Server#2" TO user_serv1_fdw; --- no se realizó
 ```
 
 
@@ -228,7 +236,7 @@ host    mydb_fdw      user_ser1_fdw            10.0.0.5/32            md5
 ### Paso 7 - Nos conectamos como el usuario 
 - Nos conectamos con el usuario que creamos ya que con ese se pueden hacer los movimientos siguientes
 ```
-  psql -U "user_srv1_fdw" -h 10.0.0.100 -d mydb_fdw -p 5432
+  psql -U "user_serv1_fdw" -h 10.0.0.100 -d mydb_fdw -p 5432
 ```
 
 ### Paso 8 -  Crear la tabla remota
@@ -270,20 +278,57 @@ select count(*) from information_schema.foreign_tables;
 
 # Dropear todo 
 	DROP SERVER servidor_fdw CASCADE; -- al borrrar el server se borra todo
-	DROP OWNED BY user_srv1_fdw;
+	DROP OWNED BY user_serv1_fdw;
 	DROP EXTENSION IF EXISTS postgres_fdw CASCADE; 
-	DROP USER MAPPING FOR user_srv1_fdw SERVER servidor_fdw;
-	DROP user user_srv1_fdw;
+	DROP USER MAPPING FOR user_serv1_fdw SERVER servidor_fdw;
+  	REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "user_ser2_fdw";
+	DROP user user_serv1_fdw;
 	DROP FOREIGN TABLE cat_plazos;
     
   
  
-  
+
+### consultar informacion de los FDW
+
+``` sh
+#Tambien sirve para ver los server FDW
+ \des
+ 
+# Verificar los usuarios user fdw 
+select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left join pg_user on usesysid= umuser;
+
+
+# Validar si esta instalada en los binarios y se puede usar la extension postgres_fdw
+ select * from pg_available_extensions where name ilike '%fdw%'; 
+ 
+#Ver si se creo la extension
+ select * from pg_extension;
+ 
+# saber las tablas tienen FDW
+ select * from information_schema.foreign_tables;
+ select * FROM information_schema.tables WHERE table_schema = 'public'  AND table_type ilike '%FOREIGN%'; 
+ 
+#saber los nombres de los servidores
+ select * FROM information_schema.foreign_servers;
+ 
+#Saber las DBA_remota a la que se conecta el servidor 
+ select srvname, unnest(srvoptions) AS option FROM pg_foreign_server:
+
+
+```
 
 
 
 
 
-#Bibliografias: 
 
-https://www.postgresql.fastware.com/postgresql-insider-fdw-ove
+
+### BIBLIOGRAFIAS:
+[Documentación Oficial FDW](https://www.postgresql.org/docs/current/sql-createforeigndatawrapper.html) <br>
+https://www.postgresql.fastware.com/postgresql-insider-fdw-ove <br>
+[FDW English #1](https://dbsguru.com/steps-to-setup-a-foreign-data-wrapperpostgres_fdw-in-postgresql)<br>
+[FDW English #2](https://towardsdatascience.com/how-to-set-up-a-foreign-data-wrapper-in-postgresql-ebec152827f3)<br>
+[FDW Español](https://blogvisionarios.com/articulos-data/virtualizacion-datos-postgresql-foreign-data-wrappers/)
+
+
+
