@@ -29,3 +29,8 @@
 ```
 
 https://www.sqlservercentral.com/articles/rules-in-postgresql
+
+--- Documentacion postgresql 
+https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf
+https://wiki.postgresql.org/wiki/Main_Page/es
+
