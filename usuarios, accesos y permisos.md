@@ -73,6 +73,25 @@ CREATE USER "testuserdba"; -- es lo mismo role que user
 CREATE role "testuserdba";  -- es lo mismo role que user
 CREATE USER "testuserdba" login VALID UNTIL  '2023-11-15'; --- fecha de expiracion  
 CREATE USER testuserdba WITH PASSWORD '123456789'; -- no se recomienda colocar el password en con el create, por que en los log o el historial  puedes ver la contraseña
+
+#Parametros para usar después de WITH
+    SUPERUSER | NOSUPERUSER
+    | CREATEDB | NOCREATEDB
+    | CREATEROLE | NOCREATEROLE
+    | INHERIT | NOINHERIT
+    | LOGIN | NOLOGIN
+    | REPLICATION | NOREPLICATION
+    | BYPASSRLS | NOBYPASSRLS
+    | CONNECTION LIMIT connlimit
+    | [ ENCRYPTED ] PASSWORD 'password' | PASSWORD NULL
+    | VALID UNTIL 'timestamp'
+    | IN ROLE role_name [, ...]
+    | IN GROUP role_name [, ...]
+    | ROLE role_name [, ...]
+    | ADMIN role_name [, ...]
+    | USER role_name [, ...]
+    | SYSID uid
+
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
