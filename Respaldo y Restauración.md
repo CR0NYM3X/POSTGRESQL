@@ -2,9 +2,10 @@
 ![back](https://img.freepik.com/premium-vector/vector-icon-backup-restore-cloud-web-app_901408-682.jpg)
 
 - Comando --Help
-	- [Pg_dump]()
-	- [Pg_dumpall]()
-	- [pg_restore]()
+	- [Pg_dump](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_dump---help)
+	- [Pg_dumpall](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_dumpall---help)
+	- [pg_restore](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_restore---help)
+ 	- [Copy](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Respaldo%20y%20Restauraci%C3%B3n.md#copy)
 
    
 # Objetivo:
@@ -35,14 +36,16 @@ Mantén registros detallados de tu política de respaldo, horarios y procedimien
 
 **`Herramintas de respaldo`** 
 pg_dump : Puedes respaldar solo una base de datos
-pg_dumpall : aquí se respalda todas las base de datos 
+pg_dumpall : aquí se respalda todas las base de datos
+copy
 
 **`Herramintas de restauración`** 
 psql : restauras respaldos en texto plano 
 pg_restore : restauras respaldos con formatos custom o directory, pero es mejor, porque puedes especificar que es lo que quieres restaurar, en caso de solo querer restaurar una tabla se puede realizar 
+copy
 
 # Ejemplos de uso:
-**`[Nota]`** - Al usar `pg_dump` en automatico te genera el create de los objetos<br>
+**`[Nota]`** - Al usar `pg_dump` en Automática te genera el create de los objetos<br>
 **`[Nota]`** - Antes de realizar un respaldo debemos de corroborar que los 2 servidores como el origen y destino tengan la misma versión de sql. <br>
 **`[Nota]`** - Verificar que tengan el espacio suficiente para pasar el respaldo .<br>
 **`[Nota]`** - Verificar que el servidor destino cuenta ya con esa información y sí ya tiene información, preguntar al usuario que hacer con la información, si se borra o también se respalda.<br>
@@ -117,7 +120,7 @@ Opción #1 - Validar los procesos
 ps -fea | grep pg_dump
 
 Opción #2 - Validar el tamaño del archivo, cuando deje de imcrementar esto quiere decir que ya termino
-watch "ls -lhtr /tmp/ | grep bckup_banco.sql "
+watch " echo "" && echo "" && echo  -e  "------ Procesos del PG_DUMP---- " && ps -fea | grep pg_dump && echo "" && echo "" && echo  -e " ------Tamaño del archivo---- " &&  ls -lhtr /tmp | grep bckup_banco.sql.gz"
 
 Opción #3 - Verificar el tamaño de la base de datos
 psql -c "\l+"
@@ -141,28 +144,100 @@ pg_restore -d Banco  /tmp/mydb_fdw bckup_banco.sql.gz
 ### Ejemplo #2:  
 Generar un respaldo que contenga solo los CREATE de los objetos de la base de datos "Banco", las tablas deben de estar vacias 
 
+**`Respaldar`**
+```
+pg_dump -d Banco -s -f /tmp/bck_banco_struc.sql
+
+#Descripción de los parámetros
+-d --> colocas la base de datos a respaldar
+-s --> sólo respalda los CREATE de los objetos, esto quiere decir que no tiene información por ejemplo las tablas 
+
+```
+**`Restaurar`**
+```
+psql -d Banco -f /tmp/bck_banco_struc.sql
+```
+
 ### Ejemplo #3:  
-Respaldar toda la base de datos "Banco", excepto la tabla Ciudades y Estados, también comprimir el archivo para que pese menos
+Respaldar toda la base de datos "Banco" en texto plano, excepto la tabla Ciudades y Estados,  que este compreso con gzip, que al restaurar borre la base de datos, si ya existe y inserte la información nueva
+
+```
+pg_dump -d Banco -T Ciudades -T Estados -C -c | gzip -c9 > /tmp/bck_banco.sql &
+
+#Descripción de los parámetros
+-d --> colocas la base de datos a respaldar
+-T --> colocas la tabla que no quieres respaldar
+-C -->  grega el CREATE de la base de datos
+-c -->  Agrega el drop de los objetos
+
+```
+**`Restaurar`**
+```
+# Esto lo que hace es que no genera un archivo descomprimido del archivo bck_banco.sql si no que lo va ingresando directamente a la base de datos
+
+gzip -dc /tmp/bck_banco.sql | psql -d Banco 
+```
 
 
-### Ejemplo #4: 
-Respaldar  la Estructura y Información de la tabla Clientes de la base de datos  Banco, y que en el archivo tenga el create de la base de datos, la tabla y que al restaurar borre la tabla si ya existe y inserte la información nueva 
 
 ### Ejemplo #5:  
 Respaldar  solo la Estructura de  las tabla Clientes de la base de datos  Banco
+
+```
+pg_dump -d Banco -s -t Clientes -f /tmp/bck_banco_truc.sql 
+
+#Descripción de los parámetros
+-d --> colocas la base de datos a respaldar
+-s --> Respalda solo la extructura de la tabla solo guarda el CREATE
+-t --> colocas sólo las tablas que quieres respaldar
+```
+**`Restaurar`**
+```
+# Esto lo que hace es que no genera un archivo descomprimido del archivo bck_banco.sql si no que lo va ingresando directamente a la base de datos
+
+psql -d Banco -f /tmp/bck_banco_truc.sql
+```
+
+
+
 ### Ejemplo #6:  
 Respaldar  solo la informacion las tabla Clientes de la base de datos  Banco
+```
+pg_dump -d Banco -a -f /tmp/bck_banco.sql 
+
+#Descripción de los parámetros
+-d --> colocas la base de datos a respaldar
+-a --> sólo respalda la información de las tablas 
+```
+**`Restaurar`**
+```
+psql -d Banco -f /tmp/bck_banco.sql
+```
+
+
 
 ### Ejemplo #7:  
 Respaldar  solo la informacion las tabla Clientes de la base de datos  Banco pero para pasarlo a una tabla que ya existe pero en un servidor sql server 
 
+```
+pg_dump -d Banco -a --inserts -t Clientes -f /tmp/bck_banco.sql 
 
+#Descripción de los parámetros
+-d --> colocas la base de datos a respaldar
+-a --> sólo respalda la información de las tablas
+--inserts  --> esto remplaza el copy y coloca  insert
+```
+**`Restaurar`**
+```
+se copia la información y se pasa en texto plano al sql server 
+```
 
 
 
 
 
 ### pg_dump --help
+Sólo respaldas una base de datos 
 ```
 $ pg_dump --help
 pg_dump dumps a database as a text file or to other formats.
@@ -238,6 +313,8 @@ Usage:
 
 
 ### pg_dumpall --help
+Respaldas todas las base de datos / Cluster
+
 ```
 pg_dumpall --help
 pg_dumpall extracts a PostgreSQL database cluster into an SQL script file.
@@ -303,6 +380,7 @@ Connection options:
 
 
 ### pg_restore --help
+Puedes especificar que quieres restaurar
 ```
 pg_restore restores a PostgreSQL database from an archive created by pg_dump.
 
@@ -365,7 +443,59 @@ Connection options:
 ```
 
 
+### COPY
+**`Copiar tabla`**
+COPY (select * from clientes where nombre = 'manuel') TO '/tmp/tabla_clientes.csv' WITH (FORMAT CSV);
+
+**`Restaurar tabla`**
+COPY clientes FROM /tmp/tabla_clientes.csv' WITH (FORMAT CSV);
+
+**`Parametros para usar despues del WITH`**
+```
+    1. FORMAT: Define el formato de los datos que estás copiando. Los valores más comunes son "CSV" (valores separados por comas), "TEXT" (texto sin formato) y "BINARY" (formato binario PostgreSQL).
+       Ejemplo:
+       COPY mi_tabla FROM 'archivo.csv' WITH (FORMAT CSV);
+
+    2. DELIMITER: Especifica el carácter utilizado como delimitador en un archivo CSV.
+       Ejemplo:
+
+       COPY mi_tabla FROM 'archivo.csv' WITH (DELIMITER ',');
+
+    3. NULL: Indica cómo manejar los valores nulos en el archivo. Puedes usar palabras clave como "NULL" o "NONE".
+       Ejemplo:
+     
+       COPY mi_tabla FROM 'archivo.csv' WITH (NULL 'NA');
+
+    4. HEADER: Indica si la primera línea del archivo contiene nombres de columnas.
+	Ejemplo:
+
+       COPY mi_tabla FROM 'archivo.csv' WITH (FORMAT CSV, HEADER true);
+
+    5. ENCODE: Especifica la codificación de caracteres utilizada en el archivo, se puede usar 'windows-1251' y 'latin1' o 'UTF8'
+       Ejemplo:
+
+       COPY mi_tabla FROM 'archivo.csv' WITH (ENCODE 'UTF8');
+
+    6. FORCE_QUOTE: Obliga a poner comillas alrededor de los valores, incluso si no es necesario.
+       Ejemplo:
+
+       COPY mi_tabla FROM 'archivo.csv' WITH (FORMAT CSV, FORCE_QUOTE column_name);
+
+    7. ESCAPE: Define el carácter de escape utilizado en el archivo.
+       Ejemplo:
+
+       COPY mi_tabla FROM 'archivo.csv' WITH (FORMAT CSV, ESCAPE '\');
+
+    8. PROGRAM: Permite ejecutar un programa externo para generar o procesar los datos antes de copiarlos.
+       Ejemplo:
+
+       COPY mi_tabla FROM PROGRAM 'cat archivo.csv' WITH (FORMAT CSV);
+
+```
 
 
+
+# Futuros temas 
+pg_basebackup y pg_waldump 
 
 
