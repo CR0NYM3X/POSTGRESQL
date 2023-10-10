@@ -2,10 +2,10 @@
 ![back](https://img.freepik.com/premium-vector/vector-icon-backup-restore-cloud-web-app_901408-682.jpg)
 
 - Comando --Help
-	- [Pg_dump](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_dump---help)
-	- [Pg_dumpall](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_dumpall---help)
-	- [pg_restore](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_restore---help)
- 	- [Copy](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Respaldo%20y%20Restauraci%C3%B3n.md#copy)
+	- [Pg_dump](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_dump---help)
+	- [Pg_dumpall](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_dumpall---help)
+	- [pg_restore](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_restore---help)
+ 	- [Copy](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Respaldo%20y%20Restauraci%C3%B3n.md#copy)
 
    
 # Objetivo:
