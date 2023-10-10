@@ -76,7 +76,7 @@ Respaldar toda la base de datos "Banco", junto con su usuarios, que que solo res
 
 
 ### Ejemplo #2:  
-Respaldar solo la estructura/Schema de la base de datos "Banco", las tablas deben de estar vacias 
+Generar un respaldo que contenga solo los CREATE de los objetos de la base de datos "Banco", las tablas deben de estar vacias 
 
 ### Ejemplo #3:  
 Respaldar toda la base de datos "Banco", excepto la tabla Ciudades y Estados, también comprimir el archivo para que pese menos
