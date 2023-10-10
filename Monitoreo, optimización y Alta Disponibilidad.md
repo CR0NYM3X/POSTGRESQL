@@ -188,6 +188,7 @@ select  * from  pg_stat_wal_receiver;
  ## Base de datos: 
  select  * from  pg_stat_database_conflicts;
 
+---- Podemos ver cauntas conexiones se realizaron, cuantas tuplas han sido afectadas  con update,detele, insert etc 
 select  datname AS database_name,
        pg_size_pretty(pg_database_size(datname)) AS size,
        numbackends AS num_connections,
@@ -214,6 +215,8 @@ FROM pg_stat_database;  -- Mostrar el tamaño y estadísticas de todas las bases
  select  * from  pg_statio_sys_tables;
  select  * from  pg_statio_user_tables;
 
+
+---- AQui podemos ver cuantas tuplas han sido afectadas  con update,detele, insert etc 
 select  schemaname || '.' || relname AS table_full_name,
        pg_size_pretty(pg_total_relation_size(schemaname || '.' || relname)) AS size,
        pg_size_pretty(pg_relation_size(schemaname || '.' || relname)) AS table_size,
