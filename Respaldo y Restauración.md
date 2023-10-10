@@ -10,7 +10,6 @@
 # Objetivo:
 aprenderemos hacer respaldos y a restaurarlos 
 
-
 # Descripcion rápida :
 Los respaldos son fundamentales para garantizar la disponibilidad y la integridad de los datos en una base de datos. Aquí te muestro un ejemplo de configuración de respaldos en PostgreSQL basado en mejores prácticas:
 
@@ -34,13 +33,26 @@ Configura scripts o programaciones para ejecutar automáticamente los respaldos 
 Mantén registros detallados de tu política de respaldo, horarios y procedimientos.
 
 
+**`Herramintas de respaldo`** 
+pg_dump : Puedes respaldar solo una base de datos
+pg_dumpall : aquí se respalda todas las base de datos 
+
+**`Herramintas de restauración`** 
+psql : restauras respaldos en texto plano 
+pg_restore : restauras respaldos con formatos custom o directory, pero es mejor, porque puedes especificar que es lo que quieres restaurar, en caso de solo querer restaurar una tabla se puede realizar 
+
 # Ejemplos de uso:
-**`[Nota]`** = Al usar `pg_dump` en automatico te genera el create de los objetos almenos que tu especifiques que no ocupas el create
+**`[Nota]`** - Al usar `pg_dump` en automatico te genera el create de los objetos<br>
+**`[Nota]`** - Antes de realizar un respaldo debemos de corroborar que los 2 servidores como el origen y destino tengan la misma versión de sql. <br>
+**`[Nota]`** - Verificar que tengan el espacio suficiente para pasar el respaldo .<br>
+**`[Nota]`** - Verificar que el servidor destino cuenta ya con esa información y sí ya tiene información, preguntar al usuario que hacer con la información, si se borra o también se respalda.<br>
+**`[Nota]`** - No se puede restaurar con `PSQL` los respaldos con formato custom o Directory, sólo se puede respaldar con PSQL los respaldos en texto plano, esto quiere decir que cuando abres el respaldo se ve el código de los create, funciones etc.
+**`[Nota]`** - Con pg_restore solo se pueden restaurar los respaldos con formato Custom y directory 
 
 
 **Descripción de Servidores para ejemplos**
 ```
-Servidor: 10.44.1.55 | Postgresql 
+Servidor Origen: 10.44.1.55 | Postgresql 15
 DBA: 
 Banco 	| Tamaño: 500GB
 Tienda	| Tamaño: 100GB 
@@ -65,14 +77,65 @@ Tablas Tienda:
 Productos	| 50GB
 Inventario	| 25GB
 Precios		| 10GB
+
+
+Servidor Destino: 10.44.1.55 | Postgresql 15
+
+
 ```
 
 
-
-
-
 ### Ejemplo #1:  
-Respaldar toda la base de datos "Banco", junto con su usuarios, que que solo respalde las tablas del schema sch_tienda y no respalde las tablas del schema sch_tienda_respaldo100 y que use el encoding "UTF8" 
+
+**`Respaldar`** toda la base de datos "Banco", junto con su usuarios y que solo respalde las tablas del schema sch_tienda, public y no respalde las tablas del schema sch_tienda_respaldo100 y que use el encoding "UTF8" , tambien intentar comprimirlo al máximo
+
+
+```
+
+pg_dump -p5432 -d banco -n sch_tienda -n public -N sch_tienda_respaldo100 -E UTF8 -F c -Z 9 -f /tmp/bckup_banco.sql.gz &
+pg_dumpall -g -f /tmp/usuarios.sql  
+
+
+#Descripción de los parámetros pg_dump
+-p  	--> Aquí especificamos el puerto
+-d	--> Aquí especificamos la base de datos 
+-n	--> Aquí especificamos el schema que queremos respaldar 
+-N	--> Aquí especificamos el schema que no queremos respaldar 
+-E	--> Aquí especificamos el Encoding
+-F c    --> Indicamos que sea formato Custom
+-Z 9	--> Indicamos que se comprima al máximo
+-f	--> Aquí especificamos la ruta donde queremos que se guarde el respaldo 
+&	--> esto nos ayuda a que podamos seguir utilizando la terminal de linux y no se quede atorado realizando el respaldo
+
+#Descripción de los parámetros pg_dumpall
+-g --> Guarda todo los usuarios con sus contraseñas 
+
+```
+**`Verificar que si se está realizando el respaldo`**
+```
+Opción #1 - Validar los procesos
+ps -fea | grep pg_dump
+
+Opción #2 - Validar el tamaño del archivo, cuando deje de imcrementar esto quiere decir que ya termino
+watch "ls -lhtr /tmp/ | grep bckup_banco.sql "
+
+Opción #3 - Verificar el tamaño de la base de datos
+psql -c "\l+"
+ 
+```
+
+**`Restaurar`**
+
+```
+psql -d Banco -f  /tmp/usuarios.sql
+pg_restore -d Banco  /tmp/mydb_fdw bckup_banco.sql.gz
+
+#Descripción de los parámetros
+-d --> Colocamos la base de datos
+
+```
+
+
 
 
 ### Ejemplo #2:  
@@ -107,43 +170,61 @@ pg_dump dumps a database as a text file or to other formats.
 Usage:
   pg_dump [OPTION]... [DBNAME]
 
-General options:
-  -f, --file=FILENAME         output file or directory name
-  -F, --format=c|d|t|p        output file format (custom, directory, tar, plain text)
-  -v, --verbose               verbose mode
-  -Z, --compress=0-9          compression level for compressed formats
-  --lock-wait-timeout=TIMEOUT fail after waiting TIMEOUT for a table lock
-  --help                      show this help, then exit
-  --version                   output version information, then exit
+[General options:]
+  -f, --file=FILENAME         Especificar la ruta y el nombre del archivo como se llamara el respaldo 
+  -F, --format=c|d|t|p        Especificas un formato como:  (custom 	= Para Restaurar este formato se usa pg_restore
+                                                             directory	= Para Restaurar este formato se usa pg_restore
+                                                             tar	= Para Restaurar este formato se usa psql
+                                                             plain text	= Para Restaurar este formato se usa psql )
+  -v, --verbose               Con esta opción al realizar el respaldo te muestra en la terminal, todo el detallado de lo que va haciendo el pg_dump 
+  -Z, --compress=0-9          colocas el nivel de compresion y se comprime en Gzip, solo para formatos custo y texto plano
+  
 
-Options controlling the output content:
-  -a, --data-only             dump only the data, not the schema
+[Options controlling the output content:]
+  -a, --data-only             Solo respalda la informacion de las tablas
+  -s, --schema-only           Solo respalda los CREATE de los objetos, esto quiere decir que no tiene información por ejemplo las tablas 
+
   -b, --blobs                 include large objects in dump
-  -c, --clean                 clean (drop) database objects before recreating
-  -C, --create                include commands to create database in dump
+  -c, --clean                 Agrega el drop de los objetos: [Tablas,dba,funciones,etc]  en el respaldo, para que cuando se restaure,  se borre y se creé el nuevo objeto
+      --if-exists             Esta opción agrega en el respaldo "IF EXISTS" y se puede usar cuando se agrega la opcion -c valida si existe el objeti y si existe lo borra si no existe no lo borra  
+   -C, --create                Agrega el CREATE de la base de datos
+      
   
-  -E, --encoding=ENCODING     dump the data in encoding ENCODING
-  -n, --schema=SCHEMA         dump the named schema(s) only
-  -N, --exclude-schema=SCHEMA do NOT dump the named schema(s)
-  
-  -o, --oids                  include OIDs in dump
-  -O, --no-owner              skip restoration of object ownership in
-                              plain-text format
-  
-  -s, --schema-only           dump only the schema, no data
-  -S, --superuser=NAME        superuser user name to use in plain-text format
-  
-  
+  -E, --encoding=ENCODING     Agrega el Ecnoding al comprimir como  'UTF8' , 'windows-1251' o LATIN1 
+  -n, --schema=SCHEMA         Especificas sólo el esquema que quieres respaldar , esto en caso de que existan varios esquemas en la base de datos
+  -N, --exclude-schema=SCHEMA Excluye el eschema que no quieres respaldar
+
   -t, --table=TABLE           dump the named table(s) only
   -T, --exclude-table=TABLE   do NOT dump the named table(s)
   
-  
-  -x, --no-privileges         do not dump privileges (grant/revoke)
+
+  -x, --no-privileges         No agrega los (grant/revoke)
+  -O, --no-owner              No agrega los owner en los objetos
+      --no-comments 	      No agrega los comentarios de los objetos 
+
+[En caso de restaurar en otra dba por ejemplo SQL server]
+   --column-inserts            Esta opcion remplaza el copy por el insert y agrega el nombre de las columnas generando que pese mas el respaldo 
+    --inserts                 Esta opcion remplaza el copy por el inser pero no agrega el nombre de las columnas 
+
+
+[Connection options:]
+  -h, --host=HOSTNAME      database server host or socket directory
+  -p, --port=PORT          database server port number
+  -U, --username=NAME      connect as specified database user
+  -w, --no-password        never prompt for password
+  -W, --password           force password prompt (should happen automatically)
+  -d database
+  --role=ROLENAME          do SET ROLE before dump
+
+
+[casi no se usan]
+  --lock-wait-timeout=TIMEOUT fail after waiting TIMEOUT for a table lock
+  --version                   Solo muestra la version de pg_dump
+  -S, --superuser=NAME        superuser user name to use in plain-text format  
+  -o, --oids                  include OIDs in dump
   --binary-upgrade            for use by upgrade utilities only
-  --column-inserts            dump data as INSERT commands with column names
   --disable-dollar-quoting    disable dollar quoting, use SQL standard quoting
   --disable-triggers          disable triggers during data-only restore
-  --inserts                   dump data as INSERT commands, rather than COPY
   --no-security-labels        do not dump security label assignments
   --no-tablespaces            do not dump tablespace assignments
   --no-unlogged-table-data    do not dump unlogged table data
@@ -152,15 +233,6 @@ Options controlling the output content:
   --use-set-session-authorization
                               use SET SESSION AUTHORIZATION commands instead of
                               ALTER OWNER commands to set ownership
-
-Connection options:
-  -h, --host=HOSTNAME      database server host or socket directory
-  -p, --port=PORT          database server port number
-  -U, --username=NAME      connect as specified database user
-  -w, --no-password        never prompt for password
-  -W, --password           force password prompt (should happen automatically)
-  -d database
-  --role=ROLENAME          do SET ROLE before dump
 ```
 
 
