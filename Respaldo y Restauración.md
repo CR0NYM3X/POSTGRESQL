@@ -445,10 +445,14 @@ Connection options:
 
 ### COPY
 **`Copiar tabla`**
+```
 COPY (select * from clientes where nombre = 'manuel') TO '/tmp/tabla_clientes.csv' WITH (FORMAT CSV);
+```
 
 **`Restaurar tabla`**
+```
 COPY clientes FROM /tmp/tabla_clientes.csv' WITH (FORMAT CSV);
+```
 
 **`Parametros para usar despues del WITH`**
 ```
