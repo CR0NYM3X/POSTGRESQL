@@ -9,7 +9,7 @@
 .- **Funciones** <br>
 .- Triggers <br>
 .- Type<br>
-.- View <br>
+.- **View** <br>
 .- Sequences <br>
 .- index <br>
 .- **usuarios, accesos y  permisos** <br>
