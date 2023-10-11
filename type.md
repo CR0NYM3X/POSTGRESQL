@@ -37,7 +37,7 @@ SELECT table_name FROM information_schema.columns WHERE data_type = 'mi_tipo';
 
 #Para saber que Función usa el type:
 
-SELECT
+SELECT  
     r.specific_name AS function_identifier,
     r.routine_name AS function_name,
     p.parameter_name AS name_parameter,
@@ -49,7 +49,8 @@ SELECT
         WHEN p.parameter_mode = 'INOUT' THEN 'Input/Output'
         ELSE 'Unknown'
     END AS parameter_mode,
-    r.data_type AS return_type
+    r.data_type AS return_type, 
+	r.type_udt_name return_type_user
 FROM information_schema.routines r
 JOIN information_schema.parameters p
     ON r.specific_name = p.specific_name
@@ -59,6 +60,7 @@ and ( p.data_type = 'my_type_name' or
 	  r.data_type  =  'my_type_name' or 
 	  r.type_udt_name =  'my_type_name'  )
 ORDER BY r.routine_name, p.ordinal_position limit 10;
+
 
 ----------
 
