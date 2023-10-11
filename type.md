@@ -37,8 +37,9 @@ SELECT table_name FROM information_schema.columns WHERE data_type = 'mi_tipo';
 
 #Para saber que Función usa el type:
 
-SELECT  
-    r.specific_name AS function_identifier,
+SELECT
+    r.routine_type, -- Este especifica si es una function o un PROCEDURE 
+    -- r.specific_name AS function_identifier,
     r.routine_name AS function_name,
     p.parameter_name AS name_parameter,
     p.ordinal_position AS parameter_position,
@@ -57,7 +58,7 @@ JOIN information_schema.parameters p
     AND r.specific_schema = p.specific_schema
 WHERE r.specific_schema = 'public'  -- Cambia 'public' al esquema deseado
 and ( p.data_type = 'my_type_name' or 
-	  r.data_type  =  'my_type_name' or 
+	  r.data_type  =  'my_type_name' or --- si el type fue creado va aparecer USER-DEFINED 
 	  r.type_udt_name =  'my_type_name'  )
 ORDER BY r.routine_name, p.ordinal_position limit 10;
 
