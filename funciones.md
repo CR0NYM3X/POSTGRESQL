@@ -24,7 +24,7 @@ SELECT pg_get_functiondef(f.oid) FROM pg_catalog.pg_proc f    WHERE f.proname = 
 
 ### Guardar en un archivo la funcion bien estructurada con los CREATE OR REPLACE 
 ```
-psql tiendavirtual -c "SELECT pg_get_functiondef('fun_actualiza_datos'::regproc)" | grep -Ev "pg_get_functiondef|rows\)|row\)" > /tmp/fun_TI.txt && sed -i 's/\\r//g'  /tmp/fun_TI.txt
+psql mydbatest -c "SELECT pg_get_functiondef('fun_actualiza_datos'::regproc)" | grep -Ev "pg_get_functiondef|rows\)|row\)" > /tmp/fun_TI.txt && sed -i 's/\\r//g'  /tmp/fun_TI.txt
 ```
 
 ### Guardar en un archivo la funcion,  sin el CREATE
