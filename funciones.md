@@ -127,6 +127,28 @@ SELECT   proname , proargnames, pg_catalog.oidvectortypes(proargtypes)  FROM pg_
 ```
 
 
+# info Extra
+
+La tabla information_schema.routines contiene información sobre las rutinas almacenadas, como funciones y procedimientos almacenados en la base de datos. Algunos de los campos importantes en esta tabla son:
+
+**`specific_name:`** El nombre único de la rutina. <br>
+**`routine_name:`** El nombre de la rutina.<br>
+**`routine_type:`** Indica si es una función o un procedimiento.<br>
+**`data_type:`** El tipo de datos que devuelve la rutina.<br>
+```
+
+SELECT routine_name, routine_type, data_type FROM information_schema.routines WHERE specific_schema = 'public';
+```
+
+La tabla information_schema.parameters contiene información sobre los parámetros de entrada y salida de las rutinas almacenadas en la base de datos. Algunos de los campos importantes en esta tabla son:
+
+**`specific_name:`** El nombre único de la rutina a la que pertenecen los parámetros.<br>
+**`parameter_name:`** El nombre del parámetro.<br>
+**`data_type:`** El tipo de datos del parámetro.<br>
+**`ordinal_position:`** La posición del parámetro en la lista de parámetros de la rutina.<br>
+```
+SELECT parameter_name, data_type, ordinal_position FROM information_schema.parameters WHERE specific_name = 'nombre_unico_de_la_funcion';
+```
 
 
 
