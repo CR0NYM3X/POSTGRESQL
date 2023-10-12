@@ -233,8 +233,37 @@ se copia la información y se pasa en texto plano al sql server
 ```
 
 
+### Ejemplo #8:  
+Copiar la información de una tabla cliente, pero sólo los que se llamen manuel
 
+**`Copiar tabla`**
+```
+psql -d banco -p5432 
+COPY (select * from clientes where nombre = 'manuel') TO '/tmp/tabla_clientes.csv' WITH (FORMAT CSV);
+```
 
+**`Restaurar tabla`**
+```
+psql -d banco -p5432 
+COPY clientes FROM /tmp/tabla_clientes.csv' WITH (FORMAT CSV);
+```
+
+### Ejemplo #9:  
+Copiar la información de la tabla cliente, pero sólo los que se llamen manuel y sólo guarda los campos nombre y apellido, pero sin usar la función Copy, ni la herramienta pg_dump
+
+**`Copiar tabla`**
+`#[NOTA]` en este ejemplo si un campo de la tabla Cliente tiene tipo Varchar o datetime, entonces tiene que escribir el campo y colocarle las comillas simples con CHR(39), si los campos de la tabla son numero entonces no necesita comillas
+
+```
+ psql -d banco -c "select 'insert into clientes select ', CHR(39) || nombre || CHR(39) , CHR(39) ||  apellido ||  CHR(39)  from clientes where nombre = 'manuel'" -p5432  --csv --tuples-only --output /tmp/tb_clientes.csv --log-file /tmp/log_test.txt &&  sed -i 's/select ,/select /g' /tmp/tb_clientes.csv
+```
+
+**`Restaurar tabla`**
+```
+psql -d banco -p5432 -f /tmp/tb_clientes.csv
+```
+
+---
 
 ### pg_dump --help
 Sólo respaldas una base de datos 
