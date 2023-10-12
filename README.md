@@ -1,7 +1,7 @@
 
 # Temario
 
-.- **Cómo conectarse a la base de datos Postgresql**<br>
+.- **Conceptos básicos postgresql**<br>
 .- **Recoleccion de informacion de la base de datos y el servidor** <br>
 .- **Base de datos**<br>
 .- **Tablas**<br>
@@ -11,7 +11,7 @@
 .- Triggers <br>
 .- **Type** <br>
 .- **View** <br>
-.- Sequences <br>
+.- **Sequences** <br>
 .- index <br>
 .- **usuarios, accesos y  permisos** <br>
 .- **tablespace**<br>
