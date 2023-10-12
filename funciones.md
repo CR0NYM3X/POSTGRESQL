@@ -2,7 +2,9 @@
 Aprenderemos lo básico de funciones 
 
 # Descripcion rápida de los esquemas
-Una función en PostgreSQL (o en cualquier sistema de gestión de bases de datos) sirve para encapsular un conjunto de instrucciones SQL y lógica de negocio en una unidad lógica y reutilizable.
+Una función en PostgreSQL (o en cualquier sistema de gestión de bases de datos) sirve para encapsular un conjunto de instrucciones SQL y lógica de negocio en una unidad lógica y reutilizable. <br>
+
+Las funciones devuelven un valor, ya sea un valor escalar o una tabla, y pueden utilizarse en una consulta SQL como si fueran una columna.
 
 **Ventajas  de usar funciones:**
 - **`Reutilización de Código:`** Puedes encapsular lógica compleja en funciones y reutilizarla en múltiples consultas o procedimientos almacenados.
