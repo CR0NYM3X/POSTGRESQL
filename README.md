@@ -7,8 +7,9 @@
 .- **Tablas**<br>
 .- **Esquemas**<br>
 .- **Funciones** <br>
+.- **PROCEDURE** <br>
 .- Triggers <br>
-.- Type<br>
+.- **Type** <br>
 .- **View** <br>
 .- Sequences <br>
 .- index <br>
