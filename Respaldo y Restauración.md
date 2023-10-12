@@ -497,7 +497,12 @@ COPY clientes FROM /tmp/tabla_clientes.csv' WITH (FORMAT CSV);
 
 ```
 
+# Info Extra
 
+ # Alternativa del COPY
+ ```
+ psql -d my_dba_test -c "select 'insert into cat_usuarios select ',* from clientes" -p6432  --csv --tuples-only --output /tmp/tb_clientes.csv --log-file /tmp/log_test.txt &&  sed -i 's/select ,/select /g' /tmp/tb_clientes.csv
+ ```
 
 # Futuros temas 
 pg_basebackup y pg_waldump 
