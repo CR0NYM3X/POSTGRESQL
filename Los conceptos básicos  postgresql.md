@@ -3,11 +3,20 @@ Aqui aprenderemos a como realizar una conexion con la base de datos
 
 # Ejemplos de uso:
 
-# Conectarse  a la base de datos 
+### Conectarse  a la base de datos 
 ```
  psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres 
 ```
 
+### Guardar los resultados de una consulta en un csv 
+```
+ psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres -c "select * from clientes"  --csv -o /tmp/data_clientes.csv
+```
+
+### Ejecutar un script en la base de datos 
+```
+ psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres -f /tmp/my_script.sql
+```
 
 
 # psql --help
