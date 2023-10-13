@@ -135,11 +135,11 @@ ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 ```sh
 # Para Tablas : 
 
-select '' as usuario,'Cnt_total_tablas' as privilege_type,count(*) as Total_Privilege
+select  current_database(),'' as usuario,'Cnt_total_tablas' as privilege_type,count(*) as Total_Privilege
   from  information_schema.tables
 WHERE table_schema='public' 
 union all 
-select grantee,privilege_type,count(*)
+select  current_database(),grantee,privilege_type,count(*)
   from information_schema.table_privileges
 where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, privilege_type;
 
