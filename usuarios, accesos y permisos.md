@@ -133,6 +133,8 @@ ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 ### Ver la cantidad y tipo de  privilegios de un usuario:
 
 ```sh
+# Para Tablas : 
+
 select '' as usuario,'Cnt_total_tablas' as privilege_type,count(*) as Total_Privilege
   from  information_schema.tables
 WHERE table_schema='public' 
@@ -140,6 +142,14 @@ union all
 select grantee,privilege_type,count(*)
   from information_schema.table_privileges
 where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, privilege_type;
+
+# Para Funciones y Procedimientos Almacenados :
+# Para Triggers
+# Para Schemas:
+# Para Sequences.:
+# Para Type:
+# Para view:
+# Para index:
 
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
