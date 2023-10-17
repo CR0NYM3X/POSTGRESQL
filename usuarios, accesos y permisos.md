@@ -251,6 +251,8 @@ DATABASE:
 TABLES:
   REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "testuserdba";
   REVOKE ALL PRIVILEGES ON TABLE nombre_de_tabla FROM nombre_del_rol;
+  REVOKE ALL ON TABLE banips FROM PUBLIC; --- para versiones 8
+  REVOKE ALL ON TABLE banips FROM postgres; --- para versiones 8
 
 SEQUENCES:
   REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM "testuserdba";
@@ -258,6 +260,7 @@ SEQUENCES:
 
 SCHEMA :
   REVOKE ALL PRIVILEGES ON SCHEMA nombre_del_esquema FROM nombre_del_rol;
+  
 
 FUNCTIONS:
   revoke execute on all functions in schema public from testuserdba;
