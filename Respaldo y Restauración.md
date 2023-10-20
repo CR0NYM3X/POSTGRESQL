@@ -563,10 +563,10 @@ tr "\t" "" < data.sql > data_clean.sql
 7)- saber la codicacion del archivo
 file -i copy.sql
 
-7)- convertir a utf8  
+8)- convertir a utf8  
 iconv -f iso-8859-1 -t UTF-8 copy.sql -o copy_clean.sql
 
-8)- Restarurar el en el servidor destino 
+9)- Restarurar el en el servidor destino 
  psql -d my_dba  -p5434 -f copy.sql
  ```
 
