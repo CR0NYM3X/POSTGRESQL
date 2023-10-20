@@ -546,7 +546,7 @@ echo "COPY my_tabla ( columna1,columna2,columan3 ) FROM stdin;" > copy.sql
 
 
 3)- Obtener la data 
-COPY my_dba  TO '/tmp/data.csv' WITH CSV  DELIMITER '|';
+COPY my_tabla  TO '/tmp/data.csv' WITH CSV  DELIMITER '|';
 
 
 4)-limpiamos la data , quitando los tabuladores extras
@@ -567,7 +567,7 @@ file -i copy.sql
 iconv -f iso-8859-1 -t UTF-8 copy.sql -o copy_clean.sql
 
 9)- Restarurar el en el servidor destino 
- psql -d my_dba  -p5434 -f copy.sql
+ psql -d my_dba  -p5434 -f copy_clean.sql
  ```
 
 
