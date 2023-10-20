@@ -533,6 +533,46 @@ COPY clientes FROM /tmp/tabla_clientes.csv' WITH (FORMAT CSV);
  psql -d my_dba_test -c "select 'insert into cat_usuarios select ',* from clientes" -p6432  --csv --tuples-only --output /tmp/tb_clientes.csv --log-file /tmp/log_test.txt &&  sed -i 's/select ,/select /g' /tmp/tb_clientes.csv
  ```
 
+
+ # Hacer copy  stdin
+
+ ```
+ 1)- Obtener las columnas 
+ psql -d my_dba -t -c "select column_name || ',' from information_schema.columns where table_name=  'my_tabla' order by ordinal_position" |    tr -d ' ' | | sed 's/.$// 
+ 
+
+2)- Meter las columnas y hacer el archivo copy.sql
+echo "COPY my_tabla ( columna1,columna2,columan3 ) FROM stdin;" > copy.sql
+
+
+3)- Obtener la data 
+COPY my_dba  TO '/tmp/data.csv' WITH CSV  DELIMITER '|';
+
+
+4)-limpiamos la data , quitando los tabuladores extras
+tr "\t" "" < data.sql > data_clean.sql
+
+
+5)- remplazamos los caracteres "|" por tabuladores 
+  tr "|" "\t" < data_clean.sql > data.sql
+
+6)- combinamos el copy + data + \. 
+ cat data.sql  >> copy.sql && echo "\." >> copy.sql
+
+
+7)- saber la codicacion del archivo
+file -i copy.sql
+
+7)- convertir a utf8  
+iconv -f iso-8859-1 -t UTF-8 copy.sql -o copy_clean.sql
+
+8)- Restarurar el en el servidor destino 
+ psql -d my_dba  -p5434 -f copy.sql
+ ```
+
+
+
+
 # Futuros temas 
 pg_basebackup y pg_waldump 
 
