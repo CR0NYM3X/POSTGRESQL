@@ -18,6 +18,50 @@ Aqui aprenderemos a como realizar una conexion con la base de datos
  psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres -f /tmp/my_script.sql
 ```
 
+### Detener el servicio forzosamete 
+```
+/usr/pqsql-12/bin/pg_ctl stop -D /sysd/data/ -mf
+```
+
+### Iniciar el servicio  
+```
+/usr/pgsql-14/bin/pg_ctl start -D /sysx/data -o -i
+
+sudo systemctl start postgresql
+```
+
+### Recargar las configuraciones pg_hba.conf
+```
+/usr/pqsql-12/bin/pg_ctl reload -D /sysd/data/
+
+SELECT pg_reload_conf();
+```
+
+### reinicia el servicio | esto tambien sirve para cuando se modifica algo del postgresql.conf
+```
+/usr/pqsql-12/bin/pg_ctl -o "-F -p 5433" restart
+
+#Opciones
+-F: Esta opción indica que el servidor PostgreSQL debe forzar la recuperación
+del sistema de archivos en caso de un cierre inesperado
+```
+
+
+
+### Formas de saber si el postgresql esta corriendo en linux 
+```
+pg_ctl status
+systemctl status postgresql
+service postgresql status
+pg_isready 
+ps aux 
+grep postgres 
+```
+
+
+
+
+
 
 # psql --help
 ```
