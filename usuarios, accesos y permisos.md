@@ -46,6 +46,11 @@ Es necesario aclarar que las querys pueden variar dependiendo la version de la d
 
 CRUD = Create, Read, Update, Delete
 
+### Ver con que usuario estoy conectado a la base de datos 
+```
+SELECT session_user;
+SELECT current_user;
+```
 
 ###  Buscar un usuario o role
 ```sh
