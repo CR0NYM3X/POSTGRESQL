@@ -50,6 +50,8 @@ pg_relation_size(relid) DESC;
 ```
 ## Ver el nombre y descripcion de las columnas de una tabla:
  ```sh
+\d my_tabla
+
  select  a.column_name, is_nullable, data_type, udt_name, character_maximum_length, column_default,b.constraint_name  
    FROM information_schema.columns  a  
    left join (SELECT constraint_name,table_name,column_name FROM information_schema.key_column_usage ) b on a.table_name=b.table_name and a.column_name = b.column_name    
