@@ -571,6 +571,13 @@ iconv -f iso-8859-1 -t UTF-8 copy.sql -o copy_clean.sql
  ```
 
 
+# hacer un Copy en psql 8.1.23
+En estas versiones de copy no permite realizar el copiado de un select con condicion por lo que se necesita hacer una tabla temporal y despues realizar el copy
+ ```
+CREATE TEMPORARY TABLE mitmp2 AS  select  * from my_tabla where nombre = 'luis';
+
+ COPY mitmp2 TO '/tmp/registros_tb_mitmp2.csv' WITH CSV;
+ ```
 
 
 # Futuros temas 
