@@ -69,7 +69,20 @@ CREATE TABLE public.nombre_de_la_tabla (
   - **`id serial PRIMARY KEY`** *crea una columna llamada "id" que es una clave primaria (primary key) y se incrementa automáticamente (serial) cada vez que se inserta una fila.* <br>
 - **`nombre VARCHAR(255)`** *crea una columna llamada "nombre" con un tipo de dato VARCHAR que puede almacenar hasta 255 caracteres.*<br>
 - **`edad INT`** *crea una columna llamada "edad" con un tipo de dato INT para almacenar números enteros.
-si quieres saber más sobre los tipos de datos puedes consultar la página oficial de [postgresql](https://www.postgresql.org/docs/8.1/datatype.html)* 
+si quieres saber más sobre los tipos de datos puedes consultar la página oficial de [postgresql](https://www.postgresql.org/docs/8.1/datatype.html)*
+
+
+## Crear una tabla temporal :
+Las tablas temporales se utilizan para almacenar datos temporales durante la ejecución de una sesión y se eliminan automáticamente al finalizar la sesión o cuando ya no son necesarias
+```
+-- Crear una tabla temporal
+CREATE TEMP TABLE nombre_de_la_tabla (
+    columna1 tipo_de_dato,
+    columna2 tipo_de_dato,
+    -- Puedes agregar más columnas según tus necesidades
+);
+```
+
 
 ## Insertar información en una tabla:
  ```sh
