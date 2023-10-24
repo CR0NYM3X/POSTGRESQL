@@ -81,6 +81,12 @@ CREATE TEMP TABLE nombre_de_la_tabla (
     columna2 tipo_de_dato,
     -- Puedes agregar más columnas según tus necesidades
 );
+
+
+CREATE TEMPORARY TABLE mi_tabla_temporal AS
+SELECT nombre, edad
+FROM personas
+WHERE ciudad = 'Nueva York';
 ```
 
 
