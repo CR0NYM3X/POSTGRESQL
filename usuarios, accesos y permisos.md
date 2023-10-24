@@ -190,6 +190,28 @@ ALTER SCHEMA nombre_de_esquema OWNER TO nuevo_propietario;
 
 
 
+# Saber la cantidad de owner que tiene un usuario
+
+```
+--- Para ver los owner de la dba
+SELECT datname, rolname userOwner FROM pg_database JOIN pg_roles ON pg_database.datdba = pg_roles.oid;
+
+--- los owner de las tablas 
+SELECT  'cnt_tb_total -> ' tableowner,count(*) cnt_tb_owner FROM pg_tables where schemaname = 'public'
+union all
+(SELECT  tableowner, count(*) cnt_tb_owner FROM pg_tables where schemaname = 'public' group by tableowner order by tableowner,count(*));
+
+
+--- los owner de las funciones 
+select 'cnt_fun_total ' owner ,count(*)  cnt_fun_owner FROM pg_proc where   prorettype != 0 and pronamespace in(select oid from pg_namespace where nspname = 'public')
+union all
+(SELECT  rolname,count(*)   FROM pg_proc JOIN pg_roles ON pg_proc.proowner = pg_roles.oid where  prorettype != 0 and  pronamespace in(select oid from pg_namespace where nspname = 'public') group by rolname order by rolname,count(*));
+
+```
+
+
+
+
 ### Agregar y Quitar super Usuario a un usuario/role
 ```sh
 ALTER user  "sysutileria" WITH SUPERUSER; 
