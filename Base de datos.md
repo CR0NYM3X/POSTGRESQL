@@ -3,6 +3,9 @@ Es aprender todo lo que podemos hacer solo con la base de datos
 
 # Ejemplos 
 
+### Ver a que base de datos estoy conectado
+          select  current_database();
+
 ### Consutar los nombres de las base de datos:
      \l  
      select datname from pg_database;
