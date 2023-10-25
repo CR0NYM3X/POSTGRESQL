@@ -190,6 +190,8 @@ ALTER SEQUENCE nombre_de_secuencia OWNED BY nuevo_propietario;
 #Cambiar el Propietario de un Esquema (Schema):
 ALTER SCHEMA nombre_de_esquema OWNER TO nuevo_propietario;
 
+
+
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
@@ -223,6 +225,15 @@ ALTER user  "sysutileria" WITH SUPERUSER;
 ALTER USER "sysutileria" WITH NOSUPERUSER;
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
+
+
+### Asignarle un rol a un usuario
+Este es un ejemplo de un rol para crear tablas;
+```
+CREATE ROLE tabla_creator;
+GRANT CREATE ON SCHEMA public TO tabla_creator;
+ALTER USER mi_user2 SET ROLE tabla_creator;
+```
 
 ### Asignar Permisos lógicos SELECT, UPDATE, DELETE etc:
 *El privilegio **`USAGE`** solo sirve para Secuencias, Esquemas  y Funciones,  el privilegio USAGE no permite modificar, solo para consultar o ejecutar*
