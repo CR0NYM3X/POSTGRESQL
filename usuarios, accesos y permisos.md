@@ -232,7 +232,11 @@ Este es un ejemplo de un rol para crear tablas;
 ```
 CREATE ROLE tabla_creator;
 GRANT CREATE ON SCHEMA public TO tabla_creator;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO tabla_creator;
+
 ALTER USER mi_user2 SET ROLE tabla_creator;
+GRANT tabla_creator TO my_usuario2;
+
 ```
 
 ### Asignar Permisos lógicos SELECT, UPDATE, DELETE etc:
@@ -278,6 +282,7 @@ trigger:
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Revokar o eliminar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:  
+
 
 ```sh
 Remove Owner Database
