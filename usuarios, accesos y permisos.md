@@ -251,6 +251,7 @@ TABLES:
   GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "testuserdba";
   grant SELECT, UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, RULE on all tables in schema public to "testuserdba";
   GRANT REFERENCES ON tabla_referenciada TO usuario_o_rol; -- sirve  crear claves foráneas que hacen referencia a una tabla
+  GRANT ALTER ON TABLE nombre_de_tabla TO my_user_new;
 
 
 SEQUENCES:
