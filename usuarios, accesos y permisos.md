@@ -55,9 +55,15 @@ SELECT current_user;
 ###  Buscar un usuario o role
 ```sh
  \du+ "testuserdba"    -- descripción general
+
+--- estas son vistas 
  select * from pg_user where usename ilike '%testuserdba%';  -- descripción general
  select * from pg_roles where rolname ilike '%testuserdba%';  -- Puedes ver el limite de conexiones por usuario en el campo: rolconnlimit
+
+--- este es una tabla para los roles, [Nota] si un role le colocas el permiso de login te aparecera en la tabla pg_shadow
  select * from pg_authid where rolname ilike '%testuserdba%';  -- Puedes ver el limite de conexiones por usuario  en el campo: rolconnlimit
+
+--- Este es una tabla para los usuarios 
  select * from pg_shadow where usename ilike '%testuserdba%';  -- Aqui puedes ver el hash de la contraseña  
  ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
@@ -235,6 +241,7 @@ GRANT CREATE ON SCHEMA public TO tabla_creator;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO tabla_creator;
 
 ALTER USER mi_user2 SET ROLE tabla_creator;
+ GRANT rol_name1 TO user12;
 GRANT tabla_creator TO my_usuario2;
 
 ```
