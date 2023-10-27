@@ -60,11 +60,26 @@ SELECT current_user;
  select * from pg_user where usename ilike '%testuserdba%';  -- descripción general
  select * from pg_roles where rolname ilike '%testuserdba%';  -- Puedes ver el limite de conexiones por usuario en el campo: rolconnlimit
 
---- este es una tabla para los roles, [Nota] si un role le colocas el permiso de login te aparecera en la tabla pg_shadow
+--- este es una tabla para los roles
  select * from pg_authid where rolname ilike '%testuserdba%';  -- Puedes ver el limite de conexiones por usuario  en el campo: rolconnlimit
 
+** Cosas que debes de saber de pg_authid
+1.- si creas un usuario, este usuario va aparecer en la tabla pg_authid, pero si creas un rol no va aparecer en la tabla pg_shadow,
+ almenos que al rol le coloque el permiso de login, entonces si va aparecer en la tabla pg_shadow
+
+
 --- Este es una tabla para los usuarios 
- select * from pg_shadow where usename ilike '%testuserdba%';  -- Aqui puedes ver el hash de la contraseña  
+ select * from pg_shadow where usename ilike '%testuserdba%';  -- Aqui puedes ver el hash de la contraseña
+
+**Columnas de pg_shadow:
+ usecreatedb,  -- Permiso para crear bases de datos 
+ usesuper,     -- Es super usuario tiene todos los permisos
+ userepl,      -- Permisos para realizar tareas de replicación, como conectarse a una base de datos secundaria 
+ usebypassrls, -- Se brinca la seguridad de las tablas | Row Level Security
+ valuntil,     -- Vida util que tiene un usuario, como fecha de expiracion
+ useconfig     -- Es donde se muestra si le asignan un rol al usuario
+
+
  ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
