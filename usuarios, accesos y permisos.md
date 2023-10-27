@@ -241,9 +241,10 @@ GRANT CREATE ON SCHEMA public TO tabla_creator;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO tabla_creator;
 
 ALTER USER mi_user2 SET ROLE tabla_creator;
- GRANT rol_name1 TO user12;
+GRANT rol_name1 TO user12;
 GRANT tabla_creator TO my_usuario2;
 
+REVOKE role_a, role_b FROM my_user;
 ```
 
 ### Asignar Permisos lógicos SELECT, UPDATE, DELETE etc:
