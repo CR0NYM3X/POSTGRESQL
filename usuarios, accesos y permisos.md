@@ -406,8 +406,13 @@ CREATE GROUP mi_grupo;
 ``` 
  
 ### Ver los miembros de un grupo específico:
+Se utiliza para rastrear las membresías de roles (usuarios o grupos) 
 ```sh
 select  roleid::regrole AS group_name, member::regrole AS member_name,grantor::regrole   FROM pg_auth_members WHERE roleid = 'mi_grupo';
+
+
+select usename, rolname from pg_user join pg_auth_members on (pg_user.usesysid=pg_auth_members.member) 
+join pg_roles on (pg_roles.oid=pg_auth_members.roleid) 
 ```
 
 
