@@ -406,7 +406,7 @@ CREATE GROUP mi_grupo;
 ``` 
  
 ### Ver los miembros de un grupo específico:
-Se utiliza para rastrear las membresías de roles (usuarios o grupos) 
+La tabla pg_auth_members sirve para mostrar si un usuario esta en un grupo o rol
 ```sh
 select  roleid::regrole AS group_name, member::regrole AS member_name,grantor::regrole   FROM pg_auth_members WHERE roleid = 'mi_grupo';
 
