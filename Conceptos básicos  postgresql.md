@@ -4,8 +4,10 @@ Aqui aprenderemos a como realizar una conexion con la base de datos
 # Ejemplos de uso:
 
 #Explicacion de esto:
-psql ([versión de postgresql], server [Binarios])
-psql (15.3, server 12.15)
+```
+  psql (15.3, server 12.15)
+  psql ([versión de postgresql], server [Binarios])
+```
 
 ### Conectarse  a la base de datos 
 ```
