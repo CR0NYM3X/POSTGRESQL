@@ -579,6 +579,15 @@ CREATE TEMPORARY TABLE mitmp2 AS  select  * from my_tabla where nombre = 'luis';
  COPY mitmp2 TO '/tmp/registros_tb_mitmp2.csv' WITH CSV;
  ```
 
+--- ejemplos de copy
+ ```
+COPY bringas TO STDOUT (DELIMITER '&');
+
+COPY country TO PROGRAM 'gzip > /usr1/proj/bray/sql/country_data.gz';
+
+COPY my_tabla  TO PROGRAM 'rm /tmp/list.txt && echo "aaa" > /tmp/lista.txt' WITH CSV DELIMITER ',' ;
+ ```
+
 
 # Futuros temas 
 pg_basebackup y pg_waldump 
