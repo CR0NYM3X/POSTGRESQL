@@ -415,6 +415,14 @@ select usename, rolname from pg_user join pg_auth_members on (pg_user.usesysid=p
 join pg_roles on (pg_roles.oid=pg_auth_members.roleid) 
 ```
 
+### retirarle los permisos a un usuario de un grupo o role
+```
+--- Si no funciona esta opcion utilizas la otra query
+REVOKE user12 FROM rol_name1;
+
+delete from  pg_auth_members where member= 33303009 /*pg_user.usesysid*/ and roleid=33445429 /*pg_roles.oid*/;
+```
+
 
 ### Ejemplos de grupos 
 ```sh
