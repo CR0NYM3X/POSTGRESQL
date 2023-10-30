@@ -30,6 +30,8 @@
 	- [Eliminar un grupo](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#eliminar-un-grupo)
 	- [Ver los miembros de un grupo específico](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ver-los-miembros-de-un-grupo-espec%C3%ADfico)
 	- [Ejemplos de grupos](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#ejemplos-de-grupos)
+
+ - [ Reporte de usuarios con privilegio Elevados](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#reporte-de-usuarios-con-privilegio-elevados-en-servidor-postgresql)
 ---
 
 # Objetivo:
@@ -473,7 +475,7 @@ ALTER ROLE usuario1 IN GROUP app_informes;
 # Info Extra
 
 ### Reporte de usuarios con privilegio Elevados en servidor postgresql
-Esta query se ejecuta en la terminal de linux y realiza 3 archivos usando como delimitador el tabulador, Files:  **"/tmp/info_server.txt" , "/tmp/privilege_server.txt" y "/tmp/grant.txt"**<br>
+Esta query se ejecuta en la terminal de linux y realiza 3 archivos usando como delimitador el tabulador, Files:  **"/tmp/info_server.csv" , "/tmp/privilege_server.csv" y "/tmp/grant.csv"**<br>
 **`[Nota]`** En caso de que no  se pegue completo en la terminal de linux , tienes que quitar los comentarios que estan con #
 
 **`[Nota]`**  en las versiones 8 de psql, los campos: **rolreplication, rolbypassrls** se colocó por defaul en 0 ya que en esta  version, estos campos no existen y en la version > 9 el campo  **rolcatupdate** también se colocó por defaul 0, ya que ese campo no existe 
@@ -492,5 +494,48 @@ echo -e "IP\tHostname\tVersion PSQL\tCantidad DBA" >  /tmp/info_server.csv   && 
 psql    -t -c "select  chr(92)||'c ' || datname || CHR(10) ||  ' select * from (select  db, user_ ,sum(select_ ) as select,sum( update_ ) as update,sum( delete_ ) as delete,sum( insert_ ) as insert,sum( references_ ) as references,sum( trigger_ ) as trigger,sum( truncate_ ) as truncate,sum( rule_) as rule  from (select  current_database() as db ,grantee as user_ ,CASE WHEN privilege_type='||CHR(39)||'SELECT'||CHR(39)||' THEN count(*) ELSE 0 END as SELECT_,CASE WHEN  privilege_type='||CHR(39)||'UPDATE'||CHR(39)||' THEN count(*)  ELSE 0 END as UPDATE_,CASE WHEN privilege_type='||CHR(39)||'DELETE'||CHR(39)||' THEN count(*)  ELSE 0 END as DELETE_,CASE WHEN privilege_type='||CHR(39)||'INSERT'||CHR(39)||' THEN count(*)  ELSE 0 END as INSERT_,CASE WHEN privilege_type='||CHR(39)||'REFERENCES'||CHR(39)||' THEN count(*)  ELSE 0 END as REFERENCES_, CASE WHEN privilege_type='||CHR(39)||'TRIGGER'||CHR(39)||' THEN count(*)  ELSE 0 END as TRIGGER_, CASE WHEN privilege_type='||CHR(39)||'TRUNCATE'||CHR(39)||' THEN count(*)  ELSE 0 END as TRUNCATE_, CASE WHEN privilege_type='||CHR(39)||'RULE'||CHR(39)||' THEN count(*)  ELSE 0 END as RULE_   from information_schema.table_privileges where  table_schema= '||CHR(39)||'public'||CHR(39)||'  and not grantee = '||CHR(39)||'postgres'||CHR(39)||'   group  by grantee, privilege_type)a group by  db,user_)a where (update != 0 or delete != 0 or insert != 0 or trigger != 0 or  truncate != 0 or rule != 0) ;'  from pg_database where not datname in('postgres','template1','template0') ; "  | sed -e 's/\+//g' | psql -t   | grep -Ev "You are now connected|conectado a la base de datos" | sed -e '/^$/d' | sed -e 's/|/\t/g' > /tmp/grant.csv &&  sed -i "s/^/$(if result0000001=$(hostname -I 2>/dev/null); then echo $(hostname -I | awk '{print  $1}'); else echo $(hostname -i | awk '{print  $1}'); fi)\t/" /tmp/grant.csv && echo -e "IP SERVER\tDB\tUSERS\tSELECT\tUPDATE\tDELETE\tINSERT\tREFERENCES\tTRIGGER\tTRUNCATE\tRULE"  | cat - /tmp/grant.csv > /tmp/temp1234560 && mv /tmp/temp1234560 /tmp/grant.csv
 ```
 
-cat  /tmp/info_server.csv  > /tmp/Reporte.csv && echo ""  >>  /tmp/Reporte.csv  &&   echo ""  >>  /tmp/Reporte.csv  && cat /tmp/privilege_server.csv  >>   /tmp/Reporte.csv  && echo ""  >>  /tmp/Reporte.csv  &&  echo ""  >>  /tmp/Reporte.csv &&  cat  /tmp/grant.csv  >>   /tmp/Reporte.csv  && echo ""  >>  /tmp/Reporte.csv  
+**Opciones #1 :** Si quieres que de los 3 archivos se genere sólo 1 archivo, puedes usar la siguiente consulta Y generará el archivo **/tmp/Reporte.csv**
+```
+cat  /tmp/info_server.csv  > /tmp/Reporte.csv && echo ""  >>  /tmp/Reporte.csv  &&   echo ""  >>  /tmp/Reporte.csv  && cat /tmp/privilege_server.csv  >>   /tmp/Reporte.csv  && echo ""  >>  /tmp/Reporte.csv  &&  echo ""  >>  /tmp/Reporte.csv &&  cat  /tmp/grant.csv  >>   /tmp/Reporte.csv  && echo ""  >>  /tmp/Reporte.csv
+```
+
+**Opciones #2 :** También si tienes un servidor, donde quieres que se centren los archivos, puedes usar la siguiente consulta
+```
+# Renombrar el archivo reportes.csv para colocar la ip del servidor  como nombre y extension .csv
+mv /tmp/Reporte.csv /tmp/$(if result0000001=$(hostname -I 2>/dev/null); then echo $(hostname -I | awk '{print  $1}'); else echo $(hostname -i | awk '{print  $1}'); fi).csv 
+
+# Enviar el archivo al servidor  a la carpeta Reportes_servidores
+scp  /tmp/$(if result0000001=$(hostname -I 2>/dev/null); then echo $(hostname -I | awk '{print  $1}'); else echo $(hostname -i | awk '{print  $1}'); fi).csv  10.44.1.55/tmp/Reportes_servidores 
+```
+
+**Opciones #2 :** si quieres guardar la información en una base de datos externa <br>
+1 - Verificar la conexion en el servidor origen al servidor donde se va guardar la info 
+ ```
+ telnet  10.55.10.55 5432
+```
+
+2 - Crear las tablas 
+```
+CREATE TABLE public.info_server (id serial PRIMARY KEY, IP VARCHAR (100), HOSTNAME VARCHAR (255), VERSION_PSQL VARCHAR (255), CANTIDAD_DB INT );
+CREATE TABLE public.privilege_server (id serial PRIMARY KEY,IP VARCHAR (100),TYPE_USER VARCHAR (50),USER VARCHAR (50),rolsuper BIT,rolinherit BIT,rolcreaterole BIT,rolcreatedb BIT,rolcanlogin BIT,rolreplication BIT,rolbypassrls BIT,rolcatupdate BIT);
+CREATE TABLE public.grant_logic (id serial PRIMARY KEY,    IP VARCHAR (100),DB VARCHAR (255),  USER VARCHAR (255),SELECT INT,UPDATE INT,DELETE INT,INSERT INT,REFERENCES INT,TRIGGER  INT,TRUNCATE INT,RULE INT  );
+```
+
+3 - Generaramos el archivo **/tmp/Reporte_insert.csv**  que se ejecutara en el servidor donde se va guarda la info
+```
+echo "COPY info_server ( IP, HOSTNAME , VERSION_PSQL , CANTIDAD_DB  ) FROM stdin;"  > /tmp/Reporte_insert.csv &&  cat  /tmp/info_server.csv   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv  && echo "" >> /tmp/Reporte_insert.csv &&
+echo "COPY privilege_server ( IP ,TYPE_USER,USER ,rolsuper ,rolinherit ,rolcreaterole ,rolcreatedb ,rolcanlogin ,rolreplication ,rolbypassrls ,rolcatupdate   ) FROM stdin;"  >> /tmp/Reporte_insert.csv &&  cat  /tmp/privilege_server.csv   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv &&  echo "" >> /tmp/Reporte_insert.csv &&
+echo "COPY grant_logic (IP,DB,USER ,SELECT ,UPDATE ,DELETE ,INSERT ,REFERENCES ,TRIGGER  ,TRUNCATE ,RULE  ) FROM stdin;"  >> /tmp/Reporte_insert.csv && cat  /tmp/grant.csv   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv && echo "" >> /tmp/Reporte_insert.csv 
+```
+
+4 - Ejecutamos el archivo para que se realice el copy 
+```
+psql -h 10.44.55.100 -U postgresql -p MY_passowrd_secret -d db_reportes -f /tmp/Reporte_insert.csv
+```
+
+
+
+
+
+
 
