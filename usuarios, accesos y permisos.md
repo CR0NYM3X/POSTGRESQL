@@ -508,7 +508,7 @@ mv /tmp/Reporte.csv /tmp/$(if result0000001=$(hostname -I 2>/dev/null); then ech
 scp  /tmp/$(if result0000001=$(hostname -I 2>/dev/null); then echo $(hostname -I | awk '{print  $1}'); else echo $(hostname -i | awk '{print  $1}'); fi).csv  10.44.1.55/tmp/Reportes_servidores 
 ```
 
-**Opciones #2 :** si quieres guardar la información en una base de datos externa <br>
+**Opciones #3 :** si quieres guardar la información en una base de datos externa <br>
 1 - Verificar la conexion en el servidor origen al servidor donde se va guardar la info 
  ```
  telnet  10.55.10.55 5432
@@ -517,20 +517,24 @@ scp  /tmp/$(if result0000001=$(hostname -I 2>/dev/null); then echo $(hostname -I
 2 - Crear las tablas 
 ```
 CREATE TABLE public.info_server (id serial PRIMARY KEY, IP VARCHAR (100), HOSTNAME VARCHAR (255), VERSION_PSQL VARCHAR (255), CANTIDAD_DB INT );
-CREATE TABLE public.privilege_server (id serial PRIMARY KEY,IP VARCHAR (100),TYPE_USER VARCHAR (50),USER VARCHAR (50),rolsuper BIT,rolinherit BIT,rolcreaterole BIT,rolcreatedb BIT,rolcanlogin BIT,rolreplication BIT,rolbypassrls BIT,rolcatupdate BIT);
-CREATE TABLE public.grant_logic (id serial PRIMARY KEY,    IP VARCHAR (100),DB VARCHAR (255),  USER VARCHAR (255),SELECT INT,UPDATE INT,DELETE INT,INSERT INT,REFERENCES INT,TRIGGER  INT,TRUNCATE INT,RULE INT  );
+CREATE TABLE public.privilege_server (id serial PRIMARY KEY,IP VARCHAR (100),TYPE_USER VARCHAR (50),USER_ VARCHAR (50),rolsuper BIT,rolinherit BIT,rolcreaterole BIT,rolcreatedb BIT,rolcanlogin BIT,rolreplication BIT,rolbypassrls BIT,rolcatupdate BIT);
+CREATE TABLE public.grant_logic (id serial PRIMARY KEY,    IP VARCHAR (100),DB VARCHAR (255),  USER_ VARCHAR (255),SELECT_ INT,UPDATE_ INT,DELETE_ INT,INSERT_ INT,REFERENCES_ INT,TRIGGER_  INT,TRUNCATE_ INT,RULE_ INT  );
 ```
 
 3 - Generaramos el archivo **/tmp/Reporte_insert.csv**  que se ejecutara en el servidor donde se va guarda la info
 ```
-echo "COPY info_server ( IP, HOSTNAME , VERSION_PSQL , CANTIDAD_DB  ) FROM stdin;"  > /tmp/Reporte_insert.csv &&  cat  /tmp/info_server.csv   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv  && echo "" >> /tmp/Reporte_insert.csv &&
-echo "COPY privilege_server ( IP ,TYPE_USER,USER ,rolsuper ,rolinherit ,rolcreaterole ,rolcreatedb ,rolcanlogin ,rolreplication ,rolbypassrls ,rolcatupdate   ) FROM stdin;"  >> /tmp/Reporte_insert.csv &&  cat  /tmp/privilege_server.csv   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv &&  echo "" >> /tmp/Reporte_insert.csv &&
-echo "COPY grant_logic (IP,DB,USER ,SELECT ,UPDATE ,DELETE ,INSERT ,REFERENCES ,TRIGGER  ,TRUNCATE ,RULE  ) FROM stdin;"  >> /tmp/Reporte_insert.csv && cat  /tmp/grant.csv   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv && echo "" >> /tmp/Reporte_insert.csv 
+echo "COPY info_server ( IP, HOSTNAME , VERSION_PSQL , CANTIDAD_DB  ) FROM stdin;"  > /tmp/Reporte_insert.csv &&  cat  /tmp/info_server.csv | grep -v "Cantidad DBA"   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv  && echo "" >> /tmp/Reporte_insert.csv &&
+echo "COPY privilege_server ( IP ,TYPE_USER,USER_ ,rolsuper ,rolinherit ,rolcreaterole ,rolcreatedb ,rolcanlogin ,rolreplication ,rolbypassrls ,rolcatupdate   ) FROM stdin;"  >> /tmp/Reporte_insert.csv &&  cat  /tmp/privilege_server.csv | grep -v "rolbypassrls"   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv &&  echo "" >> /tmp/Reporte_insert.csv &&
+echo "COPY grant_logic (IP,DB,USER_ ,SELECT_ ,UPDATE_ ,DELETE_ ,INSERT_ ,REFERENCES_ ,TRIGGER_  ,TRUNCATE_ ,RULE_  ) FROM stdin;"  >> /tmp/Reporte_insert.csv && cat  /tmp/grant.csv  | grep -v "TRUNCATE"  >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv && echo "" >> /tmp/Reporte_insert.csv 
 ```
 
 4 - Ejecutamos el archivo para que se realice el copy 
 ```
 psql -h 10.44.55.100 -U postgresql -p MY_passowrd_secret -d db_reportes -f /tmp/Reporte_insert.csv
+
+ select * from info_server;
+ select * from grant_logic;
+ select * from privilege_server;
 ```
 
 
