@@ -528,16 +528,15 @@ echo "COPY privilege_server ( IP ,TYPE_USER,USER_ ,rolsuper ,rolinherit ,rolcrea
 echo "COPY grant_logic (IP,DB,USER_ ,SELECT_ ,UPDATE_ ,DELETE_ ,INSERT_ ,REFERENCES_ ,TRIGGER_  ,TRUNCATE_ ,RULE_  ) FROM stdin;"  >> /tmp/Reporte_insert.csv && cat  /tmp/grant.csv  | grep -v "TRUNCATE"  >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv && echo "" >> /tmp/Reporte_insert.csv 
 ```
 
-4 - Ejecutamos el archivo para que se realice el copy 
+4 - Ejecutamos el archivo para que se realice el copy en las tablas
 ```
 psql -h 10.44.55.100 -U postgresql -p MY_passowrd_secret -d db_reportes -f /tmp/Reporte_insert.csv
-
- select * from info_server;
- select * from grant_logic;
- select * from privilege_server;
 ```
 
-
+5- Consultar la información en las tablas 
+```
+psql -p 5435 -c "select * from info_server;  select * from grant_logic;  select * from privilege_server;"
+```
 
 
 
