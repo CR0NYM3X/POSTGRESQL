@@ -508,7 +508,8 @@ mv /tmp/Reporte.csv /tmp/$(if result0000001=$(hostname -I 2>/dev/null); then ech
 scp  /tmp/$(if result0000001=$(hostname -I 2>/dev/null); then echo $(hostname -I | awk '{print  $1}'); else echo $(hostname -i | awk '{print  $1}'); fi).csv  10.44.1.55/tmp/Reportes_servidores 
 ```
 
-**Opciones #3 :** si quieres guardar la información en una base de datos externa <br>
+
+**Opciones #3 :** si quieres guardar la información, en una base de datos remota, realiza lo siguientes pasos: <br>
 1 - Verificar la conexion en el servidor origen al servidor donde se va guardar la info 
  ```
  telnet  10.55.10.55 5432
@@ -521,14 +522,14 @@ CREATE TABLE public.privilege_server (id serial PRIMARY KEY,IP VARCHAR (100),TYP
 CREATE TABLE public.grant_logic (id serial PRIMARY KEY,    IP VARCHAR (100),DB VARCHAR (255),  USER_ VARCHAR (255),SELECT_ INT,UPDATE_ INT,DELETE_ INT,INSERT_ INT,REFERENCES_ INT,TRIGGER_  INT,TRUNCATE_ INT,RULE_ INT  );
 ```
 
-3 - Generaramos el archivo **/tmp/Reporte_insert.csv**  que se ejecutara en el servidor donde se va guarda la info
+3 - Generaramos el archivo **/tmp/Reporte_insert.csv**  que va  generar un copy stdin
 ```
 echo "COPY info_server ( IP, HOSTNAME , VERSION_PSQL , CANTIDAD_DB  ) FROM stdin;"  > /tmp/Reporte_insert.csv &&  cat  /tmp/info_server.csv | grep -v "Cantidad DBA"   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv  && echo "" >> /tmp/Reporte_insert.csv &&
 echo "COPY privilege_server ( IP ,TYPE_USER,USER_ ,rolsuper ,rolinherit ,rolcreaterole ,rolcreatedb ,rolcanlogin ,rolreplication ,rolbypassrls ,rolcatupdate   ) FROM stdin;"  >> /tmp/Reporte_insert.csv &&  cat  /tmp/privilege_server.csv | grep -v "rolbypassrls"   >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv &&  echo "" >> /tmp/Reporte_insert.csv &&
 echo "COPY grant_logic (IP,DB,USER_ ,SELECT_ ,UPDATE_ ,DELETE_ ,INSERT_ ,REFERENCES_ ,TRIGGER_  ,TRUNCATE_ ,RULE_  ) FROM stdin;"  >> /tmp/Reporte_insert.csv && cat  /tmp/grant.csv  | grep -v "TRUNCATE"  >> /tmp/Reporte_insert.csv &&  echo "\." >>  /tmp/Reporte_insert.csv && echo "" >> /tmp/Reporte_insert.csv 
 ```
 
-4 - Ejecutamos el archivo para que se realice el copy en las tablas
+4 - Ejecutamos el archivo remotamente, para que se realice el copy en las tablas
 ```
 psql -h 10.44.55.100 -U postgresql -p MY_passowrd_secret -d db_reportes -f /tmp/Reporte_insert.csv
 ```
