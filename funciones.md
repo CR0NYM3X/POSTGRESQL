@@ -101,6 +101,8 @@ Para realizar esta actividad podemos consultar el archivo [usuarios, accesos y p
 
 ### ver todos los parámetros de una funcion 
 ```
+\df *pg_fun*
+
 #Ver los parámetros de una función
 SELECT
     r.specific_name AS function_identifier,
