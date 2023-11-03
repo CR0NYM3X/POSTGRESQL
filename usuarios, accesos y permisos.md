@@ -179,6 +179,8 @@ where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, priv
 # Para view:
 # Para index:
 
+# Tambien se puede usar la siguiente tabla 
+SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.role_table_grants WHERE grantee='my_user';
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
