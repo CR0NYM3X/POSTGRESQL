@@ -92,7 +92,8 @@ Servidor Destino: 10.44.1.55 | Postgresql 15
 
 **`Respaldar`** toda la base de datos "Banco", junto con su usuarios y que solo respalde las tablas del schema sch_tienda, public y no respalde las tablas del schema sch_tienda_respaldo100 y que use el encoding "UTF8" , tambien intentar comprimirlo al máximo
 
-
+<br> Puedes validar la documentacion oficial para validar todos los tipos de encoding 
+[24.3.4. Available Character Set Conversion](https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf)
 ```
 
 pg_dump -p5432 -d banco -n sch_tienda -n public -N sch_tienda_respaldo100 -E UTF8 -F c -Z 9 -f /tmp/bckup_banco.sql.gz &
