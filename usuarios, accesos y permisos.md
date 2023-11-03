@@ -87,8 +87,8 @@ SELECT current_user;
 
 ### Crear un usuario:
 ```sh
-CREATE USER "testuserdba"; -- es lo mismo role que user
-CREATE role "testuserdba";  -- es lo mismo role que user
+CREATE USER "testuserdba"; -- crear un user
+CREATE role "testuserdba";  -- crear un role  
 CREATE USER "testuserdba" login VALID UNTIL  '2023-11-15'; --- fecha de expiracion  
 CREATE USER testuserdba WITH PASSWORD '123456789'; -- no se recomienda colocar el password en con el create, por que en los log o el historial  puedes ver la contraseña
 
@@ -308,7 +308,32 @@ View:
 
 trigger:
   GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
+
 ```
+
+# Roles del sistema postgresql predefinidos 
+Estos son roles predifinidos que se pueden asignar a un usuario en caso de ocuparlos
+Documentación oficial [22.5. Predefined Roles
+](https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf)
+
+**pg_read_all_data** Leer todos los datos (tablas, vistas, secuencias), como si tuviera SELECT derechos sobre esos objetos <br>
+**pg_write_all_data**  Escriba todos los datos (tablas, vistas, secuencias), como si tuviera INSERT,ACTUALIZAR y ELIMINAR derechos sobre esos objeto <br>
+**pg_read_all_settings** Leer todas las variables de configuración, incluso aquellas que normalmente solo son visibles a los superusuarios.  <br>
+**pg_read_all_stats**  Lea todas las vistas de pg_stat_* y utilice varias extensiones relacionadas con estadísticas, incluso aquellas que normalmente son visibles solo para superusuarios. <br>
+**pg_stat_scan_tables**  Ejecutar funciones de monitoreo que puedan tomar ACCESS SHARE <br>
+**pg_monitor**  Leer/ejecutar varias vistas y funciones de monitoreo. este papel
+es miembro de pg_read_all_settings, pg_read_all_stats y pg_stat_scan_tables <br>
+**pg_database_owner**   None. Membership consists, implicitly, of the current database owner. <br>
+**pg_signal_backend** Señalar a otro servidor para que cancele una consulta o finalice su sesión.  <br>
+**pg_read_server_files** Permitir la lectura de archivos desde cualquier ubicación a la que pueda acceder la base de datos
+el servidor con COPIA y otras funciones de acceso a archivos  <br>
+**pg_write_server_files**  Permitir escribir en archivos en cualquier ubicación a la que pueda acceder la base de datos
+el servidor con COPIA y otras funciones de acceso a archivos <br>
+**pg_execute_server_program** Permitir la ejecución de programas en el servidor de base de datos como usuario
+La base de datos se ejecuta como con COPY y otras funciones que permiten ejecutar un programa del lado del servidor.  <br>
+**pg_checkpoint** Permitir ejecutar el comando CHECKPOINT.
+
+
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Revokar o eliminar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:  
@@ -545,3 +570,6 @@ psql -p 5435 -c "select * from info_server;  select * from grant_logic;  select 
 
 
 
+## Bibliografía:
+
+https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf
