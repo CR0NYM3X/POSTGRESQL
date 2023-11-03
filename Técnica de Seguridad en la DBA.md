@@ -29,16 +29,23 @@ select current_database();
 FUNCIONES
 
 -- Manipulacion de ficheros 
---- Leee un archivo de texto
-select pg_read_file('/etc/hostname')
+```
+select pg_read_file('/etc/hostname') --- Leee un archivo de texto
 pg_write_file
 copy
 pgcrypto
+```
 
 -- Busca funciones del sistema que te permite manipular el sistema
+```
 \df *pg_re*
 SELECT proname FROM pg_proc WHERE proname ilike 'pg_w%';
+SELECT proname FROM pg_proc WHERE proname ilike 'pg_r%';
+SELECT proname FROM pg_proc WHERE proname ilike 'pg_l%';
 
+select pg_ls_dir('/tmp');
+select pg_ls_logdir();
+```
 
 -- ejecutar comandos de manera remota 
 dblink
