@@ -37,6 +37,8 @@ pgcrypto
 
 -- Busca funciones del sistema que te permite manipular el sistema
 \df *pg_re*
+SELECT proname FROM pg_proc WHERE proname ilike 'pg_w%';
+
 
 -- ejecutar comandos de manera remota 
 dblink
