@@ -32,6 +32,11 @@ El esquema information_schema es otro esquema interno de PostgreSQL que proporci
 
 # Ejemplos de uso:
 
+## Usar un esquema
+```
+SET SEARCH_PATCH TO my_schema;
+```
+
 ## Consultar todos los esquemas que hay 
 ```sh 
 SELECT nspname AS schema_name FROM pg_namespace ORDER BY schema_name;
