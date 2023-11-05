@@ -279,6 +279,7 @@ TABLES:
   grant SELECT, UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, RULE on all tables in schema public to "testuserdba";
   GRANT REFERENCES ON tabla_referenciada TO usuario_o_rol; -- sirve  crear claves foráneas que hacen referencia a una tabla
   GRANT ALTER ON TABLE nombre_de_tabla TO my_user_new;
+  GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA CLINICA TO dba WITH GRANT OPTION;  -- este se usa si quieres que el rol quiere heredar con grant
 
 
 SEQUENCES:
