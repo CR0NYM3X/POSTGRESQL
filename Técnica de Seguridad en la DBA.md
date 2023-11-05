@@ -13,6 +13,8 @@ COPY cat_prueba from  PROGRAM 'cat /tmp/test2.txt';
 --- En linux puede usar el comando para ver el historial de comandos, esto lo puedes juntar con el comando copy y puedes ver todo lo que se ejecuta
 cat ~/.bash_history > /tmp/historial.txt
 
+-- comando linux para saber con que usuario estoy usando
+whoami
 ```
 
 
