@@ -529,21 +529,21 @@ COPY clientes FROM /tmp/tabla_clientes.csv' WITH (FORMAT CSV);
 ```
 
 # como hacer un RollBack en la base de datos
-PERMITE QUE LAS TRANSACCIONES/OPERACIONES SEAN AISLADAS Y TRANSPARENTES UNAS DE OTRAS, ESTO QUIERE DECIR QUE SI OTRA SESION NUEVA, NO VA DETECTAR LOS CAMBIOS de los insert,update,delete etc, siempre  
+El **begin** Permite que las transacciones/operaciones sean aisladas y transparentes unas de otras, esto quiere decir que si una sesion nueva se abre, no va detectar los cambios realizados en el cuando se incia el begin como son los insert,update,delete etc, 
  ```
 BEGIN TRANSACTION;
  ```
-Este se usa para guardar los cambios que se realizaron y estas seguro de que todo salio bien
+El **commit**  se usa para guardar los cambios que se realizaron, como los insert,detelete, etc y estas seguro de que todo salio bien
  ```
 COMMIT:
  ```
-Este se usa en caso de que algo salio mal  y no quieres que se guarden los cambios entonces puedes hacer los rollback cmpleto o a un punto de guardado
+el **rollback** se usa en caso de que algo salio mal  y no quieres que se guarden los cambios entonces puedes hacer los rollback completo o un un rollback punto de guardado
  ```
 rollback;
 rollback my_name_savepoint;
  ```
 
-Sirve para hacer un punto de guardado, en caso de realizar varios cambios en un begin 
+el **savepoint** sirve para hacer un punto de guardado, en caso de realizar varios cambios en un begin 
  ```
 savepoint my_name_savepoint;
  ```
