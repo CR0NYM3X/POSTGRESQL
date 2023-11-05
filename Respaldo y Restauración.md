@@ -6,6 +6,7 @@
 	- [Pg_dumpall](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_dumpall---help)
 	- [pg_restore](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Respaldo%20y%20Restauraci%C3%B3n.md#pg_restore---help)
  	- [Copy](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Respaldo%20y%20Restauraci%C3%B3n.md#copy)
+  	- [como hacer un RollBack en la base de datos](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Respaldo%20y%20Restauraci%C3%B3n.md#como-hacer-un-rollback-en-la-base-de-datos) 
 
    
 # Objetivo:
@@ -526,6 +527,27 @@ COPY clientes FROM /tmp/tabla_clientes.csv' WITH (FORMAT CSV);
        COPY mi_tabla FROM PROGRAM 'cat archivo.csv' WITH (FORMAT CSV);
 
 ```
+
+# como hacer un RollBack en la base de datos
+PERMITE QUE LAS TRANSACCIONES/OPERACIONES SEAN AISLADAS Y TRANSPARENTES UNAS DE OTRAS, ESTO QUIERE DECIR QUE SI OTRA SESION NUEVA, NO VA DETECTAR LOS CAMBIOS de los insert,update,delete etc, siempre  
+ ```
+BEGIN TRANSACTION;
+ ```
+Este se usa para guardar los cambios que se realizaron y estas seguro de que todo salio bien
+ ```
+COMMIT:
+ ```
+Este se usa en caso de que algo salio mal  y no quieres que se guarden los cambios entonces puedes hacer los rollback cmpleto o a un punto de guardado
+ ```
+rollback;
+rollback my_name_savepoint;
+ ```
+
+Sirve para hacer un punto de guardado, en caso de realizar varios cambios en un begin 
+ ```
+savepoint my_name_savepoint;
+ ```
+
 
 # Info Extra
 
