@@ -14,6 +14,14 @@ Aqui aprenderemos a como realizar una conexion con la base de datos
  psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres 
 ```
 
+### ejecutar querys en la base de datos
+```
+PGPASSWORD=micontraseña psql -p5433 -h 127.0.0.1 -d aplicativo_test -U postgres <<EOF
+select now();
+select version();
+EOF
+```
+
 ### Guardar los resultados de una consulta en un csv 
 ```
  psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres -c "select * from clientes"  --csv -o /tmp/data_clientes.csv
