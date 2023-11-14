@@ -36,6 +36,7 @@ Mantén registros detallados de tu política de respaldo, horarios y procedimien
 
 
 **`Herramintas de respaldo`** 
+que realiza un respaldo lógico generando consultas SQL
 pg_dump : Puedes respaldar solo una base de datos
 pg_dumpall : aquí se respalda todas las base de datos
 copy
@@ -529,6 +530,10 @@ COPY clientes FROM /tmp/tabla_clientes.csv' WITH (FORMAT CSV);
 ```
 
 # como hacer un RollBack en la base de datos
+**`[NOTA]`** Cada sesión puede tener su propia transacción independiente. Por lo tanto, si ejecutas un BEGIN en una sesión y no lo cierras, solo afectará a esa sesión específica. Otras sesiones no se verán afectadas por la transacción no cerrada en la primera sesión. <br><br>
+
+
+
 El **begin** Permite que las transacciones/operaciones sean aisladas y transparentes unas de otras, esto quiere decir que si una sesion nueva se abre, no va detectar los cambios realizados en el cuando se incia el begin como son los insert,update,delete etc, 
  ```
 BEGIN TRANSACTION;
@@ -616,3 +621,20 @@ COPY my_tabla  TO PROGRAM 'rm /tmp/list.txt && echo "aaa" > /tmp/lista.txt' WITH
 pg_basebackup y pg_waldump 
 
 
+
+
+# pg_basebackup
+
+pg_basebackup proporciona una copia física de todos los datos y archivos necesarios para restaurar una instancia de PostgreSQL. Esta copia incluye la carpeta de datos y los archivos WAL, lo que permite una restauración completa y coherente de la base de datos en caso de necesidad. En comparación con pg_dump, que crea un script SQL para recrear la base de datos, pg_basebackup es más rápido y es especialmente útil para grandes conjuntos de datos, ya que no involucra la generación de consultas SQL.
+ ```
+pg_basebackup -U tu_usuario -D /ruta/del/destino -F t -Xs -P -v
+
+
+-U tu_usuario: Aquí pones tu nombre de usuario de PostgreSQL.
+-D /ruta/del/destino: Esto es donde quieres guardar la copia de seguridad. Puedes elegir una carpeta en tu computadora.
+-F t: Le dice a pg_basebackup que use el formato de archivo TAR, que es como un contenedor para tus datos.
+-Xs: Hace que pg_basebackup haga un respaldo en caliente, lo que significa que puedes seguir usando tu base de datos mientras se está haciendo la copia de seguridad.
+-P: Muestra el progreso mientras se realiza la copia de seguridad.
+-v: Activa el modo detallado, así verás exactamente lo que está haciendo pg_basebackup.
+
+ ```
