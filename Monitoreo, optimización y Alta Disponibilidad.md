@@ -103,7 +103,7 @@ select  count(*) pid FROM pg_stat_activity WHERE  TRIM(state) ='idle';
  ps -fea | grep -i idle -wc
 ```
 
-## Verificar conexiones que presentan bloqueos
+## Verificar conexiones que tienen consultas con tiempo de ejecucion alto
 
 Estatus: `"IDLE"` se refiere a un estado en el que una conexión a la base de datos se encuentra inactiva. Esto significa que la conexión está establecida, pero no se está ejecutando ninguna consulta o transacción en ese momento. Las conexiones "idle" son comunes en entornos de bases de datos donde varios clientes se conectan y desconectan de la base de datos.<br>
 
@@ -124,7 +124,7 @@ Puedes configurar el tiempo máximo que una conexión puede permanecer inactiva 
 ```
 3. Ver las conexiones que tengan más de 5 minutos en postgresql 8
 ```sh
- SELECT procpid ,  usename, pg_stat_activity.query_start, now() - pg_stat_activity.query_start AS query_time, current_query FROM pg_stat_activity WHERE (now() - pg_stat_activity.query_start) > interval '5 minutes'
+ SELECT procpid ,  usename, pg_stat_activity.query_start, now() - pg_stat_activity.query_start AS query_time, current_query FROM pg_stat_activity WHERE (now() - pg_stat_activity.query_start) > interval '5 minutes' and  current_query  !=  '<IDLE>';
 ```
 
 
