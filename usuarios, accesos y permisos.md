@@ -570,6 +570,14 @@ psql -p 5435 -c "select * from info_server;  select * from grant_logic;  select 
 
 
 
+### Sacar
+Obtener el usuario y el comentario que tiene despues del md5  del archivo pg_hba.conf
+
+```
+cat /syst/data/pg_hba.conf | grep -E "usuario1|usuario2|usuario3|usuario4|usuario5" | grep -Ev "^#" | grep "#" | awk '{print " Usuario : " $3  , substr($0, index($0,  "md5"))}' | sed -e 's/md5//g'
+```
+ejemplo:<br>
+ Usuario : usuario1  # Este usuario se agrego en el 2021 y es de nuevo ingreso
 
 ## Bibliografía:
 
