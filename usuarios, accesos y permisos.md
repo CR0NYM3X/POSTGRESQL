@@ -570,7 +570,7 @@ psql -p 5435 -c "select * from info_server;  select * from grant_logic;  select 
 
 
 
-### Sacar
+### obtener los usuarios del pg_hba
 Obtener el usuario y el comentario que tiene despues del md5  del archivo pg_hba.conf
 
 ```
@@ -578,6 +578,11 @@ cat /syst/data/pg_hba.conf | grep -E "usuario1|usuario2|usuario3|usuario4|usuari
 ```
 ejemplo:<br>
  Usuario : usuario1  # Este usuario se agrego en el 2021 y es de nuevo ingreso
+
+### obtener los usuarios que se le vencio su vida util 
+```
+ select * from pg_shadow where valuntil::date >= CURRENT_DATE - INTERVAL '6 months' and valuntil::date < now()::date order by valuntil;
+```
 
 ## Bibliografía:
 
