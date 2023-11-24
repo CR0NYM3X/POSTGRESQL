@@ -410,7 +410,7 @@ select * from pg_hba_file_rules  where  database   in('{testuserdba}');
 
 ### Asignar permisos de lectura en tablas versiones v8.1 
 - `Opción #1`<br>
-psql **`mydba`** -t -c "SELECT 'grant select on table ' || table_name ||   ' to ' || CHR(34) || **`'myusertest'`** ||  CHR(34) || ';' as qweads FROM information_schema.tables WHERE table_schema='public' order by table_name;"  > /tmp/dbaaplicaciones.sql &&  psql **`mydba`** < /tmp/dbaaplicaciones.sql
+psql codigos -t -c "SELECT 'grant select on table ' || table_name || ' to ' || CHR(34) || '90092916' || CHR(34) || ';' as qweads FROM information_schema.tables WHERE table_schema='public' order by table_name;" |  psql codigos  
 
 - `Opción #2`<br>
 psql   **`mydba`** -t   -c "\dt" | grep -v '-' | grep -v 'rela' | grep -v 'Name' | awk '{print " SELECT ON TABLE "$3 " FROM **`myusertest`**;" }' > /tmp/usuarios.sql && psql snisef < /tmp/usuarios.sql
