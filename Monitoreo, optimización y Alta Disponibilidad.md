@@ -124,7 +124,7 @@ Puedes configurar el tiempo máximo que una conexión puede permanecer inactiva 
 ```
 3. Ver las conexiones que tengan más de 5 minutos en postgresql 8
 ```sh
- SELECT procpid ,  usename, pg_stat_activity.query_start, now() - pg_stat_activity.query_start AS query_time, current_query FROM pg_stat_activity WHERE (now() - pg_stat_activity.query_start) > interval '5 minutes' and  current_query  !=  '<IDLE>';
+  psql -xc  "SELECT procpid ,  usename, pg_stat_activity.query_start, now() - pg_stat_activity.query_start AS query_time, current_query FROM pg_stat_activity WHERE (now() - pg_stat_activity.query_start) > interval '5 minutes' and  current_query  !=  '<IDLE>';"
 ```
 
 
