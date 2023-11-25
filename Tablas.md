@@ -130,7 +130,14 @@ ALTER TABLE public.libros SET SCHEMA biblioteca;
 crear el esquema y agregarlo
 Public, information_schema , pg_catalog
 
- ``` 
+ ```
+
+### Agregar una columna nueva
+
+ ```
+ALTER TABLE mi_tabla
+ADD COLUMN nueva_columna INTEGER;
+ ```
 
 ## Eliminar la informacion de una tabla
  ```sh
