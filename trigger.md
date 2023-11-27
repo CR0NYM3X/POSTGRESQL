@@ -74,6 +74,8 @@ ON ddl_command_end
 WHEN TAG IN ('DROP TABLE')
 EXECUTE FUNCTION  trigger_auditoria_usuarios();
 ```
+# extra:
+auditorias con pgaudit: https://www.postgresql.org/message-id/attachment/41749/pgaudit-v2-03.patch
 
 ### Bibliografías: 
 https://www.postgresql.org/docs/current/plpgsql-trigger.html <br>
