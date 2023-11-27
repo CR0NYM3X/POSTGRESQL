@@ -59,7 +59,9 @@ DECLARE
 
 BEGIN
   
-		INSERT INTO auditoria_usuarios (usuario, ip, operacion, consulta) VALUES (current_user, inet_client_addr(), tg_tag, (select client_addr  FROM pg_stat_activity where query = current_query()));
+  INSERT INTO auditoria_usuarios (usuario, ip, operacion, consulta) VALUES (current_user, inet_client_addr(), tg_tag, current_query());
+--- Se intento colocar este campo pero no guarda la ip : (select client_addr  FROM pg_stat_activity where query = current_query())
+--- tampoco funciono SELECT inet_server_addr();  y  SELECT inet_client_addr();
   
 END;
 $$ LANGUAGE plpgsql;
