@@ -40,6 +40,14 @@ df -lh:
 lsblk
 ```
 
+Monitorear discos 
+```
+vmstat 1
+iostat -d -x 1  o iostat -d -x -k 1 3
+sar -d 1
+```
+
+
 ### Espacios de archivos 
 ```sh
 du -lh /etc/
