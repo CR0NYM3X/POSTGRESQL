@@ -91,6 +91,19 @@ FROM personas
 WHERE ciudad = 'Nueva York';
 ```
 
+###  CTE  subconsultas con WITH
+ Define subconsultas nombradas y reutilizables dentro de una consulta principal <br>
+
+ [Nota] Los CTE existen solo dentro de la consulta en la que se definen. No se pueden acceder desde fuera de esa consulta ni se mantienen después de la ejecución de la consulta, esto quiere decir que una vez ejecutada las tablas ya no existen 
+```
+ WITH vers1 AS (
+    SELECT version() ver
+), 
+time123 AS (
+    SELECT now() tim2
+) 
+SELECT * FROM time123; --- me retorna la hora 
+```
 
 ## Insertar información en una tabla:
  ```sh
