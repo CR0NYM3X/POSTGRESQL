@@ -294,7 +294,7 @@ cat /sysx/data/postgresql.conf | grep -Ei "shared_buffers|effective_cache_size|w
 `max_connections:` Limita el número máximo de conexiones simultáneas a la base de datos, lo que puede afectar la cantidad de memoria utilizada por las conexiones en caché.
 
 
-
+# Mantenimientos : 
 
 ## Reindex [documentación oficial](https://www.postgresql.org/docs/current/sql-reindex.html)
 Se utiliza para reconstruir los índices de una tabla o base de datos. La principal razón para utilizar REINDEX es mantener o mejorar el rendimiento de las consultas en la base de datos y una des las ventajas son: <br>
@@ -324,15 +324,16 @@ REINDEX DATABASE database_name;
 
 ## Vacum [documentación Oficial](https://www.postgresql.org/docs/current/sql-vacuum.html)
 
-Actualiza las estadísticas utilizadas por el planificador para determinar la forma más eficiente de ejecutar una consulta.
-  ```sh 
-  VACUUM ANALYZE;
- ```
-
-Realiza una limpieza básica, marcando las filas obsoletas para su eliminación y liberando espacio, pero no recupera espacio inmediatamente.
+Elimina las tuplas marcadas como obsoletas o muertas por transacciones anteriores. Cuando se insertan, actualizan o eliminan datos en una base de datos, PostgreSQL no elimina físicamente las tuplas obsoletas de inmediato; simplemente las marca como obsoletas. El comando VACUUM libera el espacio ocupado por estas tuplas obsoletas, lo que ayuda a reducir el tamaño de la base de datos y a mejorar el rendimiento.
 ```sh
 VACUUM;
   ```
+
+
+es un comando combinado que ayuda a mantener la base de datos PostgreSQL en un estado más óptimo, eliminando tuplas obsoletas y actualizando las estadísticas para mejorar el rendimiento de las consultas
+  ```sh 
+  VACUUM ANALYZE;
+ ```
 
 Recupera espacio inmediatamente eliminando las filas obsoletas y compactando la tabla. Este proceso bloquea la tabla durante su ejecución.
   ```sh
@@ -340,17 +341,19 @@ VACUUM FULL table_name;  -- individual
 VACUUM FULL -- en todas las tablas 
   ```
 
-Actualiza las estadísticas de la tabla, lo que puede ayudar al planificador de consultas a tomar decisiones más informadas.
-  ```sh
-ANALYZE table_name; --- individual
-ANALYZE;
-  ```
 Congela todas las filas de la tabla, lo que es útil cuando se necesita garantizar que una tabla no cambie para realizar copias de seguridad.
   ```sh
 VACUUM FREEZE table_name; -- individual
 VACUUM FREEZE;  -- completa
   ```
 
+## ANALYZE
+
+Actualiza las estadísticas de la tabla, lo que puede ayudar al planificador de consultas a tomar decisiones más informadas.
+  ```sh
+ANALYZE table_name; --- individual
+ANALYZE VERBOSE; -- actualiza las estadisticas de todas las tablas 
+  ```
 
 ## Tools de optimización:
 
