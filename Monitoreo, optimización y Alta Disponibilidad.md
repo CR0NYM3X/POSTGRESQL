@@ -19,14 +19,14 @@ Monitorear una base de datos es una práctica importante en la administración d
 ---
 **Pasos a seguir en caso de solicitar una revision del servidor y Base de datos:**
 
-1 .- Verificar el estatus del servidor y DBA <br>
-2 .- Validar tamaños de los discos duros <br>
-3 .- Monitorear el procesador y la memoria Ram  <br>
-4 .- Validar maximo de conexiones y cuantas conexiones hay en ese momento y eliminar consultas bloqueadas <br>
-5 .- Verificar el tiempo que tiene encendido el servidor <br>
-6 .- realizar Reindexacion , vacum full  en caso de requerirse <br>
-7 .- Ver el tamaño de las base de datos, tablas y tratar de optimizar como la db y tb <br>
-8 .- Validar los tiempo de ejecucion de una consulta y compararlos con dias anteriores  <br>
+para Verificar el estatus del servidor y DBA realizamos los siguientes pasos:  <br>
+- 1 .- Validar el espacio de los discos duros, tambien monitorear el comportamiento de escritura y lectura <br>
+- 2 .- Monitorear el procesador y la memoria Ram, verificando el comportamiento de escritura y lectura  <br>
+- 3 .- Validar maximo de conexiones y cuantas conexiones hay en ese momento y eliminar consultas bloqueadas <br>
+- 4 .- Verificar el tiempo que tiene encendido el servidor <br>
+- 5 .- realizar Reindexacion , vacum full  en caso de requerirse <br>
+- 6 .- Ver el tamaño de las base de datos, tablas y tratar de optimizar como la db y tb <br>
+- 7 .- Validar los tiempo de ejecucion de una consulta y compararlos con dias anteriores  <br>
 
 # Ejemplos de uso:
 
