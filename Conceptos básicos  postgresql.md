@@ -19,7 +19,9 @@ SHOW data_directory;
 
 ### Conectarse  a la base de datos 
 ```
- psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres 
+ psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres
+
+ psql "dbname=my_dba_test host=10.44.1.155 user=postgres sslmode=disable"
 ```
 
 ### ejecutar querys en la base de datos
