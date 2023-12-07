@@ -58,6 +58,8 @@ sudo systemctl start postgresql
 ```
 /usr/pqsql-12/bin/pg_ctl reload -D /sysd/data/
 
+/usr/pgsql-15/bin/pg_ctl reload -D /sysd/data -o "-c config_file='/sysd/data/postgresql.conf'"
+
 SELECT pg_reload_conf();
 ```
 
