@@ -3,6 +3,14 @@ Aqui aprenderemos a como realizar una conexion con la base de datos
 
 # Ejemplos de uso:
 
+# Ver rutas de postgresql 
+```
+SHOW password_encryption;
+SHOW config_file;
+SHOW hba_file;
+SHOW data_directory;
+```
+
 #Explicacion de esto:
 ```
   psql (15.3, server 12.15)
