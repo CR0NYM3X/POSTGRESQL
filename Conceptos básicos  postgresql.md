@@ -9,6 +9,9 @@ SHOW password_encryption;
 SHOW config_file;
 SHOW hba_file;
 SHOW data_directory;
+
+SELECT * FROM pg_stat_file(current_setting('data_directory') || '/global/pg_control');
+
 ```
 
 #Explicacion de esto:
