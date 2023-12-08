@@ -29,6 +29,10 @@ select current_database();
 # Funciones que se tienen que desactivar 
 
 FUNCIONES
+**ver estadisticas de un archivo**
+```
+select pg_stat_file('/tmp/recetas/nnnn.txt');
+```
 
 -- Manipulacion de ficheros 
 ```
