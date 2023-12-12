@@ -291,7 +291,7 @@ SEQUENCES:
   GRANT USAGE, SELECT ON SEQUENCE mi_secuencia TO testuserdba;
 
 SCHEMA:
-  GRANT USAGE ON SCHEMA public TO testuserdba;
+  GRANT USAGE ON SCHEMA public TO testuserdba; - otorga permisos para ver la estructura de los objetos de un esquea
   GRANT ALL PRIVILEGES ON SCHEMA mi_esquema TO mi_usuario;
   GRANT SELECT ON SCHEMA mi_esquema TO mi_rol;
   ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuario; -- Esto otorgará automáticamente el derecho de SELECT en todas las tablas futuras creadas en el esquema "mi_esquema" al usuario "mi_usuario".  
