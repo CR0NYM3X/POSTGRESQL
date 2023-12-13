@@ -49,3 +49,4 @@ Es aprender todo lo que podemos hacer solo con la base de datos
         select datname, pg_encoding_to_char(encoding)  from pg_database;
         SHOW server_encoding;
         show client_encoding;
+        SHOW lc_messages;
