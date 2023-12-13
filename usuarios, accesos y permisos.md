@@ -188,7 +188,7 @@ SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.ro
 
 ### Asignar o cambiar owner en la base de datos y los objetos  
 ```sh
---- quita el owner a los objetos para que termina eliminarlo
+--- Quita el owner a los objetos para que te permita eliminar un usuario
 DROP OWNED BY myusertest;
 
 #Esta consulta se utiliza para cambiar el propietario de todos los objetos dentro de una base de datos específica al nuevo propietario:
