@@ -170,3 +170,54 @@ ALTER TABLE mi_tabla DROP COLUMN columna_a_eliminar;
 drop table "mitabla"
 ```
 
+# info extra
+
+
+### Ejemplo encriptacion con PG_CRYPTO
+
+- **1.-** CRAR EXTENSION 
+```
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+```
+
+- **2.-** Crea una base de datos si no tienes una 
+```
+CREATE DATABASE ejemplo_pg_crypto;
+```
+
+- **3.-** conecta a esa base de datos: 
+```
+\c ejemplo_pg_crypto;
+```
+
+- **4.-** crea una tabla donde almacenaremos información encriptada:  
+```
+CREATE TABLE informacion_secreta (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT,
+    datos_encriptados BYTEA
+);
+```
+
+- **5.-**  encriptar y almacenar datos en la tabla   
+```
+INSERT INTO informacion_secreta (nombre, datos_encriptados)
+VALUES (
+    'Usuario 1',
+    pgp_sym_encrypt('Informacion secreta del Usuario 1', 'mi_password_poderosa')
+),
+(
+    'Usuario 2',
+    pgp_sym_encrypt('Informacion secreta del Usuario 2', 'mi_password_poderosa')
+),
+(
+    'Usuario 3',
+    pgp_sym_encrypt('Informacion secreta del Usuario 3', 'mi_password_poderosa')
+);
+```
+
+- **6.-**  Desencriptar datos   
+```
+SELECT id, nombre, pgp_sym_decrypt(datos_encriptados, 'mi_password_poderosa') AS datos_desencriptados
+FROM informacion_secreta;
+```
