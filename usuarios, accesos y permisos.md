@@ -124,6 +124,12 @@ CREATE USER testuserdba WITH PASSWORD '123456789'; -- no se recomienda colocar e
  drop user testuserdba;
  drop role testuserdba;
  ```
+
+### Eliminar usuarios que tienen permisos en toda las base de datos
+ ```
+psql -t -c "select '\c ' || datname || chr(10) || 'drop OWNED by '|| chr(34)|| 'MYUSER_TEST'|| chr(34) || ';' from pg_database where not datname in('template1','template0','postgres');" | sed -e 's/\+//g'  | psql  | psql -c 'drop user "MYUSER_TEST";'
+ ```
+
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Cambiar passowd
