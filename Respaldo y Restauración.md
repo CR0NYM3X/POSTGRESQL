@@ -617,6 +617,22 @@ COPY my_tabla  TO PROGRAM 'rm /tmp/list.txt && echo "aaa" > /tmp/lista.txt' WITH
  ```
 
 
+# copiar la información de una tabla en un archivo 
+
+Esto lo que hace es que ingresara el contenido de la tabla pg_shadow en el archivo test2323s.txt, si el archivo no existe lo crea 
+ ```
+postgres=# \o /tmp/test2323s.txt
+postgres=# select * from pg_shadow;
+postgres=# \o
+
+--- consultar la informacion del archivo
+postgres=#\! /tmp/test2323s.txt
+ ```
+
+\! /tmp/test2323s.txt
+
+
+
 # Futuros temas 
 pg_basebackup y pg_waldump 
 
