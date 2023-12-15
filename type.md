@@ -5,9 +5,8 @@ Estos son los tipos que existen <br>
 
  
 **Donde se usan los type**
-1. En las columnas de las tablas
-2. En los parametros y los Return de las funciones
-
+1. Se usa mucho en funciones para definir los parametros o el tipo de dato que va retornar, que se se usa como un arrego 
+2. En las columnas de las tablas.
 
 
 
