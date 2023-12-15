@@ -123,5 +123,21 @@ ALTER TABLE nombre_de_la_tabla ALTER COLUMN columna_de_tipo_contacto TYPE tipo_c
 ```
 
 
+# info extra
+*******  **Busca Type en el inventario** ******
+```
+ select relkind,relname  from  pg_class   where relname ilike  '%type_nuevo_123%';
+
+----- relkind --- 
+ 'r' ->  'TABLE'
+ 'm' -> 'MATERIALIZED_VIEW'
+ 'i' -> 'INDEX'
+ 'S' -> 'SEQUENCE'
+ 'v' -> 'VIEW'
+ 'c' -> 'TYPE'
+
+ ```
+
+
 
 
