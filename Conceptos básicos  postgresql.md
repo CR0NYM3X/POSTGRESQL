@@ -3,6 +3,11 @@ Aqui aprenderemos a como realizar una conexion con la base de datos
 
 # Ejemplos de uso:
 
+# ver los comanetarios de los objetos
+```
+SELECT * FROM pg_description;
+```
+
 # Ver rutas de postgresql 
 ```
 SHOW password_encryption;
