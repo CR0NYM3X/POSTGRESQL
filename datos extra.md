@@ -1,4 +1,16 @@
 
+SELECT pg_current_logfile() <br>
+select * from pg_ls_logdir()  <br>
+
+ select * from pg_file_settings where name ='port';  <br>
+ select * from pg_settings  <br>
+ 
+ select * from pg_hba_file_rules  <br>
+ Select * from pg_config  <br> 
+ 
+ 
+
+
 CAST ('10' AS INTEGER); convertir string a int --- O  (idu_valorconfiguracion)::INT
 select replace('test string','st','**') --, te** **ring
 SELECT numerador / NULLIF(denominador, 0) AS resultado
@@ -84,5 +96,8 @@ SELECT * from mupaquetes where fec_fechamovto::date between '20210501' and '2021
 29555 BETWEEN num_dcfinicial AND num_dcffinal 
 
 select  sign(  -10 ) ---- no importa el valor siempre retorna 1 o -1 /  si el argumento es un valor positivo devuelve 1;-1 si es negativo y si es 0, 0. Ejemplo:
+
+
+
 
 
