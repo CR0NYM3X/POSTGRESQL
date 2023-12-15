@@ -38,3 +38,7 @@ https://www.sqlservercentral.com/articles/rules-in-postgresql
 https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf <br>
 https://wiki.postgresql.org/wiki/Main_Page/es
 
+
+
+---- página recomendada para aprender cosas avanzadas de postgresql <br>
+https://www.tutorialdba.com/
