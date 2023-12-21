@@ -1,6 +1,35 @@
-------------
-trucos Markdown GitHub
+# trucos Markdown GitHub
 
+MANUAL :  https://docs.github.com/es/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
+
+:footprints: EMOJIS :  https://github.com/ikatyang/emoji-cheat-sheet/blob/master/README.md
+
+- [x] #739
+- [ ] https://github.com/octo-org/octo-repo/issues/740
+- [ ] Add delight to the experience when all tasks are complete :tada:
+
+---- ORDENAR DE 1 , 2,3 
+1. James Madison
+1. James Monroe
+1. John Quincy Adams
+
+> [!NOTE]
+> Esto es importante
+
+> [!TIP]
+> Esto es TIP
+
+> [!IMPORTANT]
+> Esto es TIP
+
+> [!WARNING]
+> Esto es TIP
+
+> [!CAUTION]
+> Esto es TIP
+
+The background color is `#ffffff` for light mode and `#000000` for dark mode.
+> HOLA ESTE TEXTO NO ES IMPORTANTE
 
 ---
 
@@ -28,6 +57,7 @@ Contenido de la sección 2...
 
 Énfasis y negritas:
 *Texto en cursiva*
+_Texto en cursiva_
 **Texto en negrita**
 
 
