@@ -1,8 +1,141 @@
 # trucos Markdown GitHub
 
+
+```stl
+solid house_example
+  facet normal 0.0 0.0 1.0
+    outer loop
+      vertex 0.0 0.0 0.0   // Punto A
+      vertex 2.0 0.0 0.0   // Punto B
+      vertex 2.0 1.0 0.0   // Punto C
+    endloop
+  endfacet
+  facet normal 0.0 0.0 1.0
+    outer loop
+      vertex 0.0 0.0 0.0   // Punto A
+      vertex 2.0 1.0 0.0   // Punto C
+      vertex 0.0 1.0 0.0   // Punto D
+    endloop
+  endfacet
+  facet normal 0.0 0.0 -1.0
+    outer loop
+      vertex 0.0 0.0 1.0   // Punto E
+      vertex 2.0 0.0 1.0   // Punto F
+      vertex 2.0 1.0 1.0   // Punto G
+    endloop
+  endfacet
+  facet normal 0.0 0.0 -1.0
+    outer loop
+      vertex 0.0 0.0 1.0   // Punto E
+      vertex 2.0 1.0 1.0   // Punto G
+      vertex 0.0 1.0 1.0   // Punto H
+    endloop
+  endfacet
+  facet normal -1.0 0.0 0.0
+    outer loop
+      vertex 0.0 0.0 0.0   // Punto A
+      vertex 0.0 1.0 0.0   // Punto D
+      vertex 0.0 1.0 1.0   // Punto H
+    endloop
+  endfacet
+  facet normal -1.0 0.0 0.0
+    outer loop
+      vertex 0.0 0.0 0.0   // Punto A
+      vertex 0.0 1.0 1.0   // Punto H
+      vertex 0.0 0.0 1.0   // Punto E
+    endloop
+  endfacet
+  facet normal 1.0 0.0 0.0
+    outer loop
+      vertex 2.0 0.0 0.0   // Punto B
+      vertex 2.0 1.0 0.0   // Punto C
+      vertex 2.0 1.0 1.0   // Punto G
+    endloop
+  endfacet
+  facet normal 1.0 0.0 0.0
+    outer loop
+      vertex 2.0 0.0 0.0   // Punto B
+      vertex 2.0 1.0 1.0   // Punto G
+      vertex 2.0 0.0 1.0   // Punto F
+    endloop
+  endfacet
+  // Techo
+  facet normal 0.0 1.0 0.0
+    outer loop
+      vertex 0.0 1.0 0.0   // Punto D
+      vertex 2.0 1.0 0.0   // Punto C
+      vertex 2.0 1.0 1.0   // Punto G
+    endloop
+  endfacet
+  facet normal 0.0 1.0 0.0
+    outer loop
+      vertex 0.0 1.0 0.0   // Punto D
+      vertex 2.0 1.0 1.0   // Punto G
+      vertex 0.0 1.0 1.0   // Punto H
+    endloop
+  endfacet
+  // Puerta
+  facet normal 0.0 -1.0 0.0
+    outer loop
+      vertex 0.8 0.0 0.0   // Punto I
+      vertex 1.2 0.0 0.0   // Punto J
+      vertex 1.2 0.6 0.0   // Punto K
+    endloop
+  endfacet
+  facet normal 0.0 -1.0 0.0
+    outer loop
+      vertex 0.8 0.0 0.0   // Punto I
+      vertex 1.2 0.6 0.0   // Punto K
+      vertex 0.8 0.6 0.0   // Punto L
+    endloop
+  endfacet
+  // Ventana
+  facet normal 0.0 0.0 -1.0
+    outer loop
+      vertex 1.5 0.3 1.0   // Punto M
+      vertex 1.7 0.3 1.0   // Punto N
+      vertex 1.7 0.5 1.0   // Punto O
+    endloop
+  endfacet
+  facet normal 0.0 0.0 -1.0
+    outer loop
+      vertex 1.5 0.3 1.0   // Punto M
+      vertex 1.7 0.5 1.0   // Punto O
+      vertex 1.5 0.5 1.0   // Punto P
+    endloop
+  endfacet
+endsolid
+
+```
+
+
+<picture>
+ <source media="(prefers-color-scheme: dark)" srcset="YOUR-DARKMODE-IMAGE">
+ <source media="(prefers-color-scheme: light)" srcset="YOUR-LIGHTMODE-IMAGE">
+ <img alt="YOUR-ALT-TEXT" src="YOUR-DEFAULT-IMAGE">
+</picture>
+
+
 MANUAL :  https://docs.github.com/es/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 
 :footprints: EMOJIS :  https://github.com/ikatyang/emoji-cheat-sheet/blob/master/README.md
+
+<details>
+
+<summary>Puedes agregar secciones</summary>
+
+### You can add a header
+
+You can add text within a collapsed section. 
+
+You can add an image or a code block, too.
+
+```ruby
+   puts "Hello World"
+```
+
+</details>
+
 
 - [x] #739
 - [ ] https://github.com/octo-org/octo-repo/issues/740
