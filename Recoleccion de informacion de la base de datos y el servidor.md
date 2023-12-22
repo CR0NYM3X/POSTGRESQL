@@ -13,6 +13,24 @@ cat /etc/os-release
 lsb_release -d
 uname -a
 ```
+### Modelo  del servidor
+```
+---- Ver el modelo del servidor 
+ cat /sys/devices/virtual/dmi/id/{sys_vendor,product_{family,version,name},bios_version}
+
+hostnamectl 
+lshw -class system
+dmidecode -t system | grep "Product Name"
+dmidecode | grep -A3 '^System Information'
+ 
+sudo dmidecode -s system-version
+sudo dmidecode -s baseboard-version
+sudo dmidecode -s system-manufacturer
+sudo dmidecode -s baseboard-manufacturer
+
+-- link: https://unix.stackexchange.com/questions/75750/how-can-i-find-the-hardware-model-in-linux
+```
+
 ## Obtener el hostname del servidor:
     hostname 
 
