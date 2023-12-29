@@ -1,6 +1,26 @@
 
 
 ```SQL
+select * from pg_index limit 1;
+
+
+-- Obtener información sobre los índices y su tamaño:
+SELECT schemaname || '.' || indexname AS index_full_name,
+       pg_size_pretty(pg_total_relation_size(schemaname || '.' || indexname)) AS size
+FROM pg_indexes ORDER BY pg_total_relation_size(schemaname || '.' || indexname) DESC;
+
+
+-- Mostrar el tamaño y uso de los índices en cada tabla
+SELECT schemaname || '.' || tablename AS table_full_name,
+       indexname AS index_name,
+       pg_size_pretty(pg_total_relation_size(schemaname || '.' || indexrelname)) AS index_size,
+       idx_scan AS index_scans
+FROM pg_indexes
+JOIN pg_stat_user_indexes ON pg_indexes.schemaname = pg_stat_user_indexes.schemaname AND pg_indexes.indexrelname = pg_stat_user_indexes.indexrelname
+ORDER BY pg_total_relation_size(schemaname || '.' || indexrelname) DESC;
+```
+
+```SQL
 CREATE EXTENSION pgstattuple;
 
 SELECT t0.indexrelid::regclass as Indice, t5.tablename as Tabla, t1.reltuples as Registros, t4.leaf_fragmentation as Porcentaje_Fragmentacion 
