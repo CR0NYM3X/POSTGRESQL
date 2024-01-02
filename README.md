@@ -43,3 +43,4 @@ https://wiki.postgresql.org/wiki/Main_Page/es
 ---- página recomendada para aprender cosas avanzadas de postgresql <br>
 https://www.tutorialdba.com/ <br>
 https://www.todopostgresql.com/
+https://it-inzhener.com/en/articles/category/name=postgresql
