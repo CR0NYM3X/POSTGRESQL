@@ -640,6 +640,11 @@ pg_basebackup y pg_waldump
 pg_waldump  /pg_wal/000000010000006600000003
 
 
+ ```
+******* habilitar los wal ******* 
+https://it-inzhener.com/en/articles/detail/postgresql-enable-archive-mode
+https://www.opsdash.com/blog/postgresql-wal-archiving-backup.html
+ ```
 
 # pg_basebackup
 
