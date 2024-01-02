@@ -72,7 +72,8 @@ LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
 
 
 ********** SOLUCION RAPIDA **********
-# Esto lo que hace es que borra los wal 
+# pg_resetwal :se utiliza para restablecer los archivos WAL, borrando los archivos wall, Este comando es útil en situaciones
+# específicas donde los archivos WAL se han corrompido o cuando necesitas restablecer el seguimiento de la secuencia de registros.
 pg_resetwal -f -D /sysx/data
 pg_resetxlog -f -D  /sysx/data
 ```
