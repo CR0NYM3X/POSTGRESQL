@@ -79,4 +79,28 @@ pg_resetxlog -f -D  /sysx/data
 ```
 
 
+# Error \#3 (ERROR:  invalid byte sequence for encoding "UTF8": 0xbf)
+Este detalle se presenta ya que se ingreso un caracter no valido 
+
+```SQL 
+# 1.- Encontrar la columna que presenta el detalle.
+select 'select ' || column_name|| 'from mytabla_test limit 1;' from information_schema.columns
+where  table_name = 'mytabla_test' order by ordinal_position ;
+
+
+# 2.- intentar convertir a utf8 o latin1 la columna que popresenta el detalle:
+Select convert_from(column_text::bytea, 'utf8')  from mytabla_test limit 1;
+select convert_from(convert_to('TESTµTEST','utf-8'),'latin-1');
+select * from mytabla_test where nom_rol !~ '^[[:ascii:]]*$' ;
+
+
+#3.- Encontrar las filas que presentan el detalle para al final modifcarlas con un update
+SELECT * FROM tu_tabla WHERE convert_from(convert_to(tu_columna, 'UTF8'), 'UTF8') IS NULL;
+
+```
+
+
+
+
+
 
