@@ -635,7 +635,9 @@ postgres=#\! /tmp/test2323s.txt
 
 # Futuros temas 
 pg_basebackup y pg_waldump 
-
+<br>
+--- Ver la información de los wal 
+pg_waldump  /pg_wal/000000010000006600000003
 
 
 
