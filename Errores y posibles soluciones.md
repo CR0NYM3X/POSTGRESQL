@@ -2,6 +2,10 @@
 # Error \#1 (not create shared memory)
 
 ```BASH
+
+********** CUANDO SALE EL ERROR **********
+Al intentar iniciar el servicio postgres con el comando "pg_Ctl start -D /sysd/data -o -i" salia el error "not create shared memory"
+
 ********** ERROR ***************
 <2024-01-02 11:41:35 CST    6547 65944acf.1993 >FATAL:  could not create shared memory segment: Invalid argument
 <2024-01-02 11:41:35 CST    6547 65944acf.1993 >DETAIL:  Failed system call was shmget(key=5432001, size=4412637184, 03600).
@@ -60,6 +64,9 @@ bajar la memoria compartida del /sysd/data/postgres.conf
 
 
 ```BASH
+********** CUANDO SALE EL ERROR **********
+Al intentar iniciar el servicio postgres con el comando "pg_Ctl start -D /sysd/data -o -i" salia el error "LOG:  invalid primary checkpoint record, PANIC:  could not locate a valid checkpoint record"
+
 ********** ERROR **********
 LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
 <2024-01-02 11:53:19 MST     2291249 65945b9f.22f631 > LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
@@ -82,7 +89,11 @@ pg_resetxlog -f -D  /sysx/data
 # Error \#3 (ERROR:  invalid byte sequence for encoding "UTF8": 0xbf)
 Este detalle se presenta ya que se ingreso un caracter no valido 
 
-```SQL 
+```SQL
+
+********** CUANDO SALE EL ERROR **********
+Al realizar una consulta "select * from mytabla_test limit 10" salia el error "ERROR:  invalid byte sequence for encoding "UTF8": 0xbf"
+
 # 1.- Encontrar la columna que presenta el detalle.
 select 'select ' || column_name|| 'from mytabla_test limit 1;' from information_schema.columns
 where  table_name = 'mytabla_test' order by ordinal_position ;
@@ -98,6 +109,7 @@ select * from mytabla_test where nom_rol !~ '^[[:ascii:]]*$' ;
 SELECT * FROM tu_tabla WHERE convert_from(convert_to(tu_columna, 'UTF8'), 'UTF8') IS NULL;
 
 ```
+
 
 
 
