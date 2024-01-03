@@ -13,6 +13,8 @@ file /etc/localtime
 timedatectl
 cat /etc/timezone
 ls /usr/share/zoneinfo
+
+timedatectl | grep "Time zone"
 ``` 
 
 ### versión de sistema Operativo linux
