@@ -6,6 +6,13 @@ Es recopilar información del servidor y la base de datos en caso de requerirse,
 
 ## Comandos:
 
+### Ver zona horaria y fecha 
+```sh
+ls -l /etc/localtime
+timedatectl
+cat /etc/timezone
+``` 
+
 ### versión de sistema Operativo linux
 ```sh
 cat /etc/redhat-release
