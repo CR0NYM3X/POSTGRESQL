@@ -9,8 +9,10 @@ Es recopilar información del servidor y la base de datos en caso de requerirse,
 ### Ver zona horaria y fecha 
 ```sh
 ls -l /etc/localtime
+file /etc/localtime
 timedatectl
 cat /etc/timezone
+ls /usr/share/zoneinfo
 ``` 
 
 ### versión de sistema Operativo linux
