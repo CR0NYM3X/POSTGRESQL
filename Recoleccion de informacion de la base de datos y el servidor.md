@@ -67,6 +67,8 @@ psql -V
 ```sh
 df -lh:
 lsblk
+cat /etc/fstab
+mount
 ```
 
 Monitorear discos 
