@@ -49,9 +49,15 @@ Es necesario aclarar que las querys pueden variar dependiendo la version de la d
 CRUD = Create, Read, Update, Delete
 
 ### Ver con que usuario estoy conectado a la base de datos 
-```
+```sql
+/* ves que con que usuario iniciaste session */
 SELECT session_user;
+
+/* ves  que usuario estas usando actualmente en caso de usar un "SET ROLE" */
 SELECT current_user;
+
+/* Sirve para cambiar de usuario */
+ SET ROLE test_user;
 ```
 
 ###  Buscar un usuario o role
@@ -86,6 +92,27 @@ SELECT current_user;
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Crear un usuario:
+[NOTA] Entre usuario pueden heredar sus permisos, es igual con los roles, ellos pueden heredar sus permisos con los usuario y otros roles, pero nunca podra un usuario heredar sus permisos 
+a un role 
+
+**Ejemplo de uso NOINHERIT** <br><br>
+
+test_role1 con permisos a la tabla clientes en la base de datos test_dba<br>
+test_role2 con permiso a la tabla empleados en la base de datos test_dba <br>
+test_user -- test_role2 hereda sus permisos al test_user<br><br>
+
+Esto convierte al test_role2 en padre y el test_role1 en secundario 
+
+
+si el role **"test_role2"** esta en `true` en la tabla `pg_roles` en la columan `rolinherit` esto quiere decir que el usuario **"test_user"** <br>
+va tener permisos en las tablas clientes y  empleados  en la base de datos test_dba<br><br>
+
+si el role **"test_role2"** esta en `true` en la tabla `pg_roles` en la columan `rolinherit`, esto quiere decir que el usuario **"test_user"** <br>
+solo va tener permisos en la tabla empleados, que solo son los permisos del  **"test_role2"** ya que le estas quitando los permisos de los roles secundarios<br> 
+y solo esta tomando los permisos del rol padre
+
+
+
 ```sh
 CREATE USER "testuserdba"; -- crear un user
 CREATE role "testuserdba";  -- crear un role  
