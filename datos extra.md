@@ -101,3 +101,6 @@ select  sign(  -10 ) ---- no importa el valor siempre retorna 1 o -1 /  si el ar
 
 
 
+--- convertir en una columna un array
+select    unnest(array[ 822, 823, 2782, 2994, 2171,509,722, 1428,106,107,108 ])  codigo)a 
+
