@@ -193,7 +193,7 @@ ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 
 ### Ver la cantidad y tipo de  privilegios de un usuario:
 
-```sh
+```sql
 # Para Tablas : 
 
 select  current_database(),'' as usuario,'Cnt_total_tablas' as privilege_type,count(*) as Total_Privilege
@@ -214,6 +214,31 @@ where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, priv
 
 # Tambien se puede usar la siguiente tabla 
 SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.role_table_grants WHERE grantee='my_user';
+
+
+# ver Permisos de una schema:
+SELECT  has_schema_privilege('user_Test', 'public', 'CREATE') AS tiene_permiso;
+
+
+SELECT r.usename AS grantor,
+             e.usename AS grantee,
+             nspname,
+             privilege_type,
+             is_grantable
+        FROM pg_namespace
+JOIN LATERAL (SELECT *
+                FROM aclexplode(nspacl) AS x) a
+          ON true
+        JOIN pg_user e
+          ON a.grantee = e.usesysid
+        JOIN pg_user r
+          ON a.grantor = r.usesysid 
+      -- WHERE e.usename = 'jose_test';
+
+
+# permisos usage
+ SELECT * FROM information_schema.usage_privileges where grantee = 'user_test'  
+
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
@@ -324,9 +349,10 @@ SEQUENCES:
   GRANT USAGE, SELECT ON SEQUENCE mi_secuencia TO testuserdba;
 
 SCHEMA:
+  GRANT CREATE ON SCHEMA public TO mi_rol; ---  permite al usuario crear y modificar objetos en el esquema público
   GRANT USAGE ON SCHEMA public TO testuserdba; - otorga permisos para ver la estructura de los objetos de un esquea
-  GRANT ALL PRIVILEGES ON SCHEMA mi_esquema TO mi_usuario;
-  GRANT SELECT ON SCHEMA mi_esquema TO mi_rol;
+  GRANT ALL PRIVILEGES ON SCHEMA mi_esquema TO mi_usuario; -- te da el permiso usage y create 
+  
   ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuario; -- Esto otorgará automáticamente el derecho de SELECT en todas las tablas futuras creadas en el esquema "mi_esquema" al usuario "mi_usuario".  
 
 FUNCTIONS:
