@@ -45,7 +45,7 @@ SELECT *  FROM information_schema.schemata;
 ```
 
 ## Creación de un nuevo esquema: 
-Al colocar AUTHORIZATION le indicas quien va ser el owner 
+Al colocar **AUTHORIZATION** le indicas quien va ser el owner 
 ```sql
 CREATE SCHEMA mi_esquema AUTHORIZATION postgres;
 ```
