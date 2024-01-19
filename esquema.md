@@ -40,11 +40,14 @@ SET SEARCH_PATCH TO my_schema;
 ## Consultar todos los esquemas que hay 
 ```sh 
 SELECT nspname AS schema_name FROM pg_namespace ORDER BY schema_name;
+
+SELECT *  FROM information_schema.schemata;
 ```
 
 ## Creación de un nuevo esquema: 
-```sh
-CREATE SCHEMA mi_esquema;
+Al colocar AUTHORIZATION le indicas quien va ser el owner 
+```sql
+CREATE SCHEMA mi_esquema AUTHORIZATION postgres;
 ```
 
 ## Eliminación de un esquema y sus objetos:
