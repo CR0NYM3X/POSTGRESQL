@@ -224,7 +224,7 @@ SELECT r.usename AS grantor,
              e.usename AS grantee,
              nspname,
              privilege_type,
-             is_grantable
+             is_grantable -- esto te dice si el usuario le coloco la opcion " WITH GRANT OPTION;" al otorgar el permiso
         FROM pg_namespace
 JOIN LATERAL (SELECT *
                 FROM aclexplode(nspacl) AS x) a
@@ -329,6 +329,8 @@ REVOKE role_a, role_b FROM my_user;
 
 ### Asignar Permisos lógicos SELECT, UPDATE, DELETE etc:
 *El privilegio **`USAGE`** solo sirve para Secuencias, Esquemas  y Funciones,  el privilegio USAGE no permite modificar, solo para consultar o ejecutar*
+
+**WITH GRANT OPTION** Si usas esto al final de cada grant, esto lo que le estas diciendo es que quieres que tenga el perimso de heredar ese permiso, a los usuarios, en caso de que herede permisos 
 
 ```sh
 DATABASE:
