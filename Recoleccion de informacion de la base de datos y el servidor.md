@@ -80,8 +80,16 @@ sar -d 1
 
 
 ### Espacios de archivos 
-```sh
-du -lh /etc/
+```SQL
+du -chal /etc/
+
+/* ** PARÁMETROS 
+-l: Muestra solo el tamaño acumulado de cada directorio.
+-h: Human-readable, muestra tamaños en formato legible para humanos.
+-c: Muestra el total al final del informe.
+-a: Incluye la información de todos los archivos, no solo directorios.
+*/
+
 ```
 
 
