@@ -65,7 +65,7 @@ psql -V
 
 ### Discos 
 ```sh
-df -lh:
+df -lh --total
 lsblk
 cat /etc/fstab
 mount
