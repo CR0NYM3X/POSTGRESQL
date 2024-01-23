@@ -38,8 +38,8 @@ SET SEARCH_PATCH TO my_schema;
 ```
 
 ## Consultar todos los esquemas que hay 
-```sh 
-SELECT nspname AS schema_name FROM pg_namespace ORDER BY schema_name;
+```sql
+SELECT nspname AS schema_name FROM pg_namespace where not nspname ilike '%pg_t%'  ORDER BY schema_name;
 
 SELECT *  FROM information_schema.schemata;
 ```
