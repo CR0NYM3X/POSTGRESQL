@@ -219,7 +219,6 @@ SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.ro
 # ver Permisos de una schema:
 SELECT  has_schema_privilege('user_Test', 'public', 'CREATE') AS tiene_permiso;
 
-
 SELECT r.usename AS grantor,
              e.usename AS grantee,
              nspname,
@@ -235,6 +234,8 @@ JOIN LATERAL (SELECT *
           ON a.grantor = r.usesysid 
       -- WHERE e.usename = 'jose_test';
 
+# Permisos de base de datos
+select datname,aclexplode(datacl) as a  from pg_database ;
 
 # permisos usage
  SELECT * FROM information_schema.usage_privileges where grantee = 'user_test'  
@@ -334,7 +335,8 @@ REVOKE role_a, role_b FROM my_user;
 
 ```sh
 DATABASE:
-  GRANT CONNECT ON DATABASE "tiendavirtual" TO "testuserdba";
+  GRANT CREATE, TEMPORARY ON DATABASE tu_base_de_datos TO "testuserdba";
+  GRANT CONNECT ON DATABASE "tu_base_de_datos" TO "testuserdba";
   grant all privileges on database tu_bd to tu_usuario;
 
 TABLES:
