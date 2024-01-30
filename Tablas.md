@@ -19,10 +19,10 @@ select count(*) from my_tabla;
 #En caso de que la tabla tenga millones de registros puedes usar la siguiente consulta: 
 select relname as tabla,reltuples::bigint as cnt_filas   from pg_class where relname in('my_tabla#1','my_tabla#2') ;
 ```
-## Buscar tablas :
+## Buscar tablas y saber sus owners :
  ```sh
 \dt  'mytabla_de_prueba'
-SELECT * FROM pg_tables where schemaname = 'public'  and tablename ilike '%mytabla_de_prueba%' ;
+SELECT tableowner,* FROM pg_tables where schemaname = 'public'  and tablename ilike '%mytabla_de_prueba%' ;
 SELECT * FROM information_schema.tables WHERE table_schema='public' and table_name ilike  '%mytabla_de_prueba%' ;
 ```
 
