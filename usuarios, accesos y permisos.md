@@ -192,6 +192,10 @@ ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Ver la cantidad y tipo de  privilegios de un usuario:
+**`grantor:`** Esta columna indica el rol (usuario o grupo de roles) que otorga los permisos.
+
+**`grantee:`** Esta columna indica el rol (usuario o grupo de roles) que recibe los permisos.
+
 
 ```sql
 # Para Tablas : 
@@ -232,10 +236,18 @@ JOIN LATERAL (SELECT *
           ON a.grantee = e.usesysid
         JOIN pg_user r
           ON a.grantor = r.usesysid 
-      -- WHERE e.usename = 'jose_test';
+       WHERE   not nspname ilike 'pg_%'  /* and e.usename != 'postgres'*/;
 
 # Permisos de base de datos
-select datname,aclexplode(datacl) as a  from pg_database ;
+select r.usename AS grantor,e.usename AS grantee,datname,privilege_type,is_grantable from pg_database 
+JOIN LATERAL (SELECT *
+                FROM aclexplode(datacl) AS x) a
+     ON true
+        JOIN pg_user e
+          ON a.grantee = e.usesysid
+        JOIN pg_user r
+          ON a.grantor = r.usesysid  
+where  e.usename != 'postgres'  /* and privilege_type in( 'TEMPORARY','CREATE')*/ ;
 
 # permisos usage
  SELECT * FROM information_schema.usage_privileges where grantee = 'user_test'  
