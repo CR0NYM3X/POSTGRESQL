@@ -294,7 +294,28 @@ ALTER SCHEMA nombre_de_esquema OWNER TO nuevo_propietario;
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
+# Saber todos los owner 
 
+```
+SELECT OBJECT,rolname AS OWNER,Descripcion_Tipo_Objeto FROM  
+(
+/* OWNER DE OBJETOS */
+select a.relname AS OBJECT, a.relowner AS OWNER,
+case a.relkind when 'r' then 'TABLE'
+when 'm' then 'MATERIALIZED_VIEW'
+when 'i' then 'INDEX'
+when 'S' then 'SEQUENCE'
+when 'v' then 'VIEW'
+when 'c' then 'TYPE'
+else a.relkind::text end as Descripcion_Tipo_Objeto from pg_class as a
+WHERE relnamespace in(SELECT oid FROM pg_namespace where not nspname in('pg_catalog','information_schema','pg_toast'))
+UNION ALL 
+/*OWNER DE FUNCIONES */
+SELECT proname, proowner, 'FUNCTION' FROM pg_proc WHERE pronamespace in(SELECT oid FROM pg_namespace where not nspname in('pg_catalog','information_schema','pg_toast'))
+  
+) AS A  left join pg_authid as b on  OWNER = b.oid  
+WHERE NOT b.oid  in(select oid from pg_authid where rolname = 'postgres');
+```
 
 # Saber la cantidad de owner que tiene un usuario
 
