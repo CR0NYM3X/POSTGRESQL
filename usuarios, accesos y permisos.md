@@ -339,11 +339,13 @@ GRANT tabla_creator TO my_usuario2;
 
 REVOKE role_a, role_b FROM my_user;
 ```
+### Ejecutar los permisos en todas las base de datos 
+psql -tAc "select '\c ' || datname ||  CHR(10) || '**GRANT SELECT  ON ALL TABLES IN SCHEMA public TO \\"myuser\\";**' from pg_database where not datname in('postgres','template1','template0')"  | sed -e 's/\+//g' | psql 
 
 ### Asignar Permisos lógicos SELECT, UPDATE, DELETE etc:
-*El privilegio **`USAGE`** solo sirve para Secuencias, Esquemas  y Funciones,  el privilegio USAGE no permite modificar, solo para consultar o ejecutar*
+*El privilegio **`USAGE`** solo sirve para Secuencias, Esquemas  y Funciones,  el privilegio USAGE no permite modificar, solo para consultar las estructuras de los objetos*
 
-**WITH GRANT OPTION** Si usas esto al final de cada grant, esto lo que le estas diciendo es que quieres que tenga el perimso de heredar ese permiso, a los usuarios, en caso de que herede permisos 
+**WITH GRANT OPTION** Si usas esto al final de cada grant, esto lo que le estas diciendo es que quieres que tenga el permiso de otorgar ese permiso a otros usuarios  usando *grant* 
 
 ```sh
 DATABASE:
@@ -389,6 +391,7 @@ trigger:
   GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
 
 ```
+
 
 # Roles del sistema postgresql predefinidos 
 Estos son roles predifinidos que se pueden asignar a un usuario en caso de ocuparlos
