@@ -259,7 +259,7 @@ where  e.usename != 'postgres'  /* and privilege_type in( 'TEMPORARY','CREATE')*
 
 ### Asignar o cambiar owner en la base de datos y los objetos  
 ```sh
---- Quita el owner a los objetos para que te permita eliminar un usuario
+--- Este elimina los objetos del usuario 
 DROP OWNED BY myusertest;
 
 #Esta consulta se utiliza para cambiar el propietario de todos los objetos dentro de una base de datos específica al nuevo propietario:
