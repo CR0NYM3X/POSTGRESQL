@@ -223,8 +223,8 @@ SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.ro
 # ver Permisos de una schema:
 SELECT  has_schema_privilege('user_Test', 'public', 'CREATE') AS tiene_permiso;
 
-SELECT r.usename AS grantor,
-             e.usename AS grantee,
+SELECT r.rolname AS grantor,
+             e.rolname AS grantee,
              nspname,
              privilege_type,
              is_grantable -- esto te dice si el usuario le coloco la opcion " WITH GRANT OPTION;" al otorgar el permiso
@@ -232,22 +232,22 @@ SELECT r.usename AS grantor,
 JOIN LATERAL (SELECT *
                 FROM aclexplode(nspacl) AS x) a
           ON true
-        JOIN pg_user e
-          ON a.grantee = e.usesysid
-        JOIN pg_user r
-          ON a.grantor = r.usesysid 
-       WHERE   not nspname ilike 'pg_%'  /* and e.usename != 'postgres'*/;
+        JOIN pg_authid e
+          ON a.grantee = e.oid
+        JOIN pg_authid r
+          ON a.grantor = r.oid 
+       WHERE   not nspname ilike 'pg_%'   and e.rolname != 'postgres' /*and privilege_type = 'CREATE' */ ;
 
 # Permisos de base de datos
-select r.usename AS grantor,e.usename AS grantee,datname,privilege_type,is_grantable from pg_database 
+select r.rolname AS grantor,e.rolname AS grantee,datname,privilege_type,is_grantable from pg_database 
 JOIN LATERAL (SELECT *
                 FROM aclexplode(datacl) AS x) a
      ON true
-        JOIN pg_user e
-          ON a.grantee = e.usesysid
-        JOIN pg_user r
-          ON a.grantor = r.usesysid  
-where  e.usename != 'postgres'  /* and privilege_type in( 'TEMPORARY','CREATE')*/ ;
+         JOIN pg_authid e
+          ON a.grantee = e.oid
+        JOIN pg_authid r
+          ON a.grantor = r.oid  
+where  e.rolname != 'postgres'  /* and privilege_type in( 'TEMPORARY','CREATE') */ ;	 
 
 # permisos usage
  SELECT * FROM information_schema.usage_privileges where grantee = 'user_test'  
@@ -300,11 +300,12 @@ ALTER SCHEMA nombre_de_esquema OWNER TO nuevo_propietario;
 
 # Saber todos los owner 
 
-```
-SELECT OBJECT,rolname AS OWNER,Descripcion_Tipo_Objeto FROM  
+```SQL
+
+SELECT NAME,rolname AS OWNER,Descripcion_Tipo_Objeto FROM  
 (
 /* OWNER DE OBJETOS */
-select a.relname AS OBJECT, a.relowner AS OWNER,
+select a.relname AS NAME, a.relowner AS OWNER,
 case a.relkind when 'r' then 'TABLE'
 when 'm' then 'MATERIALIZED_VIEW'
 when 'i' then 'INDEX'
@@ -316,27 +317,17 @@ WHERE relnamespace in(SELECT oid FROM pg_namespace where not nspname in('pg_cata
 UNION ALL 
 /*OWNER DE FUNCIONES */
 SELECT proname, proowner, 'FUNCTION' FROM pg_proc WHERE pronamespace in(SELECT oid FROM pg_namespace where not nspname in('pg_catalog','information_schema','pg_toast'))
-  
+
+union all 
+/*OWNER DE BASE DE DATOS */ 
+ SELECT datname,datdba, 'DATABASE'   FROM pg_database 
+ 
+union all
+/* OWNER DE LOS SCHEMAS */
+SELECT nspname,nspowner, 'SCHEMA' FROM pg_namespace where not nspname in('pg_catalog','information_schema','pg_toast') 
+ 
 ) AS A  left join pg_authid as b on  OWNER = b.oid  
-WHERE NOT b.oid  in(select oid from pg_authid where rolname = 'postgres');
-```
-
-# Saber la cantidad de owner que tiene un usuario
-
-```
---- Para ver los owner de la dba
-SELECT datname, rolname userOwner FROM pg_database JOIN pg_roles ON pg_database.datdba = pg_roles.oid;
-
---- los owner de las tablas 
-SELECT  'cnt_tb_total -> ' tableowner,count(*) cnt_tb_owner FROM pg_tables where schemaname = 'public'
-union all
-(SELECT  tableowner, count(*) cnt_tb_owner FROM pg_tables where schemaname = 'public' group by tableowner order by tableowner,count(*));
-
-
---- los owner de las funciones 
-select 'cnt_fun_total ' owner ,count(*)  cnt_fun_owner FROM pg_proc where   prorettype != 0 and pronamespace in(select oid from pg_namespace where nspname = 'public')
-union all
-(SELECT  rolname,count(*)   FROM pg_proc JOIN pg_roles ON pg_proc.proowner = pg_roles.oid where  prorettype != 0 and  pronamespace in(select oid from pg_namespace where nspname = 'public') group by rolname order by rolname,count(*));
+WHERE  NOT b.oid  in(select oid from pg_authid where rolname = 'postgres');
 
 ```
 
@@ -353,7 +344,7 @@ ALTER USER "sysutileria" WITH NOSUPERUSER;
 
 ### Asignarle un rol a un usuario
 Este es un ejemplo de un rol para crear tablas;
-```
+```SQL
 CREATE ROLE tabla_creator;
 GRANT CREATE ON SCHEMA public TO tabla_creator;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO tabla_creator;
