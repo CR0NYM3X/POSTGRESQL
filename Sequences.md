@@ -4,8 +4,12 @@ Las Sequences se utilizan para generar valores autoincrementales, como claves pr
 ### Ejemplos de uso:
 
 ### Buscar secuencias 
-select c.relname FROM pg_class c WHERE c.relkind = 'S';
-SELECT schemaname, sequencename  FROM pg_sequences WHERE schemaname = 'public';
+select c.relname FROM pg_class c WHERE c.relkind = 'S'; <br>
+SELECT schemaname, sequencename  FROM pg_sequences WHERE schemaname = 'public';<br>
+  SELECT * FROM information_schema.sequences;<br>
+  \ds
+
+  
 
 ### Crear una secuencia
 CREATE SEQUENCE mi_secuencia START 1 INCREMENT 1;
