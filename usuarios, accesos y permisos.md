@@ -378,6 +378,7 @@ TABLES:
 
 
 SEQUENCES:
+GRANT select ON table emisionfinalreportetotal_num_folio_seq TO syscarterasemisionabogado; -- versiones 8.0
   GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
   GRANT USAGE ON SEQUENCE nombre_secuencia TO testuserdba;
   GRANT USAGE, SELECT ON SEQUENCE mi_secuencia TO testuserdba;
