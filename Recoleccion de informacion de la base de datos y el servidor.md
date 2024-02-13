@@ -6,6 +6,11 @@ Es recopilar información del servidor y la base de datos en caso de requerirse,
 
 ## Comandos:
 
+## Lista de parametros
+**List of non-default configuration parameters** <br>
+```SQL
+\dconfig+
+```
 
 ### SABER LOS OBJETOS DE LA BASE DE DATOS 
 ```SQL 
