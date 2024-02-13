@@ -208,6 +208,16 @@ select  current_database(),grantee,privilege_type,count(*)
   from information_schema.table_privileges
 where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, privilege_type;
 
+
+# para todas las base de datos :
+psql -tAc "select '\c ' || datname || CHR(10) || 'select  current_database(), table_schema as Esquema,'''' as usuario,''Cnt_total_tablas'' as privilege_type,count(*) as Total_Privilege
+  from  information_schema.tables
+WHERE  not table_schema  in(''pg_catalog'', ''information_schema'') group by table_schema
+union all 
+select  current_database(),table_schema,grantee,privilege_type,count(*)
+  from information_schema.table_privileges
+where not table_schema in(''pg_catalog'', ''information_schema'') and grantee in(''my_usert_test'') group by grantee, privilege_type,table_schema; ' from pg_database where not datname in('postgres','template1','template0')" | sed -e 's/+//g' | psql
+
 # Para Funciones y Procedimientos Almacenados :
 # Para Triggers
 # Para Schemas:
