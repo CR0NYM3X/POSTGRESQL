@@ -198,7 +198,7 @@ ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 
 
 ```sql
-# Para Tablas : 
+# saber los privilegios granulaers de las tablas en una sola base de datos : 
 
 select  current_database(),'' as usuario,'Cnt_total_tablas' as privilege_type,count(*) as Total_Privilege
   from  information_schema.tables
@@ -209,7 +209,7 @@ select  current_database(),grantee,privilege_type,count(*)
 where  table_schema= 'public' and grantee in('MYUSUARIO') group by grantee, privilege_type;
 
 
-# para todas las base de datos :
+# # saber los privilegios granulaers de las tablas  en todas las base de datos :
 psql -tAc "select '\c ' || datname || CHR(10) || 'select  current_database(), table_schema as Esquema,'''' as usuario,''Cnt_total_tablas'' as privilege_type,count(*) as Total_Privilege
   from  information_schema.tables
 WHERE  not table_schema  in(''pg_catalog'', ''information_schema'') group by table_schema
