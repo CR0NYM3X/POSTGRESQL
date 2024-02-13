@@ -56,12 +56,15 @@ SELECT   proname , proargnames, pg_catalog.oidvectortypes(proargtypes)  FROM pg_
 
 **`Crear`**
 ```
-CREATE PROCEDURE insert_data(a integer, b integer)
-LANGUAGE SQL
-BEGIN 
-  INSERT INTO tbl VALUES (a);
-  INSERT INTO tbl VALUES (b);
+CREATE OR REPLACE PROCEDURE mi_procedure()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Código del procedimiento aquí
+    -- Este ejemplo no hace nada
+    NULL;
 END;
+$$;
 ```
 
 **`Consultar`**
