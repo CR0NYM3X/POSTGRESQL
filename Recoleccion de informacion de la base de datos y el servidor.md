@@ -6,6 +6,13 @@ Es recopilar información del servidor y la base de datos en caso de requerirse,
 
 ## Comandos:
 
+
+### Validar el soporte de DBMS "Database Management System" (Sistema de Gestión de Bases de Datos)
+information_schema.sql_features es una herramienta útil para consultar y comprender las capacidades de SQL soportadas, Por ejemplo, un desarrollador puede utilizar esta tabla para verificar si una característica específica de SQL está soportada antes de escribir código que dependa de ella. 
+```SQL
+select feature_name, is_supported  from information_schema.sql_features limit 1;
+```
+
 ## Lista de parametros
 **List of non-default configuration parameters** <br>
 ```SQL
