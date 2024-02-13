@@ -10,6 +10,8 @@ SELECT schemaname, sequencename  FROM pg_sequences WHERE schemaname = 'public';<
   \ds
 
   
+### Ejecutar una secuencia
+SELECT nextval('mi_secuencia');
 
 ### Crear una secuencia
 CREATE SEQUENCE mi_secuencia START 1 INCREMENT 1;
