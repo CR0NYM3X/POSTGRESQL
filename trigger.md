@@ -38,6 +38,7 @@ entre otros. Permiten reaccionar a eventos de base de datos que no están relaci
 ```sql
 select * from pg_trigger where tgname = 'trigger_do_nothing' limit 1;
 
+--- puedes ver que tiene un trigger
 SELECT event_object_schema, event_object_table, trigger_name, action_statement, action_orientation
 FROM information_schema.triggers
 WHERE trigger_name = 'trigger_do_nothing';
