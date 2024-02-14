@@ -228,11 +228,15 @@ where not table_schema in(''pg_catalog'', ''information_schema'') and grantee in
 
 # Tambien se puede usar la siguiente tabla 
 SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.role_table_grants WHERE grantee='my_user';
+SELECT grantee,table_schema,table_name,privilege_type   FROM information_schema.role_table_grants where grantee = ''
 
 
-# ver Permisos de una schema:
+# ver Permisos 
 SELECT  has_schema_privilege('user_Test', 'public', 'CREATE') AS tiene_permiso;
+SELECT has_sequence_privilege('tipo_personal', 'select');
+SELECT has_type_privilege('tipo_personal', 'select');
 
+# Permisos de esquemas
 SELECT r.rolname AS grantor,
              e.rolname AS grantee,
              nspname,
@@ -260,7 +264,48 @@ JOIN LATERAL (SELECT *
 where  e.rolname != 'postgres'  /* and privilege_type in( 'TEMPORARY','CREATE') */ ;	 
 
 # permisos usage
- SELECT * FROM information_schema.usage_privileges where grantee = 'user_test'  
+ SELECT * FROM information_schema.usage_privileges where not grantee in('PUBLIC','postgres') and grantee = '';
+
+
+ # permisos TABLES:
+	SELECT grantee,table_schema,table_name,privilege_type ,trigger_name   FROM information_schema.table_privileges  a
+	left join  information_schema.triggers b on table_name= event_object_table
+	where grantee = 'usuario_empleado';
+
+#  permisos SEQUENCES:
+ SELECT relname, relacl
+	FROM pg_class
+	WHERE relkind = 'S'
+	  AND relacl is not null
+	  AND relnamespace IN (
+		  SELECT oid
+		  FROM pg_namespace
+		  WHERE nspname NOT LIKE 'pg_%' AND nspname != 'information_schema'
+	);
+
+#  permisos View
+  SELECT relname, relacl
+	FROM pg_class
+	WHERE relkind = 'v' and relname= 'vista_empleados';
+
+	SELECT grantee,table_schema,table_name,privilege_type   FROM information_schema.role_table_grants where table_name= 'vista_empleados';
+	select * from    information_schema.table_privileges where table_name= 'vista_empleados';
+
+
+#  permiso FUNCTIONS: 
+	SELECT  a.routine_schema ,grantee, a.routine_name , b.routine_type, privilege_type FROM information_schema.routine_privileges as a
+	left join information_schema.routines  as b on a.routine_name=b.routine_name
+	where not a.grantee in('PUBLIC','postgres')  grantee = '' ---and a.routine_name like 'sumar_numeros' ;
+
+ 
+#  permiso Type: 
+	select typname,typacl,nsp.nspname esquema from pg_type as pgt  left JOIN pg_namespace nsp ON pgt.typnamespace = nsp.oid  where typacl::text ilike '%,usuario_empleado=%' limit 1;
+	
+	SELECT relname, relacl 	FROM pg_class WHERE relkind = 'c' and relname= 'vista_empleados';
+
+
+ # trigger: --- los trigger no se pueden porque no se ejecutan son por eventos 
+ # Index: --- este tampoco se puede 
 
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
@@ -372,7 +417,7 @@ psql -tAc "select '\c ' || datname ||  CHR(10) || '**GRANT SELECT  ON ALL TABLES
 *El privilegio **`USAGE`** solo sirve para Secuencias, Esquemas  y Funciones,  el privilegio USAGE no permite modificar, solo para consultar las estructuras de los objetos*
 
 **WITH GRANT OPTION** Si usas esto al final de cada grant, esto lo que le estas diciendo es que quieres que tenga el permiso de otorgar ese permiso a otros usuarios  usando *grant* 
-
+https://www.postgresql.org/docs/current/ddl-priv.html#PRIVILEGE-ABBREVS-TABLE
 ```sh
 DATABASE:
   GRANT CREATE, TEMPORARY ON DATABASE tu_base_de_datos TO "testuserdba";
@@ -385,13 +430,13 @@ TABLES:
   GRANT REFERENCES ON tabla_referenciada TO usuario_o_rol; -- sirve  crear claves foráneas que hacen referencia a una tabla
   GRANT ALTER ON TABLE nombre_de_tabla TO my_user_new;
   GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA CLINICA TO dba WITH GRANT OPTION;  -- este se usa si quieres que el rol quiere heredar con grant
-
+ GRANT TRIGGER ON  TABLE empleados  TO usuario_empleado;
 
 SEQUENCES:
 GRANT select ON table my_seuencia_test TO my_user_test; -- versiones 8.0
   GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
   GRANT USAGE ON SEQUENCE nombre_secuencia TO testuserdba;
-  GRANT USAGE, SELECT ON SEQUENCE mi_secuencia TO testuserdba;
+  GRANT USAGE, SELECT,UPDATE ON SEQUENCE mi_secuencia TO testuserdba;
 
 SCHEMA:
   GRANT CREATE ON SCHEMA public TO mi_rol; ---  permite al usuario crear y modificar objetos en el esquema público
@@ -400,10 +445,16 @@ SCHEMA:
   
   ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuario; -- Esto otorgará automáticamente el derecho de SELECT en todas las tablas futuras creadas en el esquema "mi_esquema" al usuario "mi_usuario".  
 
-FUNCTIONS:
+FUNCTIONS  :
   grant ALL PRIVILEGES  on all functions in schema public to "testuserdba";
   grant execute on all functions in schema public to "testuserdba";
   GRANT EXECUTE ON FUNCTION public.fun_obtenercontactoscopiaweb(int, varchar) TO "testuserdba";
+
+PROCEDURE:
+  GRANT EXECUTE ON PROCEDURE  mi_procedure() TO usuario_empleado;
+
+trigger:
+  GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
 
 Index:
   GRANT CREATE ON TABLE mi_tabla TO mi_usuario;
@@ -414,8 +465,7 @@ Type:
 View:
   GRANT SELECT ON mi_vista TO mi_usuario;
 
-trigger:
-  GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
+
 
 ```
 
