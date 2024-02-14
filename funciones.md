@@ -34,6 +34,14 @@ psql mydbatest -c "SELECT pg_get_functiondef('fun_actualiza_datos'::regproc)" | 
 copy (select  prosrc  from  pg_proc  wHERE proname ilike '%fun_actualiza_datos%'  ) to '/tmp/fun_TI.txt' WITH CSV HEADER;
 ```
 
+### Parámetros para agregar al crear una funcion
+
+**SECURITY DEFINER:** Las funciones de PostgreSQL con el atributo "security definer" permiten ejecutar código con los privilegios del creador de la función, lo que puede ser útil pero también requiere precaución para evitar riesgos de seguridad.
+
+
+**PARALLEL UNSAFE:** Indica que la función no es segura para la ejecución en paralelo. PostgreSQL tiene la capacidad de ejecutar ciertas operaciones en paralelo para mejorar el rendimiento, pero algunas funciones pueden tener efectos secundarios o dependencias que las hacen inseguras para la ejecución en paralelo. Esta opción asegura que la función no será ejecutada en paralelo. <br><br>
+
+**VOLATILE:** Indica que la función retorna un resultado diferente cada vez que es invocada con los mismos argumentos de entrada. Esto es útil cuando la función depende de factores externos, como datos de tablas modificadas o variables globales, y por lo tanto, no puede ser optimizada por el planificador de consultas.
 
 ### Crear una Función:
 
@@ -41,6 +49,9 @@ copy (select  prosrc  from  pg_proc  wHERE proname ilike '%fun_actualiza_datos%'
 -- Definición de la función
 CREATE OR REPLACE FUNCTION calcular_precio_total(p_id INT, p_cantidad INT)
 RETURNS NUMERIC AS
+VOLATILE
+SECURITY DEFINER
+PARALLEL UNSAFE
 $$
 DECLARE
 
