@@ -101,6 +101,87 @@ select  sign(  -10 ) ---- no importa el valor siempre retorna 1 o -1 /  si el ar
 
 
 
---- convertir en una columna un array
-select    unnest(array[ 822, 823, 2782, 2994, 2171,509,722, 1428,106,107,108 ])  codigo)a 
 
+--- convertir en una columna un array
+```sql
+select    unnest(array[ 822, 823, 2782, 2994, 2171,509,722, 1428,106,107,108 ])  codigo)a 
+```
+
+
+```sql
+
+########## CONDICIONEALES IF ########## 
+
+DO $$
+DECLARE
+    a INT := 5;
+    resultado VARCHAR;
+BEGIN
+    IF a > 0 THEN
+        resultado := 'El número es positivo.';
+    ELSE
+        resultado := 'El número es negativo o cero.';
+    END IF;
+
+    RAISE NOTICE '%', resultado;
+END;
+$$;
+
+########## CONDICIONEALES CASE WHEN ########## 
+
+DO $$
+DECLARE
+    a INT := 2;
+BEGIN
+    CASE 
+        WHEN a = 1 THEN RAISE NOTICE 'El número es 1';
+        WHEN a = 2 THEN RAISE NOTICE 'El número es 2';
+        ELSE RAISE NOTICE 'El número no es 1 ni 2';
+    END CASE;
+END;
+$$;
+
+
+########## BUCLES WHILE ########## 
+
+DO $$
+DECLARE
+    n INT := 5;
+    contador INT := 0;
+BEGIN
+    WHILE contador < n LOOP
+        RAISE NOTICE 'Contador: %', contador;
+        contador := contador + 1;
+    END LOOP;
+END;
+$$;
+
+
+
+########## BUCLES FOR ########## 
+
+DO $$
+DECLARE
+    i INT;
+BEGIN
+    FOR i IN 1..5 LOOP
+        RAISE NOTICE 'Valor de i: %', i;
+    END LOOP;
+END;
+$$;
+
+
+########## BUCLES FOREACH  ########## 
+
+DO $$
+DECLARE
+    nombres TEXT[] := ARRAY['Juan', 'María', 'Pedro'];
+    nombre TEXT;
+BEGIN
+    FOREACH nombre IN ARRAY nombres LOOP
+        RAISE NOTICE 'Nombre: %', nombre;
+    END LOOP;
+END;
+$$;
+
+```
