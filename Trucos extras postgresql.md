@@ -184,4 +184,30 @@ BEGIN
 END;
 $$;
 
+########## BUCLES CURSORES  ########## 
+
+DO $$
+DECLARE
+    nombre_cur CURSOR FOR
+        SELECT nombre, edad FROM tabla_datos;
+    nombre_persona TEXT;
+    edad_persona INT;
+BEGIN
+    OPEN nombre_cur; -- Abrir el cursor
+    
+    LOOP
+        FETCH nombre_cur INTO nombre_persona, edad_persona; -- Obtener el siguiente conjunto de resultados
+        
+        EXIT WHEN NOT FOUND; -- Salir del bucle si no hay más resultados
+        
+        -- Procesar la fila actual
+        RAISE NOTICE 'Nombre: %, Edad: %', nombre_persona, edad_persona;
+    END LOOP;
+    
+    CLOSE nombre_cur; -- Cerrar el cursor
+END;
+$$;
+
+
+
 ```
