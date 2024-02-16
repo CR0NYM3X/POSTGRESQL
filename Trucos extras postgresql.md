@@ -211,3 +211,41 @@ $$;
 
 
 ```
+
+
+# join
+
+
+```sql
+# INNER JOIN: Devuelve filas cuando hay al menos una coincidencia en ambas tablas.
+
+SELECT * FROM tabla1 INNER JOIN tabla2 ON tabla1.columna = tabla2.columna;
+
+/* LEFT JOIN (o LEFT OUTER JOIN): Devuelve todas las filas de la tabla izquierda y las filas
+ coincidentes de la tabla derecha. Si no hay coincidencias, se devuelven NULL para las columnas de la tabla derecha. */ 
+
+SELECT * FROM tabla1 LEFT JOIN tabla2 ON tabla1.columna = tabla2.columna;
+
+/* RIGHT JOIN (o RIGHT OUTER JOIN): Devuelve todas las filas de la tabla derecha y las filas coincidentes
+de la tabla izquierda. Si no hay coincidencias, se devuelven NULL para las columnas de la tabla izquierda. */ 
+
+SELECT * FROM tabla1 RIGHT JOIN tabla2 ON tabla1.columna = tabla2.columna;
+
+/* FULL JOIN (o FULL OUTER JOIN): Devuelve todas las filas cuando hay una coincidencia
+en una de las tablas. Devuelve NULL en las columnas de la tabla que no tiene una coincidencia. */
+
+SELECT * FROM tabla1  FULL JOIN tabla2 ON tabla1.columna = tabla2.columna;
+
+/*
+CROSS JOIN: Devuelve el producto cartesiano de las filas de las tablas involucradas, es decir,
+combina cada fila de la primera tabla con cada fila de la segunda tabla.
+ */
+SELECT * FROM tabla1 CROSS JOIN tabla2;
+
+/* LEFT JOIN LATERAL: Combina cada fila de la primera tabla con el resultado de aplicar una
+ expresión de tabla a cada fila de la segunda tabla, pero solo devuelve filas de la primera tabla
+incluso si no hay coincidencias en la expresión de tabla. */ 
+
+SELECT * FROM tabla1 LEFT JOIN LATERAL funcion_tabla2(tabla1.columna) AS tabla2_resultado ON true;
+
+```
