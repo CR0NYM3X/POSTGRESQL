@@ -226,15 +226,16 @@ where not table_schema in(''pg_catalog'', ''information_schema'') and grantee in
 # Para view:
 # Para index:
 
-# Tambien se puede usar la siguiente tabla 
+# Tambien se puede usar la siguiente tabla y vistas 
 SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.role_table_grants WHERE grantee='my_user';
-SELECT grantee,table_schema,table_name,privilege_type   FROM information_schema.role_table_grants where grantee = ''
+SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.table_privileges where grantee = ''
+SELECT * FROM information_schema.usage_privileges where not grantee in('PUBLIC','postgres') and grantee = ''; -- PERMISOS USAGE
 
 
 # ver Permisos 
-SELECT  has_schema_privilege('user_Test', 'public', 'CREATE') AS tiene_permiso;
-SELECT has_sequence_privilege('tipo_personal', 'select');
-SELECT has_type_privilege('tipo_personal', 'select');
+SELECT  has_schema_privilege('user_Test', 'public', 'CREATE') AS tiene_permiso; -- para esquemas 
+SELECT has_sequence_privilege('tipo_personal', 'select'); --  para secuencias 
+SELECT has_type_privilege('tipo_personal', 'select'); --  para los permisos granulares
 
 # Permisos de esquemas
 SELECT r.rolname AS grantor,
@@ -252,6 +253,11 @@ JOIN LATERAL (SELECT *
           ON a.grantor = r.oid 
        WHERE   not nspname ilike 'pg_%'   and e.rolname != 'postgres' /*and privilege_type = 'CREATE' */ ;
 
+ ---- VERSIONES  < 9   |     UC= USAGE, CREATE
+    select * from  (select nspname as schema,  unnest(nspacl)::text as user_ FROM pg_namespace WHERE
+ not nspname ilike 'pg_%'  and nspname  != 'information_schema' ) as a where user_ ilike '%sysbiblioteca=%';
+
+
 # Permisos de base de datos
 select r.rolname AS grantor,e.rolname AS grantee,datname,privilege_type,is_grantable from pg_database 
 JOIN LATERAL (SELECT *
@@ -261,16 +267,25 @@ JOIN LATERAL (SELECT *
           ON a.grantee = e.oid
         JOIN pg_authid r
           ON a.grantor = r.oid  
-where  e.rolname != 'postgres'  /* and privilege_type in( 'TEMPORARY','CREATE') */ ;	 
+where  e.rolname != 'postgres'  /* and privilege_type in( 'TEMPORARY','CREATE') */ ;
 
-# permisos usage
- SELECT * FROM information_schema.usage_privileges where not grantee in('PUBLIC','postgres') and grantee = '';
+ ---- VERSIONES  < 9  | CTc = CREATE, TEMPORARY , CONNECT 
+	select * from (select datname,unnest(datacl)::text as user_ from pg_database)as a where user_ ilike '%MY_USER=%';
+
+
 
 
  # permisos TABLES:
-	SELECT grantee,table_schema,table_name,privilege_type ,trigger_name   FROM information_schema.table_privileges  a
-	left join  information_schema.triggers b on table_name= event_object_table
-	where grantee = 'usuario_empleado';
+	COPY ( select grantee,table_schema,table_name,privilege_type , Descripcion_Tipo_Objeto from    information_schema.table_privileges as a
+	left join ( select  relname,case cls.relkind when 'r' then 'TABLE'
+	when 'm' then 'MATERIALIZED_VIEW'
+	when 'i' then 'INDEX'
+	when 'S' then 'SEQUENCE'
+	when 'v' then 'VIEW'
+	when 'c' then 'TYPE'
+	else cls.relkind::text end as Descripcion_Tipo_Objeto
+	from pg_class as cls ) as b  on b.relname = a.table_name  
+	 where not grantee in('PUBLIC','postgres') and grantee  IN('MY_USER')  ORDER BY grantee,table_name ) TO '/tmp/TBL_PERMISOS.csv' WITH (FORMAT CSV, DELIMITER ',', HEADER);
 
 #  permisos SEQUENCES:
  SELECT relname, relacl
@@ -283,19 +298,21 @@ where  e.rolname != 'postgres'  /* and privilege_type in( 'TEMPORARY','CREATE') 
 		  WHERE nspname NOT LIKE 'pg_%' AND nspname != 'information_schema'
 	);
 
-#  permisos View
-  SELECT relname, relacl
-	FROM pg_class
-	WHERE relkind = 'v' and relname= 'vista_empleados';
+ ---- VERSIONES  < 9  | rwU= SELECT,UPDATE,USAGE
+	select * from  (SELECT relname  as Secuencias,  unnest(relacl)::text as user_  FROM pg_class WHERE relkind = 'S'
+	AND relacl is not null  AND relnamespace IN ( SELECT oid FROM pg_namespace WHERE nspname NOT LIKE 'pg_%'
+	AND nspname != 'information_schema') ) as a where user_ ilike '%sysgenexus=%';
 
-	SELECT grantee,table_schema,table_name,privilege_type   FROM information_schema.role_table_grants where table_name= 'vista_empleados';
-	select * from    information_schema.table_privileges where table_name= 'vista_empleados';
+#  permisos View
+    SELECT relname, relacl
+	FROM pg_class
+	WHERE relkind = 'v' and relacl::text ilike '%MY_USER%';
 
 
 #  permiso FUNCTIONS: 
-	SELECT  a.routine_schema ,grantee, a.routine_name , b.routine_type, privilege_type FROM information_schema.routine_privileges as a
+		  	COPY ( SELECT  a.routine_schema ,grantee, a.routine_name , b.routine_type, privilege_type FROM information_schema.routine_privileges as a
 	left join information_schema.routines  as b on a.routine_name=b.routine_name
-	where not a.grantee in('PUBLIC','postgres')  grantee = '' ---and a.routine_name like 'sumar_numeros' ;
+	where not a.grantee in('PUBLIC','postgres') and grantee in('MY_USER') ORDER BY grantee ) TO '/tmp/fun_PERMISOS.csv' WITH (FORMAT CSV, DELIMITER ',', HEADER);
 
  
 #  permiso Type: 
@@ -304,8 +321,29 @@ where  e.rolname != 'postgres'  /* and privilege_type in( 'TEMPORARY','CREATE') 
 	SELECT relname, relacl 	FROM pg_class WHERE relkind = 'c' and relname= 'vista_empleados';
 
 
- # trigger: --- los trigger no se pueden porque no se ejecutan son por eventos 
- # Index: --- este tampoco se puede 
+ # trigger: ---  select trigger_name, 'TRIGGER' as type_object  ,trigger_schema, null as user_name ,null as privilege_type FROM information_schema.triggers group by trigger_schema,trigger_name
+
+ # Index: --- este tampoco se puede
+
+
+ ###################  PERMISOS LVL SERV ################### 
+select CASE WHEN usename!= '' THEN 'USER' ELSE 'ROLE' END as TYPE_USER ,rolname
+,rolsuper_,rolinherit_,rolcreaterole_,rolcreatedb_,rolcanlogin_,rolreplication_ 
+-- ,rolbypassrls_
+-- ,rolcatupdate_
+from 
+(select rolname,
+CASE WHEN rolsuper='t' THEN 1 ELSE 0 END as rolsuper_,
+CASE WHEN rolinherit='t' THEN 1 ELSE 0 END as rolinherit_,
+CASE WHEN rolcreaterole='t' THEN 1 ELSE 0 END as rolcreaterole_,
+CASE WHEN rolcreatedb='t' THEN 1 ELSE 0 END as rolcreatedb_,
+CASE WHEN rolcanlogin='t' THEN 1 ELSE 0 END as rolcanlogin_,
+CASE WHEN rolreplication='t' THEN 1 ELSE 0 END as rolreplication_
+-- ,CASE WHEN rolcatupdate='t' THEN 1 ELSE 0 END as rolcatupdate_
+-- ,CASE WHEN rolbypassrls='t' THEN 1 ELSE 0 END as rolbypassrls_
+
+ from pg_authid where not rolname in('postgres','pg_signal_backend') and not rolname ilike '%pg_%')a left join pg_shadow on usename=rolname 
+ where  rolname in('My_user' ) /*AND (rolsuper_ != 0 or rolcreaterole_ != 0 or rolcreatedb_ != 0 or rolreplication_ != 0 or rolbypassrls_ != 0) */  ;
 
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
