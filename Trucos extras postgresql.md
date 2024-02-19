@@ -249,3 +249,30 @@ incluso si no hay coincidencias en la expresión de tabla. */
 SELECT * FROM tabla1 LEFT JOIN LATERAL funcion_tabla2(tabla1.columna) AS tabla2_resultado ON true;
 
 ```
+
+# Crear uniones entre tablas 
+```sql
+
+PSQL > 9 
+select * from (VALUES ('r', 'SELECT'), ('w', 'UPDATE'), ('a', 'INSERT'), ('d', 'DELETE'), ('x', 'REFERENCES')) AS acl_privs(acl, privilege_type);
+
+PSQL > 8 
+select  'r' as acl , 'SELECT' as privilege_type union all
+select  'w', 'UPDATE' union all 
+select   'd', 'DELETE' ;
+
+```
+
+# trabajando con texto 
+```sql
+/* DIVIDE EN PARTES EL TEXTO */
+select split_part('hola = mundo','=' , 1 ); --> Return: "hola"
+select split_part('hola = mundo','=' , 2 ); --> Return: "mundo"
+
+/* REMPLZA  EL TEXTO */
+select replace('hola = mundo','=' , ''); --> Return: 'hola   mundo'
+
+/* CONVIERTE EN TEXTO UN ARRAY */
+SELECT array_to_string( ARRAY['Juan', 'María', 'Pedro']  , ' - ');
+
+```
