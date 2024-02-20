@@ -456,13 +456,21 @@ psql -tAc "select '\c ' || datname ||  CHR(10) || '**GRANT SELECT  ON ALL TABLES
 
 **WITH GRANT OPTION** Si usas esto al final de cada grant, esto lo que le estas diciendo es que quieres que tenga el permiso de otorgar ese permiso a otros usuarios  usando *grant* 
 https://www.postgresql.org/docs/current/ddl-priv.html#PRIVILEGE-ABBREVS-TABLE
-```sh
-DATABASE:
+```SQL
+# DEFAULT:
+/* otorgará automáticamente el derecho de SELECT en todas las tablas futuras creadas en el esquema "mi_esquema" al usuario "mi_usuario",
+tu puedes decidir que permiso se otrogará mofidicando el grant  */
+ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuario;
+
+# VER LOS DEFAULT 
+SELECT * FROM pg_default_acl;
+
+# DATABASE:
   GRANT CREATE, TEMPORARY ON DATABASE tu_base_de_datos TO "testuserdba";
   GRANT CONNECT ON DATABASE "tu_base_de_datos" TO "testuserdba";
   grant all privileges on database tu_bd to tu_usuario;
 
-TABLES:
+# TABLES:
   GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "testuserdba";
   grant SELECT, UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, RULE on all tables in schema public to "testuserdba";
   GRANT REFERENCES ON tabla_referenciada TO usuario_o_rol; -- sirve  crear claves foráneas que hacen referencia a una tabla
@@ -470,41 +478,36 @@ TABLES:
   GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA CLINICA TO dba WITH GRANT OPTION;  -- este se usa si quieres que el rol quiere heredar con grant
  GRANT TRIGGER ON  TABLE empleados  TO usuario_empleado;
 
-SEQUENCES:
+# SEQUENCES:
 GRANT select ON table my_seuencia_test TO my_user_test; -- versiones 8.0
   GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
   GRANT USAGE ON SEQUENCE nombre_secuencia TO testuserdba;
   GRANT USAGE, SELECT,UPDATE ON SEQUENCE mi_secuencia TO testuserdba;
 
-SCHEMA:
+# SCHEMA:
   GRANT CREATE ON SCHEMA public TO mi_rol; ---  permite al usuario crear y modificar objetos en el esquema público
   GRANT USAGE ON SCHEMA public TO testuserdba; - otorga permisos para ver la estructura de los objetos de un esquea
   GRANT ALL PRIVILEGES ON SCHEMA mi_esquema TO mi_usuario; -- te da el permiso usage y create 
-  
-  ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuario; -- Esto otorgará automáticamente el derecho de SELECT en todas las tablas futuras creadas en el esquema "mi_esquema" al usuario "mi_usuario".  
 
-FUNCTIONS  :
+# FUNCTIONS  :
   grant ALL PRIVILEGES  on all functions in schema public to "testuserdba";
   grant execute on all functions in schema public to "testuserdba";
   GRANT EXECUTE ON FUNCTION public.fun_obtenercontactoscopiaweb(int, varchar) TO "testuserdba";
 
-PROCEDURE:
+# PROCEDURE:
   GRANT EXECUTE ON PROCEDURE  mi_procedure() TO usuario_empleado;
 
-trigger:
+# trigger:
   GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
 
-Index:
+# Index:
   GRANT CREATE ON TABLE mi_tabla TO mi_usuario;
 
-Type:
+# Type:
   GRANT USAGE ON TYPE mi_tipo_de_dato TO mi_usuario;
 
-View:
+# View:
   GRANT SELECT ON mi_vista TO mi_usuario;
-
-
-
 ```
 
 
@@ -536,43 +539,46 @@ La base de datos se ejecuta como con COPY y otras funciones que permiten ejecuta
 ### Revokar o eliminar Permisos a objetos: [Funciones, Tablas, type, view, index, sequence, triggers]:  
 
 
-```sh
+```sql
 Remove Owner Database
 REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";
 
-DATABASE:
-  REVOKE ALL PRIVILEGES ON DATABASE mytestdba FROM "92096883";
+# DEFAULT:
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE SELECT ON TABLES FROM "jose_test";
 
-TABLES:
-  REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "testuserdba";
-  REVOKE ALL PRIVILEGES ON TABLE nombre_de_tabla FROM nombre_del_rol;
-  REVOKE ALL ON TABLE my_tabla FROM PUBLIC; --- para versiones 8
-  REVOKE ALL ON TABLE my_tabla FROM postgres; --- para versiones 8
+# DATABASE:
+	REVOKE ALL PRIVILEGES ON DATABASE mytestdba FROM "jose_test";
 
-SEQUENCES:
-  REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM "testuserdba";
-  REVOKE ALL PRIVILEGES ON SEQUENCE nombre_de_secuencia FROM nombre_del_rol;
+# TABLES:
+  	REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "testuserdba";
+  	REVOKE ALL PRIVILEGES ON TABLE nombre_de_tabla FROM nombre_del_rol;
+  	REVOKE ALL ON TABLE my_tabla FROM PUBLIC; --- para versiones 8
+  	REVOKE ALL ON TABLE my_tabla FROM postgres; --- para versiones 8
 
-SCHEMA :
-  REVOKE ALL PRIVILEGES ON SCHEMA nombre_del_esquema FROM nombre_del_rol;
+# SEQUENCES:
+  	REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM "testuserdba";
+  	REVOKE ALL PRIVILEGES ON SEQUENCE nombre_de_secuencia FROM nombre_del_rol;
+
+# SCHEMA :
+	REVOKE ALL PRIVILEGES ON SCHEMA nombre_del_esquema FROM nombre_del_rol;
   
 
-FUNCTIONS:
-  revoke execute on all functions in schema public from testuserdba;
-  REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public FROM "testuserdba";
-  REVOKE ALL PRIVILEGES ON FUNCTION nombre_de_funcion(int, varchar) FROM nombre_del_rol;
+# FUNCTIONS:
+	revoke execute on all functions in schema public from testuserdba;
+	REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public FROM "testuserdba";
+	REVOKE ALL PRIVILEGES ON FUNCTION nombre_de_funcion(int, varchar) FROM nombre_del_rol;
 
-Index:
-  REVOKE ALL PRIVILEGES ON INDEX nombre_del_indice FROM nombre_del_rol;
+# Index:
+	REVOKE ALL PRIVILEGES ON INDEX nombre_del_indice FROM nombre_del_rol;
 
-Type:
-  REVOKE ALL PRIVILEGES ON TYPE nombre_del_tipo FROM nombre_del_rol;
+# Type:
+	REVOKE ALL PRIVILEGES ON TYPE nombre_del_tipo FROM nombre_del_rol;
 
-View:
-  REVOKE ALL PRIVILEGES ON VIEW nombre_de_vista FROM nombre_del_rol;
+# View:
+	REVOKE ALL PRIVILEGES ON VIEW nombre_de_vista FROM nombre_del_rol;
 
-trigger:
-  REVOKE ALL PRIVILEGES ON TRIGGER nombre_del_disparador FROM nombre_del_rol;
+# trigger:
+	REVOKE ALL PRIVILEGES ON TRIGGER nombre_del_disparador FROM nombre_del_rol;
 
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
