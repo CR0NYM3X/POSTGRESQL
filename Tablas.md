@@ -341,4 +341,7 @@ drop table ventas_abril_junio;
 drop table ventas_julio_septiembre;
 drop table ventas_octubre_diciembre;
 
+-- PASO #7  muestra la estructura de particiones de una tabla particionada, incluidas todas las particiones y subparticiones
+SELECT * FROM pg_partition_tree('ventas_abril_junio');
+
 ```
