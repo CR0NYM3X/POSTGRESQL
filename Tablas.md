@@ -3,15 +3,45 @@ Aprenderemos todo lo que se puede hacer con una tabla [documentacion oficial par
 
 
 
+
 # Ejemplos:
 
+###  Información sobre los métodos de acceso disponibles en tu base de datos
+ ```sql 
+select * from pg_catalog.pg_am;
+
+---- COLUMNAS ---- 
+oid: El identificador único (OID) del método de acceso.
+amname: El nombre del método de acceso.
+amhandler: El manejador (handler) asociado al método de acceso.
+amtype: El tipo de método de acceso. En este caso, 't' indica un tipo de método de acceso de tabla (table access method) y
+ 'i' indica un tipo de método de acceso de índice (index access method).
+
+---- REGISTROS  ---- 
+heap: Este es el método de acceso predeterminado utilizado para las tablas almacenadas como heaps,
+lo que significa que las filas se almacenan en el orden en que se insertan en la tabla.
+btree: Este método de acceso se utiliza para los índices de tipo B-tree, que son muy eficientes
+para consultas de igualdad y rangos.
+hash: Este método de acceso se utiliza para los índices de tipo hash, que son eficientes para consultas
+de igualdad pero no para consultas de rango.
+gist: Este método de acceso se utiliza para los índices de tipo GiST (Generalized Search Tree), que
+permiten la indexación de tipos de datos no convencionales.
+gin: Este método de acceso se utiliza para los índices de tipo GIN (Generalized Inverted Index), que
+son útiles para la indexación de arrays y tipos de datos compuestos.
+spgist: Este método de acceso se utiliza para los índices de tipo SP-GiST (Space-Partitioned Generalized
+Inverted Search Tree), que son similares a los índices GiST pero están diseñados para manejar cargas de trabajo con patrones de consulta específicos.
+brin: Este método de acceso se utiliza para los índices de tipo BRIN (Block Range INdexes), que son
+eficientes para la indexación de grandes tablas con datos ordenados en bloques.
+
+ ```
+
 ## Cambiar la ruta de archivo, donde se guarda la base de datos:
- ```sh
+ ```sql
 ALTER TABLE my_table SET TABLESPACE my_tablespace;
 ```
 
 ## Saber la cantidad de filas de una tabla
- ```sh
+ ```sql
 
 #Para tablas que tienen pocos registros:
 select count(*) from my_tabla;
@@ -20,7 +50,7 @@ select count(*) from my_tabla;
 select relname as tabla,reltuples::bigint as cnt_filas   from pg_class where relname in('my_tabla#1','my_tabla#2') ;
 ```
 ## Buscar tablas y saber sus owners :
- ```sh
+ ```sql
 \dt  'mytabla_de_prueba'
 SELECT tableowner,* FROM pg_tables where schemaname = 'public'  and tablename ilike '%mytabla_de_prueba%' ;
 SELECT * FROM information_schema.tables WHERE table_schema='public' and table_name ilike  '%mytabla_de_prueba%' ;
@@ -28,16 +58,16 @@ SELECT * FROM information_schema.tables WHERE table_schema='public' and table_na
 
 ## Saber el Tamaño de las tablas :
  - **Con esta query puedes ver el tamaño de la tabla:**
- ```sh
+ ```sql
 SELECT pg_size_pretty(pg_total_relation_size('mytbtest')) AS size;
 ```
 - **Con esta query puedes ver el tamaño de la tabla:**
-```sh
+```sql
  \dt+ ctl_configuracion
 ```
 
  - **Con esta query puedes ver  el tamaño de la tabla pero mas específico:**
- ```sh
+ ```sql
 SELECT schemaname AS table_schema,
 relname AS table_name,
 pg_size_pretty (pg_total_relation_size(relid)) AS total_size,
@@ -49,7 +79,7 @@ ORDER BY pg_total_relation_size(relid) DESC,
 pg_relation_size(relid) DESC;
 ```
 ## Ver el nombre y descripcion de las columnas de una tabla:
- ```sh
+ ```sql
 \d my_tabla
 
  select  a.column_name, is_nullable, data_type, udt_name, character_maximum_length, column_default,b.constraint_name  
@@ -60,7 +90,7 @@ where a.table_name= 'mytabla'  order by ordinal_position ;
 
 ## Crear una tabla :
 
-```sh
+```sql
 CREATE TABLE public.nombre_de_la_tabla (
     id serial PRIMARY KEY,
     nombre VARCHAR (255),
@@ -106,38 +136,38 @@ SELECT * FROM time123; --- me retorna la hora
 ```
 
 ## Insertar información en una tabla:
- ```sh
+ ```sql
 INSERT INTO nombre_de_la_tabla (nombre, edad) VALUES ('Juan', 30);
  ```
 
 ## Actualizar la información de una tabla:
- ```sh
+ ```sql
 UPDATE nombre_de_la_tabla SET edad = 35 WHERE nombre = 'Juan';
 ```
 
 ## Renombrar una tabla:
- ```sh
+ ```sql
 alter table my_old_tabla rename to my_new_tabla;
  ```
 
 ## Renombrar la columna de una tabla:
- ```sh
+ ```sql
 ALTER TABLE nombre_de_la_tabla RENAME COLUMN nombre_anterior TO nuevo_nombre;
  ``` 
 
 ## Cambiar el tipo de datos de una columna:
- ```sh
+ ```sql
 ALTER TABLE mi_tabla ALTER COLUMN mi_columna TYPE integer;
  ``` 
 
 ## Agregar una restricción a una columna:
- ```sh
+ ```sql
 ALTER TABLE nombre_de_la_tabla ALTER COLUMN nombre_de_la_columna SET NOT NULL;
  ``` 
 
 
 ## Cambiar de esquema
- ```sh
+ ```sql
 ALTER TABLE public.libros SET SCHEMA biblioteca;
 
 crear el esquema y agregarlo
@@ -153,7 +183,7 @@ ADD COLUMN nueva_columna INTEGER;
  ```
 
 ## Eliminar la informacion de una tabla
- ```sh
+ ```sql
 
 DELETE FROM nombre_de_la_tabla WHERE nombre = 'Juan';  -- este elimina informacion especificamente
 truncate nombre_de_la_tabla -- esto Elimina toda la informacion de una tabla.
@@ -161,12 +191,12 @@ Delete nombre_de_la_tabla -- esto tambien elimina la informacion pero no es reco
  ```
 
 ## Eliminar una columna:
- ```sh
+ ```sql
 ALTER TABLE mi_tabla DROP COLUMN columna_a_eliminar;
  ```
 
 ## Eliminar una tabla
- ```sh
+ ```sql
 drop table "mitabla"
 ```
 
@@ -220,4 +250,95 @@ VALUES (
 ```
 SELECT id, nombre, pgp_sym_decrypt(datos_encriptados, 'mi_password_poderosa') AS datos_desencriptados
 FROM informacion_secreta;
+```
+
+
+
+### Particionar tablas 
+```sql
+/* 
+--- La logica de PARTITION parace como si hicieramos varias vistas para una tabla y
+---  con un simple filtro where en la fecha, pero es mejor que esto: 
+
+#######  Ventajas  ########
+
+1.- Si realizas cambios en una tabla PARTITION surje efecto en la principal, por ejemplo si haces 
+un truncate o un update en la tabla ventas_julio_septiembre se hara automáticamente en la tabla ventas
+
+2.- Almacenamiento físico: Con el particionamiento, los datos se almacenan físicamente en tablas separadas, 
+
+3.- Rendimiento: El particionamiento puede mejorar el rendimiento de las consultas al permitir
+ que PostgreSQL acceda directamente a la partición relevante en lugar de tener que escanear toda la tabla. 
+
+4.- Mantenimiento y escalabilidad: El particionamiento facilita la administración de datos y
+ puede mejorar la escalabilidad al distribuir los datos entre particiones.
+
+*/
+
+-- PASO #1 CREAR LA TABLA PRINCIPAL
+
+CREATE TABLE ventas (
+    id SERIAL,
+    fecha DATE,
+    cantidad INTEGER,
+    PRIMARY KEY (fecha, id) -- Asegúrate de incluir la columna de particionamiento en la clave primaria
+) PARTITION BY RANGE (fecha);
+
+/* ---- SI NO AGREGAR PRIMARY KEY EN LA FECHA APARECE ESTE ERROR 
+
+ERROR:  unique constraint on partitioned table must include all partitioning columns
+DETAIL:  PRIMARY KEY constraint on table "ventas" lacks column "fecha" which is part of the partition key.
+
+*/
+
+-- PASO #2 CREAR LA TABLA PARTICIONES 
+
+CREATE TABLE ventas_enero_marzo PARTITION OF ventas
+    FOR VALUES FROM ('2024-01-01') TO ('2024-04-01');
+
+CREATE TABLE ventas_abril_junio PARTITION OF ventas
+    FOR VALUES FROM ('2024-04-01') TO ('2024-07-01');
+
+CREATE TABLE ventas_julio_septiembre PARTITION OF ventas
+    FOR VALUES FROM ('2024-07-01') TO ('2024-10-01');
+
+CREATE TABLE ventas_octubre_diciembre PARTITION OF ventas
+    FOR VALUES FROM ('2024-10-01') TO ('2025-01-01');
+	
+	-- PASO #3  INSERTAR LA INFORMACIÓN 
+	
+	INSERT INTO ventas (fecha, cantidad) VALUES
+    ('2024-01-15', 100),
+    ('2024-03-25', 150),
+    ('2024-05-10', 200),
+    ('2024-07-02', 180),
+    ('2024-09-12', 250),
+    ('2024-11-20', 300);
+	
+/*  --- SI INTENTAS INSERTAR LA INFORMACION ANTES DE CREAR LAS TABLAS PARTICIONES ----
+ERROR:  no partition of relation "ventas" found for row
+DETAIL:  Partition key of the failing row contains (fecha) = (2024-05-10).
+*/
+	
+	
+	-- PASO #4 TEST CONSULTAR 
+select * from ventas;
+select * from ventas_enero_marzo;
+select * from ventas_abril_junio;
+select * from ventas_julio_septiembre;
+select * from ventas_octubre_diciembre;
+
+	-- PASO #5 TEST DE TRUNCATE
+truncate table ventas;
+truncate table ventas_enero_marzo;
+truncate table ventas_abril_junio;
+truncate table ventas_julio_septiembre;
+truncate table ventas_octubre_diciembre;
+
+	-- PASO #6 TEST DE DROP TABLAS
+drop table ventas_enero_marzo;
+drop table ventas_abril_junio;
+drop table ventas_julio_septiembre;
+drop table ventas_octubre_diciembre;
+
 ```
