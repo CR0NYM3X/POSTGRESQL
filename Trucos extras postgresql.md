@@ -270,11 +270,14 @@ select   'd', 'DELETE' ;
 
 # trabajando con texto 
 ```sql
-/* DIVIDE EN PARTES EL TEXTO */
+
+/* DIVIDE EN COLUMNAS UN TEXTO */
 select split_part('hola = mundo','=' , 1 ); --> Return: "hola"
 select split_part('hola = mundo','=' , 2 ); --> Return: "mundo"
 
-SELECT regexp_split_to_table('INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER', ','); --> V 9
+SELECT split_part('texto1,texto2,texto3', ',', generate_series(1, length('texto1,texto2,texto3') - length(replace('texto1,texto2,texto3', ',', '')) + 1)) AS columna_individual; ---  < V9
+
+SELECT regexp_split_to_table('INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER', ','); -- > V 9
 
 /* REMPLZA  EL TEXTO */
 select replace('hola = mundo','=' , ''); --> Return: 'hola   mundo'
