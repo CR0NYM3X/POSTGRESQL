@@ -35,7 +35,12 @@ select ceiling(12.34) -- redondea todo hacia arriba
 select floor(12.23) --  redondea todo hacia abajo
 select cast(52.55 as decimal(18,2) ) -- le permite dejar 2 decimales y el 18 es la precisión o el redodeo
 
+Quitar el utlimo caracter
+```sql
 substring(fecha_registro::text, 1, 4)
+select 	substring('arwdDxt' FROM 1 FOR length('arwdDxt') - 1); -- > V  8
+select LEFT('arwdDxt', LENGTH('arwdDxt') - 1); -- > V 8
+```sql
 
 SELECT Abs(20) AS AbsNum; ---- esta función siempre te retorna un positivo
 SELECT sign(20) AS AbsNum; --- esta función siempre te retorana 1 si es número es positvo y si es negativo te retorna -1
@@ -268,6 +273,8 @@ select   'd', 'DELETE' ;
 /* DIVIDE EN PARTES EL TEXTO */
 select split_part('hola = mundo','=' , 1 ); --> Return: "hola"
 select split_part('hola = mundo','=' , 2 ); --> Return: "mundo"
+
+SELECT regexp_split_to_table('INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER', ','); --> V 9
 
 /* REMPLZA  EL TEXTO */
 select replace('hola = mundo','=' , ''); --> Return: 'hola   mundo'
