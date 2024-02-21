@@ -61,7 +61,7 @@ SELECT current_user;
 ```
 
 ###  Buscar un usuario o role
-```sh
+```sql
  \du+ "testuserdba"    -- descripción general
 
 --- estas son vistas 
@@ -113,7 +113,7 @@ y solo esta tomando los permisos del rol padre
 
 
 
-```sh
+```sql
 CREATE USER "testuserdba"; -- crear un user
 CREATE role "testuserdba";  -- crear un role  
 CREATE USER "testuserdba" login VALID UNTIL  '2023-11-15'; --- fecha de expiracion  
@@ -141,13 +141,13 @@ CREATE USER testuserdba WITH PASSWORD '123456789'; -- no se recomienda colocar e
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Comentar un usuario 
-```sh
+```sql
   COMMENT ON ROLE testuserdba IS 'Esta es la descripción del usuario.';
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
  
 ### Eliminar un usuario 
-```sh
+```sql
  drop user testuserdba;
  drop role testuserdba;
  ```
@@ -160,7 +160,7 @@ psql -t -c "select '\c ' || datname || chr(10) || 'drop OWNED by '|| chr(34)|| '
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Cambiar passowd
-```sh
+```sql
 \password testuserdba 
 ALTER USER "testuserdba" PASSWORD '12345'
 ALTER USER "testuserdba" PASSWORD 'md5a3cc0871123278d59269d85dbbd772893';  
@@ -168,7 +168,7 @@ ALTER USER "testuserdba" PASSWORD 'md5a3cc0871123278d59269d85dbbd772893';
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Cambiar la fecha de expiracion de acceso:
-```sh
+```sql
 ALTER USER "testuserdba" WITH VALID UNTIL '2023-11-11';
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
@@ -177,7 +177,7 @@ ALTER USER "testuserdba" WITH VALID UNTIL '2023-11-11';
 ### Habilitar o Desabilitar un usuario para conectarse a la base de datos 
 **`LOGIN`**  Habilita al usuario para iniciar sesión en el sistema de base de datos <br>
 **`NOLOGIN`** significa que este rol de usuario no puede iniciar sesión en el sistema de base de datos. En otras palabras, no se permite que este usuario se autentique en PostgreSQL y realice conexiones.
-```sh
+```sql
   ALTER ROLE "my_user" NOLOGIN;
 
   ALTER ROLE "my_user" LOGIN;
@@ -186,7 +186,7 @@ ALTER USER "testuserdba" WITH VALID UNTIL '2023-11-11';
   
 
 ### Limitar el número de conexion por usuario:
-```sh
+```sql
 ALTER USER testuserdba WITH CONNECTION LIMIT 2;
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
@@ -355,7 +355,10 @@ CASE WHEN rolreplication='t' THEN 1 ELSE 0 END as rolreplication_
 > [!WARNING]
 > **DROP OWNED BY myusertest;**  Este elimina todos objetos al que el usuario era owner 
 
-```sh
+> [!IMPORTANT]
+> Cuando un usuario/role crea un objeto, automáticamente se coloca ese usuario como owner en el objeto, almenos que lo cambie 
+
+```sql
 --- Este elimina los objetos del usuario 
 DROP OWNED BY myusertest;
 
@@ -422,13 +425,42 @@ SELECT nspname,nspowner, 'SCHEMA' FROM pg_namespace where not nspname in('pg_cat
 ) AS A  left join pg_authid as b on  OWNER = b.oid  
 WHERE  NOT b.oid  in(select oid from pg_authid where rolname = 'postgres');
 
+
+/*OPCION #2 | https://www.red-gate.com/simple-talk/homepage/postgresql-basics-object-ownership-and-default-privileges/*/
+SELECT n.nspname as "Schema",
+  c.relname as "Name",
+  CASE c.relkind 
+  	WHEN 'r' THEN 'table' 
+  	WHEN 'v' THEN 'view' 
+  	WHEN 'm' THEN 'materialized view' 
+  	WHEN 'i' THEN 'index' 
+  	WHEN 'S' THEN 'sequence' 
+  	WHEN 't' THEN 'TOAST table' 
+  	WHEN 'f' THEN 'foreign table' 
+  	WHEN 'p' THEN 'partitioned table' 
+  	WHEN 'I' THEN 'partitioned index' END as "Type",
+  pg_catalog.pg_get_userbyid(c.relowner) as "Owner"
+FROM pg_catalog.pg_class c
+     LEFT JOIN pg_catalog.pg_namespace n 
+         ON n.oid = c.relnamespace
+     LEFT JOIN pg_catalog.pg_am am 
+         ON am.oid = c.relam
+WHERE c.relkind IN ('r','p','v','m','S','f','')
+      AND n.nspname <> 'pg_catalog'
+      AND n.nspname !~ '^pg_toast'
+      AND n.nspname <> 'information_schema'
+  AND pg_catalog.pg_table_is_visible(c.oid)
+ORDER BY 1,2;
+
+
+
 ```
 
 
 
 
 ### Agregar y Quitar super Usuario a un usuario/role
-```sh
+```sql
 ALTER user  "sysutileria" WITH SUPERUSER; 
 ALTER USER "sysutileria" WITH NOSUPERUSER;
 ```
@@ -592,7 +624,7 @@ REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 ### Ver si hay un error en el archivo pg_hba.conf
-```sh
+```sql
 select * from pg_hba_file_rules where error is not null; ---- si no muestra registros, todo esta bien, si muestra registros en el campo "line_number" te dira la linea que presenta el error
 select * from pg_hba_file_rules  where address  in('10.0.30.5');
 select * from pg_hba_file_rules  where user_name in('{testuserdba}');
@@ -633,28 +665,28 @@ son conjuntos lógicos de roles de usuarios que se utilizan para simplificar la 
 
 
 ### Ver los grupos existentes:
-```sh
+```sql
 SELECT * FROM pg_group;
 ```
 
 ### Crear un grupo
-```sh
+```sql
 CREATE GROUP mi_grupo;
 ```
     
 ### Agregar  un usuario a un grupo
-```sh
+```sql
   GRANT mi_grupo TO mi_usuario;
 ```
   
 ### Eliminar un grupo 
-```sh
+```sql
   DROP GROUP mi_grupo;
 ``` 
  
 ### Ver los miembros de un grupo específico:
 La tabla pg_auth_members sirve para mostrar si un usuario esta en un grupo o rol
-```sh
+```sql
 select  roleid::regrole AS group_name, member::regrole AS member_name,grantor::regrole   FROM pg_auth_members WHERE roleid = 'mi_grupo';
 
 
@@ -672,7 +704,7 @@ delete from  pg_auth_members where member= 33303009 /*pg_user.usesysid*/ and rol
 
 
 ### Ejemplos de grupos 
-```sh
+```sql
 #Asignación de permisos: Imagina que tienes una base de datos con múltiples tablas y deseas dar a un conjunto de usuarios
 #los mismos permisos en varias tablas. En lugar de otorgar permisos a cada usuario individualmente, puedes crear un grupo
 # y asignar permisos al grupo. Luego, simplemente agregas a los usuarios al grupo y heredarán los permisos del grupo.
@@ -767,6 +799,62 @@ psql -h 10.44.55.100 -U postgresql -p MY_passowrd_secret -d db_reportes -f /tmp/
 5- Consultar la información en las tablas 
 ```
 psql -p 5435 -c "select * from info_server;  select * from grant_logic;  select * from privilege_server;"
+```
+
+# saber todos los permisos en versiones >= 9
+```sql
+select * from (
+	select    
+	   name_object
+	   ,type_object
+	   ,schema
+	--   ,acl_
+	  ,e.rolname as user_name
+	  ,privilege_type
+	--  ,is_grantable
+	  
+	  from (
+	 select relname as name_object, 
+	  case cls.relkind when 'r' then 'TABLE'
+	when 'm' then 'MATERIALIZED_VIEW'
+	when 'i' then 'INDEX'
+	when 'S' then 'SEQUENCE'
+	when 'v' then 'VIEW'
+	when 'c' then 'TYPE'
+	else cls.relkind::text end as type_object 
+	 ,nspname as schema /*,relnamespace */
+	 ,coalesce(  relacl , typacl)  as acl_
+
+
+		from pg_class as cls
+	left join pg_namespace nmp on nmp.oid= relnamespace
+	left join pg_type as tp  on relname= typname 
+	
+	where  nspname != 'information_schema' and not nspname ilike 'pg_%'  ) as z
+	left JOIN LATERAL (SELECT *  FROM aclexplode( acl_ ) AS x) a  ON true
+	left JOIN pg_authid e ON a.grantee = e.oid 
+	
+ 	--where e.rolname is not null   and name_object = 'tramongrafica' 
+	 -- order by  type_object desc   
+	 
+	
+ union all  
+  SELECT 	a.routine_name as name_object
+			, b.routine_type as type_object
+			,a.routine_schema as schema
+			,grantee as user_name
+			, privilege_type  as privilege
+			
+		FROM information_schema.routine_privileges as a
+	left join information_schema.routines  as b on a.routine_name=b.routine_name
+	where /*not a.grantee in('PUBLIC','postgres') and*/ not  a.specific_schema in('information_schema','pg_catalog','pg_toast') 
+
+  union all
+   select trigger_name, 'TRIGGER' as type_object  ,trigger_schema, null as user_name ,null as privilege_type 
+   FROM information_schema.triggers group by trigger_schema,trigger_name
+   
+	)as a   where not user_name in('PUBLIC','postgres', '' )   limit 10 ;
+ 
 ```
 
 
