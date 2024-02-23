@@ -169,3 +169,18 @@ Connection options:
   -W, --password           force password prompt (should happen automatically)
 
 ```
+
+### Diferencia de DDL Y DML 
+**Lenguaje de Definición de Datos (DDL):**
+
+`Propósito:` El DDL se utiliza para definir la estructura y las características de la base de datos. <br>
+`Operaciones típicas:` Crear, modificar y eliminar objetos de la base de datos, como tablas, índices, vistas, esquemas, etc. <br>
+`Ejemplos de sentencias DDL:` CREATE TABLE, ALTER TABLE, DROP TABLE, CREATE INDEX, CREATE VIEW, etc. <br>
+`Efecto en los datos:` Las sentencias DDL no afectan directamente a los datos almacenados en la base de datos, sino a la estructura y definición de cómo se almacenan y organizan esos datos.
+
+
+**Lenguaje de Manipulación de Datos (DML):** <br>
+`Propósito:` El DML se utiliza para manipular y trabajar con los datos almacenados en la base de datos. <br>
+`Operaciones típicas:` Insertar, recuperar, actualizar y eliminar datos dentro de las tablas de la base de datos. <br>
+`Ejemplos de sentencias DML:` SELECT, INSERT, UPDATE, DELETE, etc. <br>
+`Efecto en los datos:` Las sentencias DML sí afectan directamente a los datos almacenados en la base de datos, cambiando su contenido, añadiendo nuevos datos o eliminando datos existentes.
