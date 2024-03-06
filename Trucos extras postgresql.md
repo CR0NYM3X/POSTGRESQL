@@ -323,3 +323,9 @@ select replace('hola = mundo','=' , ''); --> Return: 'hola   mundo'
 SELECT array_to_string( ARRAY['Juan', 'María', 'Pedro']  , ' - ');
 
 ```
+
+
+# Manuales  PDF 
+```sql
+https://wiki.postgresql.org/images/c/c5/Afinamiento_de_la_base_de_datos.pdf
+```
