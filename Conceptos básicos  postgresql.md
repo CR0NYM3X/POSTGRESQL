@@ -184,3 +184,8 @@ Connection options:
 `Operaciones típicas:` Insertar, recuperar, actualizar y eliminar datos dentro de las tablas de la base de datos. <br>
 `Ejemplos de sentencias DML:` SELECT, INSERT, UPDATE, DELETE, etc. <br>
 `Efecto en los datos:` Las sentencias DML sí afectan directamente a los datos almacenados en la base de datos, cambiando su contenido, añadiendo nuevos datos o eliminando datos existentes.
+
+**Lenguaje de Control de Datos (DCL)**
+Estos comandos permiten al Administrador del sistema gestor de base de datos, controlar el acceso a los objetos<br>
+GRANT, permite otorgar permisos.<br>
+REVOKE, elimina los permisos que previamente se han concedido.
