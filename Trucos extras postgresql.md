@@ -328,4 +328,16 @@ SELECT array_to_string( ARRAY['Juan', 'María', 'Pedro']  , ' - ');
 # Manuales  PDF 
 ```sql
 https://wiki.postgresql.org/images/c/c5/Afinamiento_de_la_base_de_datos.pdf
+
+
+----- MANUALES DE AUTENTICACION EN POSTGRESQL ------ 
+https://info.enterprisedb.com/rs/069-ALB-339/images/Security-best-practices-2020.pdf?_ga=2.241796162.1507359552.1601965382-378383403.1546583698
+https://postgresconf.org/system/events/document/000/000/183/pgconf_us_v4.pdf | pagina 37/68 ssl 
+https://paquier.xyz/content/materials/20180531_pgcon_auth.pdf
+
+
+# PostgreSQL Security Technical Implementation Guide
+https://www.crunchydata.com/files/stig/PGSQL-STIG-v1r1.pdf
+
+https://www.depesz.com/
 ```
