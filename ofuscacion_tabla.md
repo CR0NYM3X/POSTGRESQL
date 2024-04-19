@@ -115,4 +115,26 @@ LEFT JOIN (SELECT Nombre, ROW_NUMBER() OVER (ORDER BY RANDOM()) AS Num FROM Empl
 LEFT JOIN (SELECT ApellidoPaterno, ROW_NUMBER() OVER (ORDER BY RANDOM()) AS Num FROM Empleados) AS c ON a.IDEmpleado = c.Num
 LEFT JOIN (SELECT ApellidoMaterno, ROW_NUMBER() OVER (ORDER BY RANDOM()) AS Num FROM Empleados) AS d ON a.IDEmpleado = d.Num;
 
+
+
+
+
+
+
+select 
+	IDEmpleado
+	, A.Nombre 
+	, B.Nombre as NombreNew
+	, ApellidoPaterno  as ApellidoPaternoNEW
+	, ApellidoMaterno as ApellidoMaternoNEW
+	from
+(select   IDEmpleado, Nombre, ROW_NUMBER() OVER (ORDER BY RANDOM()) AS Num from  Empleados  ) as A
+	
+left join  (SELECT Nombre, ROW_NUMBER() OVER (ORDER BY RANDOM()) AS Num FROM Empleados)  as B on A.Num = B.Num
+left join  (SELECT ApellidoPaterno , ROW_NUMBER() OVER (ORDER BY RANDOM()) AS Num FROM Empleados)  as C on A.Num = C.Num
+left join  (SELECT ApellidoMaterno , ROW_NUMBER() OVER (ORDER BY RANDOM()) AS Num FROM Empleados)  as D on A.Num = D.Num
+ order by IDEmpleado 
+
+
+
 ```
