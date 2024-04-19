@@ -145,6 +145,25 @@ INSERT INTO nombre_de_la_tabla (nombre, edad) VALUES ('Juan', 30);
 UPDATE nombre_de_la_tabla SET edad = 35 WHERE nombre = 'Juan';
 ```
 
+## Actualizar la información de una tabla, haciendo la union de una tabla  :
+ ```sql
+UPDATE tabla1
+SET columna1 = valor_nuevo
+FROM tabla2
+WHERE tabla1.columna_id = tabla2.columna_id
+```
+
+## Actualizar la información de una tabla, haciendo la union de dos tabla  :
+ ```sql
+UPDATE tabla1
+SET columna1 = valor_nuevo
+FROM tabla2
+INNER JOIN tabla3 ON tabla1.columna_id = tabla2.columna_id
+WHERE alguna_condicion;
+```
+
+
+
 ## Renombrar una tabla:
  ```sql
 alter table my_old_tabla rename to my_new_tabla;
