@@ -19,6 +19,8 @@ log_disconnections = on
 log_lock_waits = on
 log_temp_files = 0
 log_autovacuum_min_duration = 0
+
+log_timezone = 'localtime'
  
 ```
  
@@ -84,24 +86,7 @@ Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en 
  port = 5432
  password_encryption = scram-sha-256		# md5 or scram-sha-256
  shared_preload_libraries = 'pg_stat_statements'
- 
- 
- ```
 
-## Otra configuración
- ```sql
------------- other config -----------------
-
-data_directory = '/sysx/data'	
-hba_file = '/sysx/data/pg_hba.conf'
-ident_file = '/sysx/data/pg_ident.conf'
-
-
-  ```
-
-
-
-  ```sql 
 
 port = 5432
 listen_addresses = '*'
@@ -126,7 +111,21 @@ default_text_search_config = 'pg_catalog.english'
 data_directory = '/data'
 hba_file = '/config/pg_hba.conf'
 ident_file = '/config/pg_ident.conf'
+ 
+ ```
+
+## Otra configuración
+ ```sql
+------------ other config -----------------
+
+data_directory = '/sysx/data'	
+hba_file = '/sysx/data/pg_hba.conf'
+ident_file = '/sysx/data/pg_ident.conf'
+
+
   ```
+
+ 
 
 
 ## Variables: 
