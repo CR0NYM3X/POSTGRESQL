@@ -18,16 +18,41 @@ log_connections = on
 log_disconnections = on
 log_lock_waits = on
 log_temp_files = 0
-log_autovacuum_min_duration = 0
+
 
 log_timezone = 'localtime'
+log_directory = 'pg_log'
+log_filename = 'postgresql-%y%m%d.log'
+log_min_messages = warning
+log_min_error_statement = error
+log_min_duration_statement = 300
+log_connections = on
+log_disconnections = on
+log_duration = on
+log_line_prefix = '<%t %r %a %d %u %p %c %i>'
+log_lock_waits = on
+log_statement = 'all'
+track_activities = on
+track_activity_query_size = 1024        # (change requires restart)
+track_counts = on
+track_functions = all
  
 ```
  
 
 ## Mantenimientos 
 ```sql
+
+autovacuum = on
 #autovacuum_max_workers = 3		# max number of autovacuum subprocesses
+autovacuum_naptime = 5min
+autovacuum_vacuum_threshold = 10000
+autovacuum_analyze_threshold = 5000
+autovacuum_vacuum_scale_factor = 0.4 
+autovacuum_analyze_scale_factor = 0.2
+autovacuum_vacuum_cost_delay = 100ms
+autovacuum_vacuum_cost_limit = -1
+log_autovacuum_min_duration = 0
 ```
 
 ## Memorias 
@@ -91,7 +116,6 @@ Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en 
 port = 5432
 listen_addresses = '*'
 max_connections = 100
-shared_buffers = 128MB
 dynamic_shared_memory_type = posix
 max_wal_size = 1GB
 min_wal_size = 80MB
@@ -122,7 +146,7 @@ data_directory = '/sysx/data'
 hba_file = '/sysx/data/pg_hba.conf'
 ident_file = '/sysx/data/pg_ident.conf'
 
-
+checkpoint_completion_target = 0.9
   ```
 
  
