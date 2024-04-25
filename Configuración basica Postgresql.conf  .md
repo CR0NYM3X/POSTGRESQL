@@ -9,29 +9,50 @@ ddl: Solo se registran las consultas de definición de datos (DDL), como CREATE,
 mod: Solo se registran las consultas de modificación de datos (DML), como INSERT, UPDATE, DELETE, etc.
 all: Se registran todas las consultas, tanto DDL como DML.*/
 
-log_destination
+
+
+
 logging_collector = on
-log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d '
-log_min_duration_statement = 2s
-log_checkpoints = on
-log_connections = on
-log_disconnections = on
-log_lock_waits = on
-log_temp_files = 0
-
-
+log_statement = 'all'
+log_min_duration_statement = 300
+log_min_duration_statement = -1 # Esto deternima la duracion de una consulta antes de que sea registrada en el log, en entornos productivos se usa para registrar en el log los unicos que que superan el umbral y esto evita inundar el archivo log 
+log_rotation_size = 10MB
 log_timezone = 'localtime'
 log_directory = 'pg_log'
 log_filename = 'postgresql-%y%m%d.log'
+log_file_mode = 0600
 log_min_messages = warning
 log_min_error_statement = error
-log_min_duration_statement = 300
+
+log_checkpoints = on
 log_connections = on
 log_disconnections = on
 log_duration = on
 log_line_prefix = '<%t %r %a %d %u %p %c %i>'
+# special values:
+					#   %a = application name
+					#   %u = user name
+					#   %d = database name
+					#   %r = remote host and port
+					#   %h = remote host
+					#   %p = process ID
+					#   %t = timestamp without milliseconds
+					#   %m = timestamp with milliseconds
+					#   %n = timestamp with milliseconds (as a Unix epoch)
+					#   %i = command tag
+					#   %e = SQL state
+					#   %c = session ID
+					#   %l = session line number
+					#   %s = session start timestamp
+					#   %v = virtual transaction ID
+					#   %x = transaction ID (0 if none)
+					#   %q = stop here in non-session
+					#        processes
+					#   %% = '%'
+					# e.g. '<%u%%%d> '
 log_lock_waits = on
-log_statement = 'all'
+log_temp_files = 0
+
 track_activities = on
 track_activity_query_size = 1024        # (change requires restart)
 track_counts = on
