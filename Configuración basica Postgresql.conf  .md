@@ -270,9 +270,6 @@ https://pgdash.io/blog/postgres-configuration-cheatsheet.html
 
 https://helpcenter.netwrix.com/bundle/StealthDEFEND_2.7/page/Content/StealthDEFEND/Installation_Guide/Configure_the_Postgres.conf_File/Configure_the_Postgres.conf_File.htm
 
-https://fast.fujitsu.com/hubfs/_Global/Manuals/V12onZ-OperationGuide.pdf
-https://www.postgresql.fastware.com/hubfs/_Global/Manuals/V12onZ-InstallationAndSetupGuideForServer.pdf?hsLang=en-us
-https://www.postgresql.fastware.com/hubfs/_Global/Manuals/V12onZSP1-SecurityOperationGuide.pdf
 
 https://supabase.com/docs/guides/platform/custom-postgres-config
 
