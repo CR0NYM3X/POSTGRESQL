@@ -74,8 +74,45 @@ Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en 
   datestyle = 'iso, mdy'
   
   #work_mem = 4MB ## Total RAM * 0.25 / max_connections
+
+Variables:
+PGDATA
   ```
-  
+
+
+
+  ```sql 
+
+port = 5432
+listen_addresses = '*'
+max_connections = 100
+shared_buffers = 128MB
+dynamic_shared_memory_type = posix
+max_wal_size = 1GB
+min_wal_size = 80MB
+log_timezone = 'Etc/UTC'
+datestyle = 'iso, mdy'
+timezone = 'Etc/UTC'
+
+#locale settings
+lc_messages = 'en_US.utf8'			# locale for system error message
+lc_monetary = 'en_US.utf8'			# locale for monetary formatting
+lc_numeric = 'en_US.utf8'			# locale for number formatting
+lc_time = 'en_US.utf8'				# locale for time formatting
+
+default_text_search_config = 'pg_catalog.english'
+
+
+data_directory = '/data'
+hba_file = '/config/pg_hba.conf'
+ident_file = '/config/pg_ident.conf'
+  ```
+
+
+
+
+
+
  
 
 ## Bibliofragías 
@@ -90,8 +127,22 @@ Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en 
  https://www.visibilidadweb.unam.mx/capacitacion/perfilesTIC/responsableTIC/Manual-Curso-Basico-Postgres 
  
  https://ubuntu.com/server/docs/install-and-configure-postgresql
- 
- 
+
+-- Todos los parametros 
+https://pgdash.io/blog/postgres-configuration-cheatsheet.html
+
+--> PostgreSQL Configuration Best Practices for Performance and Security
+https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Configuration.pdf
+
+
+https://helpcenter.netwrix.com/bundle/StealthDEFEND_2.7/page/Content/StealthDEFEND/Installation_Guide/Configure_the_Postgres.conf_File/Configure_the_Postgres.conf_File.htm
+
+https://fast.fujitsu.com/hubfs/_Global/Manuals/V12onZ-OperationGuide.pdf
+https://www.postgresql.fastware.com/hubfs/_Global/Manuals/V12onZ-InstallationAndSetupGuideForServer.pdf?hsLang=en-us
+https://www.postgresql.fastware.com/hubfs/_Global/Manuals/V12onZSP1-SecurityOperationGuide.pdf
+
+https://supabase.com/docs/guides/platform/custom-postgres-config
+
   --------->  PDF SECURITY - PSQL   <--------------
  https://www.crunchydata.com/files/stig/PGSQL-STIG-v1r1.pdf
  https://rcci.uci.cu/?journal=rcci&page=article&op=viewFile&path[]=96&path[]=90
