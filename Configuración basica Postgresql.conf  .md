@@ -289,6 +289,9 @@ ls -lhtra /home/postgres
 
 ```
 
+##  Firewall iptables
+-A INPUT -s 192.168.0.0/24 -m state --state NEW -m tcp -p tcp --dport 5432 -j ACCEPT
+
 ## Bibliofragías 
 ```
  ---------> PDF  CONFIGURACION PSQL  <--------------
@@ -331,6 +334,5 @@ https://gist.github.com/franklinbr/f968e832fb5f95250259f2a6031644fa
 https://gist.github.com/arcolife/d8e747f9bfafe841b3a25def91ed1afe
 https://gist.github.com/djyoda/5d243f7beddbe6f4d8a9
 https://gist.github.com/ryanguill/7928937
-https://gist.github.com/uuhnaut69/393bfbd1f4f7a30690708785c5b32afc
 
 ```
