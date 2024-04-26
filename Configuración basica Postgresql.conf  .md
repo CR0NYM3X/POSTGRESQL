@@ -205,7 +205,7 @@ show config_file;
 
 #Ejemplo
 show log_directory ;
-alter system set log_directory TO '/path/to/log/
+alter system set log_directory TO '/path/to/log/'
 
    ```
 
@@ -239,7 +239,7 @@ postgres=#
 
 ```
 
-## Hacer que al conectarse a psql aparezca un menu de ayuda 
+## Colocar un menu de ayuda en psql
 
 El archivo psqlrc del usuario se encuentra o se puede crear en el directorio de inicio del usuario.
 <br> 
