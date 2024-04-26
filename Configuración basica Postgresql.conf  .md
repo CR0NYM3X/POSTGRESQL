@@ -110,6 +110,11 @@ datestyle = 'iso, mdy'  # Este parámetro permite configura  que la fecha con fo
 	lc_monetary = 'en_US.UTF-8' # locale for monetary formatting
 	lc_numeric = 'en_US.UTF-8' # locale for number formatting
 	lc_time = 'en_US.UTF-8' # locale for time formatting
+
+
+
+default_text_search_config = 'pg_catalog.english'
+
 ```
 
 ## Configuración en base de datos 
@@ -119,7 +124,7 @@ datestyle = 'iso, mdy'  # Este parámetro permite configura  que la fecha con fo
   create extension pg_stat_statements;
   ```
 
-## Configuración en base de datos 
+## Configuración IMPORTANT
 ```sql
 -------------- settings IMPORTANT -------------------------
  listen_addresses = '*'  ## enable all other computers to connect 
@@ -127,26 +132,10 @@ datestyle = 'iso, mdy'  # Este parámetro permite configura  que la fecha con fo
  port = 5432
  password_encryption = scram-sha-256		# md5 or scram-sha-256
  shared_preload_libraries = 'pg_stat_statements'
-
-
-port = 5432
-listen_addresses = '*'
-max_connections = 100
 dynamic_shared_memory_type = posix
+
 max_wal_size = 1GB
 min_wal_size = 80MB
-log_timezone = 'Etc/UTC'
-datestyle = 'iso, mdy'
-timezone = 'Etc/UTC'
-
-#locale settings
-lc_messages = 'en_US.utf8'			# locale for system error message
-lc_monetary = 'en_US.utf8'			# locale for monetary formatting
-lc_numeric = 'en_US.utf8'			# locale for number formatting
-lc_time = 'en_US.utf8'				# locale for time formatting
-
-default_text_search_config = 'pg_catalog.english'
-
 
 data_directory = '/data'
 hba_file = '/config/pg_hba.conf'
