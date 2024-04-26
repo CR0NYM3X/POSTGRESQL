@@ -323,4 +323,14 @@ https://postgresqlco.nf/doc/en/param/autovacuum_max_workers/
  https://github.com/postgres/postgres/blob/master/src/backend/utils/misc/postgresql.conf.sample
  https://gist.github.com/sbrohme/3295547
  https://gist.github.com/64kramsystem/d780ce0f8dff7b90847b2728f506cdea
+
+
+ --------->  test instalación <--------------
+
+https://gist.github.com/franklinbr/f968e832fb5f95250259f2a6031644fa
+https://gist.github.com/arcolife/d8e747f9bfafe841b3a25def91ed1afe
+https://gist.github.com/djyoda/5d243f7beddbe6f4d8a9
+https://gist.github.com/ryanguill/7928937
+https://gist.github.com/uuhnaut69/393bfbd1f4f7a30690708785c5b32afc
+
 ```
