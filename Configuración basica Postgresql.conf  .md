@@ -20,6 +20,7 @@ log_filename = 'postgresql-%y%m%d.log'
 log_file_mode = 0600
 log_min_messages = warning
 log_min_error_statement = error
+#log_truncate_on_rotation = off # Este elimina el log si ya existe
 
 log_checkpoints = on
 log_connections = on
@@ -93,6 +94,8 @@ En versiones de PostgreSQL anteriores a 8.4, el valor máximo debe ser 2,5 GB,*/
 
 Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en bytes
 
+wal_buffers = 16MB
+
 ```
 
 ## Tiempos 
@@ -134,25 +137,23 @@ default_text_search_config = 'pg_catalog.english'
  shared_preload_libraries = 'pg_stat_statements'
 dynamic_shared_memory_type = posix
 
+temp_buffers = 10MB # Estos son buffers locales de sesión que se usan solo para acceder a tablas temporales.  https://www.postgresql.org/docs/current/runtime-config-resource.html
+
+.. max_prepared_transactions = 50 # Si no planea utilizar transacciones preparadas, este parámetro debe establecerse en cero para evitar la creación accidental de transacciones preparadas 
+
 max_wal_size = 1GB
 min_wal_size = 80MB
 
 data_directory = '/data'
 hba_file = '/config/pg_hba.conf'
 ident_file = '/config/pg_ident.conf'
- 
- ```
 
-## Otra configuración
- ```sql
------------- other config -----------------
-
-data_directory = '/sysx/data'	
-hba_file = '/sysx/data/pg_hba.conf'
-ident_file = '/sysx/data/pg_ident.conf'
-
+#checkpoint_timeout = 5min		# range 30s-1d
 checkpoint_completion_target = 0.9
-  ```
+#checkpoint_flush_after = 256kB		# measured in pages, 0 disables
+#checkpoint_warning = 30s		# 0 disables
+ ```
+ 
 
  
 
@@ -276,38 +277,47 @@ Pagina 71 -> https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Config
 ```
 
 
+## Configuracion de archivos 
+```sql
+archivos importantes :
+
+ls -lhtra /home/postgres
+
+.bash_profile
+.psql_history
+.bash_history
+
+```
+
 ## Bibliofragías 
 ```
  ---------> PDF  CONFIGURACION PSQL  <--------------
+
+[Recomendado LVL #1 ] https://www.postgresql.org/docs/current/runtime-config.html
  
-[Recomendado]--> PostgreSQL Configuration Best Practices for Performance and Security
+[Recomendado #2 ]--> PostgreSQL Configuration Best Practices for Performance and Security
 https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Configuration.pdf
 
- https://www.postgresql.org/docs/current/runtime-config.html
- https://wiki.postgresql.org/images/5/59/FlexiblePostgreSQLConfiguration.pdf
+[Recomendado #3  ] -- Este tiene varios temas como  PITR, respaldos, configuraciones etc, etc
+[Recomendado #4  ] https://www.visibilidadweb.unam.mx/capacitacion/perfilesTIC/responsableTIC/Manual-Curso-Basico-Postgres 
 
--- Este tiene varios temas como  PITR, respaldos, configuraciones etc, etc
- https://www.visibilidadweb.unam.mx/capacitacion/perfilesTIC/responsableTIC/Manual-Curso-Basico-Postgres 
- 
- https://ubuntu.com/server/docs/install-and-configure-postgresql
+ [Recomendado #5  ] https://www.postgresql.org/docs/current/runtime-config.html
 
--- Todos los parametros 
+ [LVL recomendación 0 ]   https://wiki.postgresql.org/images/5/59/FlexiblePostgreSQLConfiguration.pdf
+ [LVL recomendación 0 ]  https://ubuntu.com/server/docs/install-and-configure-postgresql
+
+-- Todos los parametros de postgresql.conf
 https://pgdash.io/blog/postgres-configuration-cheatsheet.html
-
-
-
 https://helpcenter.netwrix.com/bundle/StealthDEFEND_2.7/page/Content/StealthDEFEND/Installation_Guide/Configure_the_Postgres.conf_File/Configure_the_Postgres.conf_File.htm
 
-
-https://supabase.com/docs/guides/platform/custom-postgres-config
+https://postgresqlco.nf/doc/en/param/autovacuum_max_workers/
 
   --------->  PDF SECURITY - PSQL   <--------------
- https://www.crunchydata.com/files/stig/PGSQL-STIG-v1r1.pdf
- https://rcci.uci.cu/?journal=rcci&page=article&op=viewFile&path[]=96&path[]=90
- https://www.postgresql.eu/events/pgconfeu2023/sessions/session/4707/slides/444/P-DBI-E-20231214-PostgreSQL_security_with_demo.pdf
- 
- https://repository.unad.edu.co/bitstream/handle/10596/36746/ilovepdf_merged.pdf?sequence=3&isAllowed=y
- 
+  [LVL recomendación 1 ] https://repository.unad.edu.co/bitstream/handle/10596/36746/ilovepdf_merged.pdf?sequence=3&isAllowed=y
+  [LVL recomendación 2] https://www.postgresql.eu/events/pgconfeu2023/sessions/session/4707/slides/444/P-DBI-E-20231214-PostgreSQL_security_with_demo.pdf
+  [LVL recomendación 0] https://www.crunchydata.com/files/stig/PGSQL-STIG-v1r1.pdf
+  [LVL recomendación 0]   https://rcci.uci.cu/?journal=rcci&page=article&op=viewFile&path[]=96&path[]=90
+
  
  --------->  postgresql.conf DE PRUBEAS <--------------
  https://github.com/postgres/postgres/blob/master/src/backend/utils/misc/postgresql.conf.sample
