@@ -1,23 +1,20 @@
 ## Configurar los datos que guarda en el LOG
 
-Por ejemplo, si solo deseas registrar consultas de modificación de datos, puedes configurar log_statement de la siguiente manera en tu archivo postgresql.conf:
+
 ```sql
-log_statement = 'mod'
-/*********** Otras opciones *************
-none: No se registra ninguna consulta.
-ddl: Solo se registran las consultas de definición de datos (DDL), como CREATE, ALTER, DROP, etc.
-mod: Solo se registran las consultas de modificación de datos (DML), como INSERT, UPDATE, DELETE, etc.
-all: Se registran todas las consultas, tanto DDL como DML.*/
-
-
-
-
 logging_collector = on
 log_statement = 'all'
+	/*********** Otras opciones *************
+	none: No se registra ninguna consulta.
+	ddl: Solo se registran las consultas de definición de datos (DDL), como CREATE, ALTER, DROP, etc.
+	mod: Solo se registran las consultas de modificación de datos (DML), como INSERT, UPDATE, DELETE, etc.
+	all: Se registran todas las consultas, tanto DDL como DML.*/
+
 log_min_duration_statement = 300
 log_min_duration_statement = -1 # Esto deternima la duracion de una consulta antes de que sea registrada en el log, en entornos productivos se usa para registrar en el log los unicos que que superan el umbral y esto evita inundar el archivo log 
+log_rotation_age = 1d
 log_rotation_size = 10MB
-log_timezone = 'localtime'
+log_timezone = 'America/mazatlan'
 log_directory = 'pg_log'
 log_filename = 'postgresql-%y%m%d.log'
 log_file_mode = 0600
@@ -79,9 +76,6 @@ log_autovacuum_min_duration = 0
 ## Memorias 
 
 ```sql
-
-  datestyle = 'iso, mdy'
-
 work_mem = 4MB  /*es un parámetro de configuración de PostgreSQL que especifica la cantidad de memoria que utilizarán las operaciones de ordenación internas  ORDER BY, DISTINCT, subconsultas IN y JOINS y las tablas hash antes de escribir en archivos de disco temporales, En un servidor dedicado podemos usar un 2-4% del total de nuestra memoria si tenemos solamente unas pocas sesiones (clientes) grandes. Como valor inicial podemos usar 8 Mbytes e ir aumentando progresivamente hasta tener un buen equilibrio entre uso de memoria y generación de temp files link : https://dbasinapuros.com/como-saber-si-esta-bien-ajustado-el-parametro-work_mem-de-postgresql/
 otros dicen que tambien se calcula  Total RAM * 0.25 / max_connections */
 
@@ -107,9 +101,10 @@ Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en 
  SHOW TIMEZONE;
  ALTER DATABASE postgres SET timezone TO 'Europe/Berlin';
  SELECT CURRENT_TIMESTAMP;
-	timezone = 'US/Eastern'	 # postgresql.conf 
- 
- 
+	timezone = 'America/mazatlan'	 # postgresql.conf 
+
+datestyle = 'iso, mdy'  # Este parámetro permite configura  que la fecha con formato "yyyy-mm-dd"
+
  These settings are initialized by initdb, but they can be changed.
 	lc_messages = 'en_US.UTF-8' # locale for system error message
 	lc_monetary = 'en_US.UTF-8' # locale for monetary formatting
