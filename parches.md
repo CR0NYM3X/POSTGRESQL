@@ -21,3 +21,14 @@ LIFE CYCLES ORACLE		https://www.oracle.com/us/assets/lifetime-support-technology
 LIFE CYCLES MYSQL		https://endoflife.software/applications/databases/mysql
 
 ```
+
+# ODBC
+```
+https://odbc.postgresql.org/
+```
+
+# Vulnerabilidades de seguridad 
+```
+https://www.postgresql.org/support/security/
+https://www.cvedetails.com/vulnerability-list/vendor_id-336/product_id-575/Postgresql-Postgresql.html
+```
