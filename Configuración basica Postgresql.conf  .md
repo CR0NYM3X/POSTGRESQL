@@ -24,7 +24,7 @@ log_filename = 'postgresql-%y%m%d.log'
 log_file_mode = 0600
 log_min_messages = warning
 log_min_error_statement = error
-#log_truncate_on_rotation = off # Este elimina el log si ya existe
+log_truncate_on_rotation = ON  # Este elimina el log si ya existe
 
 log_checkpoints = on
 log_connections = on
@@ -52,8 +52,9 @@ log_line_prefix = '<%t %r %a %d %u %p %c %i>'
 					#        processes
 					#   %% = '%'
 					# e.g. '<%u%%%d> '
-log_lock_waits = on
-log_temp_files = 0
+log_lock_waits = on #   cuando una consulta intenta escribir en una fila mientras otra consulta está leyendo o escribiendo en la misma fila. Cuando una consulta está esperando a que se libere un recurso bloqueado por otra consulta, se dice que está esperando un bloqueo. El parámetro log_lock_waits en postgresql.conf permite registrar información sobre estas situaciones, lo que puede ayudar en el diagnóstico y resolución de problemas de rendimiento.
+ 
+log_temp_files = 0  # controla si se debe registrar información sobre la creación y eliminación de archivos temporales en PostgreSQL. |  -1 disables, 0 logs all temp files
 
 track_activities = on
 track_activity_query_size = 1024        # (change requires restart)
