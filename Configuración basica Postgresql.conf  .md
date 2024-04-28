@@ -12,6 +12,10 @@ log_statement = 'all'
 	mod: Solo se registran las consultas de modificación de datos (DML), como INSERT, UPDATE, DELETE, etc.
 	all: Se registran todas las consultas, tanto DDL como DML.*/
 
+log_error_verbosity = default	
+	- terse registra solo la información básica sobre el error.
+	- default proporciona información adicional, como el contexto de la consulta actual.
+	- verbose incluye información detallada, como la traza de la pila del erro
 
 log_min_duration_statement = -1 # Esto deternima la duracion de una consulta antes de que sea registrada en el log, en entornos productivos se usa para registrar en el log los unicos que que superan el umbral y esto evita inundar el archivo log
 
