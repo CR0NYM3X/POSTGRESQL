@@ -60,13 +60,35 @@ log_lock_waits = on #   cuando una consulta intenta escribir en una fila mientra
  
 log_temp_files = 0  # controla si se debe registrar información sobre la creación y eliminación de archivos temporales en PostgreSQL. |  -1 disables, 0 logs all temp files
 
-track_activities = on
-track_activity_query_size = 1024        # (change requires restart)
-track_counts = on
-track_functions = all
+
  
 ```
  
+
+## Estadísticas de tiempo de ejecución 
+```SQL
+ track_activities = on: Imagina que tienes una base de datos PostgreSQL que utilizan múltiples usuarios para realizar consultas y transacciones. Al activar este parámetro, la base de datos registrará qué consultas se están ejecutando, quién las está ejecutando y cuánto tiempo están tardando. Esto te ayuda a monitorear la actividad en tiempo real y a detectar problemas de rendimiento o posibles actividades sospechosas.
+
+ track_activity_query_size = 1024: Este parámetro te permite limitar la cantidad en bytes que se registran sobre cada consulta. Por ejemplo, si tienes una query muy largas, en el log no se va ver completa ya parecera recortada, o puedes aumentar este parametros a un valor como 10000 para que se guarde toda la query completa y no recorte las query con muchos caracteres
+
+
+ track_counts = on: ¿Quieres saber cuántas filas están siendo afectadas por tus consultas de inserción, actualización o eliminación? Al activar este parámetro, PostgreSQL registrará automáticamente el número de filas afectadas por cada tipo de comando, lo que te proporciona información valiosa sobre el rendimiento de tu base de datos y la eficacia de tus operaciones de manipulación de datos.
+
+ track_io_timing = off: Si estás preocupado por el rendimiento de las operaciones de lectura y escritura en tu base de datos, puedes activar este parámetro para que PostgreSQL registre el tiempo que tarda en realizar operaciones de entrada/salida en el disco. Esto te ayuda a identificar cuellos de botella de E/S y a optimizar el rendimiento de tu sistema de almacenamiento.
+
+ track_wal_io_timing = off: Similar al parámetro anterior, pero específico para el registro de escritura de registros de WAL. Al activarlo, PostgreSQL registrará el tiempo que tarda en escribir los registros de WAL en disco, lo que te permite evaluar el rendimiento de la escritura de registros y optimizar la configuración de tu sistema de registro.
+
+ track_functions = none: Si tienes funciones almacenadas (procedimientos almacenados) en tu base de datos, puedes usar este parámetro para controlar si deseas rastrear las llamadas a estas funciones. Puedes elegir entre no rastrear ninguna función, rastrear solo las funciones escritas en PL/pgSQL o rastrear todas las funciones, según tus necesidades de monitoreo y análisis.
+
+ stats_fetch_consistency = cache: Este parámetro te permite controlar la consistencia de las estadísticas que PostgreSQL recupera de la base de datos. Por ejemplo, puedes configurarlo para utilizar estadísticas en caché para consultas de rendimiento rápidas o una instantánea actualizada de las estadísticas para análisis más precisos. Esto te ayuda a equilibrar el rendimiento y la precisión al realizar consultas de estadísticas.
+
+
+```
+
+
+
+
+
 
 ## Mantenimientos 
 ```sql
