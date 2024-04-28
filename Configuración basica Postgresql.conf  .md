@@ -1,5 +1,105 @@
-## Configurar los datos que guarda en el LOG
+ 
+## FILE LOCATIONS
+ 
+```sql
+data_directory = '/data'
+hba_file = '/config/pg_hba.conf'
+ident_file = '/config/pg_ident.conf'
 
+```
+
+
+
+## CONNECTIONS 
+
+
+```sql
+
+ listen_addresses = '*'  ## enable all other computers to connect 
+ max_connections = 100
+ port = 5432
+
+#reserved_connections = 0   #  Esto se debe a que garantizaría que un conjunto específico de conexiones siempre esté disponible para tareas críticas del sistema, como las operaciones de respaldo automático (autovacuum) y el proceso de escritura en segundo plano (background writer). Sin estas conexiones reservadas, es posible que estos procesos internos no puedan acceder a la base de datos cuando más se necesiten, se garantiza que el servidor pueda administrarse y mantenerse de manera eficiente incluso en momentos de alta demanda
+
+
+#tcp_keepalives_idle = 300 #
+.....  En este escenario, se recomienda utilizar tcp_keepalives_idle .....
+
+Escenario #1 
+requiere una conexión continua y confiable con la base de datos para garantizar la integridad de los datos y la disponibilidad del servicio.
+ Sin embargo, ,  es posible que haya períodos de inactividad en la aplicación,
+ durante los cuales la conexión con la base de datos podría cerrarse si no se detecta actividad.
+
+. Podrías establecer un valor de tcp_keepalives_idle de, por ejemplo, 300 segundos (5 minutos),
+lo que significa que se enviará un paquete de keepalive TCP al servidor remoto después de 5 minutos de inactividad para mantener la conexión activa.
+
+........... En este escenario, no sería necesario utilizar tcp_keepalives_idle .... 
+Escenario #2
+Esta base de datos es accedida principalmente por herramientas de análisis de datos que ejecutan consultas periódicas,
+ pero no hay aplicaciones críticas para el negocio que requieran una conexión continua y confiable. Además,
+las consultas y transacciones en la base de datos son lo suficientemente frecuentes como para evitar que la
+ conexión se cierre debido a inactividad.
+```
+
+
+# - Authentication -
+
+
+```
+
+authentication_timeout = 1min		# 1s-600s Cantidad máxima de tiempo permitido para completar la autenticación del cliente. Si un posible cliente no ha completado el protocolo de autenticación en este tiempo, el servidor cierra la conexión. Esto evita que los clientes colgados ocupen una conexión indefinidamente
+
+password_encryption = scram-sha-256	# scram-sha-256 or md5 # cambia el metodo crifrado de contraseñas de los usuarios
+
+scram_iterations = 10000 # hace que la autenticación sea más lenta., pero en un escenario donde se expusieron las contraseñas de los usuarios login, Esto significa que los atacantes necesitarían mucho más tiempo y recursos computacionales para descifrar las contraseñas de los usuarios, lo que reduce en gran medida la probabilidad de éxito de un ataque
+
+
+client_connection_check_interval = 10
+**Escenario crítico donde se debe usar client_connection_check_interval:**
+Imagina una aplicación en la que la disponibilidad y la confiabilidad son críticas. una conexión persistente
+con la base de datos PostgreSQL para operar. Es esencial que la aplicación detecte y maneje rápidamente las
+desconexiones o fallas en las conexiones con la base de datos para evitar pérdidas de datos o interrupciones
+ del servicio. Esto asegura que el servidor PostgreSQL verifique regularmente el estado de las conexiones de
+ los clientes y tome medidas rápidas si se detecta una desconexión o fallo. 
+
+**Escenario donde no es necesario usar client_connection_check_interval:**
+En entornos donde la aplicación no requiere una conexión persistente con la base de datos o donde las desconexiones
+ de los clientes no representan un riesgo crítico para la integridad de los datos o la disponibilidad del servicio
+
+
+```
+
+
+
+
+
+## RESOURCE USAGE (except WAL)
+
+```
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Configurar los datos que guarda en el LOG
 
 ```sql
 
@@ -198,6 +298,7 @@ default_text_search_config = 'pg_catalog.english'
  listen_addresses = '*'  ## enable all other computers to connect 
  max_connections = 100
  port = 5432
+
  password_encryption = scram-sha-256		# md5 or scram-sha-256
  shared_preload_libraries = 'pg_stat_statements'
 dynamic_shared_memory_type = posix
@@ -209,9 +310,7 @@ temp_buffers = 10MB # Estos son buffers locales de sesión que se usan solo para
 max_wal_size = 1GB
 min_wal_size = 80MB
 
-data_directory = '/data'
-hba_file = '/config/pg_hba.conf'
-ident_file = '/config/pg_ident.conf'
+
 
 #checkpoint_timeout = 5min		# range 30s-1d
 checkpoint_completion_target = 0.9
@@ -407,13 +506,7 @@ https://pgconfigurator.cybertec.at/
 
  --------->  DESCARGAR POSTGRESQL REDHAT <--------------
 https://www.postgresql.org/download/linux/redhat/
-
-..... REPOSITORIO PARA DESCARGAR PARCHES .......
-https://apt.postgresql.org/pub/repos/
-https://download.postgresql.org/pub/repos/yum/
-https://ftp.postgresql.org/pub/repos/yum/13/redhat/
-
-https://www.postgresql.org/ftp/source/
+ 
 
 .. PACKETES....
 postgresql-client	libraries and client binaries
