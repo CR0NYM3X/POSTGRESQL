@@ -404,4 +404,21 @@ https://gist.github.com/ryanguill/7928937
 https://pgtune.leopard.in.ua/
 https://www.pgconfig.org/#/?max_connections=100&pg_version=16&environment_name=WEB&total_ram=4&cpus=2&drive_type=SSD&arch=x86-64&os_type=linux
 https://pgconfigurator.cybertec.at/
+
+ --------->  DESCARGAR POSTGRESQL REDHAT <--------------
+https://www.postgresql.org/download/linux/redhat/
+
+..... REPOSITORIO PARA DESCARGAR PARCHES .......
+https://apt.postgresql.org/pub/repos/
+https://download.postgresql.org/pub/repos/yum/
+https://ftp.postgresql.org/pub/repos/yum/13/redhat/
+
+https://www.postgresql.org/ftp/source/
+
+.. PACKETES....
+postgresql-client	libraries and client binaries
+postgresql-server	core database server
+postgresql-contrib	additional supplied modules
+postgresql-devel	libraries and headers for C language development
+
 ```
