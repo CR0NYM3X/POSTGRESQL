@@ -60,7 +60,7 @@ log_lock_waits = on #   cuando una consulta intenta escribir en una fila mientra
  
 log_temp_files = 0  # controla si se debe registrar información sobre la creación y eliminación de archivos temporales en PostgreSQL. |  -1 disables, 0 logs all temp files
 
-
+log_autovacuum_min_duration = 0 #-1 disables 
  
 ```
  
@@ -86,23 +86,35 @@ log_temp_files = 0  # controla si se debe registrar información sobre la creaci
 ```
 
 
-
-
-
-
 ## Mantenimientos 
 ```sql
 
-autovacuum = on
-#autovacuum_max_workers = 3		# max number of autovacuum subprocesses
-autovacuum_naptime = 5min
-autovacuum_vacuum_threshold = 10000
-autovacuum_analyze_threshold = 5000
-autovacuum_vacuum_scale_factor = 0.4 
-autovacuum_analyze_scale_factor = 0.2
-autovacuum_vacuum_cost_delay = 100ms
-autovacuum_vacuum_cost_limit = -1
-log_autovacuum_min_duration = 0
+ autovacuum = on: Este parámetro controla si PostgreSQL debe ejecutar automáticamente el proceso de vaciado de tablas (autovacuum). Cuando está activado (on), PostgreSQL monitorea el nivel de actividad en las tablas y ejecuta el vaciado automáticamente según sea necesario para prevenir la fragmentación y optimizar el rendimiento de la base de datos.
+
+ autovacuum_max_workers = 3: # Puedes asignar 1 worker por cada 3 o 4 núcleos, Determina el número máximo de procesos autovacuum que pueden ejecutarse simultáneamente. Esto controla la cantidad de recursos del sistema que se asignan al vaciado automático de tablas. Ajustar este valor te permite equilibrar la carga del sistema con la necesidad de mantener las tablas limpias y optimizadas.
+ 
+ autovacuum_naptime = 1min: Especifica cuánto tiempo debe esperar PostgreSQL entre ejecuciones de autovacuum en cada tabla. Este parámetro controla la frecuencia con la que se ejecuta el proceso de vaciado automático. Un valor más bajo significa que PostgreSQL vaciará las tablas más frecuentemente, lo que puede aumentar la carga en el sistema, mientras que un valor más alto significa que el vaciado automático se ejecutará con menos frecuencia.
+
+  autovacuum_vacuum_threshold = 50: Este valor indica el número mínimo de tuplas que deben haber cambiado en una tabla antes de que PostgreSQL ejecute el vaciado automático en ella. Si el número de tuplas cambiadas desde el último vaciado es inferior a este umbral, el vaciado automático no se ejecutará en esa tabla. Ajustar este valor te permite controlar cuándo se activa el proceso de vaciado automático en función de la actividad en la tabla.
+
+  autovacuum_vacuum_insert_threshold = 1000: Similar al parámetro anterior, pero específico para la inserción de nuevas tuplas en una tabla. Este valor controla cuántas tuplas nuevas deben agregarse antes de que PostgreSQL ejecute el vaciado automático en la tabla. Ajustar este valor te permite controlar cuándo se activa el vaciado automático en función de la cantidad de inserciones en la tabla.
+
+  autovacuum_analyze_threshold = 50: Determina el número mínimo de tuplas que deben haber cambiado en una tabla antes de que PostgreSQL ejecute el proceso de análisis automático en ella. El análisis automático actualiza las estadísticas de la tabla, lo que ayuda al planificador de consultas a tomar decisiones más eficientes. Ajustar este valor te permite controlar cuándo se activa el proceso de análisis automático en función de la actividad en la tabla.
+
+  autovacuum_vacuum_scale_factor = 0.2: Este factor se utiliza para determinar el tamaño de la tabla en relación con el umbral de vaciado antes de que se ejecute el vaciado automático. Por ejemplo, si el umbral de vaciado es 100 y el factor de escala es 0.2, el vaciado automático se activará cuando el tamaño de la tabla sea al menos el 20% del umbral. Ajustar este valor te permite adaptar el comportamiento de vaciado automático a las características específicas de tus tablas.
+ 
+ autovacuum_vacuum_insert_scale_factor = 0.2: Similar al parámetro anterior, pero específico para el número de inserciones en una tabla en relación con el umbral de inserción antes de que se ejecute el vaciado automático. Ajustar este valor te permite controlar cuándo se activa el vaciado automático en función de la actividad de inserción en la tabla.
+
+ autovacuum_analyze_scale_factor = 0.1: Similar a los parámetros anteriores, pero específico para el número de cambios en una tabla en relación con el umbral de análisis antes de que se ejecute el análisis automático. Ajustar este valor te permite controlar cuándo se activa el análisis automático en función de la actividad en la tabla.
+
+  autovacuum_freeze_max_age = 200000000: Este parámetro controla la edad máxima en transacciones antes de que se realice un vaciado automático de congelación de tuplas. Las tuplas congeladas son aquellas que han sido marcadas como inmutables y no cambian. Ajustar este valor te permite controlar cuándo se ejecuta el vaciado automático de congelación para evitar la acumulación de datos obsoletos en la base de datos.
+
+ autovacuum_multixact_freeze_max_age = 400000000: Similar al parámetro anterior, pero específico para la edad máxima en transacciones para la congelación de multixactos. Los multixactos son conjuntos de transacciones que modifican las mismas tuplas. Ajustar este valor te permite controlar cuándo se ejecuta el vaciado automático de congelación de multixactos para evitar la acumulación de datos obsoletos en la base de datos.
+
+  autovacuum_vacuum_cost_delay = 2ms: Este parámetro controla cuánto tiempo PostgreSQL espera entre cada paso del vaciado automático. Un valor más alto reduce la carga en el sistema, pero ralentiza el proceso de vaciado automático, mientras que un valor más bajo acelera el vaciado automático pero aumenta la carga en el sistema.
+
+  autovacuum_vacuum_cost_limit = -1: Este parámetro controla el costo máximo que PostgreSQL está dispuesto a gastar en el vaciado automático. Un valor negativo significa que no hay límite en el costo del vaciado automático. Ajustar este valor te permite controlar cuántos recursos del sistema se asignan al vaciado automático en función de las necesidades y la capacidad de tu sistema.
+
 ```
 
 ## Memorias 
@@ -157,6 +169,28 @@ default_text_search_config = 'pg_catalog.english'
   
   create extension pg_stat_statements;
   ```
+
+
+## CLIENT CONNECTION DEFAULTS
+```sql
+# Este es lo que le va mostrar al cliente al momento que pase algun error, puedes controlas que le vas a mostrar   
+#client_min_messages = notice		# valores en orden de detalle:
+					#   debug5
+					#   debug4
+					#   debug3
+					#   debug2
+					#   debug1
+					#   log
+					#   notice
+					#   warning
+					#   error
+
+
+#search_path = '"$user", public'  # esto le indica a en que esquema buscar el objeto , en caso de que no se especifique en la query 
+#idle_session_timeout = 0  #  esto controla el tiempo máximo de un cliente inactivo ,in milliseconds, 0 is disabled
+#client_encoding = sql_ascii	 # especifica el encodigo de caracteres que se enviaran y recibiran por el cliente, y solo aplica para las sesiones de loa cliente, no para las base de datos 	
+ 
+```
 
 ## Configuración IMPORTANT
 ```sql
