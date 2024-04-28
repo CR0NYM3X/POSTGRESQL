@@ -77,27 +77,80 @@ En entornos donde la aplicación no requiere una conexión persistente con la ba
 
 ```
 
+shared_buffers = 128MB  /*  Default min  128kB reasonable starting value for shared_buffers is 15%  to  25% of the memory in your system. Link: https://www.postgresql.org/docs/9.1/runtime-config-resource.html
+En versiones de PostgreSQL anteriores a 8.4, el valor máximo debe ser 2,5 GB,*/
+
+temp_buffers = 10MB # Estos son buffers locales de sesión que se usan solo para acceder a tablas temporales.  https://www.postgresql.org/docs/current/runtime-config-resource.html
+
+
+work_mem = 4MB  /*es un parámetro de configuración de PostgreSQL que especifica la cantidad de memoria que utilizarán las operaciones de ordenación internas  ORDER BY, DISTINCT, subconsultas IN y JOINS y las tablas hash antes de escribir en archivos de disco temporales, En un servidor dedicado podemos usar un 2-4% del total de nuestra memoria si tenemos solamente unas pocas sesiones (clientes) grandes. Como valor inicial podemos usar 8 Mbytes e ir aumentando progresivamente hasta tener un buen equilibrio entre uso de memoria y generación de temp files link : https://dbasinapuros.com/como-saber-si-esta-bien-ajustado-el-parametro-work_mem-de-postgresql/
+otros dicen que tambien se calcula  Total RAM * 0.25 / max_connections */
+
+maintenance_work_mem = 16MB  /*Usada en operaciones del tipo VACUUM, ANALYZE, CREATE INDEX, ALTER TABLE, ADD FOREIGN KEY. Su valor dependerá mucho del tamaño de nuestras bases de datos. Por ejemplo, en un servidor con Gbytes de memoria, podemos usar 256MB como valor inicial. La fórmula es 1/16 de nuestra memoria RAM. link: https://docs.aws.amazon.com/es_es/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.Autovacuum.html*/
+/*  para los hosts grandes, defina el parámetro maintenance_work_mem en un valor comprendido entre uno y dos gigabytes, Para los hosts extremadamente grandes, defina el parámetro en un valor comprendido entre dos y cuatro gigabytes  , este parámetro depende de la carga de trabajo. */
+
+autovacuum_work_mem = -1   El valor predeterminado es -1, lo que indica que se debe utilizar el valor de mantenimiento_work_mem en su lugar.
+
+#shared_memory_type = mmap		# the default is the first option
+# dynamic_shared_memory_type = posix # the default 
+
+
+
+#min_dynamic_shared_memory = 0MB	# (change requires restart)
+
+#temp_file_limit = -1
+
+# - Cost-Based Vacuum Delay -
+
+#vacuum_cost_delay = 0			# 0-100 milliseconds (0 disables)
+#vacuum_cost_page_hit = 1		# 0-10000 credits
+#vacuum_cost_page_miss = 2		# 0-10000 credits
+#vacuum_cost_page_dirty = 20		# 0-10000 credits
+#vacuum_cost_limit = 200		# 1-10000 credits
+
+# - Background Writer -
+
+#bgwriter_delay = 200ms			# 10-10000ms between rounds
+#bgwriter_lru_maxpages = 100		# max buffers written/round, 0 disables
+#bgwriter_lru_multiplier = 2.0		# 0-10.0 multiplier on buffers scanned/round
+#bgwriter_flush_after = 0		# measured in pages, 0 disables
+
 ```
 
 
 
 
 
+# WRITE-AHEAD LOG
+
+
+```sql
+
+
+max_wal_size = 1GB
+min_wal_size = 80MB
+
+
+#checkpoint_timeout = 5min		# range 30s-1d
+checkpoint_completion_target = 0.9
+#checkpoint_flush_after = 256kB		# measured in pages, 0 disables
+#checkpoint_warning = 30s		# 0 disables
 
 
 
 
+effective_cache_size = 4GB  /*Parámetro usado por el 'query planner' de nuestro motor de bases de datos para optimizar la lectura de datos. En un servidor dedicado podemos empezar con un 50% del total  e nuestra memoria. Como máximo  unos 2/3 (66%) del total. Por ejemplo, en un servidor con 4Gbytes de memoria, podemos usar 2048MB como valor inicial. effective_cache_size = 2048MB*/
+
+checkpoint_segments = 3		/*# in logfile segments, min 1, 16MB each Este parámetro es muy importante en bases de datos con numerosas operaciones de escritura (insert,update,delete). Para empezar podemos empezar con un valor de 64. En grandes bases de datos con muchos  bytes de datos escritos podemos aumentar este valor hasta 128-256. checkpoint_segments = 64*/
 
 
 
+Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en bytes
+
+wal_buffers = 16MB
 
 
-
-
-
-
-
-
+```
 
 ## Configurar los datos que guarda en el LOG
 
@@ -217,32 +270,32 @@ log_autovacuum_min_duration = 0 #-1 disables
 
 ```
 
-## Memorias 
 
+
+## CLIENT CONNECTION DEFAULTS
 ```sql
-work_mem = 4MB  /*es un parámetro de configuración de PostgreSQL que especifica la cantidad de memoria que utilizarán las operaciones de ordenación internas  ORDER BY, DISTINCT, subconsultas IN y JOINS y las tablas hash antes de escribir en archivos de disco temporales, En un servidor dedicado podemos usar un 2-4% del total de nuestra memoria si tenemos solamente unas pocas sesiones (clientes) grandes. Como valor inicial podemos usar 8 Mbytes e ir aumentando progresivamente hasta tener un buen equilibrio entre uso de memoria y generación de temp files link : https://dbasinapuros.com/como-saber-si-esta-bien-ajustado-el-parametro-work_mem-de-postgresql/
-otros dicen que tambien se calcula  Total RAM * 0.25 / max_connections */
 
-maintenance_work_mem = 16MB  /*Usada en operaciones del tipo VACUUM, ANALYZE, CREATE INDEX, ALTER TABLE, ADD FOREIGN KEY. Su valor dependerá mucho del tamaño de nuestras bases de datos. Por ejemplo, en un servidor con Gbytes de memoria, podemos usar 256MB como valor inicial. La fórmula es 1/16 de nuestra memoria RAM. link: https://docs.aws.amazon.com/es_es/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.Autovacuum.html*/
-/*  para los hosts grandes, defina el parámetro maintenance_work_mem en un valor comprendido entre uno y dos gigabytes, Para los hosts extremadamente grandes, defina el parámetro en un valor comprendido entre dos y cuatro gigabytes  , este parámetro depende de la carga de trabajo. */
+# Este es lo que le va mostrar al cliente al momento que pase algun error, puedes controlas que le vas a mostrar   
+#client_min_messages = notice		# valores en orden de detalle:
+					#   debug5
+					#   debug4
+					#   debug3
+					#   debug2
+					#   debug1
+					#   log
+					#   notice
+					#   warning
+					#   error
+
+
+#search_path = '"$user", public'  # esto le indica a en que esquema buscar el objeto , en caso de que no se especifique en la query 
+#idle_session_timeout = 0  #  esto controla el tiempo máximo de un cliente inactivo ,in milliseconds, 0 is disabled
+#client_encoding = sql_ascii	 # especifica el encodigo de caracteres que se enviaran y recibiran por el cliente, y solo aplica para las sesiones de loa cliente, no para las base de datos 	
 
 
 
-effective_cache_size = 4GB  /*Parámetro usado por el 'query planner' de nuestro motor de bases de datos para optimizar la lectura de datos. En un servidor dedicado podemos empezar con un 50% del total  e nuestra memoria. Como máximo  unos 2/3 (66%) del total. Por ejemplo, en un servidor con 4Gbytes de memoria, podemos usar 2048MB como valor inicial. effective_cache_size = 2048MB*/
 
-checkpoint_segments = 3		/*# in logfile segments, min 1, 16MB each Este parámetro es muy importante en bases de datos con numerosas operaciones de escritura (insert,update,delete). Para empezar podemos empezar con un valor de 64. En grandes bases de datos con muchos  bytes de datos escritos podemos aumentar este valor hasta 128-256. checkpoint_segments = 64*/
-
-shared_buffers = 128MB  /*  Default min  128kB reasonable starting value for shared_buffers is 15%  to  25% of the memory in your system. Link: https://www.postgresql.org/docs/9.1/runtime-config-resource.html
-En versiones de PostgreSQL anteriores a 8.4, el valor máximo debe ser 2,5 GB,*/
-
-Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en bytes
-
-wal_buffers = 16MB
-
-```
-
-## Tiempos 
-```sql
+------------------ Tiempo --------------- 
  SELECT * from pg_timezone_names; 
  SHOW TIMEZONE;
  ALTER DATABASE postgres SET timezone TO 'Europe/Berlin';
@@ -261,66 +314,28 @@ datestyle = 'iso, mdy'  # Este parámetro permite configura  que la fecha con fo
 
 default_text_search_config = 'pg_catalog.english'
 
-```
 
-## Configuración en base de datos 
-```sql
-  ------------ En base de datos ---------
-  
-  create extension pg_stat_statements;
-  ```
+------- Shared Library Preloading --------
+
+#local_preload_libraries = ''
+#session_preload_libraries = ''
+shared_preload_libraries = 'pg_stat_statements'		# (change requires restart)
 
 
-## CLIENT CONNECTION DEFAULTS
-```sql
-# Este es lo que le va mostrar al cliente al momento que pase algun error, puedes controlas que le vas a mostrar   
-#client_min_messages = notice		# valores en orden de detalle:
-					#   debug5
-					#   debug4
-					#   debug3
-					#   debug2
-					#   debug1
-					#   log
-					#   notice
-					#   warning
-					#   error
-
-
-#search_path = '"$user", public'  # esto le indica a en que esquema buscar el objeto , en caso de que no se especifique en la query 
-#idle_session_timeout = 0  #  esto controla el tiempo máximo de un cliente inactivo ,in milliseconds, 0 is disabled
-#client_encoding = sql_ascii	 # especifica el encodigo de caracteres que se enviaran y recibiran por el cliente, y solo aplica para las sesiones de loa cliente, no para las base de datos 	
  
 ```
-
-## Configuración IMPORTANT
-```sql
--------------- settings IMPORTANT -------------------------
- listen_addresses = '*'  ## enable all other computers to connect 
- max_connections = 100
- port = 5432
-
- password_encryption = scram-sha-256		# md5 or scram-sha-256
- shared_preload_libraries = 'pg_stat_statements'
-dynamic_shared_memory_type = posix
-
-temp_buffers = 10MB # Estos son buffers locales de sesión que se usan solo para acceder a tablas temporales.  https://www.postgresql.org/docs/current/runtime-config-resource.html
-
-.. max_prepared_transactions = 50 # Si no planea utilizar transacciones preparadas, este parámetro debe establecerse en cero para evitar la creación accidental de transacciones preparadas 
-
-max_wal_size = 1GB
-min_wal_size = 80MB
-
-
-
-#checkpoint_timeout = 5min		# range 30s-1d
-checkpoint_completion_target = 0.9
-#checkpoint_flush_after = 256kB		# measured in pages, 0 disables
-#checkpoint_warning = 30s		# 0 disables
- ```
  
 
- 
 
+ # LOCK MANAGEMENT
+```
+```
+
+ # Base de datos 
+```
+----- crear la extension --------
+ create extension pg_stat_statements;
+```
 
 ## Variables: 
   ```sql
@@ -412,10 +427,10 @@ para encontrar mas promts puedes consultar las paginas
 https://gist.github.com/jaytaylor/e5aa89c8f3aaab3f576f <br> 
 o aqui en la pagina 33 https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Configuration.pdf   
 
-
 ```
 touch ~/.psqlrc
 ```
+
 
 
 ## Autenticaciones PG_HBA.conf PEER and IDENT
@@ -447,14 +462,19 @@ archivos importantes :
 
 ls -lhtra /home/postgres
 
-.bash_profile
-.psql_history
-.bash_history
+.bash_profile # guardar las variables de entorno persistentes 
+.psql_history # historial de comandos de postgresql 
+.bash_history # historial de comandos de bash de linux 
 
 ```
 
+
 ##  Firewall iptables
+```
 -A INPUT -s 192.168.0.0/24 -m state --state NEW -m tcp -p tcp --dport 5432 -j ACCEPT
+```
+
+
 
 ## Bibliofragías 
 ```
