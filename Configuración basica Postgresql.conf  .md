@@ -2,20 +2,24 @@
 
 
 ```sql
-logging_collector = on
-log_statement = 'all'
+
+log_destination = 'stderr' # Esto genera 
+logging_collector = on # esto habilita el log 
+log_statement = 'all' 
 	/*********** Otras opciones *************
 	none: No se registra ninguna consulta.
 	ddl: Solo se registran las consultas de definición de datos (DDL), como CREATE, ALTER, DROP, etc.
 	mod: Solo se registran las consultas de modificación de datos (DML), como INSERT, UPDATE, DELETE, etc.
 	all: Se registran todas las consultas, tanto DDL como DML.*/
 
-log_min_duration_statement = 300
-log_min_duration_statement = -1 # Esto deternima la duracion de una consulta antes de que sea registrada en el log, en entornos productivos se usa para registrar en el log los unicos que que superan el umbral y esto evita inundar el archivo log 
+
+log_min_duration_statement = -1 # Esto deternima la duracion de una consulta antes de que sea registrada en el log, en entornos productivos se usa para registrar en el log los unicos que que superan el umbral y esto evita inundar el archivo log
+
 log_rotation_age = 1d
-log_rotation_size = 10MB
-log_timezone = 'America/mazatlan'
-log_directory = 'pg_log'
+log_rotation_size = 10MB  # 0 disables.
+log_timezone = 'America/mazatlan' # configura la hora del log
+
+log_directory = '/sysx/pg_log' #  Directorio donde se va guardar el log 
 log_filename = 'postgresql-%y%m%d.log'
 log_file_mode = 0600
 log_min_messages = warning
@@ -335,4 +339,8 @@ https://gist.github.com/arcolife/d8e747f9bfafe841b3a25def91ed1afe
 https://gist.github.com/djyoda/5d243f7beddbe6f4d8a9
 https://gist.github.com/ryanguill/7928937
 
+ --------->  CONFIGURACIÓN DE PARAMETROS ONLINE <--------------
+https://pgtune.leopard.in.ua/
+https://www.pgconfig.org/#/?max_connections=100&pg_version=16&environment_name=WEB&total_ram=4&cpus=2&drive_type=SSD&arch=x86-64&os_type=linux
+https://pgconfigurator.cybertec.at/
 ```
