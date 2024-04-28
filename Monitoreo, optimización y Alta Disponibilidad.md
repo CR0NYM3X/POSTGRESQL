@@ -387,7 +387,7 @@ pgbench -c <clientes> -j <hilos> -T <tiempo> testdb
     -c <clientes>: Esta opción especifica el número de clientes simultáneos que se simularán durante la prueba.
     -j <hilos>: Esta opción especifica el número de hilos (o conexiones) a utilizar.
     -T <tiempo>: Esta opción especifica la duración de la prueba en segundos.
-    -t  
+    -t  Number of transactions each client runs. Default is 10.
 
 -------- BIBLIOGRAFÍAS ---------------
 https://www.postgresql.org/docs/current/pgbench.html
