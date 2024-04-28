@@ -28,7 +28,7 @@ El link te muestra los cambios realizados de cada version y si ocupa alguna rest
 ```
 
 /*
-Antes de actualizar es importante validar la nota de la version ya que puede darte advertencias como por ejemplo que antes de actualizar necesitas restaurar
+Antes de actualizar es importante validar la nota de la version, ya que te dice los cambios realizados y te puede dar advertencias como por ejemplo que antes de actualizar necesitas restaurar
 
 ---> Este te dice que no necesitas hacer un dump y restauracion, ya que solo contiene correcciones 
 This release contains a variety of fixes from 15.0. 
