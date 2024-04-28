@@ -22,6 +22,40 @@ LIFE CYCLES MYSQL		https://endoflife.software/applications/databases/mysql
 
 ```
 
+
+# Notas de cada version 
+El link te muestra los cambios realizados de cada version y si ocupa alguna restauración 
+```
+
+/*
+Antes de actualizar es importante validar la nota de la version ya que puede darte advertencias como por ejemplo que antes de actualizar necesitas restaurar
+
+---> Este te dice que no necesitas hacer un dump y restauracion, ya que solo contiene correcciones 
+This release contains a variety of fixes from 15.0. 
+A dump/restore is not required for those running 14.X.
+
+--> En cambio este te advierte que necesitas hacer un dump y restaurar ya que esta version tiene cambios que pueden afectar 
+A dump/restore using pg_dumpall or use of pg_upgrade
+Version 14 contains a number of changes that may affect compatibility with previous releases. 
+
+*/
+
+https://www.postgresql.org/docs/release/
+```
+
+# Descargar postgresql y sus packetes 
+```
+ --------->  DESCARGAR POSTGRESQL REDHAT <--------------
+https://www.postgresql.org/download/linux/redhat/
+
+..... REPOSITORIO PARA DESCARGAR PARCHES .......
+https://apt.postgresql.org/pub/repos/
+https://download.postgresql.org/pub/repos/yum/
+https://ftp.postgresql.org/pub/repos/yum/13/redhat/
+
+https://www.postgresql.org/ftp/source/
+```
+
 # ODBC
 ```
 https://odbc.postgresql.org/
