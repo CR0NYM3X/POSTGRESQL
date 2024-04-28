@@ -362,3 +362,35 @@ ANALYZE VERBOSE; -- actualiza las estadisticas de todas las tablas
 pg_repack -U $DB_USER -d $DB_NAME --> Esta herramienta se utiliza para reorganizar físicamente las tablas y sus índices, reduciendo la fragmentación y mejorando el rendimiento.
 
 
+# Herramienta pgbench de test de optimización 
+ ```
+example=# \dt+
+                          List of relations
+ Schema |       Name       | Type  |  Owner   |  Size   | Description 
+--------+------------------+-------+----------+---------+-------------
+ public | pgbench_accounts | table | postgres | 641 MB  | 
+ public | pgbench_branches | table | postgres | 40 kB   | 
+ public | pgbench_history  | table | postgres | 0 bytes | 
+ public | pgbench_tellers  | table | postgres | 56 kB   | 
+(4 rows)
+
+  createdb testdb
+ pgbench -U postgres -h 127.0.0.1 -i -s 70 prueba
+ pgbench -U postgres - h127.0.0.1 -p 5432  -c 500 -j 20 -T 1800 prueba
+
+  
+  pgbench -i -s <escala> testdb
+    - -i: Esta opción indica a pgbench que inicialice la base de datos con datos de prueba.
+    -s <escala>: Esta opción determina la escala de los datos generados. La escala indica el factor multiplicativo en relación con el tamaño predeterminado de la base de datos. Por ejemplo, -s 10 generará datos de prueba diez veces más grandes que el tamaño predeterminado.
+
+pgbench -c <clientes> -j <hilos> -T <tiempo> testdb
+    -c <clientes>: Esta opción especifica el número de clientes simultáneos que se simularán durante la prueba.
+    -j <hilos>: Esta opción especifica el número de hilos (o conexiones) a utilizar.
+    -T <tiempo>: Esta opción especifica la duración de la prueba en segundos.
+    -t  
+
+-------- BIBLIOGRAFÍAS ---------------
+https://www.postgresql.org/docs/current/pgbench.html
+https://medium.com/@c.ucanefe/pgbench-load-test-166bdfb5c75a
+https://juantrucupei.wordpress.com/2017/11/30/uso-de-pgbench-para-pruebas-stress-postgresql/
+ ```
