@@ -1,6 +1,40 @@
+## Terminos 
+```
+1. **SQL**: Structured Query Language (Lenguaje de Consulta Estructurado).
+ Es el lenguaje estándar utilizado para interactuar con bases de datos relacionales.
+
+2. **ETL**: Extract, Transform, Load (Extraer, Transformar, Cargar).
+Es un proceso utilizado para mover datos desde fuentes externas a una base de datos y
+transformarlos en un formato adecuado para su análisis.
+```
 
 ## que es  ODBC (Open databse connectivity 
+```
+Es un estándar que permite a las aplicaciones acceder y manipular datos almacenados en diferentes
+tipos de bases de datos a través de un conjunto común de interfaces. Algunas de las funciones y propósitos principales de ODBC son:
 
+1. **Interoperabilidad:** ODBC proporciona una interfaz estándar que permite a las
+ aplicaciones comunicarse con una amplia variedad de bases de datos, independientemente del proveedor de la base de datos o del sistema operativo utilizado.
+
+2. **Acceso a datos:** ODBC permite a las aplicaciones realizar consultas, insertar,
+actualizar y eliminar datos en bases de datos externas de manera uniforme, sin necesidad de conocer los detalles específicos de cada base de datos subyacente.
+
+3. **Flexibilidad:** ODBC permite a las aplicaciones cambiar fácilmente entre diferentes
+ bases de datos sin necesidad de modificar el código de la aplicación. Esto facilita la
+migración de datos entre diferentes sistemas de bases de datos o la integración de múltiples sistemas de bases de datos en una aplicación.
+
+4. **Desarrollo de aplicaciones multiplataforma:** ODBC es compatible con múltiples
+sistemas operativos, lo que permite el desarrollo de aplicaciones que pueden ejecutarse
+en diferentes plataformas y acceder a bases de datos de manera consistente.
+
+```
+
+ # sistema gestor de base de datos o SGBD (del inglés: Relational  Data Base Management System o DBMS o RDBMS) 
+
+```
+ es un software que permite administrar una base de datos. Proporciona el método de
+ organización necesario para el almacenamiento y recuperación flexible de grandes cantidades de datos
+```
 
 ### Diferencia de DDL Y DML 
 **Lenguaje de Definición de Datos (DDL):**
