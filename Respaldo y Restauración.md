@@ -62,6 +62,11 @@ Los respaldos de las base de datos cuando se comprimen con gzip, se comprimen un
 si pesa la db 150GB el archivo compreso va pesar 18GB
 
 
+....................... Calcular cuanto va tardar un archivo en comprimir ................
+ejemplo 150GB pesa la base de datos entonces hacemos el calculo 2.666666666666667 * 150 / 100 = 4 hrs
+esto dependera de los recursos del servidor, esto se puede calcular respaldando por ejemplo 1GB y ver cuanto tardo
+ y hacer una regla de 3
+
 .......................... dividir archivos ...........................
 split -b 5G /sysx/respalddi.sql.gz
 
