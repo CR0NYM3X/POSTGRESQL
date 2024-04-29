@@ -82,7 +82,20 @@ cat salida_* > prueba.log
 
 
 
-zcat  /sysx/respalddi.sql.gz | grep complete     #  nos sirve para ver el contenido de un archivo compreso 
+zcat  /sysx/respalddi.sql.gz | grep complete     #  nos sirve para ver el contenido de un archivo compreso
+
+
+
+..........
+
+Para comprimir .gz, debemos utilizar:
+gzip -q archivo
+209.8 - cartera en linea 
+
+-- descomprimir  gzip
+gzip -d archivo.gz
+
+
 ```
 
 **Descripción de Servidores para ejemplos**
