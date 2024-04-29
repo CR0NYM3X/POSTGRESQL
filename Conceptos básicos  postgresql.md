@@ -1,4 +1,7 @@
 
+## que es  ODBC (Open databse connectivity 
+
+
 ### Diferencia de DDL Y DML 
 **Lenguaje de Definición de Datos (DDL):**
 
