@@ -55,6 +55,31 @@ copy
 **`[Nota]`** - Con pg_restore solo se pueden restaurar los respaldos con formato Custom y directory 
 
 
+## trucos 
+```
+....................... Calcular cuanto se va comprimir  con gzip................
+Los respaldos de las base de datos cuando se comprimen con gzip, se comprimen un 12% , ejemplo
+si pesa la db 150GB el archivo compreso va pesar 18GB
+
+
+.......................... dividir archivos ...........................
+split -b 5G /sysx/respalddi.sql.gz
+
+--- 
+Podemos indicar que en vez de una letra añada un número con el comando:
+split -b -d 100m prueba.log salida
+
+En lugar de especificar el tamaño de cada parte, podemos especificar el número de partes en las que queremos dividir el archivo. Por ejemplo, para dividir en cinco partes, el comando sería:
+split -d -n 2 back_merca360.gz back_merca360_partes
+
+--- restaurar
+cat salida_* > prueba.log
+
+
+
+zcat  /sysx/respalddi.sql.gz | grep complete     #  nos sirve para ver el contenido de un archivo compreso 
+```
+
 **Descripción de Servidores para ejemplos**
 ```
 Servidor Origen: 10.44.1.55 | Postgresql 15
