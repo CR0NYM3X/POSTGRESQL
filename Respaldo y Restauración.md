@@ -82,7 +82,8 @@ cat salida_* > prueba.log
 
 
 
-zcat -f /sysx/respalddi.sql.gz | grep complete    # esto lee todos los archivos que estan dentro del  compreso
+zcat -f /sysx/respalddi.sql.gz | head -n 10    # esto lee todos los archivos que estan dentro del  compreso,
+aqui son sirve mucho saber las versiones , lineas que dicen: database version XX.X y pg_dump version XX.X
 
 
 
