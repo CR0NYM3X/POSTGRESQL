@@ -50,8 +50,8 @@ https://www.postgresql.org/download/linux/redhat/
 
 ..... REPOSITORIO PARA DESCARGAR PARCHES .......
 https://apt.postgresql.org/pub/repos/
-https://download.postgresql.org/pub/repos/yum/
-https://ftp.postgresql.org/pub/repos/yum/13/redhat/
+https://download.postgresql.org/pub/repos/
+https://ftp.postgresql.org/pub/repos/
 
 https://www.postgresql.org/ftp/source/
 ```
