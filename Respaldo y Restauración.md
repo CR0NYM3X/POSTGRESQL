@@ -96,6 +96,9 @@ gzip -q archivo
 gzip -d archivo.gz
 
 
+-------------- respaldar en segundo plano,  por si se cierrra la terminal  -------------------
+nohup pg_dump -d mi_dba_test | gzip -c9 > mi_dba_test.sql.gz &
+
 ```
 
 **Descripción de Servidores para ejemplos**
