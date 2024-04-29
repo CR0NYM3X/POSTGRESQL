@@ -63,7 +63,7 @@ Este paquete contiene los binarios y archivos necesarios para ejecutar PostgreSQ
 postgresql15-server-15.6-1PGDG.rhel8.x86_64.rpm
  Este paquete incluye los ejecutables y configuraciones necesarios para ejecutar el servidor de base de datos PostgreSQL en su última versión. Además, puede incluir scripts de inicialización y herramientas de administración específicas para el servidor PostgreSQL.
 
-
+postgresql15-odbc-16.00.0000-1PGDG.rhel8.x86_64
 postgresql15-contrib-15.6-1PGDG.rhel8.x86_64.rpm
 postgresql15-libs-15.6-1PGDG.rhel8.x86_64.rpm
 
