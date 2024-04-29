@@ -54,6 +54,23 @@ https://download.postgresql.org/pub/repos/
 https://ftp.postgresql.org/pub/repos/
 
 https://www.postgresql.org/ftp/source/
+
+..................... Paquetes necesarios para que funcione .................
+
+postgresql15-15.6-1PGDG.rhel8.x86_64.rpm
+Este paquete contiene los binarios y archivos necesarios para ejecutar PostgreSQL en su versión 15.6, pero no incluye componentes adicionales como contribuciones, bibliotecas compartidas, extensiones o documentación, Por lo tanto, si solo deseas actualizar el motor de base de datos PostgreSQL a la última versión sin necesidad de extensiones adicionales o documentación, este paquete sería suficiente.
+
+postgresql15-server-15.6-1PGDG.rhel8.x86_64.rpm
+ Este paquete incluye los ejecutables y configuraciones necesarios para ejecutar el servidor de base de datos PostgreSQL en su última versión. Además, puede incluir scripts de inicialización y herramientas de administración específicas para el servidor PostgreSQL.
+
+
+postgresql15-contrib-15.6-1PGDG.rhel8.x86_64.rpm
+postgresql15-libs-15.6-1PGDG.rhel8.x86_64.rpm
+
+
+postgresql15-llvmjit-15.6-1PGDG.rhel8.x86_64.rpm     
+Al instalar el paquete postgresql15-llvmjit-15.6-1PGDG.rhel8.x86_64.rpm, habilitas la capacidad de PostgreSQL para utilizar JIT con consultas seleccionadas. PostgreSQL puede analizar el patrón de consultas y, si identifica consultas que se ejecutan con frecuencia, puede compilarlas en código de máquina optimizado justo antes de ejecutarlas. Esto puede resultar en tiempos de respuesta más rápidos para estas consultas, lo que mejora el rendimiento general de la base de datos y la aplicación.
+
 ```
 
 # ODBC
