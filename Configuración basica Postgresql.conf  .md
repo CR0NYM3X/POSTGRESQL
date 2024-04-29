@@ -1,3 +1,5 @@
+
+
  
 ## FILE LOCATIONS
  
@@ -329,6 +331,11 @@ shared_preload_libraries = 'pg_stat_statements'		# (change requires restart)
 
  # LOCK MANAGEMENT
 ```
+```
+
+# extras conf
+```
+standard_conforming_strings = on
 ```
 
  # Base de datos 
