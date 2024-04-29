@@ -82,7 +82,7 @@ cat salida_* > prueba.log
 
 
 
-zcat  /sysx/respalddi.sql.gz | grep complete     #  nos sirve para ver el contenido de un archivo compreso
+zcat -f /sysx/respalddi.sql.gz | grep complete    # esto lee todos los archivos que estan dentro del  compreso
 
 
 
