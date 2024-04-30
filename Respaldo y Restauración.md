@@ -71,10 +71,10 @@ esto dependera de los recursos del servidor, esto se puede calcular respaldando 
 split -b 5G /sysx/respalddi.sql.gz
 
 --- 
-## Dividir los archivos en un tamaño especifico
-split -d  -b 100M respaldo.gz partes.gz
+## Dividir los archivos en un tamaño  de 10G cada archivo 
+split -d  -b 10G respaldo.gz partes.gz
 
-## Indicar cuantas partes quieres que se generen 
+## Indicar cuantas partes quieres que se generen , en este ejemplo se especifico 2 partes 
 split -d -n 2 respaldo.gz partes.gz
 
 --- restaurar
