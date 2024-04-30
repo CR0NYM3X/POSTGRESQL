@@ -71,14 +71,14 @@ esto dependera de los recursos del servidor, esto se puede calcular respaldando 
 split -b 5G /sysx/respalddi.sql.gz
 
 --- 
-Podemos indicar que en vez de una letra añada un número con el comando:
-split -b -d 100m prueba.log salida
+## Dividir los archivos en un tamaño especifico
+split -d  -b 100M respaldo.gz partes.gz
 
-En lugar de especificar el tamaño de cada parte, podemos especificar el número de partes en las que queremos dividir el archivo. Por ejemplo, para dividir en cinco partes, el comando sería:
-split -d -n 2 back_merca360.gz back_merca360_partes
+## Indicar cuantas partes quieres que se generen 
+split -d -n 2 respaldo.gz partes.gz
 
 --- restaurar
-cat salida_* > prueba.log
+cat partes.gz* > respaldo.gz
 
 
 
