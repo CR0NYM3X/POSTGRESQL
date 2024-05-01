@@ -30,6 +30,15 @@
 ### Pg_hba.conf
 ### Postgres.conf
 
+----------- COSAS -----------
+
+-> Monitoreo de rendimiento, capacidades y de seguridad.
+-> Auditorias en todos los aspectos.
+-> Mantenimientos que generen un buen performance.
+-> Backup constantes y efectivos.
+-> Reportes de todo.
+
+
 ```
 
 https://www.sqlservercentral.com/articles/rules-in-postgresql
