@@ -18,8 +18,11 @@ ident_file = '/config/pg_ident.conf'
 ```sql
 
  listen_addresses = '*'  ## enable all other computers to connect 
- max_connections = 100
  port = 5432
+
+ max_connections = 100
+
+unix_socket_permissions = 0777		# begin with 0 to use octal notation
 
 #reserved_connections = 0   #  Esto se debe a que garantizaría que un conjunto específico de conexiones siempre esté disponible para tareas críticas del sistema, como las operaciones de respaldo automático (autovacuum) y el proceso de escritura en segundo plano (background writer). Sin estas conexiones reservadas, es posible que estos procesos internos no puedan acceder a la base de datos cuando más se necesiten, se garantiza que el servidor pueda administrarse y mantenerse de manera eficiente incluso en momentos de alta demanda
 
@@ -91,6 +94,7 @@ cat /proc/cpuinfo
 
 temp_buffers = 10MB # Estos son buffers locales de sesión que se usan solo para acceder a tablas temporales.  https://www.postgresql.org/docs/current/runtime-config-resource.html
 
+max_prepared_transactions =50
 
 work_mem = 4MB  /*es un parámetro de configuración de PostgreSQL que especifica la cantidad de memoria que utilizarán las operaciones de ordenación internas  ORDER BY, DISTINCT, subconsultas IN y JOINS y las tablas hash antes de escribir en archivos de disco temporales, En un servidor dedicado podemos usar un 2-4% del total de nuestra memoria si tenemos solamente unas pocas sesiones (clientes) grandes. Como valor inicial podemos usar 8 Mbytes e ir aumentando progresivamente hasta tener un buen equilibrio entre uso de memoria y generación de temp files link : https://dbasinapuros.com/como-saber-si-esta-bien-ajustado-el-parametro-work_mem-de-postgresql/
 otros dicen que tambien se calcula  Total RAM * 0.25 / max_connections */
@@ -111,11 +115,11 @@ autovacuum_work_mem = -1   El valor predeterminado es -1, lo que indica que se d
 
 # - Cost-Based Vacuum Delay -
 
-#vacuum_cost_delay = 0			# 0-100 milliseconds (0 disables)
+vacuum_cost_delay = 100			# 0-100 milliseconds (0 disables)
 #vacuum_cost_page_hit = 1		# 0-10000 credits
 #vacuum_cost_page_miss = 2		# 0-10000 credits
 #vacuum_cost_page_dirty = 20		# 0-10000 credits
-#vacuum_cost_limit = 200		# 1-10000 credits
+vacuum_cost_limit = 2000		# 1-10000 credits
 
 # - Background Writer -
 
@@ -123,6 +127,11 @@ autovacuum_work_mem = -1   El valor predeterminado es -1, lo que indica que se d
 #bgwriter_lru_maxpages = 100		# max buffers written/round, 0 disables
 #bgwriter_lru_multiplier = 2.0		# 0-10.0 multiplier on buffers scanned/round
 #bgwriter_flush_after = 0		# measured in pages, 0 disables
+
+effective_io_concurrency = 100		# 1-1000; 0 disables prefetching
+max_worker_processes = 4		# (change requires restart)
+max_parallel_workers_per_gather = 2	# limited by max_parallel_workers
+max_parallel_workers = 4		# number of max_worker_processes that
 
 ```
 
@@ -136,14 +145,14 @@ autovacuum_work_mem = -1   El valor predeterminado es -1, lo que indica que se d
 ```sql
 
 
-max_wal_size = 1GB
-min_wal_size = 80MB
+max_wal_size = 2GB
+min_wal_size = 1GB
 
 
-#checkpoint_timeout = 5min		# range 30s-1d
+checkpoint_timeout = 20min		# range 30s-1d
 checkpoint_completion_target = 0.9
-#checkpoint_flush_after = 256kB		# measured in pages, 0 disables
-#checkpoint_warning = 30s		# 0 disables
+checkpoint_flush_after = 256kB		# measured in pages, 0 disables
+checkpoint_warning = 30s		# 0 disables
 
 
 
@@ -158,6 +167,16 @@ Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en 
 
 wal_buffers = 16MB
 
+
+```
+
+# REPLICATION
+```
+hot_standby = on
+```
+
+# QUERY TUNING
+```
 
 ```
 
@@ -180,7 +199,7 @@ log_min_messages = warning
 log_min_error_statement = error
 
 
-#log_min_duration_statement = -1 # Esto deternima la duracion de una consulta antes de que sea registrada en el log, en entornos productivos se usa para registrar en el log los unicos que que superan el umbral y esto evita inundar el archivo log
+log_min_duration_statement = 300 # Esto deternima la duracion de una consulta antes de que sea registrada en el log, en entornos productivos se usa para registrar en el log los unicos que que superan el umbral y esto evita inundar el archivo log
 
 #log_autovacuum_min_duration = 0 #-1 disables 
 
@@ -237,8 +256,9 @@ log_timezone = 'America/mazatlan' # configura la hora del log
 ```SQL
  track_activities = on: Imagina que tienes una base de datos PostgreSQL que utilizan múltiples usuarios para realizar consultas y transacciones. Al activar este parámetro, la base de datos registrará qué consultas se están ejecutando, quién las está ejecutando y cuánto tiempo están tardando. Esto te ayuda a monitorear la actividad en tiempo real y a detectar problemas de rendimiento o posibles actividades sospechosas.
 
- track_activity_query_size = 1024: Este parámetro te permite limitar la cantidad en bytes que se registran sobre cada consulta. Por ejemplo, si tienes una query muy largas, en el log no se va ver completa ya parecera recortada, o puedes aumentar este parametros a un valor como 10000 para que se guarde toda la query completa y no recorte las query con muchos caracteres
+ track_activity_query_size = 2048: Este parámetro te permite limitar la cantidad en bytes que se registran sobre cada consulta. Por ejemplo, si tienes una query muy largas, en el log no se va ver completa ya parecera recortada, o puedes aumentar este parametros a un valor como 10000 para que se guarde toda la query completa y no recorte las query con muchos caracteres
 
+stats_temp_directory = 'pg_stat_tmp'
 
  track_counts = on: ¿Quieres saber cuántas filas están siendo afectadas por tus consultas de inserción, actualización o eliminación? Al activar este parámetro, PostgreSQL registrará automáticamente el número de filas afectadas por cada tipo de comando, lo que te proporciona información valiosa sobre el rendimiento de tu base de datos y la eficacia de tus operaciones de manipulación de datos.
 
@@ -289,9 +309,10 @@ stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te perm
 
 ## CLIENT CONNECTION DEFAULTS
 ```sql
+default_transaction_isolation = 'read committed'
 
 # Este es lo que le va mostrar al cliente al momento que pase algun error, puedes controlas que le vas a mostrar   
-client_min_messages = notice		# valores en orden de detalle:
+client_min_messages = warning		# valores en orden de detalle:
 					#   debug5
 					#   debug4
 					#   debug3
@@ -344,6 +365,7 @@ shared_preload_libraries = 'pg_stat_statements'		# (change requires restart)
 
  # LOCK MANAGEMENT
 ```
+#deadlock_timeout = 1s
 ```
 
 # extras conf
