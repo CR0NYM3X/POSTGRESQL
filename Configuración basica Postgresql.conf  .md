@@ -80,7 +80,14 @@ En entornos donde la aplicación no requiere una conexión persistente con la ba
 ```
 
 shared_buffers = 128MB  /*  Default min  128kB reasonable starting value for shared_buffers is 15%  to  25% of the memory in your system. Link: https://www.postgresql.org/docs/9.1/runtime-config-resource.html
-En versiones de PostgreSQL anteriores a 8.4, el valor máximo debe ser 2,5 GB,*/
+En versiones de PostgreSQL anteriores a 8.4, el valor máximo debe ser 2,5 GB,
+
+--- Ver la memoria RAM 
+free -m 
+
+Ver cantidad de procesadores 
+cat /proc/cpuinfo
+*/
 
 temp_buffers = 10MB # Estos son buffers locales de sesión que se usan solo para acceder a tablas temporales.  https://www.postgresql.org/docs/current/runtime-config-resource.html
 
