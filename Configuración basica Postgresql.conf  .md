@@ -266,7 +266,7 @@ stats_temp_directory = 'pg_stat_tmp'
 
  track_wal_io_timing = off: Similar al parámetro anterior, pero específico para el registro de escritura de registros de WAL. Al activarlo, PostgreSQL registrará el tiempo que tarda en escribir los registros de WAL en disco, lo que te permite evaluar el rendimiento de la escritura de registros y optimizar la configuración de tu sistema de registro.
 
- track_functions = none:  # none, pl, all Si tienes funciones almacenadas (procedimientos almacenados) en tu base de datos, puedes usar este parámetro para controlar si deseas rastrear las llamadas a estas funciones. Puedes elegir entre no rastrear ninguna función, rastrear solo las funciones escritas en PL/pgSQL o rastrear todas las funciones, según tus necesidades de monitoreo y análisis.
+ track_functions = 'pl' :  # none, pl, all Si tienes funciones almacenadas (procedimientos almacenados) en tu base de datos, puedes usar este parámetro para controlar si deseas rastrear las llamadas a estas funciones. Puedes elegir entre no rastrear ninguna función, rastrear solo las funciones escritas en PL/pgSQL o rastrear todas las funciones, según tus necesidades de monitoreo y análisis.
 
 stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te permite controlar la consistencia de las estadísticas que PostgreSQL recupera de la base de datos. Por ejemplo, puedes configurarlo para utilizar estadísticas en caché para consultas de rendimiento rápidas o una instantánea actualizada de las estadísticas para análisis más precisos. Esto te ayuda a equilibrar el rendimiento y la precisión al realizar consultas de estadísticas.
 
@@ -486,11 +486,11 @@ touch ~/.psqlrc
 local all all peer
 
 For ident auth, pg_hba.conf entry looks like the following:
-host all all 192.168.10.22/24 ident map=my_ident_map
+local clientes user_admin  ident map=my_ident_map
 
 An $PGDATA/ident.conf file looks like the following:
 # MAPNAME 	SYSTEM-USERNAME 	PG-USERNAME
-  my_ident_map 	 my_os_user 		ident_db_user
+  my_ident_map 	 my_os_user 		user_admin
 
 
 
