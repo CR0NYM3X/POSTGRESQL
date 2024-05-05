@@ -486,7 +486,7 @@ touch ~/.psqlrc
 local all all peer
 
 For ident auth, pg_hba.conf entry looks like the following:
-local clientes user_admin  ident map=my_ident_map
+local db_clientes user_admin  ident map=my_ident_map
 
 An $PGDATA/ident.conf file looks like the following:
 # MAPNAME 	SYSTEM-USERNAME 	PG-USERNAME
