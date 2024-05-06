@@ -94,6 +94,11 @@ psql -c "select version()"
 psql -V
 ```
 
+### Obtener collate del servidor
+```sql
+locale | grep -i collate
+```
+
 ### Memoria Ram
 
 ```sh
