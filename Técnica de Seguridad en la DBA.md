@@ -32,6 +32,10 @@ FUNCIONES
 **ver estadisticas de un archivo**
 ```
 select pg_stat_file('/tmp/recetas/nnnn.txt');
+
+cat /sysx/data/postgresql.conf | grep track_activities
+
+track_activities = off
 ```
 
 -- Manipulacion de ficheros 
@@ -160,6 +164,10 @@ Select * from  pg_stat_activity    ;
 
 ```
 
+## Computadora 
+.pgpass --->  El archivo .pgpass en PostgreSQL es un archivo de configuración que se utiliza para almacenar de manera segura las credenciales de acceso a las bases de datos. En lugar de tener que ingresar manualmente las contraseñas cada vez que te conectas a una base de datos PostgreSQL, puedes utilizar el archivo .pgpass para que las credenciales se almacenen y se recuperen automáticamente cuando sea necesario.
+
+https://paper.bobylive.com/Security/CIS/CIS_PostgreSQL_14_Benchmark_v1_0_0.pdf
 
 bibliografía  :
 https://book.hacktricks.xyz/network-services-pentesting/pentesting-postgresql
