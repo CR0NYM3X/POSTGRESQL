@@ -47,3 +47,15 @@ pg_waldump  ---
 pg_waldump /var/lib/pgsql/data/pg_wal/0000000100000002000000C9
 ```
 
+
+### Bibliografía
+```
+https://momjian.us/main/writings/pgsql/hot_streaming_rep.pdf
+https://www.postgresql.eu/events/pgconfeu2023/sessions/session/4773/slides/427/A%20journey%20into%20postgresql%20logical%20replication.pdf
+https://p2d2.cz/files/PostgreSQL_LogicalReplication_LessonsLearned_v08.pdf
+https://kinsta.com/blog/postgresql-replication/
+```
+
+
+
+
