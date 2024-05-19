@@ -166,7 +166,7 @@ checkpoint_segments = 3		/*# in logfile segments, min 1, 16MB each Este parámet
 
 Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en bytes
 
-wal_buffers = 16MB
+wal_buffers = 16MB  --  define la cantidad de memoria dedicada a almacenar los registros de WAL antes de que sean escritos a disco. Configurar adecuadamente este parámetro puede mejorar significativamente el rendimiento de bases de datos con altas tasas de escritura al reducir la frecuencia de escritura de los registros WAL a disco. Al ajustar wal_buffers, es importante considerar la carga de trabajo, la memoria disponible y realizar pruebas para encontrar el valor óptimo para tu sistema.
 
 
 ```
