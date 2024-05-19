@@ -4,6 +4,7 @@
 ## FILE LOCATIONS
  
 ```sql
+
 data_directory = '/data'
 hba_file = '/config/pg_hba.conf'
 ident_file = '/config/pg_ident.conf'
@@ -172,7 +173,8 @@ wal_buffers = 16MB
 
 # REPLICATION
 ```
-hot_standby = on
+# hot_standby = on
+
 ```
 
 # QUERY TUNING
