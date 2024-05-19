@@ -20,7 +20,7 @@ ident_file = '/config/pg_ident.conf'
  listen_addresses = '*'  ## enable all other computers to connect 
  port = 5432
 
- max_connections = 100
+ max_connections = 1000
 
 unix_socket_permissions = 0777		# begin with 0 to use octal notation
 
