@@ -47,7 +47,7 @@ pg_restore : restauras respaldos con formatos custom o directory, pero es mejor,
 copy
 
 # Ejemplos de uso:
-**`[Nota]`** - Al usar `pg_dump` en Automática te genera el create de los objetos<br>
+**`[Nota]`** - Al usar `pg_dump` en Automática te genera el create de los objetos, menos el create de la base de datos<br>
 **`[Nota]`** - Antes de realizar un respaldo debemos de corroborar que los 2 servidores como el origen y destino tengan la misma versión de sql. <br>
 **`[Nota]`** - Verificar que tengan el espacio suficiente para pasar el respaldo .<br>
 **`[Nota]`** - Verificar que el servidor destino cuenta ya con esa información y sí ya tiene información, preguntar al usuario que hacer con la información, si se borra o también se respalda.<br>
