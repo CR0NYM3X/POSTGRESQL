@@ -6,6 +6,11 @@
 ```sql
 
 data_directory = '/data'
+otras rutas del data :
+DATA: /var/lib/pgsql/16/data
+BINARIOS: /usr/local/pgsql/bin/
+BINARIOS: /usr/pgsql/bin/
+
 hba_file = '/config/pg_hba.conf'
 ident_file = '/config/pg_ident.conf'
 
