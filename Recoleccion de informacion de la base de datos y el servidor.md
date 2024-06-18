@@ -6,6 +6,13 @@ Es recopilar información del servidor y la base de datos en caso de requerirse,
 
 ## Comandos:
 
+### recopilar información de archivos 
+```SQL
+ldd  /usr/local/pgsql/bin/pg_dump
+file  /usr/local/pgsql/bin/pg_dump
+readelf /usr/local/pgsql/bin/pg_dump
+
+```
 
 ### Validar el soporte de DBMS "Database Management System" (Sistema de Gestión de Bases de Datos)
 information_schema.sql_features es una herramienta útil para consultar y comprender las capacidades de SQL soportadas, Por ejemplo, un desarrollador puede utilizar esta tabla para verificar si una característica específica de SQL está soportada antes de escribir código que dependa de ella. 
