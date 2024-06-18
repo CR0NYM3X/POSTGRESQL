@@ -524,6 +524,34 @@ ls -lhtra /home/postgres
 ```
 
 
+### lEVANTAR EL SERVICIO AUTOMATICAMENTE 
+**systemd** archivo de configuración utilizado , Este archivo define cómo se debe iniciar, detener y reiniciar el servicio de PostgreSQL
+
+```
+/********** Validar si existe el archivo , si no, hay que configurar el archivo  **********/
+/lib/systemd/system/postgresql.service
+
+--- PARÁMETROS ----
+User: Especifica el usuario con el que se ejecutará el servicio, en este caso postgres.
+ExecStart: Comando utilizado para iniciar el servicio. En este ejemplo, usa pg_ctl para iniciar PostgreSQL, indicando el directorio de datos, el archivo de registro y otros parámetros.
+ExecStop: Comando utilizado para detener el servicio de manera ordenada.
+ExecReload: Comando utilizado para recargar la configuración del servicio sin interrumpirlo.
+
+
+/********** Verificar si el Servicio Está Habilitado para el Inicio Automático **********/
+sudo systemctl is-enabled postgresql
+sudo systemctl status postgresql
+
+
+/**********  Habilitar el Servicio para el Inicio Automático **********/
+sudo systemctl enable postgresql
+
+
+/********** Validar si se inicio automaticamente el servicio  **********/
+journalctl -u postgresql
+
+```
+
 
 ## Bibliofragías 
 ```
