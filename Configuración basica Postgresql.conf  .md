@@ -1,5 +1,7 @@
 
 
+
+
  
 ## FILE LOCATIONS
  
@@ -11,6 +13,8 @@ DATA: /var/lib/pgsql/16/data
 BINARIOS: /usr/local/pgsql/bin/
 BINARIOS: /usr/pgsql/bin/
 
+/var/run/postgresql/ o /tmp/
+
 hba_file = '/config/pg_hba.conf'
 ident_file = '/config/pg_ident.conf'
 
@@ -18,7 +22,7 @@ ident_file = '/config/pg_ident.conf'
 
 
 
-## CONNECTIONS 
+## # CONNECTIONS AND AUTHENTICATION 
 
 
 ```sql
@@ -27,6 +31,25 @@ ident_file = '/config/pg_ident.conf'
  port = 5432
 
  max_connections = 1000
+
+unix_socket_directories = '/tmp'  # /var/run/postgresql/ o /tmp/	
+
+/*
+Archivo: s.pgsql.5432
+-- Propósito  --
+Comunicación Local: Permite que las aplicaciones locales se conecten a PostgreSQL sin necesidad de utilizar una conexión de red TCP/IP.  son generalmente más seguras y rápidas que las conexiones TCP/IP para aplicaciones locales
+Ubicación:  /var/run/postgresql/ o /tmp/
+Nombre :  archivo de socket incluye el puerto en el que está corriendo PostgreSQL
+
+Archivo: s.pgsql.5432.lock
+Ubicación:  /var/run/postgresql/ o /tmp/
+Contenido: PID,  directorio del data,  puerto ,  directorio de sockets. 
+-- Propósito  --
+tilizado por PostgreSQL para gestionar el control de acceso y asegurar que no haya múltiples instancias del servidor PostgreSQL intentando utilizar el mismo puerto al mismo tiempo.
+*/
+
+
+
 
 unix_socket_permissions = 0777		# begin with 0 to use octal notation
 
