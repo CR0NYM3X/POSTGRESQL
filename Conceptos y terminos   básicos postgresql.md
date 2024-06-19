@@ -117,8 +117,16 @@ EOF
 ### Iniciar el servicio  
 ```
 /usr/pgsql-14/bin/pg_ctl start -D /sysx/data -o -i
+postgres -D /ruta/nueva/DATA -c config_file=/ruta/nueva/postgresql.conf 
+
+postgres -D  /sysx/data
+postmaster -D /sysx/data
 
 sudo systemctl start postgresql
+
+
+pg_ctl:   Se utiliza para iniciar, detener, reiniciar, o verificar el estado del servidor PostgreSQL de manera controlada.
+postgres y postmaster : solo se utiliza típicamente para iniciar el servidor
 ```
 
 ### Recargar las configuraciones pg_hba.conf
