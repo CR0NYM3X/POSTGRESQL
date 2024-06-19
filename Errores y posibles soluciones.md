@@ -110,6 +110,14 @@ SELECT * FROM tu_tabla WHERE convert_from(convert_to(tu_columna, 'UTF8'), 'UTF8'
 
 ```
 
+# Errores en el  archivo s.pgsql.5432.lock
+
+Si el servidor PostgreSQL se cierra inesperadamente y deja un archivo de bloqueo, podrías necesitar eliminarlo manualmente antes de reiniciar el servidor:
+Si intentas iniciar otra instancia de PostgreSQL que intente usar el mismo puerto, esta verificará la existencia del archivo de bloqueo. Si el archivo existe y el PID en el archivo corresponde a un proceso en ejecución, la nueva instancia no se iniciará y se generará un error.
+
+```
+sudo rm /var/run/postgresql/.s.PGSQL.5432.lock
+```
 
 
 
