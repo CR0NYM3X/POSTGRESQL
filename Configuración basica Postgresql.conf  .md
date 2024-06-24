@@ -575,6 +575,11 @@ journalctl -u postgresql
 
 ```
 
+### Colocar el archivo de configuración (postgresql.conf, pg_hba.conf y pg_ident)
+```
+/usr/pgsql/bin/pg_ctl  -o -i -D /ruta/nueva/DATA -c config_file=/ruta/nueva/postgresql.conf
+
+```
 
 ## Bibliofragías 
 ```
