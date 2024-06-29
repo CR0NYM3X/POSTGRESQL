@@ -81,7 +81,7 @@ SELECT * FROM pg_stat_file(current_setting('data_directory') || '/global/pg_cont
 #Explicacion de esto:
 ```
   psql (15.3, server 12.15)
-  psql ([versión de postgresql], server [Binarios])
+  psql ([es la version de Binarios del psql que estas ejecutando ], server [versión de data])
 ```
 
 ### Conectarse  a la base de datos 
