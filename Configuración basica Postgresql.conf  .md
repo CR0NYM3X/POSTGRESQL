@@ -542,7 +542,17 @@ ls -lhtra /home/postgres
 
 .bash_profile # guardar las variables de entorno persistentes 
 .psql_history # historial de comandos de postgresql 
-.bash_history # historial de comandos de bash de linux 
+.bash_history # historial de comandos de bash de linux
+
+
+# bash_profile Ejemplo de variables de entorno , cambiar rutas 
+PATH=$PATH:$HOME/bin
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/pgsql/lib64:/usr/local/pgsql/lib
+export PATH=$PATH:/usr/local/pgsql/bin
+export MANPATH=$MANPATH:/usr/local/pgsql/man
+export PGDATA=/sysx/data
+export LD_LIBRARY_PATH
+
 
 ```
 
