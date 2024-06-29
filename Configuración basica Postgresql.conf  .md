@@ -1,4 +1,7 @@
 
+Doc Man: 
+/usr/pgsql-16/share/man/man1/psql.1
+
 
 
 
