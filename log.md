@@ -1,6 +1,12 @@
 
 cat /sysd/datad/postgresql.conf | grep log_
 
+#  SYSLOG
+```sql
+https://documentation.solarwinds.com/en/success_center/loggly/content/admin/postgresql-logs.htm
+https://gist.github.com/ceving/4eae4437d793ae4752b8582253872067
+
+```
 
 # Habilita el recolector de logs.
 logging_collector = on
