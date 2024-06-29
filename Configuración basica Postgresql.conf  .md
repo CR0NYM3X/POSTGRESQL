@@ -30,7 +30,10 @@ ident_file = '/config/pg_ident.conf'
  listen_addresses = '*'  ## enable all other computers to connect 
  port = 5432
 
- max_connections = 1000
+max_connections = 1000  
+superuser_reserved_connections = 3  # (change requires restart) Reserva de Conexiones: El valor de superuser_reserved_connections especifica cuántas de las conexiones totales (definidas por max_connections) están reservadas para los superusuarios. Por ejemplo, si max_connections está establecido en 100 y superuser_reserved_connections en 3, entonces 97 conexiones estarán disponibles para todos los usuarios, mientras que 3 conexiones estarán reservadas exclusivamente para superusuarios. Esto garantiza que los superusuarios siempre puedan conectarse a la base de datos incluso cuando el número máximo de conexiones permitidas 
+
+
 
 unix_socket_directories = '/tmp'  # /var/run/postgresql/ o /tmp/	
 
