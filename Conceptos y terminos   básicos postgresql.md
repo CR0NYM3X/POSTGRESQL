@@ -159,7 +159,20 @@ ps aux
 grep postgres 
 ```
 
+### Postgressql.conf y Postgressql.auto.conf
+```
+postgresql.conf es el archivo principal de configuración estática
+que requiere reinicios del servidor para aplicar cambios, 
 
+postgresql.auto.conf : cuando se reinicia el servicio, pone como prioridad este archivo de configuración,
+aqui se guardan los parametros modificados con el ALTER SYSTEM y
+permite ajustes dinámicos y persistentes sin  necesidad de reiniciar el servidor PostgreSQL.
+  Se puede modificar a través de comandos SQL  
+
+Ejemplo:
+ALTER SYSTEM SET password_encryption = 'md5';
+
+```
 
 ### Base de datos y esquemas del sistema
 
