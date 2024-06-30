@@ -33,12 +33,14 @@ ident_file = '/config/pg_ident.conf'
  listen_addresses = '*'  ## enable all other computers to connect 
  port = 5432
 
-max_connections = 1000  
+max_connections = 1000
+
+
 superuser_reserved_connections = 3  # (change requires restart) Reserva de Conexiones: El valor de superuser_reserved_connections especifica cuántas de las conexiones totales (definidas por max_connections) están reservadas para los superusuarios. Por ejemplo, si max_connections está establecido en 100 y superuser_reserved_connections en 3, entonces 97 conexiones estarán disponibles para todos los usuarios, mientras que 3 conexiones estarán reservadas exclusivamente para superusuarios. Esto garantiza que los superusuarios siempre puedan conectarse a la base de datos incluso cuando el número máximo de conexiones permitidas 
 
 
 
-unix_socket_directories = '/tmp'  # /var/run/postgresql/ o /tmp/	
+unix_socket_directories =  '/var/run/postgresql/'  o /tmp/	
 
 /*
 Archivo: s.pgsql.5432
@@ -59,7 +61,7 @@ tilizado por PostgreSQL para gestionar el control de acceso y asegurar que no ha
 
 unix_socket_permissions = 0777		# begin with 0 to use octal notation
 
-#reserved_connections = 0   #  Esto se debe a que garantizaría que un conjunto específico de conexiones siempre esté disponible para tareas críticas del sistema, como las operaciones de respaldo automático (autovacuum) y el proceso de escritura en segundo plano (background writer). Sin estas conexiones reservadas, es posible que estos procesos internos no puedan acceder a la base de datos cuando más se necesiten, se garantiza que el servidor pueda administrarse y mantenerse de manera eficiente incluso en momentos de alta demanda
+
 
 
 #tcp_keepalives_idle = 300 #
@@ -231,11 +233,27 @@ log_rotation_age = 1d
 log_rotation_size = 0  # 0 disables.
 log_truncate_on_rotation = ON  # Este elimina el log si ya existe
 
-log_min_messages = warning
+log_min_messages = info  ## si quieres que capture muchas cosas coloca info , pero lo recomendado para empresas es colocar warning para que guarde solo cosas importantes,  , el nivel de detalle esta en orden, por ejemplo el debug5 muestra mucha información de mas,no recomendado 
+ 
+					#   debug5
+					#   debug4
+					#   debug3
+					#   debug2
+					#   debug1
+					#   info
+					#   notice
+					#   warning
+					#   error
+					#   log
+					#   fatal
+					#   panic
+
+
 log_min_error_statement = error
 
 
-log_min_duration_statement = 300 # Esto deternima la duracion de una consulta antes de que sea registrada en el log, en entornos productivos se usa para registrar en el log los unicos que que superan el umbral y esto evita inundar el archivo log
+log_min_duration_statement = 0 #  0 captura todo, -1 lo desabilita y no guarda consultas en duración, se configura en milisegundo ejmplo 1000 = 1sg y sirve para decirle que guarde en el log las consultas que tarden >= que el tiempo que le especificamos, en este caso le decimos que capture todo
+
 
 #log_autovacuum_min_duration = 0 #-1 disables 
 
@@ -247,7 +265,7 @@ log_duration = on
 log_error_verbosity = default	
 	- terse registra solo la información básica sobre el error.
 	- default proporciona información adicional, como el contexto de la consulta actual.
-	- verbose incluye información detallada, como la traza de la pila del erro
+	- verbose : no recomendado, incluye información detallada, como la traza de la pila del erro
 
 log_line_prefix = '<%t %r %a %d %u %p %c %i>'
 # special values:
@@ -286,7 +304,8 @@ log_temp_files = 0  # controla si se debe registrar información sobre la creaci
 log_timezone = 'America/mazatlan' # configura la hora del log
 
 ```
- 
+
+
 
 ## Estadísticas de tiempo de ejecución 
 ```SQL
@@ -347,7 +366,7 @@ stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te perm
 ```sql
 default_transaction_isolation = 'read committed'
 
-# Este es lo que le va mostrar al cliente al momento que pase algun error, puedes controlas que le vas a mostrar   
+# por seguridad desabilitarlo, no es bueno mostrar errores a los clienes, Este es lo que le va mostrar al cliente al momento que pase algun error, puedes controlas que le vas a mostrar   
 client_min_messages = warning		# valores en orden de detalle:
 					#   debug5
 					#   debug4
@@ -355,13 +374,13 @@ client_min_messages = warning		# valores en orden de detalle:
 					#   debug2
 					#   debug1
 					#   log
-					#   notice
+					#   notice (Default)
 					#   warning
-					#   error
+					#   error (por seguridad colocar este si el cliente puede ver los errores)
 
 #row_security = on
 #search_path = '"$user", public'  # esto le indica a en que esquema buscar el objeto , en caso de que no se especifique en la query 
-#idle_session_timeout = 0  #  esto controla el tiempo máximo de un cliente inactivo ,in milliseconds, 0 is disabled
+idle_session_timeout = 0  #  esto controla el tiempo máximo de un cliente inactivo ,in milliseconds, 0 is disabled
 #client_encoding = sql_ascii	 # especifica el encodigo de caracteres que se enviaran y recibiran por el cliente, y solo aplica para las sesiones de loa cliente, no para las base de datos 	
 
 
@@ -512,6 +531,7 @@ touch ~/.psqlrc
 
 
 ## Autenticaciones PG_HBA.conf PEER and IDENT
+**`[NOTA]`** Solo sirve para el modo **local** no para el **host** 
 1. **peer:** Con el método peer, PostgreSQL confía en la autenticación del sistema operativo local para verificar la identidad del cliente. Cuando un cliente se conecta al servidor desde el mismo equipo , PostgreSQL compara el nombre de usuario del cliente con el nombre de usuario del sistema operativo. Si hay una coincidencia, se permite la conexión sin solicitar una contraseña adicional.
 
 2. **ident:** El método ident también depende del sistema operativo para verificar la identidad del cliente, pero en lugar de comparar el nombre de usuario de PostgreSQL con el del sistema operativo, ident realiza una consulta al demonio ident.conf del sistema operativo para obtener información sobre el usuario que intenta conectarse. Luego, PostgreSQL compara esta información con la configuración en el archivo pg_hba.conf. Si hay una coincidencia, se permite la conexión.
