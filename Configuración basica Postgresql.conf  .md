@@ -598,8 +598,10 @@ ExecReload: Comando utilizado para recargar la configuración del servicio sin i
 
 
 /********** Verificar si el Servicio Está Habilitado para el Inicio Automático **********/
-sudo systemctl is-enabled postgresql
-sudo systemctl status postgresql
+systemctl is-active postgresql.service
+systemctl is-enabled postgresql.service
+systemctl is-failed postgresql.service
+sudo systemctl status postgresql.service
 
 
 /**********  Habilitar el Servicio para el Inicio Automático **********/
