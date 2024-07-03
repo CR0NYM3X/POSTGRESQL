@@ -261,7 +261,7 @@ log_min_messages = info  ## si quieres que capture muchas cosas coloca info , pe
 					#   panic
 
 
-log_min_error_statement = error
+log_min_error_statement = info
 
 
 log_min_duration_statement = 0 #  0 captura todo, -1 lo desabilita y no guarda consultas en duración, se configura en milisegundo ejmplo 1000 = 1sg y sirve para decirle que guarde en el log las consultas que tarden >= que el tiempo que le especificamos, en este caso le decimos que capture todo
@@ -566,7 +566,7 @@ Pagina 71 -> https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Config
 ```
 
 
-## Configuracion de archivos 
+## Configuracion de archivos   variables de entorno
 ```sql
 archivos importantes :
 
