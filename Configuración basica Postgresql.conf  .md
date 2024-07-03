@@ -234,6 +234,8 @@ wal_buffers = 16MB  --  define la cantidad de memoria dedicada a almacenar los r
 
 ```sql
 
+# DOC OFICIAL:  https://www.postgresql.org/docs/current/runtime-config-logging.html
+
 log_destination = 'stderr' # Esto genera
 logging_collector = on # esto habilita el log 
 
@@ -245,7 +247,7 @@ log_rotation_age = 1d
 log_rotation_size = 0  # 0 disables.
 log_truncate_on_rotation = ON  # Este elimina el log si ya existe
 
-log_min_messages = info  ## si quieres que capture muchas cosas coloca info , pero lo recomendado para empresas es colocar warning para que guarde solo cosas importantes,  , el nivel de detalle esta en orden, por ejemplo el debug5 muestra mucha información de mas,no recomendado 
+log_min_messages = info  ## si quieres que capture muchas cosas coloca info , pero lo recomendado para empresas es colocar warning para que guarde solo cosas importantes,  , el nivel de detalle esta en orden, por ejemplo el debug5 muestra mucha información de mas,no recomendado , PANIC muestra bien poca información 
  
 					#   debug5
 					#   debug4
@@ -274,13 +276,16 @@ log_connections = on
 log_disconnections = on
 log_duration = on
 
-log_error_verbosity = default	
+log_error_verbosity = verbose	
 	- terse registra solo la información básica sobre el error.
 	- default proporciona información adicional, como el contexto de la consulta actual.
-	- verbose : no recomendado, incluye información detallada, como la traza de la pila del erro
+	- verbose : La salida VERBOSE incluye el código de error SQLSTATE (consulte también el Apéndice A) y el nombre del archivo del código fuente, el nombre de la función y el 
+          número de línea que generó el error.
 
 log_line_prefix = '<%t %r %a %d %u %p %c %i>'
 # special values:
+# asi obtiene el parámetro %C el  session ID
+SELECT to_hex(trunc(EXTRACT(EPOCH FROM backend_start))::integer) || '.' || to_hex(pid) FROM pg_stat_activity;
 					#   %a = application name
 					#   %u = user name
 					#   %d = database name
@@ -302,7 +307,7 @@ log_line_prefix = '<%t %r %a %d %u %p %c %i>'
 					#   %% = '%'
 					# e.g. '<%u%%%d> '
 
-#log_lock_waits = on #   cuando una consulta intenta escribir en una fila mientras otra consulta está leyendo o escribiendo en la misma fila. Cuando una consulta está esperando a que se libere un recurso bloqueado por otra consulta, se dice que está esperando un bloqueo. El parámetro log_lock_waits en postgresql.conf permite registrar información sobre estas situaciones, lo que puede ayudar en el diagnóstico y resolución de problemas de rendimiento.
+log_lock_waits = on #   cuando una consulta intenta escribir en una fila mientras otra consulta está leyendo o escribiendo en la misma fila. Cuando una consulta está esperando a que se libere un recurso bloqueado por otra consulta, se dice que está esperando un bloqueo. El parámetro log_lock_waits en postgresql.conf permite registrar información sobre estas situaciones, lo que puede ayudar en el diagnóstico y resolución de problemas de rendimiento.
 
 log_statement = 'all'
 	/*********** Otras opciones *************
