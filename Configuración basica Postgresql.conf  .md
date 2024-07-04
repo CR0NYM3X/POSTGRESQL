@@ -52,7 +52,7 @@ superuser_reserved_connections = 3  # (change requires restart) Reserva de Conex
 
 
 
-unix_socket_directories =  '/var/run/postgresql/'  o /tmp/	
+unix_socket_directories =  '/var/run/postgresql/'  # POR DEFAULT POSTGRESQL CREA ETOS ARCHIVOS EN LA TMP Y EN /RUN/POSTGRESQL	
 
 /*
 Archivo: s.pgsql.5432
