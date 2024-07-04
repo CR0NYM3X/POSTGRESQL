@@ -181,6 +181,7 @@ effective_io_concurrency = 100		# 1-1000; 0 disables prefetching
 max_worker_processes = 4		# (change requires restart)
 max_parallel_workers_per_gather = 2	# limited by max_parallel_workers
 max_parallel_workers = 4		# number of max_worker_processes that
+max_parallel_maintenance_workers = 2
 
 ```
 
@@ -279,7 +280,7 @@ log_duration = on
 log_error_verbosity = verbose	
 	- terse registra solo la información básica sobre el error.
 	- default proporciona información adicional, como el contexto de la consulta actual.
-	- verbose : La salida VERBOSE incluye el código de error SQLSTATE (consulte también el Apéndice A) y el nombre del archivo del código fuente, el nombre de la función y el 
+	- verbose : [NO RECOMIENDO] La salida VERBOSE incluye el código de error SQLSTATE (consulte también el Apéndice A) y el nombre del archivo del código fuente, el nombre de la función y el 
           número de línea que generó el error.
 
 log_line_prefix = '<%t %r %a %d %u %p %c %i>'
@@ -338,7 +339,7 @@ stats_temp_directory = 'pg_stat_tmp'
 
  track_wal_io_timing = off: Similar al parámetro anterior, pero específico para el registro de escritura de registros de WAL. Al activarlo, PostgreSQL registrará el tiempo que tarda en escribir los registros de WAL en disco, lo que te permite evaluar el rendimiento de la escritura de registros y optimizar la configuración de tu sistema de registro.
 
- track_functions = 'pl' :  # none, pl, all Si tienes funciones almacenadas (procedimientos almacenados) en tu base de datos, puedes usar este parámetro para controlar si deseas rastrear las llamadas a estas funciones. Puedes elegir entre no rastrear ninguna función, rastrear solo las funciones escritas en PL/pgSQL o rastrear todas las funciones, según tus necesidades de monitoreo y análisis.
+ track_functions = 'all' :  # none, pl, all Si tienes funciones almacenadas (procedimientos almacenados) en tu base de datos, puedes usar este parámetro para controlar si deseas rastrear las llamadas a estas funciones. Puedes elegir entre no rastrear ninguna función, rastrear solo las funciones escritas en PL/pgSQL o rastrear todas las funciones, según tus necesidades de monitoreo y análisis.
 
 stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te permite controlar la consistencia de las estadísticas que PostgreSQL recupera de la base de datos. Por ejemplo, puedes configurarlo para utilizar estadísticas en caché para consultas de rendimiento rápidas o una instantánea actualizada de las estadísticas para análisis más precisos. Esto te ayuda a equilibrar el rendimiento y la precisión al realizar consultas de estadísticas.
 
