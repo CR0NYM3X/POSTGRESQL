@@ -374,9 +374,9 @@ example=# \dt+
  public | pgbench_tellers  | table | postgres | 56 kB   | 
 (4 rows)
 
-  createdb testdb
- pgbench -U postgres -h 127.0.0.1 -i -s 70 prueba
- pgbench -U postgres - h127.0.0.1 -p 5432  -c 500 -j 20 -T 1800 prueba
+  createdb db_prueba
+ pgbench -U postgres -h 127.0.0.1 -i -s 70 db_prueba
+ pgbench -U postgres - h127.0.0.1 -p 5432  -c 500 -j 20 -T 1800 db_prueba
 
   
   pgbench -i -s <escala> testdb
