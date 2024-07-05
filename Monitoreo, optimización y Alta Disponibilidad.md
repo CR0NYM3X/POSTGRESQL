@@ -39,6 +39,12 @@ $$
 
 ## Consulta todo en una sola query:
 ```sh
+
+[NOTA] los estatus son :
+idle in transaction : esto es porque realizo un begin y no ha realizado nada 
+idle:  esto es porque esta inactivo pero esta conectado, no esta consultando ni ejecutando nada 
+ative : Esto quiere decir que esta ejecutando una query
+
 echo "IP" && hostname -I && postgres --version && echo "Numero máximo de conexiones" && psql -At -c "show max_connections;" && echo "Numero de conexiones" && ps -ef | grep -i postgres -wc  && echo "Numero de conexiones en idle" &&  ps -ef | grep -i idle -wc && echo "Unidades" && df -lh&& echo "Mostrar BD Postgres " && psql postgres -c "\\l+" && echo " -- Fecha" && date && echo " -- Mostrar procesos" && psql -xc "select  query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state)!='idle' and pid != pg_backend_pid() ORDER BY query_start ASC;"
 ```
 
