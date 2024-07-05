@@ -376,7 +376,7 @@ example=# \dt+
 
   createdb db_prueba
  pgbench -U postgres -h 127.0.0.1 -i -s 70 db_prueba
- pgbench -U postgres - h127.0.0.1 -p 5432  -c 500 -j 20 -T 1800 db_prueba
+ pgbench -U postgres -h 127.0.0.1 -p 5432  -c 500 -j 20 -T 1800 db_prueba
 
   
   pgbench -i -s <escala> testdb
