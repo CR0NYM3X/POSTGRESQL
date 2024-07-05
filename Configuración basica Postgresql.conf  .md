@@ -384,6 +384,31 @@ stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te perm
 ```sql
 default_transaction_isolation = 'read committed'
 
+---------------- NIVELES DE AISLAMIENTO  ----------------
+1. **Read Uncommitted (No Comprobado)**:
+   - no es exactamente igual al (NOLOCK), es el más cercano AL DE SQL SERVER.
+   - Permite lecturas sucias (dirty reads).
+   - No es comúnmente utilizado en aplicaciones debido a la posibilidad de leer datos no confirmados.
+   - Escenario real: Rara vez se utiliza en aplicaciones críticas debido a su falta de consistencia.
+
+2. **Read Committed (Confirmado)**:
+   - Es el nivel de aislamiento predeterminado en PostgreSQL.
+   - Evita lecturas sucias, pero permite lecturas no repetibles y fantasma.
+   - Escenario real: Adecuado para la mayoría de las aplicaciones donde la consistencia no es crítica.
+
+3. **Repeatable Read (Lectura Repetible)**:
+   - Evita lecturas sucias y no repetibles, pero permite lecturas fantasma.
+   - Útil cuando la integridad de los datos es crucial.
+   - Escenario real: Sistemas financieros o de inventario donde la coherencia es fundamental.
+
+4. **Serializable (Serializable)**:
+   - Ofrece el nivel más alto de aislamiento.
+   - Evita lecturas no repetibles y fantasma.
+   - Puede afectar el rendimiento debido a bloqueos más estrictos.
+   - Escenario real: Transacciones críticas, como transferencias bancarias o reservas de asientos.
+
+
+
 # por seguridad desabilitarlo, no es bueno mostrar errores a los clienes, Este es lo que le va mostrar al cliente al momento que pase algun error, puedes controlas que le vas a mostrar   
 client_min_messages = warning		# valores en orden de detalle:
 					#   debug5
