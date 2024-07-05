@@ -569,6 +569,26 @@ o aqui en la pagina 33 https://www.cherrycreekeducation.com/bbk/b/Apress_Postgre
 
 ```
 touch ~/.psqlrc
+
+%[%033[1;31m%]   Esto agrega color al texto. En este caso, 033[1;31m representa rojo.
+%[%033[0m%]     restablece el color a la configuración predeterminada. 
+
+%M: Nombre del servidor (por ejemplo, trident).
+%n: Nombre del usuario (por ejemplo, john).
+%/: Nombre de la base de datos actual (por ejemplo, orange).
+%R: Número de puerto (por ejemplo, 5432).
+%#: Símbolo => o -> según si es el prompt principal o secundario.
+%x: Indicador de transacción (por ejemplo, * si hay una transacción activa).
+
+\set PROMPT1 '%[%033[1;31m%]%/%[%033[0m%]%[%033[1;32m%]%#%x%[%033[0m%] '
+\set PROMPT1 ' %[%033[1;31m%]%n%[%033[0m%]%[%033[1;32m%]@%[%033[0m%]%[%033[1;31m%]%/%[%033[0m%]%#%x'
+\set PROMPT2 ' %n@%/  %#%x'
+
+
+PROMPT1: Es el prompt principal que se muestra cuando estás listo para ingresar una consulta.
+PROMPT2:  Es el prompt secundario que aparece cuando tienes una consulta incompleta o necesitas continuar una línea.
+
+
 ```
 
 
