@@ -101,7 +101,7 @@ las consultas y transacciones en la base de datos son lo suficientemente frecuen
 
 ```
 
-authentication_timeout = 1min		# 1s-600s Cantidad máxima de tiempo permitido para completar la autenticación del cliente. Si un posible cliente no ha completado el protocolo de autenticación en este tiempo, el servidor cierra la conexión. Esto evita que los clientes colgados ocupen una conexión indefinidamente
+authentication_timeout = 3min # 1s-600s Cantidad máxima de tiempo permitido para completar la autenticación del cliente. Si un posible cliente no ha completado el protocolo de autenticación en este tiempo, el servidor cierra la conexión. Esto evita que los clientes colgados ocupen una conexión indefinidamente
 
 password_encryption = scram-sha-256	# scram-sha-256 or md5 # cambia el metodo crifrado de contraseñas de los usuarios
 
@@ -421,7 +421,8 @@ client_min_messages = warning		# valores en orden de detalle:
 					#   warning
 					#   error (por seguridad colocar este si el cliente puede ver los errores)
 
-#row_security = on
+
+#row_security = on  # activa el , Row-Level Security (RLS) permite definir políticas de seguridad a nivel de fila para controlar el acceso a datos específicos según el usuario o el rol.  
 #search_path = '"$user", public'  # esto le indica a en que esquema buscar el objeto , en caso de que no se especifique en la query
 
 #######  parametros importantes ###### 
@@ -477,6 +478,14 @@ shared_preload_libraries = 'pg_stat_statements'		# (change requires restart)
 # extras conf
 ```
 standard_conforming_strings = on
+
+
+# CONFIG FILE INCLUDES
+# Este parámetro te permite incluir un archivo de configuración solo si existe en la ubicación especificada.
+ Si el archivo no existe, PostgreSQL continuará sin errores. Por ejemplo:
+
+include_if_exists = '/ruta/a/tu/archivo.conf'
+
 ```
 
  # Base de datos 
