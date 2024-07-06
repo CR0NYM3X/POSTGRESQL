@@ -369,7 +369,10 @@ pg_repack -U $DB_USER -d $DB_NAME --> Esta herramienta se utiliza para reorganiz
 
 
 # Herramienta pgbench de test de optimización 
+
  ```
+hay que jugar con el parametro shared_buffers  hasta encontrar lo mejor
+
 example=# \dt+
                           List of relations
  Schema |       Name       | Type  |  Owner   |  Size   | Description 
