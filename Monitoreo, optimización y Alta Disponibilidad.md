@@ -382,7 +382,7 @@ example=# \dt+
 
   createdb db_prueba
  pgbench -U postgres -h 127.0.0.1 -i -s 70 db_prueba
- pgbench -U postgres -h 127.0.0.1 -p 5432  -c 500 -j 20 -T 1800 db_prueba
+ pgbench -S -C -n  -U postgres -h 127.0.0.1 -p 5432  -c 500 -j 20 -T 1800 db_prueba
 
   
   pgbench -i -s <escala> testdb
@@ -394,6 +394,10 @@ pgbench -c <clientes> -j <hilos> -T <tiempo> testdb
     -j <hilos>: Esta opción especifica el número de hilos (o conexiones) a utilizar.
     -T <tiempo>: Esta opción especifica la duración de la prueba en segundos.
     -t  Number of transactions each client runs. Default is 10.
+    -n : do not run vacuum before testing
+    -S : perform select-only transaction
+    -c : number of clients
+    -C : open a new connection for each transaction
 
 -------- BIBLIOGRAFÍAS ---------------
 https://www.postgresql.org/docs/current/pgbench.html
