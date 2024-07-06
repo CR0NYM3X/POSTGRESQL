@@ -422,9 +422,17 @@ client_min_messages = warning		# valores en orden de detalle:
 					#   error (por seguridad colocar este si el cliente puede ver los errores)
 
 #row_security = on
-#search_path = '"$user", public'  # esto le indica a en que esquema buscar el objeto , en caso de que no se especifique en la query 
-idle_session_timeout = 0  #  esto controla el tiempo máximo de un cliente inactivo ,in milliseconds, 0 is disabled
-#client_encoding = sql_ascii	 # especifica el encodigo de caracteres que se enviaran y recibiran por el cliente, y solo aplica para las sesiones de loa cliente, no para las base de datos 	
+#search_path = '"$user", public'  # esto le indica a en que esquema buscar el objeto , en caso de que no se especifique en la query
+
+#######  parametros importantes ###### 
+statement_timeout = 0			# in milliseconds, 0 is disabled -- Este parámetro controla cuánto tiempo puede ejecutarse una consulta antes de que se cancele automáticamente.
+lock_timeout = 0			# in milliseconds, 0 is disabled -- Determina cuánto tiempo una transacción debe esperar para adquirir un bloqueo antes de ser cancelada automáticamente (cancela consultas bloqueadas). 
+idle_in_transaction_session_timeout = 0	# in milliseconds, 0 is disabled -- controla cuánto tiempo una "idle in transaction" puede permanecer inactiva antes de ser terminada automáticamente.
+idle_session_timeout = 0  		# in milliseconds, 0 is disabled -- esto controla el tiempo máximo de un cliente puede estar inactivo, despues de eso lo desconecta.
+
+
+
+client_encoding = sql_ascii	 # especifica el encodigo de caracteres que se enviaran y recibiran por el cliente, y solo aplica para las sesiones de loa cliente, no para las base de datos 	
 
 
 
