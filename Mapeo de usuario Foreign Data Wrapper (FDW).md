@@ -3,7 +3,7 @@
 ![Logo de FDW](https://www.interdb.jp/pg/img/fig-4-fdw-1.png)
 
 # Objetivo
-Aprender a consultar información de otros servidores como si la tabla estuviera de manera local
+Aprender a consultar información de otros servidores como si la tabla estuviera de manera local, FDW es mas nuevo, antes se usaba dblink 
 
 # Descripcion rápida FDW
 Los Foreign Data Wrappers (FDW) en PostgreSQL son una característica que permite a los usuarios acceder y consultar datos de otros servidores como si fueran tablas locales en su base de datos PostgreSQL
