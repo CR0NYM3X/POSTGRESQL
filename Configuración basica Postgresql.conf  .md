@@ -579,10 +579,8 @@ postgres=#
 ## Colocar un menu de ayuda en psql
 
 El archivo psqlrc del usuario se encuentra o se puede crear en el directorio de inicio del usuario.
-<br> 
-para encontrar mas promts puedes consultar las paginas 
-https://gist.github.com/jaytaylor/e5aa89c8f3aaab3f576f <br> 
-o aqui en la pagina 33 https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Configuration.pdf   
+ 
+
 
 ```
 touch ~/.psqlrc
@@ -596,6 +594,9 @@ touch ~/.psqlrc
 %R: Número de puerto (por ejemplo, 5432).
 %#: Símbolo => o -> según si es el prompt principal o secundario.
 %x: Indicador de transacción (por ejemplo, * si hay una transacción activa).
+%m - host name of the db server, truncated at the first dot, or [local] (if over Unix socket)
+%> - port where db server is listening
+%~ - like %/ but the output is ~ if the database is the default
 
 \set PROMPT1 '%[%033[1;31m%]%/%[%033[0m%]%[%033[1;32m%]%#%x%[%033[0m%] '
 \set PROMPT1 ' %[%033[1;31m%]%n%[%033[0m%]%[%033[1;32m%]@%[%033[0m%]%[%033[1;31m%]%/%[%033[0m%]%#%x'
@@ -604,6 +605,36 @@ touch ~/.psqlrc
 
 PROMPT1: Es el prompt principal que se muestra cuando estás listo para ingresar una consulta.
 PROMPT2:  Es el prompt secundario que aparece cuando tienes una consulta incompleta o necesitas continuar una línea.
+
+
+/* ANSI control sequences http://www.termsys.demon.co.uk/vtansi.htm
+Display Attribute   FG / BG Color
+0 Reset ALL         30 / 40 Black
+1 Bright            31 / 41 Red
+2 Dim               32 / 42 Green
+4 Underscore        33 / 43 Yellow
+5 Blink             34 / 44 Blue
+7 Reverse           35 / 45 Magenta
+8 Hidden            36 / 46 Cyan
+                    37 / 47 White
+                    39 / 49 Default
+*/
+
+
+
+para encontrar mas parametros para configurar el psqlrc puedes consultar las paginas 
+
+https://gist.github.com/verfriemelt-dot-org/2e0136d62cbfeb7ce67f14b0731512b0#file-psqlrc-L35 
+https://gist.github.com/segeljakt/d38ac5a3166131dd4b4ce8fc73da72f0 
+https://gist.github.com/magat/9533c7043503912fc71bc099890e04fd
+https://gist.github.com/begriffs/761c04e44b68b75c8d4886b97a1a34bd
+https://gist.github.com/mateusmedeiros/134c58a37fc537305b17ae1f52755237
+https://gist.github.com/gregorg/d079a56022f93c042231#file-psqlrc-L86
+https://gist.github.com/whalesalad/5b25f2086c7a8c8e4728f3b948e0cd95
+https://gist.github.com/jaytaylor/e5aa89c8f3aaab3f576f 
+
+o aqui en la pagina 33 https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Configuration.pdf   
+
 
 
 ```
