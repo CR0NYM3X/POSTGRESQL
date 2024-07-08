@@ -186,7 +186,7 @@ select * from pg_extension;
 ```
 CREATE SERVER "Server#2"
     FOREIGN DATA WRAPPER postgres_fdw
-    OPTIONS (host '10.0.0.200', port '6432', dbname 'sanatudeuda');
+    OPTIONS (host '192.0.0.200', port '6432', dbname 'my_db_fwd');
 ```
 
 - Verificamos que si se haya creado
