@@ -24,22 +24,23 @@ Estos son los servidores de Base de datos que se puede conectar con porsgresql y
 ![Logo de FDW](https://www.postgresql.fastware.com/hs-fs/hubfs/Images/PI/img-pi-dgm-fdw-ove-use-scenario-providing-new-services.png?width=547&name=img-pi-dgm-fdw-ove-use-scenario-providing-new-services.png)
 # Ejemplo de uso: 
 **`Problema:`**
-Queremos permitir que `Servidor#1` acceda a la tabla "cat_plazos" del `Servidor#2` para realizar consultas y operaciones en esa tabla desde Servidor#1.
+Queremos permitir que `Servidor remoto` acceda a la tabla "log_monitor" del `Servidor central` para realizar consultas
 
 **`Solución:`**
-Para resolver este problema, vamos a configurar un Foreign Data Wrapper en Servidor#1 que nos permita acceder a la tabla "empleados" en Servidor#2. 
+Para resolver este problema, vamos a configurar un Foreign Data Wrapper en `Servidor remoto` que nos permita acceder a la tabla "log_monitor" en  `Servidor central`
 
 
-- **`Server#1 Postgresql Local : `** <br>
+- **`Server Remoto : `** <br>
 IP: 10.0.0.100  <br>
-User: "user_serv1_fdw" <br>
-DB: mydb_fdw
+User: "user_local" <br>
+DB: log_monitor
+tb: log_files_local
 
-- **`Server#2 Postgresql Remoto :`** <br>
+- **`Server Central:`** <br>
 IP: 10.0.0.200  <br>
-User:  user_serv2_fdw <br> 
-DB: sanatudeuda <br>
-tb: cat_plazos
+User:  user_central <br> 
+DB: log_monitor <br>
+tb: log_files_central
 
  <br> <br>
 **Consulta Información de FDW**<br>
@@ -48,57 +49,64 @@ tb: cat_plazos
 \des -- ver Servidores fdw
 
 
+### Configuración del Server Central IP 10.0.0.200:
 
 
-
-### Configuración del Server#2 Postgresql Remoto :
-
-### Paso 1 - Verificar acceso acceso al puerto:
-- Tenemos que verificar que en el servidor#2 tengamos acceso al puerto del servidor#1 ya que si no se tiene acceso no se podrá realizar la conexión entre servidores 
-```sh
-telnet 10.0.0.100 5432
-```
-### Paso 2 - Verificar que permita conexiones Remotas 
-Asegurémonos de que Servidor#2 permita conexiones remotas, Modifiquemos el archivo postgresql.conf en Servidor#2 esté de esta manera :
+### Paso 1 - Verificar que permita conexiones Remotas 
+Asegurémonos de que Servidor central permita conexiones remotas, Modifiquemos el archivo postgresql.conf del servidor central ip  10.0.0.200
 ```
 listen_addresses = '*'
 ```
 
-### Paso 3 - Crear Usuario remoto
+### Paso 2 - Crear Usuario remoto
 
-- Nos conectamos a la base de datos que compartira la información:
+- Nos conectamos a postgresql  
 ```
-psql -U postgres -d sanatudeuda
-```
-
-- Creamos el usuario remoto que se va conectar al servidor#2 a extraer la información
-```
-CREATE USER user_serv2_fdw WITH ENCRYPTED PASSWORD '1234567890';
+psql -U postgres 
 ```
 
-Info Extra
+- Creamos el usuario user_central  se usaran los servidores remotos para conectarse al servidor central
+```
+CREATE USER user_central WITH ENCRYPTED PASSWORD '123123';
+```
+
+### Paso 3 - le damos permisos de insert y select al usuario central
 ```sh
-grant SELECT  on all tables in schema public to "user_serv2_fdw"; 
-GRANT CONNECT ON DATABASE "sanatudeuda" TO "user_serv2_fdw"; --- no se agrego
-ALTER user  "user_serv2_fdw" WITH SUPERUSER;   --- no se agrego
+grant select,insert on table logs_files_central  to "user_central";
+GRANT CONNECT ON DATABASE "log_monitor" TO "user_central"; --- no se ocupa
+ALTER user  "user_central" WITH SUPERUSER;   --- no se ocupa
 ```
+
 
 ### Paso 4 - Agregar el usuario al archivo PG_HBA 
 - Agregarmos el usuario al pg_gba para especificar la ip del servidor que se va conectar y consultar la información
 ```sh
-host    sanatudeuda      user_serv2_fdw            10.0.0.100/32            md5
+host    log_monitor      user_central            10.0.0.100/32            scram-sha-256
 ```
 
 ### Paso 5 -  Recargar las configuraciones postgresql
 - Realizamos el reinicio para que el postgres detecte los cambios en el archivo pg_hba
 ```sh
 /usr/pgsql-13/bin/pg_ctl reload -D /sysm/data
-``` 
-
-### Paso 6 - Obtener la estructura de una tabla en caso de requerirse
-- Con la estructura de la tabla la usaremos al momento de configurar el servidor#1
 ```
- pg_dump -s -t cat_plazos -d sanatudeuda  --no-owner --no-reconnect  --no-privileges  --no-comments  > /tmp/struct.sql
+
+
+
+### Paso 7 - Obtener la estructura de la tabla que vamos a compartir 
+- La estructura la vamos ocupar en el servidor remoto , en caso de que ya exista la tabla usamos el pg_dump, también podemos crear la tabla si queremos
+  
+```
+ pg_dump -s -t log_files_central -d log_monitor  --no-owner --no-reconnect  --no-privileges  --no-comments  > /tmp/struct.sql
+
+
+CREATE TABLE logs_files_central (
+    id bigserial PRIMARY KEY,
+    ip inet NOT NULL,
+    nombrelog varchar(255) NOT NULL,
+    md5 char(32) NOT NULL,
+    fecha timestamp default current_timestamp
+);
+
  ```
  
 
@@ -109,59 +117,38 @@ host    sanatudeuda      user_serv2_fdw            10.0.0.100/32            md5
 
 <!-- ############################### SEUNDA PARTE ###############################  -->
 
+---
 
 
 
-
-## Configuración del Server#1 Postgresql Local :  
+## Configuración del Server Remoto  :  
 
 
 ### Paso 1 - Verificar acceso acceso al puerto:
 - Tenemos que verificar que en el servidor#1 tengamos acceso al puerto del servidor#2 ya que si no se tiene acceso no se podrá realizar la conexión entre servidores 
 ```sh
   telnet 10.0.0.200 5432
-  psql -U user_serv2_fdw -h 10.0.0.200 -d sanatudeuda -p6432
+  psql -U user_central -h 10.0.0.200 -d log_monitor -p 5432
 ```
 
 
-### Paso 2 - Crear la DBA_fdw de prueba 
-- En este ejemplo vamos a crear la base de datos  `mydb_fdw` pero en un ambiente real se puede usar una db que ya exista
+### Paso 2 - Crear la base de datos :  dbaplicaciones  
+- En este ejemplo vamos a crear la base de datos  `dbaplicaciones` 
 
 ```
 #crear dba
-CREATE DATABASE "mydb_fdw" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'C' LC_CTYPE = 'en_US';
+CREATE DATABASE "dbaplicaciones" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'C' LC_CTYPE = 'en_US';
 
-#Conectarnos a la db
-\c mydb_fdw
+o podemos usar:
+createdb dbaplicaciones -p 5432
+ 
 ```
 
 
-### Paso 3 - Creamos el usuario local 
-- Aqui vamos a crear el usuario que se va conectar al servidor#1 para realizar las consultas en el servidor#2
-```
-create user user_serv1_fdw  with login  password '9876543120';
-GRANT CONNECT ON DATABASE "mydb_fdw" TO "user_serv1_fdw";
-```
-
-Info Extra
-```
-grant SELECT  on all tables in schema public to "user_serv1_fdw"; --- no se agrego
-
-# Agregar super usuario:
-Si no agregar como super usuario a user_serv1_fdw te dira esto
-DETAIL:  Non-superuser cannot connect if the server does not request a password.
-HINT:  Target server's authentication method must be changed or password_required=false set in the user mapping attributes.
-
-ALTER user  "user_serv1_fdw" WITH SUPERUSER; ---
-
-# esto es si no lo agregamos como super user
-UPDATE pg_user_mapping SET umoptions='{user=user_serv2_fdw , password_required=false}' where umuser=667623;
-
-```
 
 
-### Paso 4 - Crear la extensión
-- Con la siguiente Query validamos si tenemos instalada en postgresql la extensión 'postgres_fdw' , en caso de no estar instalada se tiene que instalar
+### Paso 3 - Crear la extensión
+- Con la siguiente Query validamos si tenemos instalada en postgresql la extensión 'postgres_fdw' , en caso de no estar instalada se tiene que instalar 
  ```
  select * from pg_available_extensions where name ilike '%fdw%'; 
 ```
@@ -177,16 +164,15 @@ select * from pg_extension;
 ```
 
 
-
 ### Paso 4 - Creamos el server
 
 
 --- Creamos el server al que nos vamos a conectar 
 
 ```
-CREATE SERVER "Server#2"
+CREATE SERVER "Server_de_logs"
     FOREIGN DATA WRAPPER postgres_fdw
-    OPTIONS (host '192.0.0.200', port '6432', dbname 'my_db_fwd');
+    OPTIONS (host '10.0.0.200', port '5432', dbname 'log_monitor');
 ```
 
 - Verificamos que si se haya creado
@@ -195,14 +181,28 @@ CREATE SERVER "Server#2"
 select srvname, unnest(srvoptions) AS option FROM pg_foreign_server;
 ```
 
+### Paso 5 - Creamos el usuario local 
+- Aqui vamos a crear el usuario local 
+```sql 
+create user user_local  with login  password '321321';
 
 
-### Paso 5 - Creamos el user mapping
-- Aqui mapeamos el usuario, esto quiere decir que le indicamos al user_serv1_fdw con que user se va conectar al servidor#2 Remoto
 ```
-CREATE USER MAPPING FOR user_serv1_fdw
-    SERVER "Server#2"
-    OPTIONS (user 'user_serv2_fdw', password '1234567890');
+
+- Le damos permisos al usuario: user_local
+```sql
+grant SELECT,INSERT on table logs_files_local  to "user_local";
+GRANT CONNECT ON DATABASE "mydb_fdw" TO "user_local"; --  no se ocupa
+ 
+```
+
+
+### Paso 6 - Creamos el user mapping
+- Aqui mapeamos el usuario, con esto le decimos que solo el user_local va poder usar las tablas del servidor central
+```
+CREATE USER MAPPING FOR user_local
+    SERVER "Server_de_logs"
+    OPTIONS (user 'user_central', password '123123');
 ```
 
 - Verificamos que si se haya creado 
@@ -213,77 +213,107 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 
 Info Extra |  Otorgamos permiso USAGE
 ```
-GRANT USAGE ON FOREIGN SERVER "Server#2" TO user_serv1_fdw; --- no se realizó
+GRANT USAGE ON FOREIGN SERVER "Server_de_logs" TO user_local; --- no se realizó
+
+
+# Agregar super usuario:
+
+
+
+Si no agregar como super usuario a user_serv1_fdw te dira esto
+DETAIL:  Non-superuser cannot connect if the server does not request a password.
+HINT:  Target server's authentication method must be changed or password_required=false set in the user mapping attributes.
+
+ALTER user  "user_serv1_fdw" WITH SUPERUSER; ---
+
+
+
+# esto es si no lo agregamos como super user
+UPDATE pg_user_mapping SET umoptions='{user=user_central , password_required=false}' where umuser=667623;
+
+/******************  SI REALIZAR EL UPDATE MAL ********************/
+--- > TE SALDA ESTE MENSAJE Y TENDRAS QUE BORRAR EL USUARIO Y VOLVERLO A CREAR
+ERROR:  could not connect to server "Server_de_logs"
+DETAIL:  connection to server at "127.0.0.1", port 5416 failed: fe_sendauth: no password supplied
+
 ```
 
 
-### Paso 6 -  agregamos la ip del cliente al PG_HBA.conf 
+
+
+### Paso 7 -  agregamos la ip del cliente al PG_HBA.conf 
 - Agregamos al cliente para especificar la IP que se va conectar al servidor#1 y va consultar la informacion al servidor#2
 ```
-host    mydb_fdw      user_ser1_fdw            10.0.0.5/32            md5
+host    dbaplicaciones      user_local            127.0.0.1/32            SCRAM-SHA-256
 ```
 
 
-### Paso 7 -  Recargar las configuraciones postgresql
+### Paso 8 -  Recargar las configuraciones postgresql
 - Realizamos el reinicio para que el postgres detecte los cambios en el archivo pg_hba
 ```sh
 /usr/pgsql-13/bin/pg_ctl reload -D /sysm/data
 ``` 
 
 
+### Paso 9 -  Crear la tabla local
+
+- Crear la tabla local manualmente , nosotros le podemos dar el nomre que quremos 
+```
+CREATE FOREIGN TABLE logs_files_local (
+    id bigserial ,
+    ip inet NOT NULL,
+    nombrelog varchar(255) NOT NULL,
+    md5 char(32) NOT NULL,
+    fecha timestamp default current_timestamp
+) SERVER "Server_de_logs"
+OPTIONS (schema_name 'public', table_name 'logs_files_central');
+```
+
+- En caso de no contar con la tabla, se puede Crear la tabla remota automaticamente, aqui especificamos que tabla queremos crear y automaticamente la crea con los tipos 
+```
+IMPORT FOREIGN SCHEMA public LIMIT TO (logs_files_central) FROM SERVER "Server_de_logs" INTO public;
+```
+
+- Crea todas las tablas del esquema public
+```
+IMPORT FOREIGN SCHEMA public FROM SERVER "Server_de_logs" INTO public;
+```
 
 
-### Paso 7 - Nos conectamos como el usuario 
+
+### Paso 10 - Validar las tablas  FDW 
+
+- Consultamos cuantas tablas se estan compartiendo
+```
+\det
+select * from information_schema.foreign_tables;
+```
+
+### Paso 10 - Validar las tablas  FDW 
+
+- Verificar la información de la tabla
+```
+select * from logs_files_local;
+```
+
+
+### Paso 11 - Nos conectamos como el usuario 
 - Nos conectamos con el usuario que creamos ya que con ese se pueden hacer los movimientos siguientes
 ```
   psql -U "user_serv1_fdw" -h 10.0.0.100 -d mydb_fdw -p 5432
 ```
 
-### Paso 8 -  Crear la tabla remota
 
-- Crear la tabla remota manualmente  y especificamos como queremos consultarla de manera local, en este caso se colocó "cat_plazos_local" pero la tabla remota se llama "cat_plazos"
-```
-CREATE FOREIGN TABLE public.cat_plazos_local (
-    idu_plazo integer NOT NULL,
-    des_plazo character varying(50) DEFAULT ''::character varying NOT NULL,
-    opc_activo integer DEFAULT 1 NOT NULL
-) SERVER "Server#2"
-OPTIONS (schema_name 'public', table_name 'cat_plazos');
-```
-
-- Crear la tabla remota automaticamente, aqui especificamos que tabla queremos crear y automaticamente la crea con los tipos 
-```
-IMPORT FOREIGN SCHEMA public LIMIT TO (cat_plazos) FROM SERVER "Server#2" INTO public;
-```
-
-- Crea todas las tablas del esquema que especifiquemos
-```
-IMPORT FOREIGN SCHEMA public FROM SERVER "Server#2" INTO public;
-```
-
-
-
-### Paso 8 - Consultar información
-
-- Consultamos cuantas tablas se estan compartiendo
-```
-\det
-select count(*) from information_schema.foreign_tables;
-```
-
-- Verificar la información de la tabla
-```
- select * from cat_plazos2 limit 10;
-```
 
 # Dropear todo 
-	DROP SERVER servidor_fdw CASCADE; -- al borrrar el server se borra todo
-	DROP OWNED BY user_serv1_fdw;
-	DROP EXTENSION IF EXISTS postgres_fdw CASCADE; 
-	DROP USER MAPPING FOR user_serv1_fdw SERVER servidor_fdw;
-  	REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "user_ser2_fdw";
-	DROP user user_serv1_fdw;
-	DROP FOREIGN TABLE cat_plazos;
+	
+	DROP SERVER Server_de_logs CASCADE; -- al borrrar el server se borra todo
+	DROP OWNED BY user_local;
+	DROP EXTENSION IF EXISTS user_local CASCADE; 
+	DROP USER MAPPING FOR user_local SERVER "Server_de_logs";
+  	REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "user_local";
+	DROP user user_local;
+	DROP FOREIGN TABLE logs_files_local;
     
   
  
