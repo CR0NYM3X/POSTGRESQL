@@ -11,13 +11,41 @@ Es aprender todo lo que podemos hacer solo con la base de datos
      select datname from pg_database;
 
 ### Crear una base de datos:
+```sql
     CREATE DATABASE "mytestdba" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'C' LC_CTYPE = 'en_US';
     
     **Parametros adicionales que le puedes agregar en el with**
        OWNER = postgesql
-       ENCODING = 'UTF8' LC_CTYPE = 'en_US.UTF-8';
+       ENCODING = 'UTF8' 
+       LC_CTYPE = 'en_US.UTF-8'; especifica las reglas de clasificación de caracteres (mayúsculas/minúsculas) y afecta a las operaciones de búsqueda y comparación.
+       LC_COLLATE = 'en_US.UTF-8'  determina cómo se ordenan y comparan las cadenas de caracteres en consultas y operaciones de ordenamiento.
        TABLESPACE = pg_default
        CONNECTION LIMIT = -1;  --- El -1 quiere decir que son conexiones elimitadas 
+
+/******************** TIPOS DE ENCODING ********************\
+1. **UTF-8**:
+   - **Recomendado**: Es ampliamente utilizado y compatible con una amplia gama de caracteres.
+   - Almacena caracteres Unicode y es eficiente en términos de espacio.
+   - Adecuado para aplicaciones multilingües y sitios web internacionales.
+
+2. **LATIN1 (ISO 8859-1)**:
+   - Utilizado principalmente en Europa occidental.
+   - Compatible con caracteres en inglés, alemán, francés, español, etc.
+   - No admite caracteres Unicode.
+
+3. **LATIN2 (ISO 8859-2)**:
+   - Utilizado en Europa central y del este.
+   - Incluye caracteres adicionales como letras acentuadas y diacríticas.
+   - No admite caracteres Unicode.
+
+4. **EUC_JP**:
+   - Codificación extendida UNIX para japonés.
+   - Adecuada para almacenar texto en japonés.
+
+5. **KOI8R**:
+   - Utilizado para el ruso (cirílico).
+   - No admite caracteres Unicode.
+```
 
 ### Cambiar el nombre a una base de datos:
     ALTER DATABASE "mytestdba" RENAME TO "myoldtestdba";
