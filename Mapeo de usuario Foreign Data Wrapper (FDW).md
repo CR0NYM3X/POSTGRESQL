@@ -211,30 +211,28 @@ CREATE USER MAPPING FOR user_local
 select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left join pg_user on usesysid= umuser;
 ```
 
-Info Extra |  Otorgamos permiso USAGE
+Info Extra  
 ```
-GRANT USAGE ON FOREIGN SERVER "Server_de_logs" TO user_local; --- no se realizó
-
-
-# Agregar super usuario:
-
-
-
-Si no agregar como super usuario a user_serv1_fdw te dira esto
+/****************** SI COLOCAS FALSE EN LA PASSWORD DEL USER MAPPING ********************/
+---> TE VA SOLICITAR QUE EL USER_LOCAL SEA SUPERUSER YA QUE TE VA SALIR ESTE ERROR 
+ 
 DETAIL:  Non-superuser cannot connect if the server does not request a password.
 HINT:  Target server's authentication method must be changed or password_required=false set in the user mapping attributes.
 
-ALTER user  "user_serv1_fdw" WITH SUPERUSER; ---
+-- OTROGAR PERMISOS DE SUPERUSER, NO SE RECOMIENDA
+ALTER user  "user_local" WITH SUPERUSER;  
 
 
-
-# esto es si no lo agregamos como super user
+/******************   NO SE RECOMIENDA HACER UPDATE   ********************/
 UPDATE pg_user_mapping SET umoptions='{user=user_central , password_required=false}' where umuser=667623;
 
-/******************  SI REALIZAR EL UPDATE MAL ********************/
---- > TE SALDA ESTE MENSAJE Y TENDRAS QUE BORRAR EL USUARIO Y VOLVERLO A CREAR
+--- > TE SALDRA ESTE MENSAJE , ES MEJOR USAR EL DROP USER MAPPING 
 ERROR:  could not connect to server "Server_de_logs"
 DETAIL:  connection to server at "127.0.0.1", port 5416 failed: fe_sendauth: no password supplied
+
+
+/****************** EN CASO DE UN ERROR DE PERMISO USAR  ********************/
+GRANT USAGE ON FOREIGN SERVER "Server_de_logs" TO user_local; --- no se realizó
 
 ```
 
