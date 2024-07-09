@@ -22,6 +22,14 @@ Estos son los servidores de Base de datos que se puede conectar con porsgresql y
 - **`ODBC:`** PostgreSQL también admite el uso de ODBC (Open Database Connectivity) para conectarse a diversas fuentes de datos mediante la extensión `odbc_fdw`.
 
 ![Logo de FDW](https://www.postgresql.fastware.com/hs-fs/hubfs/Images/PI/img-pi-dgm-fdw-ove-use-scenario-providing-new-services.png?width=547&name=img-pi-dgm-fdw-ove-use-scenario-providing-new-services.png)
+
+
+
+> [!IMPORTANT]
+> **no puedes crear índices directamente en una tabla remota:**
+En una tabla remota (utilizada a través de FDW), los datos no se almacenan localmente. Cada vez que consultas la tabla remota, la consulta se envía al servidor remoto a través de la red, y los resultados se devuelven sin almacenarlos localmente.
+
+
 # Ejemplo de uso: 
 **`Problema:`**
 Queremos permitir que `Servidor remoto` acceda a la tabla "log_monitor" del `Servidor central` para realizar consultas
