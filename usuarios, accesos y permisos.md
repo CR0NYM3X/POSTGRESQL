@@ -60,9 +60,19 @@ SELECT current_user;
  SET ROLE test_user;
 ```
 
-### Cambiarle el nombre a un usuario
+### Cambiarle el nombre al usuario postgres
+Al realizar el cambio del nombre el usuario postgresql no afecta nada, pero por seguridad tienes que crear otro superuser, esto se desactiva ya que alguien puede hacer intento de login con ese usuario y saturar el servidor si no se tiene validado
+,al realizar el cambio tambien todos los objetos que fueron creados por el usuario postgres se cambian al nuevo
 ```sql
-ALTER USER test RENAME TO test_new;
+/*******  Paso #1 CREAR UN USUARIO SUPERUSER ************\
+create user sysadmin with superuser;
+
+/*******  Paso #2 desactivar el login ************\
+create user postgres with nologin;
+
+/*******  Paso #2 RENOMBRAR EL USUARIO postgres ************\
+ALTER USER postgres RENAME TO postgres_old;
+
 ```
 
 
