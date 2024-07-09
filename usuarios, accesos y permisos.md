@@ -60,6 +60,12 @@ SELECT current_user;
  SET ROLE test_user;
 ```
 
+### Cambiarle el nombre a un usuario
+```sql
+ALTER USER test RENAME TO test_new;
+```sql
+
+
 ###  Buscar un usuario o role
 ```sql
  \du+ "testuserdba"    -- descripción general
