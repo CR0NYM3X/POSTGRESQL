@@ -433,7 +433,7 @@ idle_session_timeout = 0  		# in milliseconds, 0 is disabled -- esto controla el
 
 
 
-client_encoding = sql_ascii	 # especifica el encodigo de caracteres que se enviaran y recibiran por el cliente, y solo aplica para las sesiones de loa cliente, no para las base de datos 	
+client_encoding = 'UTF8'	 # establece la codificación (conjunto de caracteres) que se utiliza para la comunicación entre el cliente (como psql) y el servidor PostgreSQL	
 
 
 
