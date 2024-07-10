@@ -20,7 +20,8 @@ Es aprender todo lo que podemos hacer solo con la base de datos
        LC_CTYPE = 'en_US.UTF-8'; especifica las reglas de clasificación de caracteres (mayúsculas/minúsculas) y afecta a las operaciones de búsqueda y comparación.
        LC_COLLATE = 'en_US.UTF-8'  determina cómo se ordenan y comparan las cadenas de caracteres en consultas y operaciones de ordenamiento.
        TABLESPACE = pg_default
-       CONNECTION LIMIT = -1;  --- El -1 quiere decir que son conexiones elimitadas 
+       CONNECTION LIMIT = -1;  --- El -1 quiere decir que son conexiones elimitadas
+
 
 /******************** TIPOS DE ENCODING ********************\
 1. **UTF-8**:
