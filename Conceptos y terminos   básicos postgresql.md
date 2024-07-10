@@ -119,6 +119,7 @@ SELECT * FROM pg_stat_file(current_setting('data_directory') || '/global/pg_cont
 
 ### ejecutar querys en la base de datos
 ```
+psql "port=5416 dbname=postgres user=user_central host=127.0.0.1  password=123123"
 PGPASSWORD=micontraseña psql -p5433 -h 127.0.0.1 -d aplicativo_test -U postgres <<EOF
 select now();
 select version();
