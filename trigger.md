@@ -14,9 +14,10 @@ Por ejemplo, puedes usar un trigger AFTER UPDATE para registrar los cambios real
 **Los triggers en PostgreSQL pueden ser a nivel de fila (FOR EACH ROW) o a nivel de instrucción (FOR EACH STATEMENT):**
 
 
-A nivel de fila (FOR EACH ROW): Se ejecutan una vez por cada fila afectada por la operación que activa el trigger. Esto significa que si una instrucción UPDATE afecta a 5 filas, un trigger a nivel de fila se ejecutará 5 veces, una vez para cada fila. <br>
-A nivel de instrucción (FOR EACH STATEMENT): Se ejecutan una vez por cada instrucción que active el trigger, independientemente del número de filas afectadas. Por ejemplo, si una instrucción DELETE afecta a 100 filas, un trigger a nivel de instrucción se
-ejecutará una sola vez para esa instrucción DELETE.
+A nivel de fila **`(FOR EACH ROW)`** : Se ejecutan una vez por cada fila afectada por la operación que activa el trigger. Esto significa que si una instrucción UPDATE afecta a 5 filas, un trigger a nivel de fila se ejecutará 5 veces, una vez para cada fila. <br>
+
+
+A nivel de instrucción **`(FOR EACH STATEMENT)`** : Se usan mucho para auditar objetos, Se ejecutan una vez por cada instrucción que active el trigger, independientemente del número de filas afectadas. Por ejemplo, si una instrucción DELETE afecta a 100 filas, un trigger a nivel de instrucción se ejecutará una sola vez para esa instrucción DELETE.
 
 **`INSTEAD OF Triggers:`** Estos triggers se utilizan en vistas. En lugar de ejecutar la operación de modificación (INSERT, UPDATE, DELETE) en la vista, el trigger INSTEAD OF puede proporcionar una lógica personalizada para determinar cómo deben manipularse 
 los datos en las tablas subyacentes que conforman la vista.
