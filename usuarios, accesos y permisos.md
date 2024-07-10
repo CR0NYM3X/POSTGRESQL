@@ -49,6 +49,28 @@ Es necesario aclarar que las querys pueden variar dependiendo la version de la d
 CRUD = Create, Read, Update, Delete
 
 
+### Ver con que usuario estoy conectado a la base de datos 
+```sql
+/* ves que con que usuario iniciaste session */
+SELECT session_user;
+
+/* ves  que usuario estas usando actualmente en caso de usar un "SET ROLE" */
+SELECT current_user;
+
+/* Sirve para cambiar de usuario */
+ SET ROLE test_user;
+```
+
+
+### Cambiar la identidad de un usuario
+te permite cambiar temporalmente la identidad de usuario durante una sesión de base de datos. 
+
+```sql
+ALTER ROLE test_pass SET SESSION AUTHORIZATION  postgres;
+
+ALTER ROLE test_pass RESET SESSION AUTHORIZATION;
+
+```
 
 ### Quitar permisos en eschema public por seguridad 
 ```sql
@@ -62,17 +84,6 @@ https://www.qualoom.es/blog/administracion-usuarios-roles-postgresql/
 
 
 
-### Ver con que usuario estoy conectado a la base de datos 
-```sql
-/* ves que con que usuario iniciaste session */
-SELECT session_user;
-
-/* ves  que usuario estas usando actualmente en caso de usar un "SET ROLE" */
-SELECT current_user;
-
-/* Sirve para cambiar de usuario */
- SET ROLE test_user;
-```
 
 ### Cambiarle el nombre al usuario postgres
 Al realizar el cambio del nombre el usuario postgresql no afecta nada, pero por seguridad tienes que crear otro superuser, esto se desactiva ya que alguien puede hacer intento de login con ese usuario y saturar el servidor si no se tiene validado
