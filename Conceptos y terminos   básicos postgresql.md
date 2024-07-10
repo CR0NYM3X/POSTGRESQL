@@ -1,3 +1,15 @@
+#ejecutar varias cosas con psql
+```sql 
+PGPASSWORD="$password" psql -h "$host" -U "$user" -d "$database" <<EOF
+-- Consulta 1
+SELECT 1;
+
+-- Consulta 2
+SELECT 2;
+
+-- Puedes agregar más consultas aquí
+EOF
+```
 
 ## configurar parametros a nivel usuario : 
 esto sirve cuando solo quieres que los parametros se configuren a nivel usuario , puedes modificar algunos parametros postgresql.conf 
