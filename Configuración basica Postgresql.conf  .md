@@ -685,6 +685,10 @@ export PGDATA=/sysx/data
 export LD_LIBRARY_PATH
 
 
+/************ RECARGAR EL ARCHIVO SIN NECESIDAD DE CERRAR LA TERMINAL ***********\
+source ~/.bash_profile
+. ~/.bash_profile
+
 ```
 
 
