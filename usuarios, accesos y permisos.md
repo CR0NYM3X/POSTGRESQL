@@ -48,6 +48,20 @@ Es necesario aclarar que las querys pueden variar dependiendo la version de la d
 
 CRUD = Create, Read, Update, Delete
 
+
+
+### Quitar permisos en eschema public por seguridad 
+```sql
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON DATABASE mydatabase FROM PUBLIC;
+
+https://www.qualoom.es/blog/administracion-usuarios-roles-postgresql/
+
+```
+
+
+
+
 ### Ver con que usuario estoy conectado a la base de datos 
 ```sql
 /* ves que con que usuario iniciaste session */
