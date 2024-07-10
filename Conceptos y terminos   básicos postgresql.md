@@ -1,3 +1,17 @@
+
+## configurar parametros a nivel usuario : 
+esto sirve cuando solo quieres que los parametros se configuren a nivel usuario , puedes modificar algunos parametros postgresql.conf 
+```sql 
+Ejemplo 
+SET log_statement= 'none';
+set TimeZone = 'America/Mexico_City' ;
+
+show log_statement;
+show TimeZone;
+
+select now();
+```
+
 ## Terminos 
 ```
 1. **SQL**: Structured Query Language (Lenguaje de Consulta Estructurado).
