@@ -585,6 +585,9 @@ El archivo psqlrc del usuario se encuentra o se puede crear en el directorio de 
 ```
 touch ~/.psqlrc
 
+\set ON_ERROR_STOP on -- Si ocurre un error en cualquier parte del script, psql detiene la ejecución inmediatamente y sale con un código de estado no nulo 
+\set ON_ERROR_STOP off  -- psql continúa ejecutando el script incluso si se produce un error.
+
 %[%033[1;31m%]   Esto agrega color al texto. En este caso, 033[1;31m representa rojo.
 %[%033[0m%]     restablece el color a la configuración predeterminada. 
 
