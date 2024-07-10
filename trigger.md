@@ -85,6 +85,19 @@ ON ddl_command_end
 WHEN TAG IN ('DROP TABLE')
 EXECUTE FUNCTION  trigger_auditoria_usuarios();
 ```
+
+
+### Activar y desactivar 
+ ```sql 
+ALTER TABLE nombre_tabla DISABLE TRIGGER ALL;
+ALTER TABLE nombre_tabla DISABLE TRIGGER nombre_trigger;
+
+
+ALTER TABLE nombre_tabla ENABLE TRIGGER ALL;
+ALTER TABLE nombre_tabla ENABLE TRIGGER nombre_trigger;
+```
+
+
 # extra:
 auditorias con pgaudit: https://www.postgresql.org/message-id/attachment/41749/pgaudit-v2-03.patch
 
