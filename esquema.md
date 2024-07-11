@@ -32,7 +32,7 @@ El esquema information_schema es otro esquema interno de PostgreSQL que proporci
 
 # Ejemplos de uso:
 
-## Usar un esquema
+## Usar o cambiar de  esquema en la session 
 ```
 SET SEARCH_PATCH TO my_schema;
 ```
