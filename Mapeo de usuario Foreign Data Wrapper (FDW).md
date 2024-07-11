@@ -355,7 +355,7 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 
 
 
-### Implementar FDW para windows 
+### Implementar FDW para SQL SERVER 
 ```sql 
 
 	CREATE EXTENSION IF NOT EXISTS tds_fdw;
