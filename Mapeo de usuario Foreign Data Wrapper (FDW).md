@@ -361,7 +361,7 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 	CREATE EXTENSION IF NOT EXISTS tds_fdw;
 
 	 
-	CREATE SERVER mssql_dms_sample FOREIGN DATA WRAPPER tds_fdw OPTIONS (servername '10.28.230.122', port '1422', database 'test_db');
+	CREATE SERVER mssql_dms_sample FOREIGN DATA WRAPPER tds_fdw OPTIONS (servername '192.29.230.122', port '1422', database 'test_db');
 		
 	--  EXTRA -- GRANT USAGE ON FOREIGN SERVER mssql_dms_sample TO dms_user;  
 	
