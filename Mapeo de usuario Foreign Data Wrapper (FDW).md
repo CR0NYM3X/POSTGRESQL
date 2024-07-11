@@ -355,6 +355,49 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 
 
 
+### Implementar FDW para windows 
+```sql 
+
+	CREATE EXTENSION IF NOT EXISTS tds_fdw;
+
+	 
+	CREATE SERVER mssql_dms_sample FOREIGN DATA WRAPPER tds_fdw OPTIONS (servername '10.28.230.122', port '1422', database 'test_db');
+		
+	--  EXTRA -- GRANT USAGE ON FOREIGN SERVER mssql_dms_sample TO dms_user;  
+	
+	
+	 
+ 
+	-- CREAR LA TABLA MANUALMENTE 
+	 CREATE FOREIGN TABLE mssql_dms_sample (
+		id INT ,
+		nombre VARCHAR(50),
+		apellido VARCHAR(50),
+		email VARCHAR(100))
+	 SERVER mssql_dms_sample
+	 OPTIONS (schema_name 'dbo' ,  table_name 'clientes', row_estimate_method 'showplan_all' /* , query 'SELECT * FROM clientes' */);
+	 
+	  
+	-- MAPEAR EL USUARIO 
+	 CREATE USER MAPPING FOR postgres  SERVER mssql_dms_sample OPTIONS (username 'systest', password '123123');
+			 
+	 
+	 -- IMPORTAR TABLA DE MANERA AUTOMATICA 
+	IMPORT FOREIGN SCHEMA dbo 
+	EXCEPT ("clientess")  /* AQUI COLOCAMOS TABLAS QUE NO QUEREMOS IMPORTAR */
+	FROM SERVER mssql_dms_sample 
+	INTO PUBLIC /* Esquema de postgresql */
+	OPTIONS (import_default 'true');
+	 
+	 
+	 
+	 
+	 
+	 https://vishalsinghji.medium.com/how-to-get-mssql-data-in-postgresql-using-foreign-data-wrapper-tds-fdw-30b3ae71b66a
+	 https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/use-the-tds-fdw-extension-to-query-data-of-sql-server-instances
+	 https://aws.amazon.com/es/blogs/database/use-the-tds_fdw-extension-to-migrate-data-from-sql-server-to-postgresql/
+
+```
 
 
 
