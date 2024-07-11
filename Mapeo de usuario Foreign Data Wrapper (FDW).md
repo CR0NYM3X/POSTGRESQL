@@ -380,7 +380,7 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 	 SERVER mssql_dms_sample
 	 OPTIONS (	schema_name 'dbo' ,
 			table_name 'clientes',
-			row_estimate_method 'showplan_all'
+			row_estimate_method 'showplan_all'  --- puede usar Required: No  Default: execute
 			/* , query 'SELECT * FROM sys.database_permissions' */   --- con esto puedes consultar tablas del sistema 
 		);
 
@@ -397,6 +397,8 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 	 https://vishalsinghji.medium.com/how-to-get-mssql-data-in-postgresql-using-foreign-data-wrapper-tds-fdw-30b3ae71b66a
 	 https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/use-the-tds-fdw-extension-to-query-data-of-sql-server-instances
 	 https://aws.amazon.com/es/blogs/database/use-the-tds_fdw-extension-to-migrate-data-from-sql-server-to-postgresql/
+	https://github.com/tds-fdw/tds_fdw/tree/master
+	https://pgxn.org/dist/tds_fdw/1.0.2/
 
 ```
 
