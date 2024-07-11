@@ -378,7 +378,11 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 		apellido VARCHAR(50),
 		email VARCHAR(100))
 	 SERVER mssql_dms_sample
-	 OPTIONS (schema_name 'dbo' ,  table_name 'clientes', row_estimate_method 'showplan_all' /* , query 'SELECT * FROM clientes' */);
+	 OPTIONS (	schema_name 'dbo' ,
+			table_name 'clientes',
+			row_estimate_method 'showplan_all'
+			/* , query 'SELECT * FROM sys.database_permissions' */   --- con esto puedes consultar tablas del sistema 
+		);
 
 
 	 -- IMPORTAR TABLA DE MANERA AUTOMATICA 
