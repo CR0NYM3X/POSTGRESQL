@@ -1,3 +1,11 @@
+
+### Archivos de configuración 
+```sql
+select pg_reload_conf(); -- con esto puede reiniciar el archivo de configuración
+select pg_conf_load_time() ; devuelve la última vez que se cargó el archivo de configuración del servidor (con información de zona horaria).
+```
+
+
 #ejecutar varias cosas con psql
 ```sql 
 PGPASSWORD="$password" psql -h "$host" -U "$user" -d "$database" <<EOF
