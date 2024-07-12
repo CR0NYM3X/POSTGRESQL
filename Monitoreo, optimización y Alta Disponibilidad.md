@@ -171,6 +171,8 @@ EXPLAIN ANALYZE  select  version();
 
 ## Todos los stat para monitorear 
 ```sh
+TODOS LOS STATS 
+https://www.postgresql.org/docs/8.4/monitoring-stats.html
 
 ## Consultas:
 -- Proporciona estadísticas sobre las consultas ejecutadas en la base de datos,  el número de veces que una consulta se ha ejecutado y el tiempo total que ha pasado en la caché.
