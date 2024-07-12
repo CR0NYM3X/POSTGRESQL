@@ -20,6 +20,9 @@ ldd  /usr/local/pgsql/bin/pg_dump
 file  /usr/local/pgsql/bin/pg_dump
 readelf /usr/local/pgsql/bin/pg_dump
 
+locate postgres -- con esto encuentras todos los archivos que digan ese postgres
+which postgres  -- encontraras la ruta binario 
+
 ```
 
 ### Validar el soporte de DBMS "Database Management System" (Sistema de Gestión de Bases de Datos)
