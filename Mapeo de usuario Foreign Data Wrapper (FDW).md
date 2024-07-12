@@ -396,7 +396,7 @@ SELECT * FROM postgres_fdw_get_connections() ORDER BY 1;
 	OPTIONS (import_default 'true');
 	 
 	 
- 
+ 	https://www.sobyte.net/post/2022-03/postgresql-foreign-data-wrappers/
 	 https://vishalsinghji.medium.com/how-to-get-mssql-data-in-postgresql-using-foreign-data-wrapper-tds-fdw-30b3ae71b66a
 	 https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/use-the-tds-fdw-extension-to-query-data-of-sql-server-instances
 	 https://aws.amazon.com/es/blogs/database/use-the-tds_fdw-extension-to-migrate-data-from-sql-server-to-postgresql/
