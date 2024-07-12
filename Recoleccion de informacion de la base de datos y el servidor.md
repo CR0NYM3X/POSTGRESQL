@@ -6,6 +6,14 @@ Es recopilar información del servidor y la base de datos en caso de requerirse,
 
 ## Comandos:
 
+
+#  info del cliente: 
+```SQL
+ select * from inet_server_addr(),inet_server_port(),inet_client_addr(),inet_client_port();
+```
+
+
+
 ### recopilar información de archivos 
 ```SQL
 ldd  /usr/local/pgsql/bin/pg_dump
