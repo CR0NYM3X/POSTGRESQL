@@ -36,8 +36,7 @@
 -> aprender sobre el particionamiento
 -> aprender sobre la compresion de la db
 -> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
-
-
+->  todo sobre el monitoreo de los index 
 
 ```
 
