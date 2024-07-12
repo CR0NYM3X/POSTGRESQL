@@ -199,3 +199,21 @@ SELECT count(*) pid FROM pg_stat_activity WHERE query != '<IDLE>' AND TRIM(state
 psql -xc "SELECT * FROM pg_settings WHERE name = 'port'"
 cat  postgresql.conf | grep "port ="
 ```
+
+# tamaños 
+```
+| pg_catalog      | pg_column_size         |
+| pg_catalog      | pg_tablespace_size     |
+| pg_catalog      | pg_tablespace_size     |
+| pg_catalog      | pg_database_size       |
+| pg_catalog      | pg_database_size       |
+| pg_catalog      | pg_relation_size       |
+| pg_catalog      | pg_total_relation_size |
+| pg_catalog      | pg_size_pretty         |
+| pg_catalog      | pg_size_pretty         |
+| pg_catalog      | pg_size_bytes          |
+| pg_catalog      | pg_table_size          |
+| pg_catalog      | pg_indexes_size        |
+| pg_catalog      | pg_relation_size       |
+```
+
