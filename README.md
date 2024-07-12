@@ -32,11 +32,11 @@
 
 ----------- COSAS -----------
 
--> Monitoreo de rendimiento, capacidades y de seguridad.
--> Auditorias en todos los aspectos.
--> Mantenimientos que generen un buen performance.
--> Backup constantes y efectivos.
--> Reportes de todo.
+-> aprender sobre todo sobre el replica streming 
+-> aprender sobre el particionamiento
+-> aprender sobre la compresion de la db
+-> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
+
 
 
 ```
