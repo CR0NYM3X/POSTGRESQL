@@ -15,6 +15,12 @@ cat ~/.bash_history > /tmp/historial.txt
 
 -- comando linux para saber con que usuario estoy usando
 whoami
+
+--- roles
+pg_read_server_files      
+ pg_write_server_files     
+ pg_execute_server_program
+https://www.postgresql.org/docs/11/default-roles.html
 ```
 
 
