@@ -34,6 +34,23 @@ ORDER BY pg_total_relation_size(schemaname || '.' || indexrelname) DESC;
 ```SQL
 CREATE EXTENSION pgstattuple;
 
+- **Funciones disponibles**:
+  - `pgstattuple(regclass)` devuelve información sobre la longitud física de una relación, el porcentaje de tuplas "muertas" y otros datos relevantes. Esto puede ayudarte a determinar si es necesario realizar un vaciado de la tabla¹.
+  - `pgstattuple(text)` es similar a la función anterior, pero permite especificar la relación de destino como texto. Sin embargo, esta función quedará obsoleta en futuras versiones¹.
+  - `pgstatindex(regclass)` proporciona información sobre un índice de árbol B¹.
+
+- **Columnas de salida**:
+  - `table_len`: Longitud física de la relación en bytes.
+  - `tuple_count`: Número de tuplas vivas.
+  - `tuple_len`: Longitud total de tuplas activas en bytes.
+  - `tuple_percent`: Porcentaje de tuplas vivas.
+  - `dead_tuple_count`: Número de tuplas muertas.
+  - `dead_tuple_len`: Longitud total de tuplas muertas en bytes.
+  - `dead_tuple_percent`: Porcentaje de tuplas muertas.
+  - `free_space`: Espacio libre total en bytes.
+  - `free_percent`: Porcentaje de espacio libre¹.
+
+
 SELECT t0.indexrelid::regclass as Indice, t5.tablename as Tabla, t1.reltuples as Registros, t4.leaf_fragmentation as Porcentaje_Fragmentacion 
 /* ,case t1.relkind when 'r' then 'TABLE'
 when 'm' then 'MATERIALIZED_VIEW'
