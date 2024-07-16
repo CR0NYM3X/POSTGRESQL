@@ -1,6 +1,10 @@
 
 
 ```SQL
+
+select pg_indexes_size(index_name);
+
+
 select * from pg_index limit 1;
 
 
