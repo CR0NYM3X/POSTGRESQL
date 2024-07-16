@@ -65,6 +65,15 @@ SELECT * FROM information_schema.tables WHERE table_schema='public' and table_na
  - **Con esta query puedes ver el tamaño de la tabla:**
  ```sql
 SELECT pg_size_pretty(pg_total_relation_size('mytbtest')) AS size;
+
+---- estas funciones retornan el tamaño fisco en bytes por lo que lo puedes dividir por (1024*1024) y tendras
+---- el valor en mega 
+pg_relation_size('MY_tabla')   --- este puedes ver el tamaño de un indice o de una tabla
+pg_table_size('MY_tabla')  --- este puedes ver el tamaño   de una tabla
+pg_indexes_size('MY_tabla')   --- este puedes ver el tamaño   de una index
+pg_total_relation_size('MY_tabla') --- este puedes ver el tamaño  total = tabla + index
+
+
 ```
 - **Con esta query puedes ver el tamaño de la tabla:**
 ```sql
