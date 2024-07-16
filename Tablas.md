@@ -2,7 +2,12 @@
 Aprenderemos todo lo que se puede hacer con una tabla [documentacion oficial para crear tablas](https://www.postgresql.org/docs/current/sql-createtable.html)
 
 
+# saber cuando se creo una tabla
+ ```sql 
+select (pg_stat_file(pg_relation_filepath('test_fun'))).modification;
 
+ select table_schema,table_name,table_type from information_schema.tables order by table_type;
+ ```
 
 # Ejemplos:
 
