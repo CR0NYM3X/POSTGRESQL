@@ -1,4 +1,6 @@
 
+https://www.sobyte.net/post/2022-02/postgresql-time-task/
+
 https://github.com/citusdata/pg_cron
 
 https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/PostgreSQL_pg_cron.html
