@@ -1,6 +1,22 @@
 
 ### Archivos de configuración 
 ```sql
+\du [usuarios]
+\l+ --> base de datos | SELECT * FROM pg_database limit 10;
+\c -- conectarse a la bse de datos 
+\dt Tablas --- SELECT * FROM pg_tables limit 10; --  SELECT * FROM information_schema.tables WHERE table_schema='public'  ;
+\du [nombre usuario] --- saber si existe un usuario 
+
+\d nombre_tabla -> Describir una tabla específica para ver sus columnas y tipos de datos
+\di nombre_tabla -> Mostrar información sobre los índices en una tabla:
+\dv -> Mostrar información sobre las vistas en la base de datos actual:
+\df -> Mostrar información sobre las funciones almacenadas en la base de datos actual:
+\dn -> Mostrar información sobre los esquemas en la base de datos actual:
+
+```
+
+### Archivos de configuración 
+```sql
 select pg_reload_conf(); -- con esto puede reiniciar el archivo de configuración
 select pg_conf_load_time() ; devuelve la última vez que se cargó el archivo de configuración del servidor (con información de zona horaria).
 ```
