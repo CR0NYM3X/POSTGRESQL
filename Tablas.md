@@ -2,6 +2,30 @@
 Aprenderemos todo lo que se puede hacer con una tabla [documentacion oficial para crear tablas](https://www.postgresql.org/docs/current/sql-createtable.html)
 
 
+
+### informacion de tabla 
+ ```sql 
+select relname as tabla ,
+ pg_table_size(c.oid)/(1024*1024) table_size_MB ,
+ pg_indexes_size(c.oid) /(1024*1024)  as indexes_size_MB ,
+ pg_total_relation_size(c.oid) /(1024*1024)   as total_size_MB
+ 
+
+,(pg_stat_file(pg_relation_filepath(c.oid))).modification as fecha_creacion ,pg_catalog.pg_get_userbyid( relowner) as Owner ,nspname as schema ,
+
+ reltuples::bigint as cnt_tupas
+ ,pg_stat_get_dead_tuples(c.oid)		as tupas_muertas
+ ,pg_stat_get_live_tuples(c.oid) 		as tuplas_vivas
+	
+ ,pg_stat_get_tuples_inserted(c.oid)	as tuplas_insert
+ ,pg_stat_get_tuples_updated(c.oid) 	as tuplas_update
+ ,pg_stat_get_tuples_deleted(c.oid) 	as tuplas_delete
+ ,pg_stat_get_tuples_fetched(c.oid)    as tuplas_recuperadas
+ ,pg_stat_get_tuples_returned(c.oid)  as tuplas_retornadas
+  
+ from pg_class as c  left join pg_namespace as n on n.oid= c.relnamespace where relkind =  'r'  AND relnamespace IN (SELECT oid FROM pg_namespace WHERE nspname NOT LIKE 'pg_%' AND nspname != 'information_schema')  order by pg_total_relation_size(c.oid) desc ;
+ ```  
+
 # saber cuando se creo una tabla
  ```sql 
 select (pg_stat_file(pg_relation_filepath('test_fun'))).modification;
