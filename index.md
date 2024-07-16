@@ -1,5 +1,12 @@
 
 
+
+# CREAR INDEX 
+```SQL
+CREATE INDEX [ IF NOT EXISTS ] nombre_del_indice ON nombre_de_tabla (columna1, columna2, ...);
+```
+
+
 ```SQL
 
 select pg_indexes_size(index_name);
