@@ -324,6 +324,17 @@ SELECT array_to_string( ARRAY['Juan', 'María', 'Pedro']  , ' - ');
 
 ```
 
+## Ver los objetos 
+```
+select relkind,relname  from  pg_class   
+when 'r' then 'TABLE'
+when 'm' then 'MATERIALIZED_VIEW'
+when 'i' then 'INDEX'
+when 'S' then 'SEQUENCE'
+when 'v' then 'VIEW'
+when 'c' then 'TYPE'
+```
+
 
 # Manuales  PDF 
 ```sql
