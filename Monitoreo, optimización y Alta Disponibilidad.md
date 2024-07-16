@@ -269,6 +269,8 @@ select  * from  pg_statio_user_sequences;
  select  * from  pg_stat_subscription;
  select  * from  pg_stat_ssl;
 
+select  * from  pg_stat_progress_basebackup
+select  * from   pg_stat_progress_copy
 
 ```
 
