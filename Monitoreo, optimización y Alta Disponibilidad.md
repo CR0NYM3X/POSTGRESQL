@@ -241,6 +241,10 @@ ORDER BY pg_total_relation_size(schemaname || '.' || relname) DESC; --- Obtener 
  select  * from  pg_statio_all_indexes;
  select  * from  pg_statio_sys_indexes;
 
+  pg_index                      | BASE TABLE |
+  pg_indexes                    | VIEW       |
+  pg_stat_progress_create_index | VIEW       |
+
 select  relname, indexrelname, idx_scan, idx_tup_read
   FROM pg_stat_user_indexes
 WHERE idx_scan > 0 AND idx_tup_read < 1000; -- Monitoreo de la fragmentación de índices: PostgreSQL almacena información sobre la fragmentación de índices en la vista pg_stat_user_indexes. Puedes usar esta vista para verificar el nivel de fragmentación de tus índices.
