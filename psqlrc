@@ -1,0 +1,197 @@
+-- quita la información dafault que muestra al ingresar a psql
+\set QUIET on
+
+
+
+-- supuestamente muestra en mayusculas los select 
+\set COMP_KEYWORD_CASE upper
+
+
+-- obtendrás información detallada sobre las operaciones realizadas por psql. Puedes cambiarlo a terse o default
+-- \set VERBOSITY verbose
+
+--- se coloca en null para que no guarde historial 
+-- \set HISTFILE /dev/null
+
+
+\set HISTFILE ~/.psql_history
+-- /psql_history- :HOST - :DBNAME
+
+-- Save 50000 lines of history instead of the default 500
+\set HISTSIZE 5000
+
+-- Evita guardar en el historial la misma query 2 veces
+-- \set HISTCONTROL ignoredups
+
+ \timing off
+
+
+
+-- ############# CONFIGURANDO PARÁMETROS DE LA TABLA ############
+
+
+
+
+-- Esto desactiva los -  de las tablas
+-- \pset format unaligned
+
+
+-- Esto desactiva los -  de las tablas
+-- \pset format unaligne
+
+--SI ESTA EN OFF  ESTO HACE QUE SI CONSULTAS UNA TABLA CON MILES DE REGISTROS TE LOS MUESTRA TODOS SIN NECESIDAD DE ESTAR PRESIONANDO UNA TECLA PARA QUE TE MUESTRE POCO A POCO LOS REGISTROS , puedes usar off y on y always 
+\pset pager always 
+
+
+
+\pset null 'NULL'
+
+-- Esto muestra las tablas como si fuera mysql 
+\pset border 2 
+
+--- Esto muestra los bordes de la tabla sin  separacion
+-- \pset linestyle unicode
+
+--\encoding unicode
+
+
+
+-- ######## CONFIGURANDO EL PROMP #############
+
+
+\set PROMPT1 '%[%033[1;31m%]%n%[%033[0m%]@%[%033[1;31m%]%/%[%033[0m%]%[%033[1;32m%]%#%x%[%033[0m%] '
+-- \set PROMPT2 '%[%033[1;31m%]%/%[%033[0m%]%[%033[1;32m%]%#%x%[%033[0m%] '
+
+
+\set QUIET off
+
+
+\echo '\n 🐘 Current Host Server Date Time : '`date` '\n'
+
+-- footer off :  te quita el pie de pagina como el numero todal de filas 
+\pset footer off
+
+select now() - pg_postmaster_start_time() AS uptime_server , pg_conf_load_time()  as last_time_a_reload ;
+\pset footer on
+
+\echo 'Administrative queries:\n'
+\echo '\t\t\t:settings\t-- Server Settings'
+\echo '\t\t\t:conninfo\t-- Server connections'
+\echo '\t\t\t:activity\t-- Server activity'
+\echo '\t\t\t:locks\t\t-- Lock info'
+\echo '\t\t\t:dbsize\t\t-- Database Size'
+\echo '\t\t\t:tablesize\t-- Tables Size'
+
+\echo '\t\t\t:index_size\t-- All Index  Size'
+-- \echo '\t\t\t:uselesscol\t-- Useless columns'
+\echo '\t\t\t:uptime\t\t-- Service Postgresql uptime'
+
+\echo '\t\t\t:logmonitor\t-- monitor the current log, example \":logmonitor | grep -i filter\"'
+\echo '\t\t\t:logfiles\t-- view log files'
+
+
+\echo '\t\t\t:cntobj\t\t-- count object'
+\echo '\t\t\t:menu\t\t-- Help Menu'
+\echo '\t\t\t\\h or \\?\t-- Help with SQL commands'
+
+
+\echo 'Development queries:\n'
+-- \echo '\t\t\t:sp\t\t-- Current Search Path'
+\echo '\t\t\t:clear\t\t-- Clear screen'
+\echo '\t\t\t:serinfo\t-- Information Server'
+-- \echo '\t\t\t:ll\t\t-- List\n'
+--\echo '\t\t\t:test\t\t-- aaaaaa'
+
+\echo '\t\t\t:unused_indexes\t--  '
+\echo '\t\t\t:trash_index\t--  '
+\echo '\t\t\t:missing_index\t--  '
+\echo '\t\t\t:bloat\t-- '
+
+\echo '\t\t\t:cache_hit\t-- '
+\echo '\t\t\t:seq_scans\t-- '
+\echo '\t\t\t:lastvacuum\t-- '
+
+
+
+-- Administration queries
+\set test 'select  * from pg_class where oid ='
+
+\set menu '\\i ~/.psqlrc'
+
+\set settings 'select name, setting,unit,context from pg_settings;'
+
+
+
+\set locks 'SELECT a.usename AS blocked_user,bl.pid AS blocked_pid, a.client_addr as 	blocked_cli_addr,a.state as blocked_state,		a.wait_event_type as blocked_wait_event,a.query AS blocked_statement,CAST((now()-a.query_start) as varchar(8)) as blocked_time_run,	ka.usename AS blocking_user, kl.pid AS blocking_pid, ka.client_addr as 	blocking_cli_addr,	ka.state as blocking_state,	ka.wait_event_type as  blocked_wait_event,	ka.query AS blocking_statement	,CAST((now()-ka.query_start) as varchar(8)) as blocking_time_run FROM pg_catalog.pg_locks bl JOIN pg_catalog.pg_stat_activity a ON bl.pid = a.pid JOIN pg_catalog.pg_locks kl JOIN pg_catalog.pg_stat_activity ka ON kl.pid = ka.pid ON bl.transactionid = kl.transactionid AND bl.pid != kl.pid  WHERE NOT bl.granted;'
+
+
+
+
+\set conninfo ' select name,setting   from pg_settings where name= \'max_connections\' union all select \'Total usuarios conectados = \', count(*)::text from pg_stat_activity where state is not null     union all select  \' State : \'|| state, count(*)::text from pg_stat_activity where state is not null  group by state ;'
+ 
+
+\set activity 'select  query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state, wait_event_type,wait_event  FROM pg_stat_activity WHERE query != \'<IDLE>\' AND TRIM(state)!=\'idle\' and pid != pg_backend_pid() ORDER BY query_start ASC;'
+
+
+
+
+
+\set dbsize  'SELECT a.datname,  pg_encoding_to_char(encoding) as ENCODING , pg_size_pretty(pg_database_size( a.datname)) AS size, (pg_stat_file(\'base/\'||oid ||\'/PG_VERSION\')).modification as Fecha_Creacion, datconnlimit as limit_connections,numbackends AS connections_rael_time , /* sessions  , NO SOPORTADA EN VERSIONES < 14*/ tup_inserted , tup_updated , tup_deleted FROM pg_database as  a left join pg_stat_database as  b  on oid = datid  where a.datname is not null and not a.datname in(\'template1\',\'template0\') order by pg_database_size(a.datname) desc ; '
+
+
+ 
+ \set tablesize 'select nspname as schema,relname as tabla , pg_size_pretty(pg_table_size(c.oid)) as table_size ,pg_size_pretty(pg_indexes_size(c.oid) )  as indexes_size ,pg_size_pretty(pg_total_relation_size(c.oid))  as total_size, (pg_stat_file(pg_relation_filepath(c.oid))).modification as fecha_creacion,pg_catalog.pg_get_userbyid( relowner) as Owner  , reltuples::bigint as cnt_tuples ,  pg_stat_get_dead_tuples(c.oid) as dead_tuples ,pg_stat_get_live_tuples(c.oid) as live_tuples,pg_stat_get_tuples_inserted(c.oid) as tuples_inserted ,pg_stat_get_tuples_updated(c.oid) as tuples_updated ,pg_stat_get_tuples_deleted(c.oid) as tuples_deleted /*,pg_stat_get_tuples_fetched(c.oid) as tuplas_recuperadas ,pg_stat_get_tuples_returned(c.oid)  as tuplas_retornadas*/ from pg_class as c  left join pg_namespace as n on n.oid= c.relnamespace where relkind =  \'r\'  AND relnamespace IN (SELECT oid FROM pg_namespace WHERE nspname NOT LIKE \'pg_%\' AND nspname != \'information_schema\')  order by pg_total_relation_size(c.oid) desc ;'
+
+
+\set index_size 'select nspname as schema,c.relname AS tablename, i.relname AS indexname,pg_size_pretty(pg_relation_size( nspname || \'.\' || i.relname)) AS indexsize,(pg_stat_file(pg_relation_filepath(i.oid))).modification as fecha_creacion, t.spcname AS tablespace /* pg_get_indexdef(i.oid) AS indexdef */   FROM ((((pg_index x JOIN pg_class c ON ((c.oid = x.indrelid)))JOIN pg_class i ON ((i.oid = x.indexrelid)))LEFT JOIN pg_namespace n ON ((n.oid = c.relnamespace)))LEFT JOIN pg_tablespace t ON ((t.oid = i.reltablespace)))  WHERE ((c.relkind = ANY (ARRAY[\'r\'::"char", \'m\'::"char", \'p\'::"char"])) AND (i.relkind = ANY (ARRAY[\'i\'::"char", \'I\'::"char"]))) and not nspname in(\'pg_catalog\') order by pg_relation_size( nspname || \'.\' || i.relname) desc ;  '
+
+
+-- \set uselesscol 'SELECT nspname, relname, attname, typname, (stanullfrac*100)::int AS null_percent, case when stadistinct &gt;= 0 then stadistinct else abs(stadistinct)*reltuples end AS \"distinct\", case 1 when stakind1 then stavalues1 when stakind2 then stavalues2 end AS \"values\" FROM pg_class c JOIN pg_namespace ns ON (ns.oid=relnamespace) JOIN pg_attribute ON (c.oid=attrelid) JOIN pg_type t ON (t.oid=atttypid) JOIN pg_statistic ON (c.oid=starelid AND staattnum=attnum) WHERE nspname NOT LIKE E\'pg\\\\_%\' AND nspname != \'information_schema\' AND relkind=\'r\' AND NOT attisdropped AND attstattarget != 0 AND reltuples &gt;= 100 AND stadistinct BETWEEN 0 AND 1 ORDER BY nspname, relname, attname;'
+
+\set uptime 'select now() - pg_postmaster_start_time() AS uptime_server , pg_conf_load_time()  as last_time_a_reload ;'
+
+
+\set logmonitor '\\! tail -f \'$PGLOG16/postgresql-\'$(date +%y%m%d)\'.log\' '
+\set  logfiles '\\! ls -lhtra $PGLOG16 '
+
+
+
+
+
+-- Development queries:
+
+-- \set sp 'SHOW search_path;'
+\set clear '\\! clear;'
+-- \set ll '\\! ls -lhtra && pwd;'
+\set logmonitor '\\! tail -f \'/sysx/data16/pg_log/postgresql-\'$(date +%y%m%d)\'.log\' '
+
+--\set soinfo '\\! echo \'aaaaaaaaaaaaaaaaaaaaaaaaa\' && echo \'\''
+
+
+\set serinfo '\\!  echo \'\' && echo \'Hostname : \'$(hostname) &&   echo \'\' && echo \'IP : \'  $(hostname -I) && echo \'\' && echo \'Version PSQL : \' $(psql -V -p5416) && echo \'\' && echo \'Version S.O : \'$(cat /etc/redhat-release)  && echo \'\' &&  echo \'###### DISCOS ######\' && df -lh | grep -Ei \'sysx|log|wal\' &&  echo \'\' && echo \'###### MEMORIA RAM ######\'  && free -m &&  echo \'\' && echo \'###### PROCESADOR ######\'  && lscpu  | grep -iE \'Architecture|CPU\(s\)|Core|Socket|Model name\' && echo \'\' &&  echo \'###### TIEMPO DEL SERVIDOR ENCENDIDO ######\' && uptime  &&  echo \'\' && echo \'###### ZONA HORARIA DEL SERVIDOR ######\'  && timedatectl | grep -Ei \'Time zone:|Local time:|NTP service:\'  && echo \'\' '
+
+
+
+
+
+
+\set unused_indexes 'SELECT schemaname schema ,relname AS table, indexrelname AS index, pg_size_pretty(pg_relation_size(i.indexrelid)) AS index_size, idx_scan as index_scans FROM pg_stat_user_indexes ui JOIN pg_index i ON ui.indexrelid = i.indexrelid WHERE NOT indisunique AND idx_scan < 50 AND pg_relation_size(relid) > 5 * 8192 ORDER BY pg_relation_size(i.indexrelid) / nullif(idx_scan, 0) DESC NULLS FIRST, pg_relation_size(i.indexrelid) DESC;'
+
+\set trash_index 'select s.schemaname as sch, s.relname as rel, s.indexrelname as idx, s.idx_scan as scans, pg_size_pretty(pg_relation_size(s.relid)) as ts, pg_size_pretty(pg_relation_size(s.indexrelid)) as "is" from pg_stat_user_indexes s join pg_index i on i.indexrelid=s.indexrelid left join pg_constraint c on i.indrelid=c.conrelid and array_to_string(i.indkey, \' \') = array_to_string(c.conkey, \' \') where i.indisunique is false and pg_relation_size(s.relid) > 1000000 and s.idx_scan < 100000 and c.confrelid is null order by s.idx_scan asc, pg_relation_size(s.relid) desc ;'
+
+\set missing_index 'SELECT relname,  seq_scan-idx_scan AS too_much_seq,   CASE WHEN seq_scan-idx_scan > 0 THEN \'Missing Index?\'    ELSE \'OK\'  END,    pg_relation_size(relname::regclass) AS rel_size,   seq_scan,   idx_scan FROM pg_stat_all_tables WHERE schemaname=\'public\'  AND pg_relation_size(relname::regclass) > 80000 ORDER BY too_much_seq DESC;'
+
+
+
+\set bloat 'SELECT tablename as table_name, ROUND(CASE WHEN otta=0 THEN 0.0 ELSE sml.relpages/otta::numeric END,1) AS table_bloat, CASE WHEN relpages < otta THEN ''0'' ELSE pg_size_pretty((bs*(sml.relpages-otta)::bigint)::bigint) END AS table_waste, iname as index_name, ROUND(CASE WHEN iotta=0 OR ipages=0 THEN 0.0 ELSE ipages/iotta::numeric END,1) AS index_bloat, CASE WHEN ipages < iotta THEN ''0'' ELSE pg_size_pretty((bs*(ipages-iotta))::bigint) END AS index_waste FROM ( SELECT schemaname, tablename, cc.reltuples, cc.relpages, bs, CEIL((cc.reltuples*((datahdr+ma- (CASE WHEN datahdr%ma=0 THEN ma ELSE datahdr%ma END))+nullhdr2+4))/(bs-20::float)) AS otta, COALESCE(c2.relname,''?'') AS iname, COALESCE(c2.reltuples,0) AS ituples, COALESCE(c2.relpages,0) AS ipages, COALESCE(CEIL((c2.reltuples*(datahdr-12))/(bs-20::float)),0) AS iotta FROM ( SELECT ma,bs,schemaname,tablename, (datawidth+(hdr+ma-(case when hdr%ma=0 THEN ma ELSE hdr%ma END)))::numeric AS datahdr, (maxfracsum*(nullhdr+ma-(case when nullhdr%ma=0 THEN ma ELSE nullhdr%ma END))) AS nullhdr2 FROM ( SELECT schemaname, tablename, hdr, ma, bs, SUM((1-null_frac)*avg_width) AS datawidth, MAX(null_frac) AS maxfracsum, hdr+( SELECT 1+count(*)/8 FROM pg_stats s2 WHERE null_frac<>0 AND s2.schemaname = s.schemaname AND s2.tablename = s.tablename) AS nullhdr FROM pg_stats s, ( SELECT (SELECT current_setting(''block_size'')::numeric) AS bs, CASE WHEN substring(v,12,3) IN (''8.0'',''8.1'',''8.2'') THEN 27 ELSE 23 END AS hdr, CASE WHEN v ~ ''mingw32'' THEN 8 ELSE 4 END AS ma FROM (SELECT version() AS v) AS foo) AS constants GROUP BY 1,2,3,4,5) AS foo) AS rs JOIN pg_class cc ON cc.relname = rs.tablename JOIN pg_namespace nn ON cc.relnamespace = nn.oid AND nn.nspname = rs.schemaname AND nn.nspname <> ''information_schema'' LEFT JOIN pg_index i ON indrelid = cc.oid LEFT JOIN pg_class c2 ON c2.oid = i.indexrelid) AS sml ORDER BY CASE WHEN relpages < otta THEN 0 ELSE bs*(sml.relpages-otta)::bigint END DESC;'
+
+
+\set cache_hit 'SELECT ''index hit rate'' as name, (sum(idx_blks_hit)) / sum(idx_blks_hit + idx_blks_read) as ratio FROM pg_statio_user_indexes union all SELECT ''cache hit rate'' as name, sum(heap_blks_hit) / (sum(heap_blks_hit) + sum(heap_blks_read)) as ratio FROM pg_statio_user_tables;'
+
+\set seq_scans 'SELECT relname AS name, seq_scan as count FROM pg_stat_user_tables ORDER BY seq_scan DESC;'
+
+
+\set lastvacuum 'select relname, last_vacuum, last_analyze from pg_stat_all_tables where schemaname = \'public\';'
+
+
+\timing
