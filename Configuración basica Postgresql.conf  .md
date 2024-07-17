@@ -2,6 +2,11 @@
 Doc Man: 
 /usr/pgsql-16/share/man/man1/psql.1
 
+# inicializar postgresql
+```sql
+/usr/pgsql-15/bin/initdb -E SQL_ASCII -D /sysx/data
+``` 
+
 ## 
 ```sql
 postgresql.conf
