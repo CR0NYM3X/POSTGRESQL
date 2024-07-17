@@ -32,7 +32,7 @@
 
 ----------- COSAS -----------
 
--> aprender sobre todo sobre el replica streming 
+-> aprender sobre todo sobre el replica streming  o log-shipping
 -> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
 ->  todo sobre el monitoreo de los index 
 
