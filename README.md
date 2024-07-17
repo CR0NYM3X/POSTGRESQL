@@ -41,6 +41,8 @@
 pg_waldump  --- herramienta para ver que es lo que contiene los wall 
 pg_waldump /var/lib/pgsql/data/pg_wal/0000000100000002000000C9
 
+.pgpass --- Aprender a usar
+
 ```
 
 https://www.sqlservercentral.com/articles/rules-in-postgresql
