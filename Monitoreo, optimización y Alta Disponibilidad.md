@@ -28,6 +28,48 @@ para Verificar el estatus del servidor y DBA realizamos los siguientes pasos:  <
 - 6 .- Ver el tamaño de las base de datos, tablas y tratar de optimizar como la db y tb <br>
 - 7 .- Validar los tiempo de ejecucion de una consulta y compararlos con dias anteriores  <br>
 
+```sql
+-- falta por investigar 
+indices  perdidos que hacen falta
+indices que no se usan
+indices que se usan mucho
+indices desfragmentados 
+cache_hit 
+bloat
+
+En **PostgreSQL**, el término **"bloat"** se refiere al crecimiento innecesario del tamaño de las tablas y los índices. Esto puede afectar el rendimiento de las consultas y aumentar el uso de espacio en disco¹. Permíteme explicarte más detalladamente:
+
+- **¿Por qué se genera bloat?**
+  - PostgreSQL utiliza el **Control de Concurrencia de Múltiples Versiones (MVCC)** para permitir consultas de solo lectura mientras se realizan actualizaciones. Esto genera múltiples instantáneas de transacciones, lo que aumenta el uso de disco para almacenar esos snapshots, conocido como bloat.
+  - Las filas "muertas" (sin transacciones activas o pasadas que las consulten) contribuyen al bloat. Si no se realiza una acción de **vacuum**, la base de datos crecerá indefinidamente, ya que los registros no se eliminan, sino que quedan "muertos"¹.
+
+- **Impacto del bloat en el rendimiento:**
+  - El bloat afecta el rendimiento porque las páginas de las tablas e índices cargan más filas muertas, lo que resulta en más operaciones de E/S innecesarias.
+  - Los escaneos secuenciales también pasan por filas muertas, consumiendo memoria innecesariamente¹.
+
+- **Tuning del autovacuum:**
+  - Configurar correctamente el **autovacuum** es esencial. Este servicio realiza acciones de vacuum en tablas e índices según ciertas condiciones, evitando afectar el funcionamiento normal de la base de datos¹.
+
+
+ ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+ 
+ Sistemas de almacenamiento en caché, un **"hit"** se refiere a una operación exitosa de búsqueda o acceso a un elemento almacenado en la memoria caché o en una estructura de datos. Aquí tienes algunos ejemplos:
+
+1. **Cache Hit (Acertado en caché):**
+   - Cuando un sistema busca un valor (como una página web, una fila de una tabla de base de datos o un archivo) en la memoria caché y lo encuentra allí, se considera un **cache hit**.
+   - Esto significa que no es necesario acceder al almacenamiento principal (como un disco duro o una base de datos) para recuperar el valor, lo que mejora significativamente el rendimiento y la velocidad de acceso.
+
+2. **Page Cache Hit (Acertado en la caché de páginas):**
+   - En sistemas operativos, el **page cache** almacena copias de páginas de archivos en memoria RAM para acelerar el acceso a esos archivos.
+   - Un **page cache hit** ocurre cuando una aplicación solicita una página de archivo y esa página ya está en el caché de páginas, evitando la necesidad de leerla desde el disco.
+
+3. **Database Cache Hit (Acertado en la caché de la base de datos):**
+   - En bases de datos, se almacenan en caché resultados de consultas, índices y otros datos para acelerar las operaciones.
+   - Un **database cache hit** ocurre cuando una consulta busca datos que ya están en la caché de la base de datos, evitando la necesidad de acceder a los datos en el almacenamiento físico.
+
+```
+
 # Ejemplos de uso:
 
 <!--  ################################################################### MONITOREO #################################################################################### -->
