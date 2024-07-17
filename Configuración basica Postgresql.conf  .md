@@ -583,9 +583,9 @@ postgres=#
 
 ## Colocar un menu de ayuda en psql
 
-El archivo psqlrc del usuario se encuentra o se puede crear en el directorio de inicio del usuario.
- 
-
+El archivo psqlrc del usuario se encuentra o se puede crear en el directorio de inicio del usuario.<br>
+nosotros creamos uno -> 
+https://github.com/CR0NYM3X/POSTGRESQL/blob/main/.psqlrc
 
 ```
 touch ~/.psqlrc
