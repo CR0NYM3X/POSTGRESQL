@@ -27,10 +27,7 @@
 
 ```sh
 
-### Pg_hba.conf
-### Postgres.conf
-
------------ COSAS -----------
+----------- COSAS  FALTANTES -----------
 
  
 -> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
