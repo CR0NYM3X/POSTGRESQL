@@ -32,16 +32,9 @@
 
 ----------- COSAS -----------
 
--> aprender sobre todo sobre el replica streming  o log-shipping
+ 
 -> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
-->  todo sobre el monitoreo de los index 
-
-pg_waldump  --- herramienta para ver que es lo que contiene los wall 
-pg_waldump /var/lib/pgsql/data/pg_wal/0000000100000002000000C9
-
-.pgpass --- Aprender a usar
-recovery.conf  --- Aprender a usar 
-
+ 
 -> aprender sobre el particionamiento
 -> aprender sobre la compresion de la db
 
