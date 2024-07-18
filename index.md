@@ -91,5 +91,7 @@ FROM pg_index AS t0
 WHERE t1.relkind = 'i' AND t3.amname = 'btree' and t4.leaf_fragmentation >=0
 ```
 
+-- indices : 
+https://dbasinapuros.com/tipos-de-indices-en-postgresql/
 
 https://dbalifeeasy.com/2020/10/04/how-to-identify-fragmentation-in-postgresql-rds/ 
