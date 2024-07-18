@@ -452,8 +452,22 @@ pgbench -c <clientes> -j <hilos> -T <tiempo> testdb
     -c : number of clients
     -C : open a new connection for each transaction
 
+
+
+
+
 -------- BIBLIOGRAFÍAS ---------------
 https://www.postgresql.org/docs/current/pgbench.html
 https://medium.com/@c.ucanefe/pgbench-load-test-166bdfb5c75a
 https://juantrucupei.wordpress.com/2017/11/30/uso-de-pgbench-para-pruebas-stress-postgresql/
  ```
+
+
+# CREAR TABLAS CON MUCHOS REGISTROS 
+ ```sql
+create table test (id numeric, name varchar, fecha date);
+insert into test (select generate_series(1,10000000), ‘name-‘||generate_series(1,10000000), now() + interval ‘1’ minute);
+explain analyze select * from test where id > 100 and id <= 150;
+
+ ```
+
