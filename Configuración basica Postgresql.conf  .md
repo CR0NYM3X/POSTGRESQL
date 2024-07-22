@@ -291,6 +291,8 @@ log_hostname = off --
 cuando un cliente se conecta a la base de datos, PostgreSQL intenta determinar el nombre del host asociado con la dirección IP del cliente. Esto se hace para registrar el nombre del host en los registros de conexión.
 Sin embargo, esta resolución de nombres de host puede tener un impacto en el rendimiento. Si tu configuración de resolución de nombres de host es lenta o ineficiente, podría afectar negativamente el tiempo necesario para establecer una conexión. Por lo tanto, es importante considerar cómo está configurada la resolución de nombres de host en tu entorno.
 En resumen, si tienes una configuración de resolución de nombres de host que es rápida y eficiente, no debería haber un problema significativo. Pero si la resolución de nombres de host es lenta, podrías experimentar una penalización en el rendimiento al habilitar log_hostname.
+La resolución de nombres de host generalmente recae en el sistema operativo o en los servidores DNS (Domain Name System). Cuando un cliente intenta conectarse a un servidor, el sistema operativo o el servidor DNS se encarga de traducir el nombre del host (como “www.ejemplo.com”) en una dirección IP (como “192.168.1.1”). 
+
 
 log_error_verbosity = verbose	
 	- terse registra solo la información básica sobre el error.
