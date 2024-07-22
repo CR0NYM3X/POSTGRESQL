@@ -259,19 +259,21 @@ log_rotation_size = 0  # 0 disables.
 log_truncate_on_rotation = ON  # Este elimina el log si ya existe
 
 log_min_messages = info  ## si quieres que capture muchas cosas coloca info , pero lo recomendado para empresas es colocar warning para que guarde solo cosas importantes,  , el nivel de detalle esta en orden, por ejemplo el debug5 muestra mucha información de mas,no recomendado , PANIC muestra bien poca información 
- 
-					#   debug5
-					#   debug4
-					#   debug3
-					#   debug2
-					#   debug1
-					#   info
-					#   notice
-					#   warning
-					#   error
-					#   log
-					#   fatal
-					#   panic
+
+se organizan de menor a mayor prioridad. Aquí está la jerarquía y Cada nivel incluye todos los niveles que le siguen.
+ Cuanto más alto sea el nivel, menos mensajes se enviarán al registro.
+	DEBUG5: El nivel más bajo, utilizado para mensajes de depuración detallados.
+	DEBUG4: Mensajes de depuración de nivel 4.
+	DEBUG3: Mensajes de depuración de nivel 3.
+	DEBUG2: Mensajes de depuración de nivel 2.
+	DEBUG1: Mensajes de depuración de nivel 1.
+	INFO: Mensajes informativos.
+	NOTICE: Mensajes de advertencia o información importante.
+	WARNING: Advertencias que no son errores críticos.
+	ERROR: Errores que no abortan la transacción actual.
+	LOG: Mensajes de registro (pueden incluir niveles anteriores).
+	FATAL: Errores fatales que abortan la transacción.
+	PANIC: El nivel más alto, utilizado para errores graves que requieren una acción inmediata.
 
 
 log_min_error_statement = info
