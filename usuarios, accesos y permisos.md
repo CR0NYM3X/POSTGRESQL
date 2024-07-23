@@ -72,17 +72,6 @@ ALTER ROLE test_pass RESET SESSION AUTHORIZATION;
 
 ```
 
-### Quitar permisos en eschema public por seguridad 
-```sql
-REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON DATABASE mydatabase FROM PUBLIC;
-
-https://www.qualoom.es/blog/administracion-usuarios-roles-postgresql/
-
-```
-
-
-
 
 
 ### Cambiarle el nombre al usuario postgres
