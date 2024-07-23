@@ -27,7 +27,7 @@
 
 ```sh
 
------------ COSAS  FALTANTES -----------
+-----------   FALTANTA POR APRENDER  -----------
 
  
 -> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
@@ -35,6 +35,9 @@
 -> aprender sobre el particionamiento
 -> aprender sobre la compresion de la db
 
+
+--> CREATE RULE
+--> RLS se refiere a Row-Level Security 
 
 ```
 
