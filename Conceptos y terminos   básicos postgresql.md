@@ -13,6 +13,7 @@
 \df -> Mostrar información sobre las funciones almacenadas en la base de datos actual:
 \dn -> Mostrar información sobre los esquemas en la base de datos actual:
 
+select * from information_schema.sql_sizing; -- indica los tamaños maximos permitidos como columna y cantidad de caracteres 
 ```
 
 ### Archivos de configuración 
