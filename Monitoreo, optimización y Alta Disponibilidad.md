@@ -38,21 +38,18 @@ cache_hit
 bloat
 
 
-En PostgreSQL, el término “bloat” se refiere a la condición donde el tamaño de las tablas y/o índices crece más de lo necesario, lo que resulta en un rendimiento más lento de las consultas y un uso incrementado del espacio en disco1. Esto ocurre debido a cómo PostgreSQL maneja las operaciones de actualización y eliminación bajo su sistema de control de concurrencia multiversión (MVCC).
-
-Cuando se realiza una operación de UPDATE o DELETE, PostgreSQL no elimina físicamente esas filas del disco. En el caso de un UPDATE, marca las filas afectadas como invisibles e inserta nuevas versiones de esas filas. Con DELETE, simplemente marca las filas afectadas como invisibles. Estas filas invisibles también se conocen como filas muertas o tuplas muertas.
-
-Con el tiempo, estas tuplas muertas pueden acumularse y ocupar un espacio significativo en el disco, lo que puede degradar el rendimiento de la base de datos. Para detectar y resolver el bloat, se pueden utilizar herramientas como pgstattuple, que es un módulo de extensión que proporciona una imagen clara del bloat real en tablas e índices1.
-
-select distinct tablename,sum (ibloat)bloat INTO index_bload_dbmantto_reindex  FROM index_bload_dbmantto where ibloat > 1 and tablename not like 'pg_toast%' group by  tablename order by sum(ibloat) desc;
-
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 En **PostgreSQL**, el término **"bloat"** se refiere al crecimiento innecesario del tamaño de las tablas y los índices. Esto puede afectar el rendimiento de las consultas y aumentar el uso de espacio en disco¹. Permíteme explicarte más detalladamente:
 
 - **¿Por qué se genera bloat?**
-  - PostgreSQL utiliza el **Control de Concurrencia de Múltiples Versiones (MVCC)** para permitir consultas de solo lectura mientras se realizan actualizaciones. Esto genera múltiples instantáneas de transacciones, lo que aumenta el uso de disco para almacenar esos snapshots, conocido como bloat.
+ En PostgreSQL, el término “bloat” se refiere a la condición donde el tamaño de las tablas y/o índices crece más de lo necesario, lo que resulta en un rendimiento más lento de las consultas y un uso incrementado del espacio en disco1. Esto ocurre debido a cómo PostgreSQL maneja las operaciones de actualización y eliminación bajo su sistema de control de concurrencia multiversión (MVCC).
+
+Cuando se realiza una operación de UPDATE o DELETE, PostgreSQL no elimina físicamente esas filas del disco. En el caso de un UPDATE, marca las filas afectadas como invisibles e inserta nuevas versiones de esas filas. Con DELETE, simplemente marca las filas afectadas como invisibles. Estas filas invisibles también se conocen como filas muertas o tuplas muertas.
+
+Con el tiempo, estas tuplas muertas pueden acumularse y ocupar un espacio significativo en el disco, lo que puede degradar el rendimiento de la base de datos. Para detectar y resolver el bloat, se pueden utilizar herramientas como pgstattuple, que es un módulo de extensión que proporciona una imagen clara del bloat real en tablas e índices
+
   - Las filas "muertas" (sin transacciones activas o pasadas que las consulten) contribuyen al bloat. Si no se realiza una acción de **vacuum**, la base de datos crecerá indefinidamente, ya que los registros no se eliminan, sino que quedan "muertos"¹.
 
 - **Impacto del bloat en el rendimiento:**
