@@ -354,6 +354,18 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 SELECT * FROM postgres_fdw_get_connections() ORDER BY 1;
 SELECT * FROM postgres_fdw_get_connections() ORDER BY 1;
  SELECT postgres_fdw_disconnect_all();
+
+
+ select * from information_schema.foreign_tables;                        
+ select * from information_schema.foreign_table_options;                 
+ select * from information_schema.foreign_servers;                       
+ select * from information_schema.foreign_server_options;                
+ select * from information_schema.foreign_data_wrappers;                 
+ select * from information_schema.foreign_data_wrapper_options;
+| select * from pg_catalog.pg_foreign_table;                              |
+| select * from pg_catalog.pg_foreign_server;                             |
+| select * from pg_catalog.pg_foreign_data_wrapper;                       |       
+
 ```
 
 
