@@ -101,6 +101,7 @@ Cuando se realiza una operación de UPDATE o DELETE, PostgreSQL no elimina físi
 Con el tiempo, estas tuplas muertas pueden acumularse y ocupar un espacio significativo en el disco, lo que puede degradar el rendimiento de la base de datos. Para detectar y resolver el bloat, se pueden utilizar herramientas como pgstattuple, que es un módulo de extensión que proporciona una imagen clara del bloat real en tablas e índices1.
 
 
+select distinct tablename,sum (ibloat)bloat INTO index_bload_dbmantto_reindex  FROM index_bload_dbmantto where ibloat > 1 and tablename not like 'pg_toast%' group by  tablename order by sum(ibloat) desc;
 
 
 
