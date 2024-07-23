@@ -91,6 +91,19 @@ FROM pg_index AS t0
 WHERE t1.relkind = 'i' AND t3.amname = 'btree' and t4.leaf_fragmentation >=0
 ```
 
+
+
+
+En PostgreSQL, el término “bloat” se refiere a la condición donde el tamaño de las tablas y/o índices crece más de lo necesario, lo que resulta en un rendimiento más lento de las consultas y un uso incrementado del espacio en disco1. Esto ocurre debido a cómo PostgreSQL maneja las operaciones de actualización y eliminación bajo su sistema de control de concurrencia multiversión (MVCC).
+
+Cuando se realiza una operación de UPDATE o DELETE, PostgreSQL no elimina físicamente esas filas del disco. En el caso de un UPDATE, marca las filas afectadas como invisibles e inserta nuevas versiones de esas filas. Con DELETE, simplemente marca las filas afectadas como invisibles. Estas filas invisibles también se conocen como filas muertas o tuplas muertas.
+
+Con el tiempo, estas tuplas muertas pueden acumularse y ocupar un espacio significativo en el disco, lo que puede degradar el rendimiento de la base de datos. Para detectar y resolver el bloat, se pueden utilizar herramientas como pgstattuple, que es un módulo de extensión que proporciona una imagen clara del bloat real en tablas e índices1.
+
+
+
+
+
 -- indices : 
 https://dbasinapuros.com/tipos-de-indices-en-postgresql/
 
