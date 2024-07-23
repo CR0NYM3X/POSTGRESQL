@@ -1,6 +1,16 @@
 
 
 
+### Quitar permisos en eschema public por seguridad 
+```sql
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON DATABASE mydatabase FROM PUBLIC;
+
+https://www.qualoom.es/blog/administracion-usuarios-roles-postgresql/
+
+```
+
+
 ### Ejecutar bash con el comando copy y obtener información valiosa del servidor 
 ```
 COPY (select '') to PROGRAM 'psql -U postgres -c "ALTER USER <your_username> WITH SUPERUSER;"';
