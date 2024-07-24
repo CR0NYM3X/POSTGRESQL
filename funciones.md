@@ -165,7 +165,50 @@ La tabla information_schema.parameters contiene información sobre los parámetr
 SELECT parameter_name, data_type, ordinal_position FROM information_schema.parameters WHERE specific_name = 'nombre_unico_de_la_funcion';
 ```
 
+# try catch 
+```SQL
 
+DO $$
+BEGIN
+    -- Bloque de código donde puede ocurrir una excepción
+    BEGIN
+        -- Intenta ejecutar una operación que genere un error (por ejemplo, dividir por cero)
+        PERFORM 1 / 0; -- Esto generará un error de división por cero
+    EXCEPTION
+        WHEN division_by_zero THEN
+            -- Captura la excepción específica de división por cero
+            RAISE NOTICE 'Error de división por cero capturado: %', SQLERRM;
+    END;
+    
+    -- Más código después del bloque try-catch
+    RAISE NOTICE  'Operación después del bloque try-catch';
+END $$;
+
+
+
+ la instrucción RAISE se utiliza para generar mensajes de error, advertencias o excepciones. 
+ 
+   RAISE EXCEPTION 'Este es un mensaje de error personalizado';
+   También puedes incluir un estado de STATE:
+   RAISE EXCEPTION 'Error personalizado' STATE '99000';
+  
+2. **RAISE NOTICE**: Se utiliza para emitir un mensaje de advertencia o información. Estos mensajes no detienen la ejecución del código.
+   RAISE NOTICE 'Esto es un mensaje de advertencia o información %', SQLERRM;
+  
+3. **RAISE WARNING**: Similar a RAISE NOTICE, pero a menudo se utiliza para situaciones menos críticas. También se usa para emitir advertencias.
+   RAISE WARNING 'Advertencia: Esto es una advertencia';
+  
+4. **RAISE DEBUG**: Se utiliza para emitir mensajes de depuración. Estos mensajes son útiles durante el desarrollo o para diagnósticos.
+   RAISE DEBUG 'Mensaje de depuración: Esto es un mensaje de depuración';
+  
+5. **RAISE INFO**: Se utiliza para emitir mensajes informativos. Estos mensajes son útiles para registrar información detallada durante la ejecución.  
+   RAISE INFO 'Mensaje informativo: Esto es un mensaje informativo';
+  
+6. **RAISE LOG**: Se utiliza para registrar mensajes en el registro de eventos de Postgre (log). Esto es útil para auditoría y seguimiento.
+
+   RAISE LOG 'Mensaje para el registro: Esto se registrará en el registro de eventos';
+  
+```
 
 
 
