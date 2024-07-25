@@ -421,6 +421,7 @@ SELECT * FROM postgres_fdw_get_connections() ORDER BY 1;
 
 
 ### Implementar DBLINK
+Esta opción es muy vieja y cada vez que se realiza una session tienes que hacer una conexion nueva 
 ```SQL 
 select * from pg_available_extensions where name ilike '%link%';
 
@@ -456,8 +457,12 @@ select * from  dblink_get_connections();
 ---- para desconectar 
 select * from dblink_disconnect('myconn_fdw');
 
---- enviar query 
-SELECT dblink_send_query('myconn_fdw', 'select * from information_schema.tables;');
+SELECT * FROM 
+	dblink('myconn', 'SELECT    pg_reload_conf();') 
+as (pg_reload_conf boolean);
+
+--- esto  esta pensado para realizar insert , update, etc 
+SELECT dblink_exec('myconn', 'SELECT pg_reload_conf();');
 
 https://www.postgresql.org/docs/current/dblink.html
 https://www.postgresql.org/docs/current/contrib-dblink-function.html
