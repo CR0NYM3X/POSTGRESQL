@@ -48,6 +48,8 @@ https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf <br>
 https://wiki.postgresql.org/wiki/Main_Page/es
 https://doxygen.postgresql.org/index.html
 
+https://access.crunchydata.com/documentation/
+
 
 
 ---- página recomendada para aprender cosas avanzadas de postgresql <br>
