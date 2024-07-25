@@ -471,6 +471,45 @@ https://medium.com/@c.ucanefe/pgbench-load-test-166bdfb5c75a
 https://juantrucupei.wordpress.com/2017/11/30/uso-de-pgbench-para-pruebas-stress-postgresql/
  ```
 
+#  MONITOREAR ERRORES EN ARCHIVOS IMPORTANTES
+ ```SQL 
+select  'select * from '||specific_schema|| '.' || routine_name || '() limit 1;' from information_schema.routines where specific_name ilike '%stat%' group by routine_name, specific_schema  ;
+
+
+select 'select * from '||table_schema || '.'|| table_name || ' limit 1 ;'from information_schema.tables where table_name ilike '%stat%'
+group by table_name,table_schema;
+
+
+
+-- archivo postgresql.conf - valida en tiempo real si  hay errores 
+select * from pg_catalog.pg_file_settings where error is not null; 
+select * from pg_show_all_file_settings() where error is not null;
+
+select *from pg_settings  ; 
+select * from pg_show_all_settings() where pending_restart != 'f';
+
+ 
+
+-- archivo pg_hba 
+select * from pg_catalog.pg_reload_conf() ; -- hacer un reload 
+
+select * from pg_catalog.pg_hba_file_rules() limit 1; 
+select * from pg_catalog.pg_hba_file_rules where error is not null;
+ 
+
+---- ident - valida en tiempo real  
+select * from pg_catalog.pg_ident_file_mappings where error is not null;
+
+
+--- extras 
+select * from pg_catalog.pg_db_role_setting ;
+
+
+--- monitoreo 
+select * from pg_catalog.pg_stat_database_conflicts limit 10 ;
+ ```
+
+
 
 # CREAR TABLAS CON MUCHOS REGISTROS 
  ```sql
