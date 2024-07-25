@@ -420,6 +420,11 @@ SELECT * FROM postgres_fdw_get_connections() ORDER BY 1;
 
 
 
+### Implementar DBLINK
+select * from pg_available_extensions where name ilike '%link%';
+
+
+
 ### BIBLIOGRAFIAS:
 [Documentación Oficial FDW](https://www.postgresql.org/docs/current/sql-createforeigndatawrapper.html) <br>
 https://www.postgresql.fastware.com/postgresql-insider-fdw-ove <br>
