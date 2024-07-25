@@ -424,6 +424,40 @@ SELECT * FROM postgres_fdw_get_connections() ORDER BY 1;
 ```SQL 
 select * from pg_available_extensions where name ilike '%link%';
 
+create extension dblink;
+
+SELECT dblink_connect('myconn','hostaddr=127.0.0.1 port=5415 dbname=postgres user=user_central password=123123 options=-csearch_path=');
+
+----- aqui puedes usar el SERVER   FOREIGN DATA WRAPPER  para conectarse con dblink 
+SELECT dblink_connect('myconn_fdw', 'Server_test_psql');
+
+
+SELECT * FROM 
+	dblink('myconn_fdw', 'select * from information_schema.tables;') 
+	as (table_catalog                varchar(255),
+		table_schema                 varchar(255),
+		table_name                   varchar(255),
+		table_type                   varchar(255),
+		self_referencing_column_name varchar(255),
+		reference_generation         varchar(255),
+		user_defined_type_catalog    varchar(255),
+		user_defined_type_schema     varchar(255),
+		user_defined_type_name       varchar(255),
+		is_insertable_into           varchar(255),
+		is_typed                     varchar(255),
+		commit_action                varchar(255)
+		);
+
+
+
+---- ver las conexiones abiertas 
+select * from  dblink_get_connections();
+
+---- para desconectar 
+select * from dblink_disconnect('myconn_fdw');
+
+--- enviar query 
+SELECT dblink_send_query('myconn_fdw', 'select * from information_schema.tables;');
 
 https://www.postgresql.org/docs/current/dblink.html
 https://www.postgresql.org/docs/current/contrib-dblink-function.html
