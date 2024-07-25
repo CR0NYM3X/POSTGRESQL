@@ -11,3 +11,5 @@ https://www.pgbouncer.org/
 
 
 
+https://access.crunchydata.com/documentation/pgbouncer/latest/pdf/pgbouncer.pdf
+https://get.enterprisedb.com/docs/Tutorial_All_PPSS_pgBouncer.pdf
