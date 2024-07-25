@@ -7,3 +7,7 @@ https://dev.to/dm8ry/using-pgbouncer-to-improve-performance-and-reduce-the-load-
 https://www.pgbouncer.org/config.html#generic-settings
 
 
+https://www.pgbouncer.org/
+
+
+
