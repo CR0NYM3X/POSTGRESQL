@@ -466,14 +466,15 @@ client_encoding = 'UTF8'	 # establece la codificación (conjunto de caracteres) 
 
 datestyle = 'iso, mdy'  # Este parámetro permite configura  que la fecha con formato "yyyy-mm-dd"
 
- These settings are initialized by initdb, but they can be changed.
+ --- Configurar en idioma ingles en_US.UTF-8 si quieres españo en_ES.UTF-8
 	lc_messages = 'en_US.UTF-8' # locale for system error message
 	lc_monetary = 'en_US.UTF-8' # locale for monetary formatting
 	lc_numeric = 'en_US.UTF-8' # locale for number formatting
 	lc_time = 'en_US.UTF-8' # locale for time formatting
 
+-- select datname,datcollate,datctype from pg_database;
 
-
+--- esto le indica a postgres como edbe de indezar y realizar busquedas de texto cumpletos (full text), asegurando que se apliquen las reglas de token y diccionario adecuadas 
 default_text_search_config = 'pg_catalog.english'
 
 
