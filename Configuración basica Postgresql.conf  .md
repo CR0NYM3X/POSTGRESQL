@@ -457,14 +457,16 @@ client_encoding = 'UTF8'	 # establece la codificación (conjunto de caracteres) 
 
 
 
+
+datestyle = 'iso, ymd'  #  permite configura el formato de la  fecha, por defaul es "mdy"  = "mm-dd-yyyy", nosotros usamos ymd
+
+
 ------------------ Tiempo --------------- 
- SELECT * from pg_timezone_names; 
+ SELECT * from pg_timezone_names;  --- ver las zonas que existen 
  SHOW TIMEZONE;
- ALTER DATABASE postgres SET timezone TO 'Europe/Berlin';
  SELECT CURRENT_TIMESTAMP;
 	timezone = 'America/mazatlan'	 # postgresql.conf 
 
-datestyle = 'iso, mdy'  # Este parámetro permite configura  que la fecha con formato "yyyy-mm-dd"
 
  --- Configurar en idioma ingles en_US.UTF-8 si quieres españo en_ES.UTF-8
 	lc_messages = 'en_US.UTF-8' # locale for system error message
