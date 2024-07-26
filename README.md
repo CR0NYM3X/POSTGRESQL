@@ -40,7 +40,7 @@
 --> RLS se refiere a Row-Level Security 
 
 ```
-
+https://pgpedia.info/s/shared_preload_libraries.html
 https://www.sqlservercentral.com/articles/rules-in-postgresql
 
 --- Documentacion postgresql <br>
