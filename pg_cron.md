@@ -14,7 +14,12 @@ GRANT USAGE ON SCHEMA cron TO postgres;
 
 -- View active jobs
 select * from cron.job;
-elect * from cron.job_run_details order by start_time desc limit 5;
+select * from cron.job_run_details order by start_time desc limit 5;
+
+SELECT cron.schedule('21 11 * * *', 'COPY (select name ||" = """ ||setting|| """" from pg_settings ) TO "/tmp/pg_settings-25072024.csv"');
+
+--- ver configuraciones de cron
+SELECT name, setting, short_desc FROM pg_settings WHERE name LIKE 'cron.%' ORDER BY name;
 
 
 https://www.sobyte.net/post/2022-02/postgresql-time-task/
