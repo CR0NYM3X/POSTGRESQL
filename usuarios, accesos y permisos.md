@@ -528,8 +528,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuar
 SELECT * FROM pg_default_acl;
 
 # DATABASE:
-  GRANT CREATE, TEMPORARY ON DATABASE tu_base_de_datos TO "testuserdba";
-  GRANT CONNECT ON DATABASE "tu_base_de_datos" TO "testuserdba";
+  GRANT CONNECT,CREATE, TEMPORARY ON DATABASE "tu_base_de_datos" TO "testuserdba";
   grant all privileges on database tu_bd to tu_usuario;
 
 # TABLES:
@@ -541,9 +540,8 @@ SELECT * FROM pg_default_acl;
 
 # SEQUENCES:
 GRANT select ON table my_seuencia_test TO my_user_test; -- versiones 8.0
-  GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
-  GRANT USAGE ON SEQUENCE nombre_secuencia TO testuserdba;
   GRANT USAGE, SELECT,UPDATE ON SEQUENCE mi_secuencia TO testuserdba;
+GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
 
 # SCHEMA:
   GRANT CREATE ON SCHEMA public TO mi_rol; ---  permite al usuario crear y modificar objetos en el esquema público
