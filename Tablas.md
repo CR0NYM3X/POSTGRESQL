@@ -243,7 +243,7 @@ ADD COLUMN nueva_columna INTEGER;
  ```sql
 
 DELETE FROM nombre_de_la_tabla WHERE nombre = 'Juan';  -- este elimina informacion especificamente
-truncate nombre_de_la_tabla -- esto Elimina toda la informacion de una tabla.
+truncate nombre_de_la_tabla RESTART IDENTITY;  -- esto Elimina toda la informacion de una tabla y tambien reinicia la secuencia.
 Delete nombre_de_la_tabla -- esto tambien elimina la informacion pero no es recomendado.
  ```
 
