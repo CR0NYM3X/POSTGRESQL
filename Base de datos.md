@@ -18,9 +18,15 @@ createdb -p 5432 mytestdba -E "UTF8" -O postgres -T template0
     
     **Parametros adicionales que le puedes agregar en el with**
        OWNER = postgesql
-       ENCODING = 'UTF8' 
-       LC_CTYPE = 'en_US.UTF-8'; especifica las reglas de clasificación de caracteres (mayúsculas/minúsculas) y afecta a las operaciones de búsqueda y comparación.
-       LC_COLLATE = 'en_US.UTF-8'  determina cómo se ordenan y comparan las cadenas de caracteres en consultas y operaciones de ordenamiento.
+       ENCODING = 'UTF8'    Define el conjunto de caracteres que se usa para almacenar datos en la base de datos. Afecta cómo se
+          convierten los caracteres a bytes y viceversa.
+
+       LC_CTYPE = 'en_US.UTF-8'; especifica las reglas de clasificación de caracteres (mayúsculas/minúsculas) se consideran
+                    letras, números, espacios, puntuación, etc. y afecta a las operaciones de búsqueda y comparación.
+
+       LC_COLLATE = 'en_US.UTF-8'  determina cómo se ordenan y comparan las cadenas de caracteres en consultas y
+                    operaciones de ordenamiento.
+
        TABLESPACE = pg_default
        CONNECTION LIMIT = -1;  --- El -1 quiere decir que son conexiones elimitadas
 
