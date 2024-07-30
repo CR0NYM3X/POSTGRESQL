@@ -207,7 +207,46 @@ END $$;
 6. **RAISE LOG**: Se utiliza para registrar mensajes en el registro de eventos de Postgre (log). Esto es útil para auditoría y seguimiento.
 
    RAISE LOG 'Mensaje para el registro: Esto se registrará en el registro de eventos';
-  
+
+
+--- EXCEPCIÓN QUE SE PUEDEN USAR 
+ 
+no_data_found
+
+ WHEN unique_violation THEN
+    RAISE NOTICE 'Violación de unicidad: El producto con ID 1 ya existe.';
+  WHEN foreign_key_violation THEN
+    RAISE NOTICE 'Violación de clave foránea.';
+  WHEN check_violation THEN
+    RAISE NOTICE 'Violación de restricción CHECK.';
+  WHEN not_null_violation THEN
+    RAISE NOTICE 'Violación de restricción NOT NULL.';
+  WHEN division_by_zero THEN
+    RAISE NOTICE 'División por cero.';
+  WHEN invalid_cursor_state THEN
+    RAISE NOTICE 'Estado de cursor inválido.';
+  WHEN invalid_text_representation THEN
+    RAISE NOTICE 'Representación de texto inválida.';
+  WHEN numeric_value_out_of_range THEN
+    RAISE NOTICE 'Valor numérico fuera de rango.';
+  WHEN deadlock_detected THEN
+    RAISE NOTICE 'Interbloqueo detectado.';
+  WHEN syntax_error THEN
+    RAISE NOTICE 'Error de sintaxis.';
+  WHEN insufficient_privilege THEN
+    RAISE NOTICE 'Privilegios insuficientes.';
+  WHEN program_limit_exceeded THEN
+    RAISE NOTICE 'Límite de programa excedido.';
+  WHEN OTHERS THEN
+    RAISE NOTICE 'Ocurrió un error: %', SQLERRM;
+END $$;
+
+https://www.postgresql.org/docs/current/plpgsql-errors-and-messages.html
+https://www.postgresql.org/docs/current/plpgsql-control-structures.html
+
+
+
+
 ```
 
 
