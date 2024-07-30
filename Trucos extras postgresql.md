@@ -203,6 +203,23 @@ END;
 $$;
 
 
+
+DO $$
+DECLARE
+    columnas RECORD;
+BEGIN
+    -- Bucle FOR para recorrer las filas
+    FOR columnas IN
+        select table_schema,table_name, table_type from information_schema.tables  where not table_schema in('pg_catalog','information_schema') and table_type = 'FOREIGN' 
+    LOOP
+        -- Imprimir la información de cada empleado
+        RAISE NOTICE 'table_schema: %, table_name: %, table_type: %', columnas.table_schema, columnas.table_type, columnas.table_type;
+    END LOOP;
+END;
+$$;
+
+
+
 ########## BUCLES FOREACH  ########## 
 
 DO $$
@@ -221,19 +238,20 @@ $$;
 DO $$
 DECLARE
     nombre_cur CURSOR FOR
-        SELECT nombre, edad FROM tabla_datos;
-    nombre_persona TEXT;
-    edad_persona INT;
+        select table_schema,table_name, table_type from information_schema.tables  where not table_schema in('pg_catalog','information_schema') and table_type = 'FOREIGN' ;
+    table_schema varchar(255);
+    table_name varchar(255);
+	table_type varchar(255);
 BEGIN
     OPEN nombre_cur; -- Abrir el cursor
     
     LOOP
-        FETCH nombre_cur INTO nombre_persona, edad_persona; -- Obtener el siguiente conjunto de resultados
+        FETCH nombre_cur INTO table_schema, table_name,table_type; -- Obtener el siguiente conjunto de resultados
         
         EXIT WHEN NOT FOUND; -- Salir del bucle si no hay más resultados
         
         -- Procesar la fila actual
-        RAISE NOTICE 'Nombre: %, Edad: %', nombre_persona, edad_persona;
+        RAISE NOTICE 'table_schema: %, table_name: %, table_type: %', table_schema, table_type, table_type;
     END LOOP;
     
     CLOSE nombre_cur; -- Cerrar el cursor
