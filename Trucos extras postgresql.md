@@ -380,6 +380,15 @@ when 'v' then 'VIEW'
 when 'c' then 'TYPE'
 ```
 
+# usar el row partition
+```sql
+SELECT 
+    columna1,
+    columna2,
+    ROW_NUMBER() OVER (PARTITION BY columna1 ORDER BY columna2) AS numero_fila
+FROM 
+    tu_tabla;
+```
 
 # Manuales  PDF 
 ```sql
