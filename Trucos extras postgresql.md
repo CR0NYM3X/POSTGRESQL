@@ -147,6 +147,33 @@ END;
 $$;
 
 
+
+
+
+ **Bucle FOR:** Mejor para conjuntos de datos pequeños y para casos donde la simplicidad es prioritaria.
+ 
+ **Ventajas:**
+**Simplicidad:** Es más sencillo de implementar para tareas simples.
+**Desempeño para conjuntos pequeños:** Para conjuntos de datos relativamente pequeños, el rendimiento es adecuado.
+
+**Desventajas:**
+**Uso de memoria:** Carga todo el conjunto de resultados en la memoria, lo que puede no ser ideal para conjuntos de datos grandes.
+**Menor control:** No permite un control tan fino sobre el flujo de ejecución y el manejo de grandes volúmenes de datos.
+ 
+ 
+**Cursor:** Ideal para conjuntos de datos grandes y donde se requiere un manejo más eficiente de memoria y control sobre el proceso de recuperación de datos.
+
+**Ventajas:**
+**Manejo eficiente de memoria:** Los cursores no cargan todo el conjunto de resultados en memoria a la vez. Solo mantienen una fila en memoria, lo que es ideal para conjuntos de datos grandes.
+**Control fino:** Ofrecen más control sobre el proceso de recuperación de datos y pueden ser más eficientes cuando se manejan grandes volúmenes de datos.
+
+**Desventajas:**
+**Complejidad adicional:** La implementación y manejo de cursores es más compleja comparada con un bucle FOR.
+**Overhead:** Puede haber más overhead asociado con el uso de cursores en comparación con bucles FOR para conjuntos de datos pequeños.
+
+
+
+
 ########## BUCLES WHILE ########## 
 
 DO $$
