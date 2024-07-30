@@ -12,7 +12,7 @@ Es aprender todo lo que podemos hacer solo con la base de datos
 
 ### Crear una base de datos:
 ```sql
-createdb -p 5432 centraldata1 -E "UTF8" -O postgres -T template0
+createdb -p 5432 mytestdba -E "UTF8" -O postgres -T template0
 
     CREATE DATABASE "mytestdba" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'C' LC_CTYPE = 'en_US';
     
