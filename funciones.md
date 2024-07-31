@@ -49,17 +49,16 @@ copy (select  prosrc  from  pg_proc  wHERE proname ilike '%fun_actualiza_datos%'
 -- Definición de la función
 CREATE OR REPLACE FUNCTION calcular_precio_total(p_id INT, p_cantidad INT)
 RETURNS NUMERIC AS
-VOLATILE
-SECURITY DEFINER
-PARALLEL UNSAFE
+
 $$
 DECLARE
 
     -- Aquí se declaran las variables locales
     v_precio_unitario NUMERIC;
-    v_precio_total NUMERIC;
+    v_precio_total NUMERIC := '';
 BEGIN
-    -- Obtener el precio unitario del producto
+
+    -- Obtener el precio unitario del producto y guardarlo en una variable
     SELECT precio_unitario INTO v_precio_unitario FROM productos WHERE id = p_id;
     
     -- Calcular el precio total
@@ -68,7 +67,9 @@ BEGIN
     -- Devolver el resultado
     RETURN v_precio_total;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql VOLATILE
+SECURITY DEFINER
+PARALLEL UNSAFE;
 
 # Forma de ejecutar la función
 SELECT calcular_precio_total(1, 5); -- Calcula el precio total del producto con ID 1 y cantidad 5
