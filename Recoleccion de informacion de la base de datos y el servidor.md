@@ -165,8 +165,22 @@ du -chal /etc/
  lscpu 
  cat /proc/cpuinfo 
  sudo lshw -class CPU  
- cat /proc/cpuinfo 
  grep "model name"
+
+
+Número de procesadores físicos:
+grep physical.id /proc/cpuinfo | sort -u | wc -l
+
+Número de núcleos por procesador:
+grep cpu.cores /proc/cpuinfo | sort -u
+
+Número de procesadores lógicos:
+grep processor /proc/cpuinfo | wc -l
+
+El tamaño de la cache 
+grep 'cache size' /proc/cpuinfo |  sort -u
+
+
 ```
 
 ### Tamaño de las base de datos 
