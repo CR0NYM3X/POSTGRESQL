@@ -187,7 +187,15 @@ CREATE SERVER "Server_de_logs"
 - Verificamos que si se haya creado
 ```
 \des
-select srvname, unnest(srvoptions) AS option FROM pg_foreign_server;
+
+select * from (select  
+		srvname
+		,replace(replace(srvoptions[1], 'servername=',''), 'host=','') as servername 
+		,replace(srvoptions[2], 'port=','') as port 
+		,replace(replace(srvoptions[3], 'database=',''), 'dbname=','') as database  
+	FROM pg_foreign_server ) as a  
+		where servername = '192.168.2.100';
+
 ```
 
 ### Paso 5 - Creamos el usuario local 
