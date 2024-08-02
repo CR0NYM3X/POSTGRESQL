@@ -262,10 +262,14 @@ SELECT grantee,table_schema,table_name,privilege_type FROM information_schema.ta
 SELECT * FROM information_schema.usage_privileges where not grantee in('PUBLIC','postgres') and grantee = ''; -- PERMISOS USAGE
 
 
-# ver Permisos 
+# ver Permisos
+\df *privilege
 SELECT  has_schema_privilege('user_Test', 'public', 'CREATE') AS tiene_permiso; -- para esquemas 
 SELECT has_sequence_privilege('tipo_personal', 'select'); --  para secuencias 
 SELECT has_type_privilege('tipo_personal', 'select'); --  para los permisos granulares
+has_database_privilege
+has_function_privilege
+has_table_privilege
 
 # Permisos de esquemas
 SELECT r.rolname AS grantor,
