@@ -12,6 +12,35 @@ Estos son los tipos que existen <br>
 
 # Ejemplos de uso:
 
+
+
+1. **Tipo compuesto (Composite Type)**:
+   - Un tipo compuesto es similar al tipo de fila de una tabla. Puedes especificar una lista de nombres de atributos y sus tipos de datos. Por ejemplo:
+     ```sql
+     CREATE TYPE mi_tipo AS (
+         columna1 integer,
+         columna2 text
+     );
+     ``` 
+
+2. **Tipo enumerado (Enum Type)**:
+   - Los tipos enumerados son útiles cuando deseas limitar los valores posibles de una columna a un conjunto específico. Por ejemplo:
+     ```sql
+     CREATE TYPE estado_civil AS ENUM ('Soltero', 'Casado', 'Divorciado');
+     ``` 
+
+3. **Tipo de rango (Range Type)**:
+   - Los tipos de rango representan un rango de valores. Puedes crear uno especificando un subtipo y, opcionalmente, una clase de operadores. Por ejemplo:
+     ```sql
+     CREATE TYPE rango_edades AS RANGE (
+         SUBTYPE = integer,
+         SUBTYPE_OPCLASS = int4range_ops
+     );
+     ```
+
+
+  
+
 # Consultar los type
 
 Con esta query puedes saber el nombre del type y que datos te pide 
