@@ -890,7 +890,7 @@ select * from (
 
 
 
-######## todos los permisos en una sola tabla , testeado en versiones  11.22 - 16.3
+#  todos los permisos en una sola tabla , testeado en versiones  11.22 - 16.3
 PERMISOS DE LOS OBJETOS : TABLAS , VISTAS,  ESCHEMAS, BASES DE DATOS, FUNCIONES, SECUENCIAS, TYPPES 
 ```sql 
 
@@ -1057,10 +1057,8 @@ union all
 	
 	where  typacl is not null  
 			AND not nspname ilike 'pg_%'  
-			AND not nspname in('pg_catalog','information_schema') 
-
-
-
+			AND not nspname in('pg_catalog','information_schema')
+			AND e.rolname != 'postgres'
 
 ) as a order by type, schema_name;
 
