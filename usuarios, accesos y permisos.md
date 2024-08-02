@@ -561,7 +561,7 @@ GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
   GRANT EXECUTE ON PROCEDURE  mi_procedure() TO usuario_empleado;
 
 # trigger:
-  GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
+  -- SE LES DA PERMISOS DE FUNCIONES YA QUE EL TRIGGER EJECUTA FUNCIONES
 
 # Index:
   --- PARA LOS INDEX NO SE DA PERMISOS 
@@ -641,7 +641,7 @@ REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";
 	REVOKE ALL PRIVILEGES ON VIEW nombre_de_vista FROM nombre_del_rol;
 
 # trigger:
-	REVOKE ALL PRIVILEGES ON TRIGGER nombre_del_disparador FROM nombre_del_rol;
+	-- SE QUITA EL PERMISO PERO DE LA FUNCION QUE USA EL TRIGGER
 
 ```
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
