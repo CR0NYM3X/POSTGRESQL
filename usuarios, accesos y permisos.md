@@ -890,6 +890,182 @@ select * from (
 
 
 
+######## todos los permisos en una sola tabla , testeado en versiones  11.22 - 16.3
+PERMISOS DE LOS OBJETOS : TABLAS , VISTAS,  ESCHEMAS, BASES DE DATOS, FUNCIONES, SECUENCIAS, TYPPES 
+```sql 
+
+select * from (
+
+
+/* PERMISOS EN TABLAS Y VISTAS  */
+
+select 
+	inet_server_addr() as ip_server
+	,a.grantor
+	,grantee
+	,table_type  as type
+	,a.table_schema as schema_name
+	,a.table_name as object_name
+	
+	,privilege_type
+	,is_grantable::boolean
+
+ from information_schema.table_privileges as a 
+left join  information_schema.tables as b on a.table_name=b.table_name
+
+ where not grantee in('PUBLIC','postgres')  
+
+
+union all
+
+
+/* PERMISOS EN ESCHEMAS  */ 
+
+SELECT 
+			inet_server_addr() as ip_server,
+			r.rolname AS grantor,
+             e.rolname AS grantee,
+			 'SCHEMA' as type,
+			 null,
+             nspname as   object_name, 
+             privilege_type,
+             is_grantable  
+        FROM pg_namespace
+JOIN LATERAL (SELECT *
+                FROM aclexplode(nspacl) AS x) a
+          ON true
+        JOIN pg_authid e
+          ON a.grantee = e.oid
+        JOIN pg_authid r
+          ON a.grantor = r.oid 
+       WHERE   not nspname ilike 'pg_%'   and e.rolname != 'postgres'   
+	   
+	   
+
+union all
+
+
+/* PERMISOS DE BASES DE DATOS   */ 	   
+
+
+select 
+	inet_server_addr() as ip_server
+	,r.rolname AS grantor
+	,e.rolname AS grantee
+	,'DATABASE' as type
+	,NULL
+	,datname AS object_name
+	,privilege_type
+	,is_grantable 
+from pg_database 
+JOIN LATERAL (SELECT *
+                FROM aclexplode(datacl) AS x) a
+     ON true
+         JOIN pg_authid e
+          ON a.grantee = e.oid
+        JOIN pg_authid r
+          ON a.grantor = r.oid  
+where  e.rolname != 'postgres'    
+
+
+
+
+
+union all
+
+
+
+/* PERMISOS DE FUNCIONES   */ 	   
+
+
+
+SELECT  
+ inet_server_addr() as ip_server
+ ,grantor
+ ,grantee
+ ,b.routine_type as type 
+ ,a.routine_schema  as schema
+ ,a.routine_name as object_name
+ ,privilege_type
+ ,is_grantable::boolean
+FROM information_schema.routine_privileges as a
+	left join information_schema.routines  as b on a.routine_name=b.routine_name
+	where not a.grantee in('PUBLIC','postgres')   
+
+
+
+
+union all
+
+
+/* PERMISOS DE SECUENCIAS   */ 	   
+
+
+
+SELECT 
+	 inet_server_addr() as ip_server
+	 ,r.rolname AS grantor
+     ,e.rolname AS grantee
+	 ,'SEQUENCE' as  type 
+	 ,nspname as schema 
+	 ,relname as object_name
+	,privilege_type
+	,is_grantable
+FROM pg_class as cl
+	LEFT JOIN pg_namespace as nm ON cl.relnamespace = nm.oid
+	JOIN LATERAL (SELECT *
+                FROM aclexplode(relacl) AS x) a
+          ON true
+         JOIN pg_authid e
+          ON a.grantee = e.oid
+        JOIN pg_authid r
+          ON a.grantor = r.oid 
+ 
+	WHERE relkind = 'S'
+	  AND relacl is not null
+	  AND not nspname ilike 'pg_%'   
+	  AND e.rolname != 'postgres' 
+ 
+
+
+
+union all
+
+
+
+/* PERMISOS DE TYPES   */ 	   
+
+	
+	select 
+            inet_server_addr() as ip_server
+            ,r.rolname AS grantor
+            ,e.rolname AS grantee
+            ,'TYPE' AS type
+            ,nsp.nspname esquema 
+            ,typname as object_name 
+            ,privilege_type
+            ,is_grantable
+	from pg_type as pgt  	
+	left JOIN pg_namespace nsp ON pgt.typnamespace = nsp.oid   
+	JOIN LATERAL (SELECT *
+                FROM aclexplode(typacl) AS x) a
+          ON true
+         JOIN pg_authid e
+          ON a.grantee = e.oid
+        JOIN pg_authid r
+          ON a.grantor = r.oid 
+	
+	where  typacl is not null  
+			AND not nspname ilike 'pg_%'  
+			AND not nspname in('pg_catalog','information_schema') 
+
+
+
+
+) as a order by type, schema_name;
+
+```
+
 
 ### obtener los usuarios del pg_hba
 Obtener el usuario y el comentario que tiene despues del md5  del archivo pg_hba.conf
