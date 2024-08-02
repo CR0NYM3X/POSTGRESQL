@@ -564,7 +564,7 @@ GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
   GRANT EXECUTE ON FUNCTION mi_trigger_function() TO mi_usuario;
 
 # Index:
-  GRANT CREATE ON TABLE mi_tabla TO mi_usuario;
+  --- PARA LOS INDEX NO SE DA PERMISOS 
 
 # Type:
   GRANT USAGE ON TYPE mi_tipo_de_dato TO mi_usuario;
@@ -632,7 +632,7 @@ REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";
 	REVOKE ALL PRIVILEGES ON FUNCTION nombre_de_funcion(int, varchar) FROM nombre_del_rol;
 
 # Index:
-	REVOKE ALL PRIVILEGES ON INDEX nombre_del_indice FROM nombre_del_rol;
+	-- NO TINE PARA QUITAR PERMISOS PORQUE A LOS INDEX NO SE OTORGA PERMISOS 
 
 # Type:
 	REVOKE ALL PRIVILEGES ON TYPE nombre_del_tipo FROM nombre_del_rol;
