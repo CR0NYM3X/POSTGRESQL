@@ -133,6 +133,16 @@ END;
 $$;
 
 ########## CONDICIONEALES CASE WHEN ########## 
+SELECT title, length,
+       CASE
+           WHEN length > 0 AND length <= 50 THEN 'Corto'
+           WHEN length > 50 AND length <= 120 THEN 'Medio'
+           WHEN length > 120 THEN 'Largo'
+           ELSE 'Desconocido'
+       END AS duracion
+FROM film
+ORDER BY title;
+
 
 DO $$
 DECLARE
