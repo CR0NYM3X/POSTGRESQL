@@ -98,6 +98,54 @@ ALTER TABLE nombre_tabla ENABLE TRIGGER nombre_trigger;
 ```
 
 
+
+### EJEMPLO DE TRIGGER
+Este trigger cuando hacen un insert en la tabla clientes tambien va y lo realiza en la tabla datos_generales
+ ```sql
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    telefono VARCHAR(20)
+);
+
+
+
+CREATE TABLE datos_generales (
+    id SERIAL PRIMARY KEY,
+    cliente_id INT,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    telefono VARCHAR(20)
+);
+
+
+CREATE OR REPLACE FUNCTION replicate_to_datos_generales()
+RETURNS TRIGGER AS
+$$
+BEGIN
+    INSERT INTO datos_generales (cliente_id, nombre, apellido, telefono)
+    VALUES (NEW.id, NEW.nombre, NEW.apellido, NEW.telefono);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER replicate_clientes_to_datos_generales
+AFTER INSERT ON clientes
+FOR EACH ROW
+EXECUTE FUNCTION replicate_to_datos_generales();
+
+
+
+INSERT INTO clientes (nombre, apellido, telefono)
+VALUES ('Juan', 'Pérez', '555-123-4567');
+
+
+
+ ```
+
+
 # extra:
 auditorias con pgaudit: https://www.postgresql.org/message-id/attachment/41749/pgaudit-v2-03.patch
 
