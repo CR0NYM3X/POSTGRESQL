@@ -43,6 +43,13 @@ select * from pg_trigger where tgname = 'trigger_do_nothing' limit 1;
 SELECT event_object_schema, event_object_table, trigger_name, action_statement, action_orientation
 FROM information_schema.triggers
 WHERE trigger_name = 'trigger_do_nothing';
+
+  select * from pg_catalog.pg_trigger;                       
+  select * from pg_catalog.pg_event_trigger;                  
+  select * from information_schema.triggers;                  
+  select * from information_schema.triggered_update_columns;  
+														    
+
 ```
 
 ### 1.- Creamos la tabla
