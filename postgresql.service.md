@@ -1,4 +1,6 @@
 
+> [!IMPORTANT]
+> Una vez que integras postgresql con systemctl no se debe de usar el pg_ctl u otra herramienta para restart,start,stop y reload ya que desincroniza el estatus del systemctl 
 
 # Comandos 
  ```sql
