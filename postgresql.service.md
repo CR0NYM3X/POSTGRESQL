@@ -2,6 +2,70 @@
 > [!IMPORTANT]
 > Una vez que integras postgresql con systemctl no se debe de usar el pg_ctl u otra herramienta para restart,start,stop y reload ya que desincroniza el estatus del systemctl 
 
+
+### 1. **systemctl**
+
+**Ventajas:**
+
+1. **Gestión de Dependencias**: systemctl maneja dependencias entre servicios, asegurando que PostgreSQL se inicie solo después de que otros servicios necesarios estén disponibles.
+2. **Facilidad de Uso**: Comandos simples para habilitar, iniciar, detener y verificar el estado del servicio.
+3. **Estándar Moderno**: systemctl es el estándar para la mayoría de las distribuciones modernas de Linux.
+4. **Gestión de Logs**: Integración con journald para la gestión centralizada de logs.
+5. **Control Granular**: Permite configurar cómo se inicia, detiene y reinicia el servicio.
+
+**Desventajas:**
+
+1. **Curva de Aprendizaje**: Puede requerir algo de aprendizaje para aquellos no familiarizados con systemd.
+2. **Compatibilidad**: No disponible en sistemas muy antiguos que no usan systemd.
+
+**Comandos:**
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
+sudo systemctl status postgresql
+### 2. **crontab con @reboot**
+
+**Ventajas:**
+
+1. **Simplicidad**: Muy fácil de configurar y entender.
+2. **Portabilidad**: Funciona en casi cualquier sistema Unix-like con cron.
+
+**Desventajas:**
+
+1. **Sin Gestión de Dependencias**: No maneja dependencias entre servicios.
+2. **No Estándar**: No es la práctica estándar para manejar servicios de base de datos.
+3. **Logs**: La gestión de logs y errores requiere configuración adicional.
+
+**Configuración:** 
+crontab -e
+
+** Agregar la línea siguiente **
+@reboot pg_ctl start -D /ruta/data
+
+
+
+### 3. **/etc/rc.local**
+**Ventajas:**
+
+1. **Compatibilidad**: Funciona en sistemas Unix y Linux antiguos.
+2. **Simplicidad**: Fácil de configurar, especialmente en sistemas más antiguos.
+
+**Desventajas:**
+
+1. **Obsoleto**: Considerado obsoleto en la mayoría de las distribuciones modernas.
+2. **Sin Gestión de Dependencias**: No maneja dependencias entre servicios.
+3. **Logs**: No proporciona una gestión de logs adecuada sin configuración adicional.
+
+**Configuración:**
+Edita el archivo /etc/rc.local y añade la línea antes de exit 0:
+sudo systemctl start postgresql
+### Conclusión
+
+**systemctl** es la mejor opción para la mayoría de los sistemas modernos debido a su capacidad para manejar dependencias y su integración con las herramientas del sistema.
+**crontab con @reboot** es una opción simple y rápida pero no adecuada para un entorno de producción serio.
+**/etc/rc.local** puede ser útil en sistemas más antiguos, pero es mejor evitarlo en sistemas modernos debido a su obsolescencia.
+
+Para un entorno de producción, es altamente recomendable usar systemctl para gestionar el servicio de PostgreSQL.
+
 # Comandos 
  ```sql
 vim /lib/systemd/system/postgresql.service
