@@ -435,6 +435,7 @@ select * from pg_available_extensions where name ilike '%link%';
 
 create extension dblink;
 
+-- dblink_connect : Establece una conexión y hasta que no uses la funcion dblink_disconnect  se va cerrar la conexion 
 SELECT dblink_connect('myconn','hostaddr=127.0.0.1 port=5415 dbname=postgres user=user_central password=123123 options=-csearch_path=');
 
 ----- aqui puedes usar el SERVER   FOREIGN DATA WRAPPER  para conectarse con dblink 
