@@ -155,6 +155,26 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trigger_sync
 AFTER INSERT OR UPDATE OR DELETE ON clientes
 FOR EACH ROW EXECUTE FUNCTION sync_datos_generales();
+
+
+/************  Crear reglas para restringir operaciones ************\ 
+### Crear reglas para restringir operaciones
+ 
+CREATE RULE restrict_insert AS
+ON INSERT TO datos_generales
+DO INSTEAD NOTHING;
+
+CREATE RULE restrict_update AS
+ON UPDATE TO datos_generales
+DO INSTEAD NOTHING;
+
+CREATE RULE restrict_delete AS
+ON DELETE TO datos_generales
+DO INSTEAD NOTHING;
+
+-- No hay una regla directa para TRUNCATE, pero puedes revocar permisos
+REVOKE TRUNCATE ON datos_generales FROM PUBLIC;
+ 
  
  
 
