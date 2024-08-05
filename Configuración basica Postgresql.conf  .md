@@ -778,6 +778,19 @@ sudo systemctl enable postgresql
 /********** Validar si se inicio automaticamente el servicio  **********/
 journalctl -u postgresql
 
+
+https://github.com/CR0NYM3X/POSTGRESQL/blob/main/postgresql.service.md
+
+------------------- OTRAS OPCIONES  ---------------------
+
+vim  /etc/rc.local 
+su - postgres -c "/usr/pgsql-12/bin/pg_ctl start -D /sysx/data/ -o -i" /etc/rc.local
+
+
+crontab -e
+@reboot /ruta/completa/a/tu_script.sh
+
+
 ```
 
 ### Colocar el archivo de configuración (postgresql.conf, pg_hba.conf y pg_ident)
