@@ -190,10 +190,40 @@ vacuum_cost_limit = 2000		# 1-10000 credits
 #bgwriter_flush_after = 0		# measured in pages, 0 disables
 
 effective_io_concurrency = 100		# 1-1000; 0 disables prefetching
-max_worker_processes = 4		# (change requires restart)
-max_parallel_workers_per_gather = 2	# limited by max_parallel_workers
-max_parallel_workers = 4		# number of max_worker_processes that
-max_parallel_maintenance_workers = 2
+
+
+
+# Esta configuracion se tomo de un servidor dedicado con un cpu que tiene 16 hilos 
+max_worker_processes = 14		# (change requires restart) se recomienda usar el total de hilos menos 1 o 2  para reservar procesos del sistema esto en caso de que el servidor sea dedicado a base de datos  , 
+max_parallel_workers = 14		#  se recomienda colocar igual o 3/4 del parámetro max_worker_processes 
+max_parallel_workers_per_gather = 8	#  se recomienda colocar 1/2 de parámetro max_parallel_workers
+max_parallel_maintenance_workers = 4    # se recomienda colocar  1/2  de max_parallel_workers_per_gather
+
+
+******** Ejemplo ******** 
+ reduce el tiempo de ejecución , Imagina que tienes una tabla muy grande y quieres buscar todas las filas que cumplen con una condición específica.
+ En lugar de que un solo proceso lea toda la tabla, PostgreSQL puede dividir esta tarea entre varios
+procesos de trabajo. Cada proceso lee una parte de la tabla y busca las filas que cumplen con la condición.
+ Luego, el proceso principal reúne todos los resultados parciales y los presenta como un único conjunto de resultados.
+
+ 
+1. **`max_worker_processes`**: Este parámetro establece el número máximo de procesos de trabajo en
+segundo plano que el sistema puede soportar.  Incluye todos los tipos de procesos de trabajo,
+ no solo los paralelos. Esto abarca procesos de replicación, procesos de mantenimiento y cualquier
+ otro proceso en segundo plano que PostgreSQL pueda necesitar.
+
+2. **`max_parallel_workers`**: debe ser menor o igual al valor de max_worker_processes y
+Este parámetro define el número total de trabajadores paralelos que el sistema puede usar en
+cualquier momento.
+
+3. **`max_parallel_workers_per_gather`**: Define el número máximo de trabajadores paralelos
+que se pueden usar para una sola Consulta/operación . Está limitado por el valor
+de `max_parallel_workers`.
+
+4. **`max_parallel_maintenance_workers`**: Establece el número máximo de trabajadores paralelos
+que se pueden usar para operaciones de mantenimiento, como la creación de índices. También está
+limitado por `max_parallel_workers`
+
 
 ```
 
