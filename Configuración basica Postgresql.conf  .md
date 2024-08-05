@@ -621,6 +621,8 @@ touch ~/.psqlrc
 %/: Nombre de la base de datos actual (por ejemplo, orange).
 %R: Número de puerto (por ejemplo, 5432).
 %#: Símbolo => o -> según si es el prompt principal o secundario.
+%# : '#' if superuser, '>' otherwise
+
 %x: Indicador de transacción (por ejemplo, * si hay una transacción activa).
 %m - host name of the db server, truncated at the first dot, or [local] (if over Unix socket)
 %> - port where db server is listening
@@ -635,6 +637,24 @@ PROMPT1: Es el prompt principal que se muestra cuando estás listo para ingresar
 PROMPT2:  Es el prompt secundario que aparece cuando tienes una consulta incompleta o necesitas continuar una línea.
 
 
+
+--    In prompt1:
+--         = normally
+--         ^ if in single-line mode
+--         ! if the session is disconnected from the database
+--      In prompt2:
+--         the sequence is replaced by -, *, a single quote, a double quote,
+--         or a dollar sign, depending on whether psql expects more input
+--         because the command wasn't terminated yet
+-- %x : Transaction status:
+--           an empty string when not in a transaction block,
+--         * when in a transaction block
+--         ! when in a failed transaction block,
+--         ? when the transaction state is indeterminate (for example, because there is no connection).
+-- %[...%] : terminal control characters
+
+
+
 /* ANSI control sequences http://www.termsys.demon.co.uk/vtansi.htm
 Display Attribute   FG / BG Color
 0 Reset ALL         30 / 40 Black
@@ -646,6 +666,10 @@ Display Attribute   FG / BG Color
 8 Hidden            36 / 46 Cyan
                     37 / 47 White
                     39 / 49 Default
+ 
+
+
+
 */
 
 
