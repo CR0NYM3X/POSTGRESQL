@@ -442,7 +442,10 @@ SELECT dblink_connect('myconn_fdw', 'Server_test_psql');
 
 
 SELECT * FROM 
-	dblink('myconn_fdw', 'select * from information_schema.tables;') 
+	dblink(
+		'myconn_fdw' --  dbname=postgres port=5415 host=192.168.1.100 user=user_central password=123123
+		,'select * from information_schema.tables;'
+	) 
 	as (table_catalog                varchar(255),
 		table_schema                 varchar(255),
 		table_name                   varchar(255),
