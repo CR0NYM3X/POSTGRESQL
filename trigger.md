@@ -64,6 +64,7 @@ CREATE TABLE auditoria_usuarios  (
     consulta text
 );
 ```
+
 2.- Creamos la funcion que va realizar el insert en la tabla
 ```
 CREATE OR REPLACE FUNCTION trigger_auditoria_usuarios()
@@ -108,49 +109,83 @@ ALTER TABLE nombre_tabla ENABLE TRIGGER nombre_trigger;
 
 ### EJEMPLO DE TRIGGER
 Este trigger cuando hacen un insert en la tabla clientes tambien va y lo realiza en la tabla datos_generales
- ```sql
+```SQL
+
+/************  Primero, creamos las tablas ************\
+
 CREATE TABLE clientes (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100),
-    apellido VARCHAR(100),
-    telefono VARCHAR(20)
+    email VARCHAR(100),
+    telefono VARCHAR(20),
+    direccion VARCHAR(200)
 );
-
-
 
 CREATE TABLE datos_generales (
     id SERIAL PRIMARY KEY,
-    cliente_id INT,
     nombre VARCHAR(100),
-    apellido VARCHAR(100),
-    telefono VARCHAR(20)
+    email VARCHAR(100)
 );
+ 
 
 
-CREATE OR REPLACE FUNCTION replicate_to_datos_generales()
-RETURNS TRIGGER AS
-$$
+/************ creamos el trigger y la función asociada ************\ 
+ 
+CREATE OR REPLACE FUNCTION sync_datos_generales()
+RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO datos_generales (cliente_id, nombre, apellido, telefono)
-    VALUES (NEW.id, NEW.nombre, NEW.apellido, NEW.telefono);
-    RETURN NEW;
+    IF (TG_OP = 'INSERT') THEN
+        INSERT INTO datos_generales (id, nombre, email)
+        VALUES (NEW.id, NEW.nombre, NEW.email);
+        RETURN NEW;
+    ELSIF (TG_OP = 'UPDATE') THEN
+        UPDATE datos_generales
+        SET nombre = NEW.nombre, email = NEW.email
+        WHERE id = NEW.id;
+        RETURN NEW;
+    ELSIF (TG_OP = 'DELETE') THEN
+        DELETE FROM datos_generales
+        WHERE id = OLD.id;
+        RETURN OLD;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE TRIGGER replicate_clientes_to_datos_generales
-AFTER INSERT ON clientes
-FOR EACH ROW
-EXECUTE FUNCTION replicate_to_datos_generales();
+CREATE TRIGGER trigger_sync
+AFTER INSERT OR UPDATE OR DELETE ON clientes
+FOR EACH ROW EXECUTE FUNCTION sync_datos_generales();
+ 
+ 
 
+/************ Insertar un nuevo cliente ************\ 
 
+ 
+ 
+INSERT INTO clientes (nombre, email, telefono, direccion)
+VALUES ('Juan Pérez', 'juan.perez@example.com', '555-1234', 'Calle Falsa 123');
+ 
 
-INSERT INTO clientes (nombre, apellido, telefono)
-VALUES ('Juan', 'Pérez', '555-123-4567');
+/************ Actualizar la información de un cliente ************\ 
+ 
+UPDATE clientes
+SET nombre = 'Juan A. Pérez', email = 'juan.a.perez@example.com'
+WHERE id = 1;
+ 
 
+/************ Eliminar un cliente ************\ 
+ 
+ 
+DELETE FROM clientes
+WHERE id = 1;
+ 
+ 
+/************ Verificar los cambios en `datos_generales` ************\ 
 
+SELECT * FROM datos_generales;
 
- ```
+```
+ 
 
 
 # extra:
