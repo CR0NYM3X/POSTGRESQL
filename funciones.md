@@ -287,3 +287,46 @@ $$;
 ```
 
 
+# Ejemplos de funciones
+```sql
+CREATE OR REPLACE FUNCTION verificar_ip_puerto(ip INET, puerto INTEGER)
+RETURNS INTEGER AS $$
+BEGIN
+
+
+    IF ip IS NOT NULL AND puerto IS NOT NULL THEN
+        RETURN 1;
+    ELSE
+        RETURN 0;
+    END IF;
+	
+	
+END;
+$$ LANGUAGE plpgsql;
+
+
+SELECT verificar_ip_puerto('192.168.1.1', 5432);
+
+
+
+
+
+CREATE OR REPLACE FUNCTION usar_valores_tabla()
+RETURNS VOID AS $$
+DECLARE
+    var_columna1 tipo_columna1;
+    var_columna2 tipo_columna2;
+BEGIN
+    -- Selecciona los valores de la tabla y los guarda en variables
+    SELECT columna1, columna2 INTO var_columna1, var_columna2
+    FROM tabla_test
+    LIMIT 1;
+
+    -- Aquí puedes usar las variables para cualquier operación que necesites
+    RAISE NOTICE 'Valor de columna1: %, Valor de columna2: %', var_columna1, var_columna2;
+
+    -- Ejemplo de uso en otra función
+    PERFORM verificar_ip_puerto(var_columna1::INET, var_columna2::INTEGER);
+END;
+$$ LANGUAGE plpgsql;
+```
