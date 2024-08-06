@@ -91,9 +91,28 @@ FROM pg_index AS t0
 WHERE t1.relkind = 'i' AND t3.amname = 'btree' and t4.leaf_fragmentation >=0
 ```
 
+# ver index y sus columnas 
+```sql
+		SELECT
+    t.relname AS table_name,
+    i.relname AS index_name,
+    a.attname AS column_name
+FROM
+    pg_class t,
+    pg_class i,
+    pg_index ix,
+    pg_attribute a
+WHERE
+    t.oid = ix.indrelid
+    AND i.oid = ix.indexrelid
+	
+    AND a.attrelid = t.oid
+    AND a.attnum = ANY(ix.indkey)
+ 
+ORDER BY
+    i.relname;
 
-
-
+```
 
 -- indices : 
 https://dbasinapuros.com/tipos-de-indices-en-postgresql/
