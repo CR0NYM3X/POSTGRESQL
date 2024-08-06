@@ -378,7 +378,7 @@ SELECT * FROM postgres_fdw_get_connections() ORDER BY 1;
 
 
 ----- puedes ver los servidores , ips , puerto, db , usermapping, user_remote,
-select a.srvname , servername , port ,  database, usename , replace(umoptions[1], 'username=','') as user, replace(umoptions[2], 'password=','') as password
+select a.srvname , servername , port ,  database, usename , replace(replace(umoptions[1], 'username=',''), 'user=','') as user, replace(umoptions[2], 'password=','') as password
 from (select  oid,
 		srvname
 		,replace(replace(srvoptions[1], 'servername=',''), 'host=','') as servername 
