@@ -372,7 +372,27 @@ SELECT * FROM postgres_fdw_get_connections() ORDER BY 1;
  select * from information_schema.foreign_data_wrapper_options;
 | select * from pg_catalog.pg_foreign_table;                              |
 | select * from pg_catalog.pg_foreign_server;                             |
-| select * from pg_catalog.pg_foreign_data_wrapper;                       |       
+| select * from pg_catalog.pg_foreign_data_wrapper;                       |
+
+
+
+
+----- puedes ver los servidores , ips , puerto, db , usermapping, user_remote,
+select a.srvname , servername , port ,  database, usename , replace(umoptions[1], 'username=','') as user, replace(umoptions[2], 'password=','') as password
+from (select  oid,
+		srvname
+		,replace(replace(srvoptions[1], 'servername=',''), 'host=','') as servername 
+		,replace(srvoptions[2], 'port=','') as port 
+		,replace(replace(srvoptions[3], 'database=',''), 'dbname=','') as database  
+	FROM pg_foreign_server ) as a
+	left join pg_user_mapping as b on  b.umserver = a.oid 
+	left join pg_user as c on c.usesysid= b.umuser;
+
+
+
+
+
+    
 
 ```
 
