@@ -1,0 +1,54 @@
+CREATE OR REPLACE FUNCTION test_telnet(ip varchar(50), port INTEGER, timeout int DEFAULT 2)
+RETURNS INTEGER AS $$
+
+DECLARE
+    query text;
+    var_columna2 VARCHAR(255);
+	var_connection int;
+
+BEGIN
+	
+	
+	query := 'COPY tmp_test_telnet from  PROGRAM ''echo "'  || ip || '",$(if [ -z "$(echo -e "quit" | timeout ' || timeout || '  telnet ' || ip || ' ' ||  port  || ' 2>/dev/null | grep "Escape character")" ]; then echo  0;  else        echo  1;  fi)'' WITH (FORMAT CSV); ';
+ 
+ 
+	IF ip IS  NULL or port IS  NULL THEN
+		RAISE NOTICE ' SALIENDO YA QUE NO COLOCO ALGUN PARAMETRO';
+        RETURN 0;
+    END IF;
+	
+	
+	
+	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE  tablename = 'tmp_test_telnet') THEN
+	CREATE TEMP TABLE tmp_test_telnet (
+		ip inet,
+		connection  INT
+	);
+    END IF;
+	
+
+
+
+	BEGIN
+		EXECUTE query ;
+
+		EXCEPTION
+		  WHEN OTHERS THEN
+		    RAISE NOTICE 'Este es el error : %', SQLERRM;
+			return 0;
+	 
+	END;
+
+	SELECT connection into var_connection FROM tmp_test_telnet;
+	drop TABLE tmp_test_telnet;
+	
+	return var_connection;
+	
+	
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+SELECT test_telnet('192.168.1.1', 5432);
+
