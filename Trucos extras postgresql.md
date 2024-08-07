@@ -400,6 +400,32 @@ FROM
     tu_tabla;
 ```
 
+
+# como hacer un RollBack en la base de datos
+**`[NOTA]`** Cada sesión puede tener su propia transacción independiente. Por lo tanto, si ejecutas un BEGIN en una sesión y no lo cierras, solo afectará a esa sesión específica. Otras sesiones no se verán afectadas por la transacción no cerrada en la primera sesión. <br><br>
+
+
+
+El **begin** Permite que las transacciones/operaciones sean aisladas y transparentes unas de otras, esto quiere decir que si una sesion nueva se abre, no va detectar los cambios realizados en el cuando se incia el begin como son los insert,update,delete etc, 
+ ```
+BEGIN TRANSACTION;
+ ```
+El **commit**  se usa para guardar los cambios que se realizaron, como los insert,detelete, etc y estas seguro de que todo salio bien
+ ```
+COMMIT:
+ ```
+el **rollback** se usa en caso de que algo salio mal  y no quieres que se guarden los cambios entonces puedes hacer los rollback completo o un un rollback punto de guardado
+ ```
+rollback;
+rollback my_name_savepoint;
+ ```
+
+el **savepoint** sirve para hacer un punto de guardado, en caso de realizar varios cambios en un begin 
+ ```
+savepoint my_name_savepoint;
+ ```
+
+
 # Manuales  PDF 
 ```sql
 https://wiki.postgresql.org/images/c/c5/Afinamiento_de_la_base_de_datos.pdf
