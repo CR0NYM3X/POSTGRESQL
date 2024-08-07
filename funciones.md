@@ -330,3 +330,71 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 ```
+
+
+# función que retorne múltiples valores utilizando un tipo compuesto o un registro 
+```sql
+--/*********** OPCIÓN #1 Usando un Tipo Compuesto ***********\
+
+-- Primero, crea un tipo compuesto que defina la estructura de los valores que deseas retornar:
+
+
+CREATE TYPE mi_tipo_compuesto AS (
+    mi_entero INT,
+    mi_texto VARCHAR
+);
+
+
+-- Luego, crea una función que retorne este tipo compuesto:
+
+ 
+CREATE OR REPLACE FUNCTION mi_funcion_compuesta() 
+RETURNS mi_tipo_compuesto 
+AS $$
+DECLARE
+    resultado mi_tipo_compuesto;
+BEGIN
+    -- Asigna valores a los campos del tipo compuesto
+    resultado.mi_entero := 42;
+    resultado.mi_texto := 'Hola, mundo';
+    
+    -- Retorna el tipo compuesto
+    RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+select mi_funcion_compuesta() ;
+
+--/***********  OPCIÓN #2 Usando un Registro ***********\
+
+-- Alternativamente, puedes usar un registro para retornar múltiples valores sin definir un tipo compuesto:
+
+ 
+CREATE OR REPLACE FUNCTION mi_funcion_registro()
+RETURNS TABLE(mi_entero INT, mi_texto VARCHAR)
+AS $$
+BEGIN
+    -- Retorna los valores directamente, asegurando que el tipo de dato sea VARCHAR
+    RETURN QUERY
+    SELECT 42, 'Hola, mundo'::VARCHAR;
+END;
+$$ LANGUAGE plpgsql;
+
+select mi_funcion_registro();
+
+```
+ 
+
+
+
+
+
+# TIPS
+```
+----- 	EJECUTAR UNA FUNCION 
+perform mssql.fun_test_connection();
+
+--- DECLARAR UNA VARIABLE CON UN TIPO DE MULTIPLES COLUMNAS Y TAMAÑO
+columnas RECORD;
+
+```
