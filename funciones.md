@@ -333,6 +333,7 @@ $$ LANGUAGE plpgsql;
 
 
 # función que retorne múltiples valores utilizando un tipo compuesto o un registro 
+Esto te retorna valores como si fuera una tabla y puedes trabajar con ellos como si fuera una tabla puedes aplicarles where ,order, group , etc 
 ```sql
 --/*********** OPCIÓN #1 Usando un Tipo Compuesto ***********\
 
@@ -363,7 +364,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-select mi_funcion_compuesta() ;
+ select  * from mi_funcion_compuesta() ;
 
 --/***********  OPCIÓN #2 Usando un Registro ***********\
 
@@ -380,7 +381,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-select mi_funcion_registro();
+ select  * from mi_funcion_registro();
 
 ```
  
@@ -396,5 +397,8 @@ perform mssql.fun_test_connection();
 
 --- DECLARAR UNA VARIABLE CON UN TIPO DE MULTIPLES COLUMNAS Y TAMAÑO
 columnas RECORD;
+
+--- ejecutar querys 
+EXECUTE 'select version()'
 
 ```
