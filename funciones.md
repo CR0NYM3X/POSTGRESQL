@@ -400,4 +400,6 @@ columnas RECORD;
 --- ejecutar querys 
 EXECUTE 'select version()'
 
+--- puedes retornar sin necesidad  retornar a fuerzas un valor 
+RETURN ;
 ```
