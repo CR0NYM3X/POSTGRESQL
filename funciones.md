@@ -36,12 +36,37 @@ copy (select  prosrc  from  pg_proc  wHERE proname ilike '%fun_actualiza_datos%'
 
 ### Parámetros para agregar al crear una funcion
 
-**SECURITY DEFINER:** Las funciones de PostgreSQL con el atributo "security definer" permiten ejecutar código con los privilegios del creador de la función, lo que puede ser útil pero también requiere precaución para evitar riesgos de seguridad.
+```sql
+------ Tipos de SECURITY:
+SECURITY DEFINER: Ejecuta la función con los privilegios del propietario de la función en lugar del usuario que la llama.
+SECURITY INVOKER: Ejecuta la función con los privilegios del usuario que la llama (este es el valor predeterminado).
 
+--- Tipos de Volatility :
+	VOLATILE: La función puede devolver resultados diferentes incluso con los mismos parámetros de entrada. Se asume por defecto.
+		y por lo tanto, no puede ser optimizada por el planificador de consultas.
+	STABLE: La función devuelve los mismos resultados para las mismas entradas dentro de una sola consulta.
+	IMMUTABLE: La función siempre devuelve los mismos resultados para las mismas entradas, independientemente de cuándo se llame.
 
-**PARALLEL UNSAFE:** Indica que la función no es segura para la ejecución en paralelo. PostgreSQL tiene la capacidad de ejecutar ciertas operaciones en paralelo para mejorar el rendimiento, pero algunas funciones pueden tener efectos secundarios o dependencias que las hacen inseguras para la ejecución en paralelo. Esta opción asegura que la función no será ejecutada en paralelo. <br><br>
+STABLE: Indica que la función devuelve el mismo resultado siempre que se le den los mismos parámetros dentro de una sola consulta.
+IMMUTABLE: Indica que la función siempre devuelve el mismo resultado para los mismos parámetros y no tiene efectos secundarios.
+LANGUAGE: Especifica el lenguaje en el que está escrita la función (por ejemplo, plpgsql, sql, c, etc.).
+RETURNS: Define el tipo de dato que devuelve la función.
+COST: Estima el costo de ejecución de la función, lo que puede influir en el planificador de consultas.
+ROWS: Especifica el número estimado de filas que devuelve una función que retorna un conjunto.
+SET: Permite establecer parámetros de configuración específicos para la duración de la función.
+STRICT: La función no se llama si alguno de sus argumentos es nulo.
+RETURNS NULL ON NULL INPUT: Similar a STRICT, pero más explícito.
+LEAKPROOF: Indica que la función no revela información sobre sus argumentos a través de canales laterales.
 
-**VOLATILE:** Indica que la función retorna un resultado diferente cada vez que es invocada con los mismos argumentos de entrada. Esto es útil cuando la función depende de factores externos, como datos de tablas modificadas o variables globales, y por lo tanto, no puede ser optimizada por el planificador de consultas.
+--- PARALLEL: Define si la función puede ser ejecutada en paralelo  
+	PARALLEL SAFE: La función es segura para ser ejecutada en paralelo.
+	PARALLEL RESTRICTED: La función puede ser ejecutada en paralelo, pero con ciertas restricciones.
+	PARALLEL UNSAFE: La función no es segura para ser ejecutada en paralelo.
+
+WINDOW: Indica que la función es una función de ventana.
+SUPPORT: Especifica una función de soporte para optimizaciones
+```
+
 
 ### Crear una Función:
 
