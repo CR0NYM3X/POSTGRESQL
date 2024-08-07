@@ -79,10 +79,24 @@ LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
 
 
 ********** SOLUCION RAPIDA **********
-# pg_resetwal :se utiliza para restablecer los archivos WAL, borrando los archivos wall, Este comando es útil en situaciones
-# específicas donde los archivos WAL se han corrompido o cuando necesitas restablecer el seguimiento de la secuencia de registros.
+# pg_resetwal :  partir de PostgreSQL 10 , se utiliza para restablecer los archivos WAL, borrando los archivos wall, Este comando es útil en situaciones
+# específicas donde los archivos WAL se han corrompido o  Es una herramienta de último recurso para intentar que un servidor de base de datos dañado vuelva a arrancar
+# pg_resetxlog : hasta la versión 9.6 tiene el mismo objetivo que pg_resetwal
+
 pg_resetwal -f -D /sysx/data
 pg_resetxlog -f -D  /sysx/data
+
+
+********** Alternativa **********
+1.- Se ejecuta este comando para validar el el utimo archivo wal en uso
+/rutabinario/bin/pg_controldata -D /rutadata/data | grep "REDO WAL"
+ 
+ 
+2.- (A partir de que se le indica el último wal utilizado, hace la depuración de forma
+regresiva para los archivos ya leídos pero que seguían conservando.) 
+Una vez que se obtiene el dato se ejecuta el siguiente comando:
+
+/rutabinario/bin/pg_archivecleanup /RUTADIRECTORIOWAL/0000000100000440000000E9
 ```
 
 
