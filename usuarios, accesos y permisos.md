@@ -59,6 +59,9 @@ SELECT current_user;
 
 /* Sirve para cambiar de usuario */
  SET ROLE test_user;
+
+-- volver al rol original
+RESET ROLE ;
 ```
 
 
