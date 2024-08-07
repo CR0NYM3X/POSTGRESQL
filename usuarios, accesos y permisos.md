@@ -129,6 +129,7 @@ ALTER USER postgres RENAME TO postgres_old;
 a un role 
 
 **Ejemplo de uso NOINHERIT** <br><br>
+cuando esta en en true quiere decir que el usuario tiene la capacidad de heredar sus permisos , solo se puede heredar permisos nivel granulares no admin
 
 test_role1 con permisos a la tabla clientes en la base de datos test_dba<br>
 test_role2 con permiso a la tabla empleados en la base de datos test_dba <br>
@@ -514,6 +515,8 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO tabla_creator;
 ALTER USER mi_user2 SET ROLE tabla_creator;
 GRANT rol_name1 TO user12;
 GRANT tabla_creator TO my_usuario2;
+
+grant test_role to USER_TEST WITH ADMIN OPTION; --- ES COMO EL WITH GRANT OPTION, LE CONCEDE AL USUARIO TAMBIEN OTORGAR ESTE PERMISO A OTROS USUARIOS 
 
 REVOKE role_a, role_b FROM my_user;
 ```
