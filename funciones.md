@@ -59,9 +59,12 @@ RETURNS NULL ON NULL INPUT: Similar a STRICT, pero más explícito.
 LEAKPROOF: Indica que la función no revela información sobre sus argumentos a través de canales laterales.
 
 --- PARALLEL: Define si la función puede ser ejecutada en paralelo  
-	PARALLEL SAFE: La función es segura para ser ejecutada en paralelo.
-	PARALLEL RESTRICTED: La función puede ser ejecutada en paralelo, pero con ciertas restricciones.
-	PARALLEL UNSAFE: La función no es segura para ser ejecutada en paralelo.
+	PARALLEL SAFE: La función es segura para ser ejecutada en paralelo ,
+		solo aplica para  Las funciones que solo leen datos.
+	PARALLEL RESTRICTED: La función puede ser ejecutada en paralelo, pero con ciertas restricciones ,
+		solo aplica para Acceso a tablas temporales o conexiones de cliente.
+	PARALLEL UNSAFE: La función no es segura para ser ejecutada en paralelo ,
+		solo aplica para Funciones que modifican datos (usando INSERT, UPDATE, DELETE).
 
 WINDOW: Indica que la función es una función de ventana.
 SUPPORT: Especifica una función de soporte para optimizaciones
