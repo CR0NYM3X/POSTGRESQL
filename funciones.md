@@ -169,6 +169,11 @@ SELECT parameter_name, data_type, ordinal_position FROM information_schema.param
 # try catch 
 ```SQL
 
+variables predefinidas para obtener información sobre el error que ocurrió.
+SQLERRM:  Contiene el mensaje de error asociado con el error que ocurrió.
+SQLSTATE:  Contiene el código de estado SQL (SQLSTATE) del error que ocurrió. Este es un código estándar de cinco caracteres que identifica el tipo de error.
+PG_EXCEPTION_CONTEXT: Proporciona información adicional sobre el contexto en el que ocurrió el error.
+
 DO $$
 BEGIN
     -- Bloque de código donde puede ocurrir una excepción
@@ -244,7 +249,7 @@ END $$;
 
 https://www.postgresql.org/docs/current/plpgsql-errors-and-messages.html
 https://www.postgresql.org/docs/current/plpgsql-control-structures.html
-
+https://www.postgresqltutorial.com/postgresql-plpgsql/postgresql-exception/
 
 
 
@@ -400,6 +405,14 @@ columnas RECORD;
 --- ejecutar querys 
 EXECUTE 'select version()'
 
+--- guardar la ejecucion en una variable
+EXECUTE 'select version()'  into valor_query ;
+
 --- puedes retornar sin necesidad  retornar a fuerzas un valor 
 RETURN ;
+
+--- no retornar nada
+RETURNS VOID
+
 ```
+
