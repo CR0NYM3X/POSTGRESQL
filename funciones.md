@@ -47,8 +47,7 @@ SECURITY INVOKER: Ejecuta la función con los privilegios del usuario que la lla
 	STABLE: La función devuelve los mismos resultados para las mismas entradas dentro de una sola consulta.
 	IMMUTABLE: La función siempre devuelve los mismos resultados para las mismas entradas, independientemente de cuándo se llame.
 
-STABLE: Indica que la función devuelve el mismo resultado siempre que se le den los mismos parámetros dentro de una sola consulta.
-IMMUTABLE: Indica que la función siempre devuelve el mismo resultado para los mismos parámetros y no tiene efectos secundarios.
+
 LANGUAGE: Especifica el lenguaje en el que está escrita la función (por ejemplo, plpgsql, sql, c, etc.).
 RETURNS: Define el tipo de dato que devuelve la función.
 COST: Estima el costo de ejecución de la función, lo que puede influir en el planificador de consultas.
@@ -56,7 +55,10 @@ ROWS: Especifica el número estimado de filas que devuelve una función que reto
 SET: Permite establecer parámetros de configuración específicos para la duración de la función.
 STRICT: La función no se llama si alguno de sus argumentos es nulo.
 RETURNS NULL ON NULL INPUT: Similar a STRICT, pero más explícito.
+
 LEAKPROOF: Indica que la función no revela información sobre sus argumentos a través de canales laterales.
+	 no debe revelar información sobre sus argumentos a través de mensajes de error u otros medios.
+	Esto es crucial para evitar que usuarios no autorizados obtengan información sensible.
 
 --- PARALLEL: Define si la función puede ser ejecutada en paralelo  
 	PARALLEL SAFE: La función es segura para ser ejecutada en paralelo ,
