@@ -1,3 +1,5 @@
+BUSCAR PAR QUE SIRVE currval
+
 # Descripción Rápida de Sequences:
 Las Sequences se utilizan para generar valores autoincrementales, como claves primarias en una tabla
 
