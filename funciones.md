@@ -444,5 +444,7 @@ RETURN ;
 --- no retornar nada
 RETURNS VOID
 
+--- Salir del bucle    
+   EXIT;   
 ```
 
