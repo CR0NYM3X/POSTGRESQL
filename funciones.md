@@ -376,8 +376,7 @@ RETURNS TABLE(mi_entero INT, mi_texto VARCHAR)
 AS $$
 BEGIN
     -- Retorna los valores directamente, asegurando que el tipo de dato sea VARCHAR
-    RETURN QUERY
-    SELECT 42, 'Hola, mundo'::VARCHAR;
+    RETURN QUERY SELECT 42, 'Hola, mundo'::VARCHAR;
 END;
 $$ LANGUAGE plpgsql;
 
