@@ -447,3 +447,9 @@ https://www.depesz.com/
 ```sql
 SELECT TO_DATE('October 09, 2012', 'Month DD, YYYY');
 ```
+
+
+### Manejo de strings 
+```
+split_part('16.0.4135.4', '.',1)
+```
