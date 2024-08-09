@@ -48,6 +48,34 @@ ALTER SEQUENCE mi_secuencia MINVALUE 1;
 ALTER SEQUENCE mi_secuencia CYCLE;
 
 
+#### Actualizar las secuencias al hacer un delete 
+ ```sql 
+CREATE TABLE empleados (
+    empleado_id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL
+);
+
+
+INSERT INTO empleados (nombre) VALUES ('Juan Pérez'), ('María López');
+
+CREATE OR REPLACE FUNCTION ajustar_secuencia() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM setval('empleados_empleado_id_seq', (SELECT MAX(empleado_id) FROM empleados));
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_ajustar_secuencia
+AFTER DELETE ON empleados
+FOR EACH STATEMENT
+EXECUTE FUNCTION ajustar_secuencia();
+
+DELETE FROM empleados WHERE empleado_id = 1;
+
+INSERT INTO empleados (nombre) VALUES ('Juan Pérez'), ('María López');
+select * from empleados;
+ ```  
+
 ### eliminar una secuencia 
 
 DROP SEQUENCE mi_secuencia;
