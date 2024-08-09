@@ -427,6 +427,35 @@ stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te perm
 
   autovacuum_vacuum_cost_limit = -1: Este parámetro controla el costo máximo que PostgreSQL está dispuesto a gastar en el vaciado automático. Un valor negativo significa que no hay límite en el costo del vaciado automático. Ajustar este valor te permite controlar cuántos recursos del sistema se asignan al vaciado automático en función de las necesidades y la capacidad de tu sistema.
 
+
+############# también estan estos parámetros que son de mantenimientos pero se encuentran en otras categorías 
+-------- categoria:  RESOURCE USAGE (except WAL)  --------
+
+maintenance_io_concurrency
+maintenance_work_mem
+autovacuum_work_mem
+max_parallel_maintenance_workers
+vacuum_cost_delay 
+vacuum_cost_page_hit
+vacuum_cost_page_miss
+vacuum_cost_page_dirty
+vacuum_cost_limit
+
+-------- categoria: REPORTING AND LOGGING --------
+log_autovacuum_min_duration =
+					
+-------- categoria:  CLIENT CONNECTION DEFAULTS --------
+vacuum_freeze_table_age 
+vacuum_freeze_min_age  
+vacuum_failsafe_age  
+vacuum_multixact_freeze_table_age  
+vacuum_multixact_freeze_min_age  
+vacuum_multixact_failsafe_age
+
+-------- categoria: REPLICATION --------
+vacuum_defer_cleanup_age  
+
+
 ```
 
 
