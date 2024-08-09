@@ -219,8 +219,16 @@ INSERT INTO empleados (nombre) VALUES ('Juan Pérez'), ('María López');
 
 CREATE OR REPLACE FUNCTION ajustar_secuencia() RETURNS TRIGGER AS $$
 BEGIN
-    PERFORM setval('empleados_empleado_id_seq', (SELECT MAX(empleado_id) FROM empleados));
-    RETURN NULL;
+
+  	BEGIN
+		PERFORM setval('empleados_empleado_id_seq', (SELECT MAX(empleado_id) FROM empleados));
+		EXCEPTION
+		 WHEN OTHERS THEN  
+			insert into   fdw_conf.log_msg_error(obj_name,msg) select  'update_sequences_report_connection()', SQLERRM;
+
+	END;
+   
+    	RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
