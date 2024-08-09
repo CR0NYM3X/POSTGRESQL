@@ -1,4 +1,6 @@
 
+DROP INDEX IF EXISTS index_emp_nombre CASCADE;
+
 # INDEX
 La indexación es un proceso en el que se crea una estructura adicional que almacena los valores de una columna específica de una tabla en un formato optimizado para la búsqueda rápida. Esto permite que las consultas que involucran esa columna sean mucho más eficientes, ya que no se requiere recorrer toda la tabla para encontrar los datos.
 
