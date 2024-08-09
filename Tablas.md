@@ -217,6 +217,12 @@ ALTER TABLE nombre_de_la_tabla RENAME COLUMN nombre_anterior TO nuevo_nombre;
 ALTER TABLE mi_tabla ALTER COLUMN mi_columna TYPE integer;
  ``` 
 
+# Agregar un Constraint a una columna 
+ ``` 
+ALTER TABLE usuarios
+ADD CONSTRAINT unique_email UNIQUE (email);
+ ``` 
+
 ## Agregar una restricción a una columna:
  ```sql
 ALTER TABLE nombre_de_la_tabla ALTER COLUMN nombre_de_la_columna SET NOT NULL;
@@ -405,7 +411,7 @@ SELECT * FROM pg_partition_tree('ventas_abril_junio');
 
 
 ### Tipos de CONSTRAINTS
-
+Los CONSTRAINTS (restricciones) son reglas que se aplican a las columnas de una tabla para asegurar la integridad y validez de los datos
 ```SQL 
 1. **NOT NULL**: Asegura que una columna no pueda tener valores nulos.
    
