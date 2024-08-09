@@ -134,6 +134,13 @@ CREATE TABLE public.nombre_de_la_tabla (
     nombre VARCHAR (255),
     edad INT
 );
+
+--- Crear una tabla sin especificar los type de los campos 
+create table public.nombre_de_la_tabla  as select * from my_tabla_test;
+
+---- crear una tabla con un select es igual que el "CREATE con AS "
+select * into nombre_de_la_tabla from my_tabla_test;
+
 ```
   - **`public.nombre_de_la_tabla`** colocamos el schema.mi_tabla si no se coloca el esquema por default es el esquema public
   - **`id serial PRIMARY KEY`** *crea una columna llamada "id" que es una clave primaria (primary key) y se incrementa automáticamente (serial) cada vez que se inserta una fila.* <br>
