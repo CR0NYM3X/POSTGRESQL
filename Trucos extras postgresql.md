@@ -442,3 +442,8 @@ https://www.crunchydata.com/files/stig/PGSQL-STIG-v1r1.pdf
 
 https://www.depesz.com/
 ```
+
+### Fechas 
+```sql
+SELECT TO_DATE('October 09, 2012', 'Month DD, YYYY');
+```
