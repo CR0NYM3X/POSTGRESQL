@@ -402,3 +402,115 @@ drop table ventas_octubre_diciembre;
 SELECT * FROM pg_partition_tree('ventas_abril_junio');
 
 ```
+
+
+### Tipos de CONSTRAINTS
+
+```SQL 
+1. **NOT NULL**: Asegura que una columna no pueda tener valores nulos.
+   
+   CREATE TABLE productos (
+       producto_id SERIAL PRIMARY KEY,
+       nombre VARCHAR(100) NOT NULL
+   );
+   
+
+2. **UNIQUE**: Garantiza que todos los valores en una columna sean únicos.
+   
+   CREATE TABLE usuarios (
+       usuario_id SERIAL PRIMARY KEY,
+       email VARCHAR(100) UNIQUE
+   );
+   
+
+3. **PRIMARY KEY**: Combina `NOT NULL` y `UNIQUE`. Identifica de manera única cada fila en una tabla.
+   
+   CREATE TABLE ordenes (
+       orden_id SERIAL PRIMARY KEY,
+       fecha DATE NOT NULL
+   );
+   
+
+4. **FOREIGN KEY**: Asegura la integridad referencial entre dos tablas.
+   
+   CREATE TABLE detalles_orden (
+       detalle_id SERIAL PRIMARY KEY,
+       orden_id INT,
+       producto_id INT,
+       CONSTRAINT fk_orden
+           FOREIGN KEY(orden_id) 
+           REFERENCES ordenes(orden_id),
+       CONSTRAINT fk_producto
+           FOREIGN KEY(producto_id) 
+           REFERENCES productos(producto_id)
+   );
+   
+
+5. **CHECK**: Verifica que los valores en una columna cumplan con una condición específica.
+   
+   CREATE TABLE empleados (
+       empleado_id SERIAL PRIMARY KEY,
+       salario NUMERIC CHECK (salario > 0)
+   );
+
+ 
+ 
+6. **EXCLUSION**: Asegura que, para un conjunto de columnas, no haya dos filas que cumplan con una condición específica.
+	CREATE TABLE reservas (
+		reserva_id SERIAL PRIMARY KEY,
+		recurso_id INT,
+		periodo TSTZRANGE,
+		EXCLUDE USING GIST (recurso_id WITH =, periodo WITH &&)
+	);
+```
+
+
+
+
+### crear una llave foránea en PostgreSQL
+```sql
+
+
+### Paso 1: Crear las Tablas
+Primero, necesitas crear las tablas que estarán relacionadas. Por ejemplo, vamos a crear una tabla `clientes` y una tabla `pedidos`.
+
+
+CREATE TABLE clientes (
+    cliente_id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE pedidos (
+    pedido_id SERIAL PRIMARY KEY,
+    fecha DATE NOT NULL,
+    cliente_id INT,
+    CONSTRAINT fk_cliente
+        FOREIGN KEY(cliente_id) 
+        REFERENCES clientes(cliente_id)
+);
+ 
+
+### Paso 2: Insertar Datos en las Tablas
+Ahora, vamos a insertar algunos datos en las tablas.
+ 
+INSERT INTO clientes (nombre) VALUES ('Juan Pérez'), ('María López');
+
+INSERT INTO pedidos (fecha, cliente_id) VALUES ('2024-08-08', 1), ('2024-08-09', 2);
+ 
+
+### Paso 3: Verificar la Relación
+Puedes verificar que la relación se ha establecido correctamente consultando las tablas.
+ 
+SELECT * FROM clientes;
+SELECT * FROM pedidos;
+
+
+##### Ejemplo por si ya existe la tabla 
+
+ALTER TABLE pedidos
+ADD CONSTRAINT fk_cliente
+	FOREIGN KEY (cliente_id) 
+	REFERENCES clientes(cliente_id);
+
+
+```
