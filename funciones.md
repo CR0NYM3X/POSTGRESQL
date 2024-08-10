@@ -458,6 +458,9 @@ SELECT * FROM ejecutar_consulta_dinamica('select schemaname::varchar,tablename::
 ----- 	EJECUTAR UNA FUNCION 
 perform mssql.fun_test_connection();
 
+---- Ejecutar una funcion y guardar el resultado en variable
+var1 : =  mssql.fun_test_connection();
+
 --- DECLARAR UNA VARIABLE CON UN TIPO DE MULTIPLES COLUMNAS Y TAMAÑO
 columnas RECORD;
 
