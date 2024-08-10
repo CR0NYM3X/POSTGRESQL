@@ -436,6 +436,22 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
+### FUNCIONES QUE RETORNAN TABLAS VARIABLES 
+```
+CREATE OR REPLACE FUNCTION ejecutar_consulta_dinamica(consulta TEXT)
+RETURNS SETOF RECORD AS $$
+BEGIN
+	
+    RETURN QUERY EXECUTE consulta;
+END;
+$$ LANGUAGE plpgsql;
+
+
+SELECT * FROM ejecutar_consulta_dinamica('select schemaname::varchar,tablename::varchar,tableowner::varchar from pg_tables limit 10')  AS t(schemaname varchar,tablename varchar, tableowner varchar);
+```
+
+
+
 
 # TIPS
 ```
