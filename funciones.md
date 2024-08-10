@@ -418,10 +418,23 @@ $$ LANGUAGE plpgsql;
  select  * from mi_funcion_registro();
 
 ```
- 
 
+### Agregar alias a los parámetros 
+```
+CREATE OR REPLACE FUNCTION ejemplo_funcion(parametro INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+    parametro_alias ALIAS FOR $1; -- Alias para el parámetro
+    parametro INTEGER; -- Variable local con el mismo nombre
+BEGIN
+    -- Asignar valor a la variable local
+    parametro := parametro_alias + 10;
 
-
+    -- Usar el alias del parámetro
+    RETURN parametro_alias * parametro;
+END;
+$$ LANGUAGE plpgsql;
+```
 
 
 # TIPS
