@@ -202,6 +202,45 @@ $$;
 
 ########## BUCLES FOR ########## 
 
+ do $$
+DECLARE
+    -- Declarar variables para almacenar los resultados
+    columnas RECORD;
+BEGIN
+    -- Ejecutar la consulta y almacenar los resultados en las variables
+    FOR columnas IN
+        EXECUTE 'select table_schema,table_name,table_type from information_schema.tables limit 10 ;'
+    LOOP
+        -- Insertar los valores en la tabla destino
+        RAISE NOTICE '% - % - % ', columnas.table_schema, columnas.table_name, columnas.table_type;
+    END LOOP;
+END;
+$$ ;
+
+
+
+ do $$
+DECLARE
+    -- Declarar variables para almacenar los resultados
+    var1 text;
+    var2 TEXT;
+    var3 text;
+BEGIN
+    -- Ejecutar la consulta y almacenar los resultados en las variables
+    FOR var1, var2, var3 IN
+        EXECUTE 'select table_schema,table_name,table_type from information_schema.tables limit 10 ;'
+    LOOP
+        -- Insertar los valores en la tabla destino
+        RAISE NOTICE '% - % - % ', var1, var2, var3;
+    END LOOP;
+END;
+$$ ;
+
+
+
+
+
+
 DO $$
 DECLARE
     i INT;
@@ -214,20 +253,7 @@ $$;
 
 
 
-DO $$
-DECLARE
-    columnas RECORD;
-BEGIN
-    -- Bucle FOR para recorrer las filas
-    FOR columnas IN
-        select table_schema,table_name, table_type from information_schema.tables  where not table_schema in('pg_catalog','information_schema') and table_type = 'FOREIGN' 
-    LOOP
-        -- Imprimir la información de cada empleado
-        RAISE NOTICE 'table_schema: %, table_name: %, table_type: %', columnas.table_schema, columnas.table_type, columnas.table_type;
-    END LOOP;
-END;
-$$;
-
+ 
 
 
 ########## BUCLES FOREACH  ########## 
