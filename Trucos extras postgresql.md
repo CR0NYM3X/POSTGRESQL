@@ -481,7 +481,7 @@ split_part('16.0.4135.4', '.',1)
 ```
 
 ### realizar insert ,  en caso de error no finalizar la transaccion 
-```
+```sql
 DO $$
 BEGIN
     BEGIN;
