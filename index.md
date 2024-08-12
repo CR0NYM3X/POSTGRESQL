@@ -34,6 +34,11 @@ CREATE INDEX   nombre_del_indice ON nombre_de_tabla USING btree (columna1, colum
 ---- crear un índice único compuesto, estamos añadiendo una restricción (constraint) a la tabla, para que los valores de las columnas no sean iguales 
 CREATE UNIQUE INDEX   nombre_del_indice ON nombre_de_tabla USING btree (columna1, columna2, ...);
 
+---- Ejemplo 1: Índice Único Condicional
+Supongamos que tienes una tabla de usuarios y quieres asegurarte de que los correos electrónicos sean únicos, pero solo para los usuarios activos.
+
+CREATE UNIQUE INDEX unique_email_active_users ON usuarios (email) WHERE activo = true;
+
 ```
 
 
