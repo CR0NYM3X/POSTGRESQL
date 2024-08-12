@@ -479,3 +479,23 @@ SELECT TO_DATE('October 09, 2012', 'Month DD, YYYY');
 ```
 split_part('16.0.4135.4', '.',1)
 ```
+
+### realizar insert ,  en caso de error no finalizar la transaccion 
+```
+DO $$
+BEGIN
+    BEGIN;
+
+    -- Tus 1000 INSERTs
+    INSERT INTO tu_tabla (columna1, columna2) VALUES (valor1, valor2);
+    INSERT INTO tu_tabla (columna1, columna2) VALUES (valor3, valor4);
+    -- ... más INSERTs ...
+
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE NOTICE 'Se ha producido un error, se ha revertido la transacción.';
+END;
+$$;
+```
