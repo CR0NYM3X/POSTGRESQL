@@ -466,6 +466,8 @@ Los CONSTRAINTS (restricciones) son reglas que se aplican a las columnas de una 
        salario NUMERIC CHECK (salario > 0)
    );
 
+	ALTER TABLE nombre_de_la_tabla
+	ADD CONSTRAINT nombre_de_la_columna_no_vacia CHECK (nombre_de_la_columna <> '');
  
  
 6. **EXCLUSION**: Asegura que, para un conjunto de columnas, no haya dos filas que cumplan con una condición específica.
