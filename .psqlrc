@@ -200,3 +200,4 @@ select now() - pg_postmaster_start_time() AS uptime_server , pg_conf_load_time()
 -- extras 
 
 -- SET row_security = off    : desactivar RLS temporalmente estas políticas para una sesión específica, útil para tareas administrativas o de mantenimiento
+--- \set ON_ERROR_STOP on  :  controlar el comportamiento en caso de errores. en caso de un error detendra la ejecucion de psql 
