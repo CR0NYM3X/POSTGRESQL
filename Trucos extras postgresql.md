@@ -132,7 +132,18 @@ BEGIN
 END;
 $$;
 
-########## CONDICIONEALES CASE WHEN ########## 
+########## CONDICIONEALES CASE WHEN ##########
+
+---- funciona como switch 
+select 
+      CASE 'p'
+          WHEN 'a' THEN 'agg'
+          WHEN 'w' THEN 'window'
+          WHEN 'p' THEN 'proc'
+          ELSE 'func'
+      END as Type;
+
+--- funciona como if 
 SELECT title, length,
        CASE
            WHEN length > 0 AND length <= 50 THEN 'Corto'
