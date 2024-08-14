@@ -1,7 +1,7 @@
 
 
 # Ejemplos de uso 
-```
+```sql
 
 /************  add to postgresql.conf *************\
 shared_preload_libraries = 'pg_cron,pg_stat_statements'
