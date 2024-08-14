@@ -54,7 +54,7 @@ AEST (Australian Eastern Standard Time): Hora Estándar del Este de Australia (U
 select * from cron.job;
 select * from cron.job_run_details order by start_time desc ;
 
----- agregar una tarea/job
+---- agregar una tarea/job, si hacer un nuevo job y dejas el mismo nombre , suplantaras el anterior 
 SELECT cron.schedule('create_copy', '32 14 * * *', ' COPY  ( select name,setting from pg_settings)  TO ''/tmp/pg_settings-25072024.csv'' ; ');
 
 ---- especificar los parametros del job a los que se va conectar
