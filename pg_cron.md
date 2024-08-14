@@ -3,15 +3,21 @@
 
 ```sql
 
---- para ver la hora en linux puedes usar 
-date -u
-/usr/bin/timedatectl
-
 -- /************  add to postgresql.conf *************\
 shared_preload_libraries = 'pg_cron,pg_stat_statements'
 cron.database_name = 'postgres'
 cron.host = '/tmp' # Connect via a unix domain socket:
 cron.timezone = 'GMT' -# Este es un estandar asi que debes de saber que hora es en el estandar 
+
+
+--- Ver la hora en linux  
+date -u
+/usr/bin/timedatectl
+
+---- Ver la hora en posgresql
+SELECT current_timestamp AT TIME ZONE 'UTC';
+SELECT current_timestamp AT TIME ZONE 'GMT';
+SELECT current_timestamp AT TIME ZONE 'MST';
 
 
 --- la hora UTC y GMT es la misma 
