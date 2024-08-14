@@ -51,6 +51,9 @@ CRUD = Create, Read, Update, Delete
 
 ### Ver con que usuario estoy conectado a la base de datos 
 ```sql
+--- id del proceso actual 
+pg_backend_pid()
+
 /* ves que con que usuario iniciaste session */
 SELECT session_user;
 
