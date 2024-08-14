@@ -1,6 +1,11 @@
 
 ### Ejemplos de uso 
 
+> [!IMPORTANT]
+> Es importante poner atencion a la hora estandar que configuras en el cron, ya que la query se va ejecutar a la hora estandar y no ha la hora del servidor
+
+
+
 ```sql
 
 --- Ver los parametros que se pueden configurar con PG_CRON
