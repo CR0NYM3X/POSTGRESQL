@@ -520,4 +520,12 @@ string_agg(columnsname,',')
 
 --- versiones 8 
   array_to_string(array_agg(c.attname), ', ') AS column_names
+
+---- convertir el array en columnas 
+SELECT
+    id,
+    unnest(mi_array) AS elemento
+FROM
+    mi_tabla;
+
 ```
