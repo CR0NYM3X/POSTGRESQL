@@ -68,7 +68,7 @@ select cron.schedule_in_database('create_copy', '32 14 * * *', ' COPY  ( select 
 ---- modificar un job 
 select cron.alter_job(job_id bigint, schedule text DEFAULT NULL::text, command text DEFAULT NULL::text, database text DEFAULT NULL::text, username text DEFAULT NULL::text, active boolean DEFAULT NULL::boolean )
 
---- Eliminar una job
+--- Eliminar jobs
 SELECT cron.unschedule(1); --- colocar id 
 SELECT cron.unschedule('create_copy' ); --- colocar nombre del job 
 
