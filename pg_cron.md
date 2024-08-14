@@ -1,6 +1,7 @@
 
 
-# Ejemplos de uso 
+### Ejemplos de uso 
+
 ```sql
 
 /************  add to postgresql.conf *************\
