@@ -72,7 +72,13 @@ select cron.alter_job(job_id bigint, schedule text DEFAULT NULL::text, command t
 SELECT cron.unschedule(1); --- colocar id 
 SELECT cron.unschedule('create_copy' ); --- colocar nombre del job 
 
+-- Eliminar todo 
+truncate cron.job_run_details RESTART IDENTITY;
+truncate  cron.job RESTART IDENTITY;
 
+--- Reiniciar las secuencias 
+SELECT setval('cron.jobid_seq', COALESCE((SELECT max(jobid) FROM cron.job),1));
+SELECT setval('cron.runid_seq', COALESCE((SELECT max(runid) FROM cron.job_run_details),1));
 
 
 
