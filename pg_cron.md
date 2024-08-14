@@ -1,15 +1,20 @@
 
-
 ### Ejemplos de uso 
 
 ```sql
 
-/************  add to postgresql.conf *************\
+--- para ver la hora en linux puedes usar 
+date -u
+/usr/bin/timedatectl
+
+-- /************  add to postgresql.conf *************\
 shared_preload_libraries = 'pg_cron,pg_stat_statements'
 cron.database_name = 'postgres'
 cron.host = '/tmp' # Connect via a unix domain socket:
 cron.timezone = 'GMT' -# Este es un estandar asi que debes de saber que hora es en el estandar 
 
+
+--- la hora UTC y GMT es la misma 
 UTC (Tiempo Universal Coordinado): El estándar de tiempo actual.
 GMT (Greenwich Mean Time): Hora del Meridiano de Greenwich.
 EST (Eastern Standard Time): Hora Estándar del Este (UTC-5).
