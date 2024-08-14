@@ -510,3 +510,14 @@ EXCEPTION
 END;
 $$;
 ```
+
+
+
+### string_agg y array_agg 
+```sql
+--- versiones nuevas > 10
+string_agg(columnsname,',')
+
+--- versiones 8 
+  array_to_string(array_agg(c.attname), ', ') AS column_names
+```
