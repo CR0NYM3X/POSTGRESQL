@@ -528,4 +528,9 @@ SELECT
 FROM
     mi_tabla;
 
+
+--- buscar un resultado en un arreglo
+SELECT *
+FROM mi_tabla
+WHERE 'perro' = ANY(mi_array);
 ```
