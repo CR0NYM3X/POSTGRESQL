@@ -551,6 +551,10 @@ SELECT SPLIT_PART('A,B,C', ',', 3); --- C
 
 -- Cuenta la cantidad de caracteres 
 SELECT LENGTH('Hola Mundo'); --- 10
+
+----- concatenar/juntar columnas 
+SELECT CONCAT(animal, ' ', comida, ' ', color) AS columna_concatenada FROM (select 'PERRO' as animal,'LECHE' as  comida, 'ROJO' as color) as b;
+SELECT  animal ||  ' ' ||  comida ||  ' ' ||  color  AS columna_concatenada FROM (select 'PERRO' as animal,'LECHE' as  comida, 'ROJO' as color) as b;
 ```
 
 
