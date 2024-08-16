@@ -543,7 +543,7 @@ SELECT * FROM mi_tabla WHERE 'perro' = ANY(mi_array);
 ```
 
 
-##### String
+### String
 
 ```SQL
 ---- divide en partes un string , colocando un delimitador y indica que parte quieres 
@@ -551,4 +551,10 @@ SELECT SPLIT_PART('A,B,C', ',', 3); --- C
 
 -- Cuenta la cantidad de caracteres 
 SELECT LENGTH('Hola Mundo'); --- 10
+```
+
+
+### generar una serie de valores dentro de un intervalo especificado. P
+```SQL
+SELECT generate_series('2024-01-01'::date  /* INICIO */ , '2024-01-10'::date  /* FIN */, '1 day'  /* INTERVALO */); --- inicio, fin, intervalo
 ```
