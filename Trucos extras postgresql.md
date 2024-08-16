@@ -519,18 +519,36 @@ $$;
 string_agg(columnsname,',')
 
 --- versiones 8 
-  array_to_string(array_agg(c.attname), ', ') AS column_names
-
----- convertir el array en columnas 
-SELECT
-    id,
-    unnest(mi_array) AS elemento
-FROM
-    mi_tabla;
+ array_to_string(array_agg(c.attname), ', ') AS column_names
 
 
---- buscar un resultado en un arreglo
-SELECT *
-FROM mi_tabla
-WHERE 'perro' = ANY(mi_array);
+
+```
+
+### Arrays 
+```sql
+SELECT string_to_array('8192 bytes', ' ') ; -- {8192,bytes} (Convierte un string en un array ) 
+select array_to_string( '{8192,bytes}'::text[] , ' --  '); --- 8192 --  bytes  (Convierte un array en un string)
+
+---- convertir el array en filas 
+SELECT    unnest('{8192,bytes}'::text[]) ;
+
+---- Convierte varias filas array en una sola fila es como el string_agg pero en arrays 
+select array_agg(test_array) from (SELECT  '{8192,bytes}'::text[] as test_array union all select   '{9999,bytes}'::text[] ) as a ;
+
+
+--- buscar un valor en un arreglo
+SELECT * FROM mi_tabla WHERE 'perro' = ANY(mi_array);
+
+```
+
+
+##### String
+
+```SQL
+---- divide en partes un string , colocando un delimitador y indica que parte quieres 
+SELECT SPLIT_PART('A,B,C', ',', 3); --- C
+
+-- Cuenta la cantidad de caracteres 
+SELECT LENGTH('Hola Mundo'); --- 10
 ```
