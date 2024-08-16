@@ -558,3 +558,28 @@ SELECT LENGTH('Hola Mundo'); --- 10
 ```SQL
 SELECT generate_series('2024-01-01'::date  /* INICIO */ , '2024-01-10'::date  /* FIN */, '1 day'  /* INTERVALO */); --- inicio, fin, intervalo
 ```
+
+
+### Dividir letras 
+```sql
+WITH RECURSIVE letters AS (
+    SELECT 1 AS position, SUBSTRING('abcd', 1, 1) AS letter
+    UNION ALL
+    SELECT position + 1, SUBSTRING('abcd', position + 1, 1)
+    FROM letters
+    WHERE position < LENGTH('abcd')
+)
+SELECT letter
+FROM letters;
+
++--------+
+| letter |
++--------+
+| a      |
+| b      |
+| c      |
+| d      |
++--------+
+
+
+```
