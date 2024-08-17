@@ -251,5 +251,7 @@ auditorias con pgaudit: https://www.postgresql.org/message-id/attachment/41749/p
 https://www.postgresql.org/docs/current/plpgsql-trigger.html <br>
 Libro PDF de Postgresql tambien viene sobre los triggers: https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf <br>
 Lista de comandos soportados Event trigger:   https://www.postgresql.org/docs/current/event-trigger-matrix.html <br>
+https://www.postgresql.org/docs/current/sql-createtrigger.html <br> 
+https://www.postgresql.org/docs/current/plpgsql-trigger.html <br> 
 
 How to Use Event Triggers in PostgreSQL:  https://www.enterprisedb.com/postgres-tutorials/how-use-event-triggers-postgresql <br>
