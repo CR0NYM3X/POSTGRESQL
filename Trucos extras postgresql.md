@@ -587,3 +587,47 @@ FROM letters;
 
 
 ```
+
+
+### json
+
+
+```sql
+CREATE TABLE ejemplo (
+    id serial PRIMARY KEY,
+    nombre text,
+    edad int
+);
+
+
+INSERT INTO ejemplo (nombre, edad)
+SELECT nombre, edad
+FROM json_populate_recordset(NULL::ejemplo, '[{"nombre": "Juan", "edad": 30}, {"nombre": "Ana", "edad": 25}]');
+
+
+
+
+-----------------------
+
+CREATE TABLE ejemplo (
+    id serial PRIMARY KEY,
+    datos json
+);
+
+
+INSERT INTO ejemplo (datos) VALUES 
+('[{"nombre": "Juan", "edad": 30}, {"nombre": "Ana", "edad": 25}]');
+
+
+
+SELECT *
+FROM json_to_recordset(
+    (SELECT datos FROM ejemplo WHERE id = 1)
+) AS x(nombre text, edad int);
+
+
+
+
+```
+
+
