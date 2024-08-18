@@ -62,16 +62,19 @@
 ### **1. Monitoreo y Métricas:**
 
 
+************ MONITOREO DE LOGS ************
+- **pgBadger:** Una herramienta externa que analiza los logs de PostgreSQL para generar informes detallados de rendimiento. Es especialmente útil para entender cómo las consultas y la actividad del sistema afectan el rendimiento a lo largo del tiempo.
 
-************ Monitoreo EN CONSULTAS ************
+
+************ MONITOREO EN CONSULTAS ************
 - **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
 - **pg_stat_monitor:** Extensión avanzada para monitoreo de consultas.
 -  **powa (PostgreSQL Workload Analyzer):**  Un sistema de monitoreo que proporciona análisis detallados y gráficos sobre el rendimiento de las consultas, el uso de índices, y otras métricas clave, ayudando a los administradores a identificar y resolver problemas de rendimiento.
 
-************ Monitoreo EN INICIO DE SESION ************
+************ MONITOREO EN INICIO DE SESION ************
 - **pgBouncer:** Pool de conexiones ligero para optimizar el manejo de conexiones.
 
-************ Monitoreo EN ESPACIO ************
+************ MONITOREO DE ESPACIO ************
 - **pgstattuple:** Proporciona estadísticas detalladas sobre la ocupación de espacio en las tablas e índices, incluyendo tuplas muertas y espacio desperdiciado.
 
 
@@ -86,16 +89,11 @@
 
 - **pg_stat_replication:** Proporciona información sobre el estado de la replicación, incluyendo detalles sobre los servidores en standby, el atraso de replicación, y la latencia. Es clave para garantizar la integridad y sincronización de los datos en entornos replicados.
 
-- **pgBadger:** Una herramienta externa que analiza los logs de PostgreSQL para generar informes detallados de rendimiento. Es especialmente útil para entender cómo las consultas y la actividad del sistema afectan el rendimiento a lo largo del tiempo.
-
 - **pgmetrics:** Herramienta de línea de comandos que recopila una amplia gama de métricas sobre el estado de PostgreSQL, incluyendo información sobre el sistema operativo, conexiones, caché, I/O, entre otros. 
 
 - **pg_top:** Similar al comando `top` de Linux, `pg_top` muestra el uso de recursos de PostgreSQL en tiempo real, permitiendo a los administradores identificar procesos que consumen muchos recursos.
 
 - **pganalyze:** Una herramienta externa que proporciona monitoreo avanzado, análisis de rendimiento y recomendaciones de optimización, basada en las estadísticas y configuraciones de tu instancia de PostgreSQL.
-
-
-
 
 
 
