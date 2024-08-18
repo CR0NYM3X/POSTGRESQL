@@ -199,11 +199,10 @@ rendimiento general de la base de datos.
 
 ### **9. Otros:**
 - **dblink:** Ejecuta consultas en bases de datos remotas desde PostgreSQL.
+-**tds_fdw ** Conecta y consulta otras bases SQL server de manera remota.
 - **postgres_fdw:** Conecta y consulta otras bases PostgreSQL de manera remota.
 - **plv8:** Extensión que permite escribir funciones en JavaScript.
-- **pg_partman:** Administra particiones en bases de datos, especialmente útil para series temporales.
-- **pg_top:** Monitorea el uso de recursos de PostgreSQL en tiempo real, similar a `top` en Linux.
-- **pglogical:** Extensión para replicación lógica entre diferentes instancias de PostgreSQL.
+
 
 
 ```
