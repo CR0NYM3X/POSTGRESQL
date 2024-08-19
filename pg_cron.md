@@ -37,7 +37,7 @@ date -u
 ---- Ver la hora en posgresql
 SELECT current_timestamp AT TIME ZONE 'GMT';
 SELECT current_timestamp AT TIME ZONE 'UTC';
-SELECT current_timestamp AT TIME ZONE 'MST';
+SELECT current_timestamp AT TIME ZONE 'MST'; --- este es mi estandar  
 
 
 --- la hora UTC y GMT es la misma 
