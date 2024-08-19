@@ -483,6 +483,10 @@ https://www.depesz.com/
 ### Fechas 
 ```sql
 SELECT TO_DATE('October 09, 2012', 'Month DD, YYYY');
+
+SELECT EXTRACT(HOUR FROM '2024-08-19 12:34:56'::timestamp) AS hora;
+
+SELECT DATE_PART('hour', '2024-08-19 12:34:56'::timestamp) AS hora;
 ```
 
 
