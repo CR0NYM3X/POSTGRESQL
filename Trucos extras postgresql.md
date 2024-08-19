@@ -49,28 +49,6 @@ select lpad('Hola Mundo',20,'-'); -- retorna '----------Hola Mundo'. tambien hay
 
 lower(string): | upper('Hola'); ----- Convertir a mayúsculas o minúsculas 
 
----- restar o sumar dias en fechas
-SELECT CAST(now() AS DATE)
-SELECT CAST(now()::date AS DATE) + CAST('-1 days' AS INTERVAL);
-SELECT  now()::date  + CAST('1 days' AS INTERVAL);
-
----- Sacar los días MES
-select EXTRACT(DAY FROM now()::date)
-select EXTRACT(MONTH FROM now()::date) 
-select EXTRACT(YEAR  FROM now()::date) 
-select EXTRACT(HOURS  FROM now()) 
-
-select age(timestamp '2011-10-01 ', timestamp '2011-11-01') --- saber los días que pasan 
-select ('2011-11-01'::date -  '2011-12-028'::date)--- saber los días que pasan  
-
-select to_char( timestamp'2009-12-31 11:25:50' , 'HH12:MI:SS') >  '12:26:52'
-SELECT timestamp'2009-12-31 12:31:50' - INTERVAL '30 minutes' AS nueva_hora_llegada --- sumar o restar minutos 
-
-
-  select extract(hour  from  timestamp'2009-12-31 12:25:50');
- select extract(minute from  timestamp'2009-12-31 12:25:50');
-select extract(second from  timestamp'2009-12-31 12:25:50');
-
 
 
 
@@ -482,11 +460,45 @@ https://www.depesz.com/
 
 ### Fechas 
 ```sql
+
+--- colocar formato a la fecha
 SELECT TO_DATE('October 09, 2012', 'Month DD, YYYY');
 
-SELECT EXTRACT(HOUR FROM '2024-08-19 12:34:56'::timestamp) AS hora;
+--- darle formato a la hora 
+SELECT TO_TIMESTAMP('10:00:00', 'HH24:MI:SS')::TIME AS formatted_time;
 
 SELECT DATE_PART('hour', '2024-08-19 12:34:56'::timestamp) AS hora;
+
+---- restar o sumar dias en fechas
+SELECT CAST(now() AS DATE)
+SELECT NOW() + INTERVAL '7 hours';
+select now() +  ( 7 ||' hours')::INTERVAL;
+SELECT CAST(now()::date AS DATE) + CAST('-1 days' AS INTERVAL);
+SELECT  now()::date  + CAST('1 days' AS INTERVAL);
+SELECT timestamp'2009-12-31 12:31:50' - INTERVAL '30 minutes' AS nueva_hora_llegada --- sumar o restar minutos 
+SELECT TO_TIMESTAMP('10:00:00', 'HH24:MI:SS')::TIME  + INTERVAL '20 hours' ;
+
+---- Sacar los días MES
+select EXTRACT(DAY FROM now()::date)
+select EXTRACT(MONTH FROM now()::date) 
+select EXTRACT(YEAR  FROM now()::date) 
+select EXTRACT(HOURS  FROM now())
+ 
+
+select age(timestamp '2011-10-01 ', timestamp '2011-11-01') --- saber los días que pasan 
+select ('2011-11-01'::date -  '2011-12-028'::date)--- saber los días que pasan  
+
+select to_char( timestamp'2009-12-31 11:25:50' , 'HH12:MI:SS') >  '12:26:52'
+
+
+
+select extract(hour  from  timestamp'2009-12-31 12:25:50');
+select extract(minute from  timestamp'2009-12-31 12:25:50');
+select extract(second from  timestamp'2009-12-31 12:25:50');
+
+
+
+
 ```
 
 
