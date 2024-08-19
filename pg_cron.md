@@ -39,6 +39,25 @@ SELECT current_timestamp AT TIME ZONE 'GMT';
 SELECT current_timestamp AT TIME ZONE 'UTC';
 SELECT current_timestamp AT TIME ZONE 'MST'; --- este es mi estandar  
 
+--------- Convertir hora MST a GMT
+SELECT 
+TO_TIMESTAMP(
+/* AQUI COLOCAR LA HORA QUE QUIERES EJECUTAR EL CRON --> */ '18:00:00'
+, 'HH24:MI:SS')::TIME  +   (    
+(	
+/*Hora del pg_cron */	(current_timestamp AT TIME ZONE 'GMT') - 	
+/*Hora actual */	(current_timestamp AT TIME ZONE 'MST')::timestamp 
+)||' hours')::INTERVAL
+as "hora_convertida_a_GMT"
+,current_timestamp AT TIME ZONE 'MST' as "hora_estandar_MST"
+,current_timestamp AT TIME ZONE 'GMT' as "hora_actual_GMT"
+,((	
+/*Hora del pg_cron */	(current_timestamp AT TIME ZONE 'GMT') - 	
+/*Hora actual */	(current_timestamp AT TIME ZONE 'MST')::timestamp 
+)||' hours')::INTERVAL as "Horas de Diferencia de GMT y MST"
+;
+
+
 
 --- la hora UTC y GMT es la misma 
 UTC (Tiempo Universal Coordinado): El estándar de tiempo actual.
