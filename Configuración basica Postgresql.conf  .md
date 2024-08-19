@@ -465,11 +465,8 @@ vacuum_defer_cleanup_age
 default_transaction_isolation = 'read committed'
 
 ---------------- NIVELES DE AISLAMIENTO  ----------------
-1. **Read Uncommitted (No Comprobado)**:
-   - no es exactamente igual al (NOLOCK), es el más cercano AL DE SQL SERVER.
-   - Permite lecturas sucias (dirty reads).
-   - No es comúnmente utilizado en aplicaciones debido a la posibilidad de leer datos no confirmados.
-   - Escenario real: Rara vez se utiliza en aplicaciones críticas debido a su falta de consistencia.
+1. **Read Uncommitted (No Comprobado)**: segun esto permite lecturas sucias pero no es verdad, aunque pongas este valor
+no tendra efectos, en realidad  estara red committed ; 
 
 2. **Read Committed (Confirmado)**:
    - Es el nivel de aislamiento predeterminado en PostgreSQL.
