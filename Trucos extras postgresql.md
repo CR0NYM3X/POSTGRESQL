@@ -21,7 +21,7 @@ CROSS join --> Es como juntar 2 tablas con una coma ","  --- > https://www.postg
  SELECT regexp_replace('Hola 123 mu,ndo', '[a-zA-Z0-9\s]', '', 'g') --- quitar letras y números 
  
 select CLOCK_TIMESTAMP()   -- 2022-11-30 16:36:18 hora
-select unnest(array['Enero', 'Febrero', 'Marzo', 'Abril','Mayo','Junio']) --  Convertir columnas a filas
+
 select round(random()*10) ---- random 
 select round(random()* (3-1)  +1 )
 SELECT to_char((3::float/2::float), 'FM999999999.00')
@@ -242,7 +242,7 @@ $$;
 
 
 ########## BUCLES FOREACH  ########## 
-
+---- el FOREACH solo sirve para recorrer arrays 
 DO $$
 DECLARE
     nombres TEXT[] := ARRAY['Juan', 'María', 'Pedro'];
@@ -385,8 +385,6 @@ SELECT regexp_split_to_table('INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER',
 /* REMPLZA  EL TEXTO */
 select replace('hola = mundo','=' , ''); --> Return: 'hola   mundo'
 
-/* CONVIERTE EN TEXTO UN ARRAY */
-SELECT array_to_string( ARRAY['Juan', 'María', 'Pedro']  , ' - ');
 
 ```
 
@@ -541,6 +539,8 @@ string_agg(columnsname,',')
 ```sql
 
 select array['hola','aaaa','jabon']; --- {hola,aaaa,jabon}
+select '{hola,aaaa,jabon}'::text[];  --- {hola,aaaa,jabon}
+
 
 SELECT string_to_array('8192 bytes', ' ') ; -- {8192,bytes} (Convierte un string en un array ) 
 select array_to_string( '{8192,bytes}'::text[] , ' --  '); --- 8192 --  bytes  (Convierte un array en un string)
@@ -557,6 +557,7 @@ select array_agg(test_array) from (SELECT  '{8192,bytes}'::text[] as test_array 
 SELECT * FROM mi_tabla WHERE 'perro' = ANY(mi_array);
 
 
+ 
 ```
 
 
