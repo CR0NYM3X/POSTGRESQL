@@ -556,7 +556,80 @@ select array_agg(test_array) from (SELECT  '{8192,bytes}'::text[] as test_array 
 --- buscar un valor en un arreglo
 SELECT * FROM mi_tabla WHERE 'perro' = ANY(mi_array);
 
+ 
 
+1. **array_append**: Añade un elemento al final de un array.
+   SELECT array_append(ARRAY[1, 2, 3], 4); -- Resultado: {1,2,3,4}
+   
+
+ **array_prepend**: Añade un elemento al inicio de un array.
+ SELECT array_prepend(0, ARRAY[1, 2, 3]); -- Resultado: {0,1,2,3}
+ 
+
+ **array_cat**: Concatena dos arrays.
+ SELECT array_cat(ARRAY[1, 2], ARRAY[3, 4]); -- Resultado: {1,2,3,4}
+ 
+  **||**: Concatena dos arrays.
+ SELECT ARRAY[1, 2] || ARRAY[3, 4]; -- Resultado: {1,2,3,4}
+   
+
+ **array_length**: Devuelve la longitud de un array en una dimensión específica.
+ SELECT array_length(ARRAY[1, 2, 3], 1); -- Resultado: 3
+ 
+
+ **array_remove**: Elimina todas las ocurrencias de un valor específico en un array.
+ SELECT array_remove(ARRAY[1, 2, 3, 2], 2); -- Resultado: {1,3}
+ 
+
+ **array_replace**: Reemplaza todas las ocurrencias de un valor específico en un array con otro valor.
+ SELECT array_replace(ARRAY[1, 2, 3, 2], 2, 5); -- Resultado: {1,5,3,5}
+ 
+
+ **unnest**: Expande un array en una serie de filas
+ SELECT unnest(ARRAY[1, 2, 3]); -- Resultado: 1, 2, 3 (en filas separadas)
+ 
+ **@>**: Verifica si el primer array contiene al segundo
+ SELECT ARRAY[1, 2, 3] @> ARRAY[2]; -- Resultado: true
+ 
+
+ **<@**: Verifica si el primer array está contenido en el segundo.
+ SELECT ARRAY[1, 2] <@ ARRAY[1, 2, 3]; -- Resultado: true
+ 
+
+ **&&**: Verifica si dos arrays tienen elementos en común.
+ SELECT ARRAY[1, 2, 3] && ARRAY[2, 4]; -- Resultado: true
+ 
+
+ **array_agg**: Agrega los valores de una columna en un array
+ SELECT array_agg(column_name) FROM table_name;
+ 
+
+ **array_dims**: Devuelve una cadena que representa las dimensiones del array
+ SELECT array_dims(ARRAY[1, 2, 3]); -- Resultado: [1:3]
+ 
+
+ **array_fill**: Crea un array con un valor específico y dimensiones dadas.
+ SELECT array_fill(0, ARRAY[3]); -- Resultado: {0,0,0}
+ 
+
+ **array_position**: Devuelve la posición de la primera ocurrencia de un valor en un array.
+ SELECT array_position(ARRAY[1, 2, 3, 2], 2); -- Resultado: 2
+
+ **array_positions**: Devuelve un array con todas las posiciones de un valor en un array.
+ SELECT array_positions(ARRAY[1, 2, 3, 2], 2); -- Resultado: {2,4}
+ 
+
+ **array_to_string**: Convierte un array en una cadena de texto, separando los elementos con un delimitador.
+ SELECT array_to_string(ARRAY[1, 2, 3], ','); -- Resultado: '1,2,3'
+
+ **string_to_array**: Convierte una cadena de texto en un array, utilizando un delimitador.
+ SELECT string_to_array('1,2,3', ','); -- Resultado: {1,2,3}
+
+ **array_upper**: Devuelve el índice superior de una dimensión específica del array. 
+ SELECT array_upper(ARRAY[1, 2, 3], 1); -- Resultado: 3
+
+ **array_lower**: Devuelve el índice inferior de una dimensión específica del array.
+ SELECT array_lower(ARRAY[1, 2, 3], 1); -- Resultado: 1
  
 ```
 
