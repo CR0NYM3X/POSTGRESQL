@@ -87,7 +87,11 @@ SELECT cron.unschedule('create_copy' ); --- colocar nombre del job
 truncate cron.job_run_details RESTART IDENTITY;
 truncate  cron.job RESTART IDENTITY;
 
---- Reiniciar las secuencias 
+--- Reiniciar las secuencias, esto en caso de haber realizado un trunquear
+  ALTER SEQUENCE cron.runid_seq RESTART WITH 1;
+  ALTER SEQUENCE cron.jobid_seq RESTART WITH 1;
+
+--- Reiniciar las secuencias, esto en caso de haber realizado un delete 
 SELECT setval('cron.jobid_seq', COALESCE((SELECT max(jobid) FROM cron.job),1));
 SELECT setval('cron.runid_seq', COALESCE((SELECT max(runid) FROM cron.job_run_details),1));
 
