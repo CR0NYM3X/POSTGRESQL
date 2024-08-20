@@ -45,10 +45,12 @@ CREATE TABLE clientes (
 -- Supongamos que tienes una secuencia llamada "mi_secuencia" y deseas reiniciarla al valor 1:
 ALTER SEQUENCE mi_secuencia RESTART WITH 1;
 
--- Restablecer la secuencia "mi_secuencia" a su valor predeterminado
+-- Restablecer la secuencia a un valor predeterminado, no se puede reiniciar a 0
+-- Este se usa en caso de haber realizado un delete 
 SELECT setval('mi_secuencia', (SELECT max(id) FROM mi_tabla));
 
---- Cambiar el valor actual de la secuencia:
+--- Reiniciar la secuencia, desde el valor por defaul por ejemplo si es un primarykey reainicia desde 0
+-- Este se usa en caso de haber realizado un truncate
 ALTER SEQUENCE mi_secuencia RESTART;
 
 ---- Cambiar el incremento de la secuencia:
