@@ -85,10 +85,6 @@ select  sign(  -10 ) ---- no importa el valor siempre retorna 1 o -1 /  si el ar
 
 
 
---- convertir en una columna un array
-```sql
-select    unnest(array[ 822, 823, 2782, 2994, 2171,509,722, 1428,106,107,108 ])  codigo)a 
-```
 
 
 ```sql
@@ -543,11 +539,15 @@ string_agg(columnsname,',')
 
 ### Arrays 
 ```sql
+
+select array['hola','aaaa','jabon']; --- {hola,aaaa,jabon}
+
 SELECT string_to_array('8192 bytes', ' ') ; -- {8192,bytes} (Convierte un string en un array ) 
 select array_to_string( '{8192,bytes}'::text[] , ' --  '); --- 8192 --  bytes  (Convierte un array en un string)
 
 ---- convertir el array en filas 
 SELECT    unnest('{8192,bytes}'::text[]) ;
+select    unnest(array[ 822, 823, 2782, 2994, 2171,509,722, 1428,106,107,108 ])  codigo)a 
 
 ---- Convierte varias filas array en una sola fila es como el string_agg pero en arrays 
 select array_agg(test_array) from (SELECT  '{8192,bytes}'::text[] as test_array union all select   '{9999,bytes}'::text[] ) as a ;
@@ -555,6 +555,7 @@ select array_agg(test_array) from (SELECT  '{8192,bytes}'::text[] as test_array 
 
 --- buscar un valor en un arreglo
 SELECT * FROM mi_tabla WHERE 'perro' = ANY(mi_array);
+
 
 ```
 
