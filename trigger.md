@@ -221,10 +221,10 @@ CREATE OR REPLACE FUNCTION ajustar_secuencia() RETURNS TRIGGER AS $$
 BEGIN
 
   	BEGIN
-		PERFORM setval('empleados_empleado_id_seq', (SELECT MAX(empleado_id) FROM empleados));
+		PERFORM setval('empleados_empleado_id_seq', (SELECT coalesce(  max(empleado_id) , 1)   FROM empleados));
 		EXCEPTION
 		 WHEN OTHERS THEN  
-			insert into   fdw_conf.log_msg_error(obj_name,msg) select  'update_sequences_report_connection()', SQLERRM;
+			insert into   fdw_conf.log_msg_error(obj_name,type_object,msg) select  'ajustar_secuencia()', 'TRIGGER FUNCTION' , SQLERRM;
 
 	END;
    
