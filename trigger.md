@@ -244,6 +244,43 @@ select * from empleados;
  ```  
 
 
+### Limpíar datos antes de insertarlos 
+ ```sql
+
+--- CREAR TABLA
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(255)
+);
+
+
+--- CREAR FUNCION 
+CREATE OR REPLACE FUNCTION clean_spaces()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.nombre := TRIM(BOTH FROM NEW.nombre);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--- CREAR TRIGGER
+CREATE TRIGGER clean_spaces_before_insert
+BEFORE INSERT ON clientes
+FOR EACH ROW
+EXECUTE FUNCTION clean_spaces();
+
+--- TEST
+
+insert into clientes(nombre) select '   mariaaaaaaa    ';
+SELECT * FROM clientes;
+
+
+ ```  
+
+
+
+
 # extra:
 auditorias con pgaudit: https://www.postgresql.org/message-id/attachment/41749/pgaudit-v2-03.patch
 
