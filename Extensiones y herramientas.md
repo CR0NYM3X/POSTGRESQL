@@ -212,6 +212,8 @@ rendimiento general de la base de datos.
 
 ## Blibliografía
 ```SQL
+https://www.timescale.com/blog/top-8-postgresql-extensions/
+
 --- Extensiones
 https://postgres.ai/docs/database-lab/supported-databases
 https://github.com/dhamaniasad/awesome-postgres
@@ -221,6 +223,7 @@ https://www.timescale.com/blog/top-8-postgresql-extensions/
 
 --- Forma de hacer un trigger para login
 https://www.dbi-services.com/blog/postgresql-17-login-event-triggers/
+
 
 
 https://github.com/okbob/session_exec
