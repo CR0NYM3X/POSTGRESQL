@@ -15,6 +15,8 @@ SELECT * FROM information_schema.sequences;
 
 ### Saber en que valor esta la secuencia 
 ```sql
+select currval('fdw_conf.test_seq'::regclass);
+
 select sequencename,increment_by,last_value from pg_sequences where sequencename = 'ctl_querys2_id_seq';
 ```
 
