@@ -13,9 +13,16 @@ SELECT schemaname, sequencename  FROM pg_sequences WHERE schemaname = 'public';
 SELECT * FROM information_schema.sequences;
 ```
 
+### Saber en que valor esta la secuencia 
+```sql
+select sequencename,increment_by,last_value from pg_sequences where sequencename = 'ctl_querys2_id_seq';
+```
+
 ### Ejecutar una secuencia
 ```sql
-SELECT nextval('mi_secuencia');
+
+--- al ejecutar la secuencia sabes va sumar la siguiente secuencia 
+select nextval('fdw_conf.ctl_querys2_id_seq'::regclass);
 ```
 
 ### Crear una secuencia
@@ -42,11 +49,12 @@ CREATE TABLE clientes (
 
 ### Restablecer secuencias 
 ```sql
--- Supongamos que tienes una secuencia llamada "mi_secuencia" y deseas reiniciarla al valor 1:
-ALTER SEQUENCE mi_secuencia RESTART WITH 1;
+-- Supongamos que tienes una secuencia llamada "mi_secuencia" , cuando se ejecute la secuencia empezara desde 10 
+ALTER SEQUENCE mi_secuencia RESTART WITH 10;
 
 -- Restablecer la secuencia a un valor predeterminado, no se puede reiniciar a 0
--- Este se usa en caso de haber realizado un delete 
+-- Este se usa en caso de haber realizado un delete
+-- suponiendo que el id que retorna es 10, entonces cuando se ejecute la secuencia insertara el id 11
 SELECT setval('mi_secuencia', (SELECT max(id) FROM mi_tabla));
 
 --- Reiniciar la secuencia, desde el valor por defaul por ejemplo si es un primarykey reainicia desde 0
