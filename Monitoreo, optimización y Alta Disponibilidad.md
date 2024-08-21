@@ -605,7 +605,7 @@ SELECT relname
 FROM pg_stat_user_tables
 WHERE seq_scan = 0 AND idx_scan = 0;
 
----- ver  la calidad de las consultas 
+---- monitorea el timepo de ejecucion y cantidad de ejecucion, de todas las base de datos 
 select * from pg_stat_statements;
 
 select 	* from pg_stat_database;
