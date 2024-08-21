@@ -215,9 +215,11 @@ select    l.mode AS bloqueo_modo,  l.granted AS concedido,  l.pid AS proceso_id,
 
 
 ## Mostrar el tiempo de ejecucion de una consulta en el momento
+EXPLAIN para obtener el plan de ejecución de una consulta, lo que te ayudará a entender cómo PostgreSQL planea ejecutar la consulta:
+```sql
 EXPLAIN select  version();  <br>
 EXPLAIN ANALYZE  select  version();
-
+```
 
 
 ## Todos los stat para monitorear 
@@ -584,6 +586,33 @@ select * from pg_catalog.pg_stat_database_conflicts limit 10 ;
  ```
 
 
+### Tablas  que sirven
+ ```sql
+ SELECT relname AS table_name,
+       n_tup_ins AS rows_inserted,
+       n_tup_upd AS rows_updated,
+       n_tup_del AS rows_deleted,
+       n_live_tup AS live_rows,
+       n_dead_tup AS dead_rows,
+	   last_vacuum,
+	   last_autoanalyze,
+       last_autovacuum,
+       last_autoanalyze
+FROM pg_stat_user_tables;
+ 
+ --- tablas que no se usan 
+SELECT relname
+FROM pg_stat_user_tables
+WHERE seq_scan = 0 AND idx_scan = 0;
+
+---- ver  la calidad de las consultas 
+select * from pg_stat_statements;
+
+select 	* from pg_stat_database;
+select 	* from pg_stat_user_indexes
+SELECT  * from pg_stat_user_tables order by schemaname,relname;
+select 	* from pg_stat_user_functions
+ ```
 
 # CREAR TABLAS CON MUCHOS REGISTROS 
  ```sql
