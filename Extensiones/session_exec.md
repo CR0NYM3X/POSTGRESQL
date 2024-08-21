@@ -112,11 +112,14 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
 
 
 4. **Crear la función de inicio de sesión**:
-    Asegúrate de que la función que deseas ejecutar esté definida en cada base de datos que quieres validar.
+    Crear el archivo  "/tmp/script_fun.txt" y guarda el la query en el archivo, nota la funcion debe de estar en todas la base de datos donde quieres que se valide 
 
     ```sql
+    --- Crea el esquema nuevo para que la funcion no se mescle con la información de la base de datos 
+    CREATE SCHEMA IF NOT EXISTS sec_dba AUTHORIZATION postgres;
 
-    CREATE OR REPLACE FUNCTION check_app() RETURNS void AS $$
+    --- Creando la funcion 
+    CREATE OR REPLACE FUNCTION sec_dba.check_app() RETURNS void AS $$
     BEGIN
          IF 
     		/*    USUARIOS QUE QUIERES QUE VALIDE  */ 
@@ -144,7 +147,9 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
     	
     	ELSE 
 
-            RAISE NOTICE 'Usuario conectado con exito';
+            --- Si quieres que aparezca un mensaje cuando se conectan exitosamente en la terminal descomenta el RAISE NOTICE
+            --- RAISE NOTICE 'Usuario conectado con exito';
+
     		--- realiza el registro de los usuarios conectados en el archivo authorized_app_users.csv
     	    COPY (select md5(now()::text),coalesce(inet_server_addr()::text,'unix_socket'), current_setting('port') , current_database() , current_user ,coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'usuario conectado') TO PROGRAM 'cat >> /tmp/authorized_app_users.csv' WITH (FORMAT CSV);
     	   
@@ -156,6 +161,18 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
 
     ```
 
+5. **Automatizar la creacion de la funcion en todas las base de datos**:
+    ```SQL
+    # Guarda todas las base de datos en la variable result
+    result=$(psql -p5416  -tAX -c "select datname  from pg_database where not datname in('template1','template0');" )
+
+    # Recorre la lista de base de datos 
+    for base in $result
+    do
+        # Instala la funcion
+        echo   $(psql -p 5416 -tAX -f /tmp/script_fun.txt -d $base) " - Base de datos: " $base 
+    done
+    ``` 
 
 5. **Monitorear los usuarios**:
     ```SQL
@@ -199,7 +216,8 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
     OPTIONS (filename '/tmp/authorized_app_users.csv', format 'csv', header 'false');
     
     
-    ---- hacer un truncate al archivo 
+    ---- Con esto podemos limpiar los archivos donde se guardan los registros de los usuarios
+    ---- Tambien sirve para que se creen los archivs en caso de que no existan 
     copy (select '') to program  'cat /dev/null > /tmp/authorized_app_users.csv';
     copy (select '') to program  'cat /dev/null > /tmp/unauthorized_app_users.csv';
     
@@ -214,12 +232,12 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
 6. **Modificar el archivo `postgresql.conf`**:
     
 
-    ```plaintext
+    ```sql
     # Añade la siguiente línea para cargar la biblioteca de la extensión al inicio de cada sesión:
     session_preload_libraries = 'session_exec'
 
     # **Configurar la función de inicio de sesión** 
-    session_exec.login_name = 'nombre_de_tu_funcion'
+    session_exec.login_name = 'sec_dba.check_app'
     ```
 
 
