@@ -67,6 +67,17 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
     clang-resource-filesystem-17.0.6-1.module+el8.10.0+20808 
     clang-17.0.6-1.module+el8.10.0+20808+e12784c0.x86_64
     
+    
+    ####### llvm #######
+    -> herramientas y bibliotecas para el desarrollo de compiladores y lenguajes de programación
+     
+    --- Validar si esta intalado:
+     rpm -qa |grep llvm
+
+     --- Solucion: [Instalar paquete]
+    llvm-libs-17.0.6-2.module+el8.10.0+21256+978ccea6.x86_64
+    llvm-17.0.6-2.module+el8.10.0+21256+978ccea6.x86_64
+
      
     ####### redhat-rpm-config #######
     Este paquete proporciona macros personalizadas de Red Hat utilizadas durante la construcción de paquetes RPM  
@@ -86,16 +97,18 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
     
     -- Referencia:
     https://stackoverflow.com/questions/34624428/g-error-usr-lib-rpm-redhat-redhat-hardened-cc1-no-such-file-or-directory
+
     
+
      ```
 
 
-2. **Descarga la extensión**:
+1. **Descarga la extensión**:
     Puedes encontrarla en el repositorio de GitHub [okbob/session_exec](https://github.com/okbob/session_exec) o
     [reedstrm/session_exec](https://github.com/reedstrm/session_exec/tree/master).
 
 
-3. **Instalar la extensión con PGXS**:
+2. **Instalar la extensión con PGXS**:
     `PGXS (PostgreSQL Extension Building Infrastructure):` PGXS es una infraestructura de construcción proporcionada por PostgreSQL para facilitar la compilación y la instalación de extensiones. 
     ``
 
@@ -108,10 +121,16 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
     
     # Después de compilar la extensión, este comando instala la extensión en el sistema PostgreSQL.
     sudo make USE_PGXS=1 install
+
+    ------ Cuando se instala genera estos archivos
+    /usr/pgsql-15/lib/session_exec.so
+    /usr/pgsql-16/lib/bitcode/session_exec/session_exec.bc
+    /usr/pgsql-16/lib/bitcode/session_exec.index.bc
+    
      ```
 
 
-4. **Crear la función de inicio de sesión**:
+3. **Crear la función de inicio de sesión**:
     Crear el archivo  "/tmp/script_fun.txt" y guarda el la query en el archivo, nota la funcion debe de estar en todas la base de datos donde quieres que se valide 
 
     ```sql
@@ -161,7 +180,7 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
 
     ```
 
-5. **Automatizar la creacion de la funcion en todas las base de datos**:
+4. **Automatizar la creacion de la funcion en todas las base de datos**:
     ```SQL
     # Guarda todas las base de datos en la variable result
     result=$(psql -p5416  -tAX -c "select datname  from pg_database where not datname in('template1','template0');" )
