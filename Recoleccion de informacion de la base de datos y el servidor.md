@@ -241,7 +241,7 @@ left join pg_type as pty on  cl.oid = pty.typrelid
 left join pg_namespace as nc on   cl.relnamespace= nc.oid
 
  WHERE not nspname in( 'information_schema','pg_catalog','pg_toast')  and not nspname ilike 'pg_temp%' 
- and relkind in('r' ,'p' ,'i' ,'S' ,'v' ,'m' ,'t' ,'f' ,'p' ,'I')
+ and relkind in('r' ,'p' ,'i' ,'S' ,'v' ,'m' ,'t' ,'f' ,'p' ,'I');
 ```
 
 # tamaños 
