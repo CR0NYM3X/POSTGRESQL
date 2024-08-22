@@ -123,7 +123,7 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
     sudo make USE_PGXS=1 install
 
     ------ Cuando se instala genera estos archivos
-    /usr/pgsql-15/lib/session_exec.so
+    /usr/pgsql-16/lib/session_exec.so
     /usr/pgsql-16/lib/bitcode/session_exec/session_exec.bc
     /usr/pgsql-16/lib/bitcode/session_exec.index.bc
     
