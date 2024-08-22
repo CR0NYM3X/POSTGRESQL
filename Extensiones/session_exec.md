@@ -1,7 +1,8 @@
 ### Descripción
-La extensión `session_exec` introduce una función de inicio de sesión que se ejecuta automáticamente cuando un usuario se conecta. Esto es útil para realizar tareas como auditorías, inicialización de variables de sesión, o cualquier otra lógica que necesites ejecutar al inicio de cada sesión.
+La extensión `session_exec` Te permite ejecutar funcion al iniciar una session. Esto es útil para realizar tareas como auditorías, inicialización de variables de sesión, o cualquier otra lógica que necesites ejecutar al inicio de cada sesión.
 
-### Configuración
+
+### Ejemplo: Configuración para bloquear usuarios que usan pgadmin y DBeaver y dejar un reporte de los usuarios
 
 1. **Requisitos y posibles errores que puedes presentar durante la instalación de la extension** :
     En mi caso yo use el S.O "Red Hat 8.5.0-22), 64-bit" y tuve que instalar los siguientes paquetes :<br>
