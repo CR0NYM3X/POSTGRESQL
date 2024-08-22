@@ -202,7 +202,7 @@ SELECT parameter_name, data_type, ordinal_position FROM information_schema.param
 variables predefinidas para obtener información sobre el error que ocurrió.
 SQLERRM:  Contiene el mensaje de error asociado con el error que ocurrió.
 SQLSTATE:  Contiene el código de estado SQL (SQLSTATE) del error que ocurrió. Este es un código estándar de cinco caracteres que identifica el tipo de error.
-PG_EXCEPTION_CONTEXT: Proporciona información adicional sobre el contexto en el que ocurrió el error.
+ 
 
 DO $$
 BEGIN
