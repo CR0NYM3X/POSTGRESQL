@@ -12,7 +12,7 @@ select * from pg_ls_logdir()  <br>
 
 
 CAST ('10' AS INTEGER); convertir string a int --- O  (idu_valorconfiguracion)::INT
-select replace('test string','st','**') --, te** **ring
+
 SELECT numerador / NULLIF(denominador, 0) AS resultado
 
 --- Tipos de JOIN: 
@@ -37,8 +37,8 @@ select cast(52.55 as decimal(18,2) ) -- le permite dejar 2 decimales y el 18 es 
 
 Quitar el utlimo caracter
 ```sql
-substring(fecha_registro::text, 1, 4)
-select 	substring('arwdDxt' FROM 1 FOR length('arwdDxt') - 1); -- > V  8
+ 
+
 select LEFT('arwdDxt', LENGTH('arwdDxt') - 1); -- > V 8
 ```sql
 
@@ -47,7 +47,7 @@ SELECT sign(20) AS AbsNum; --- esta función siempre te retorana 1 si es número
 
 select lpad('Hola Mundo',20,'-'); -- retorna '----------Hola Mundo'. tambien hay rpad que hace lo mismo pero al reves
 
-lower(string): | upper('Hola'); ----- Convertir a mayúsculas o minúsculas 
+
 
 
 
@@ -60,7 +60,7 @@ select nullif('','a')
 -------- Cambiar nulos a ceros :  select coalesce(  pagotargeta , 0)
 select encode(E''::bytea, 'hex') -- https://www.educba.com/postgresql,encode/
 
-select encode( '', 'hex') -- https://www.postgresql.org/docs/8.2/functions-string.html
+
 select encode('asdasd', 'base64');
 select decode('MTExMQ==', 'base64')::text
 char_length(trim(imei)) ------ Saber el tamaño de caracteres 
@@ -73,7 +73,7 @@ select 'aaaa'||  CHR(10) || 'hola' -- salto de linea
  CHR(9) --- tab
 
 coalesce(  max(campoNull  ) , 0)  ----- Cambiar un campo null a 0
-select substring(nombre, 1, 2) from nombres; ----- Estraer los caracteres especificos
+
 
 SELECT * from mupaquetes where fec_fechamovto::date between '20210501' and '20210531'
 29555 BETWEEN num_dcfinicial AND num_dcffinal 
@@ -371,22 +371,7 @@ select   'd', 'DELETE' ;
 
 ```
 
-# trabajando con texto 
-```sql
 
-/* DIVIDE EN COLUMNAS UN TEXTO */
-select split_part('hola = mundo','=' , 1 ); --> Return: "hola"
-select split_part('hola = mundo','=' , 2 ); --> Return: "mundo"
-
-SELECT split_part('texto1,texto2,texto3', ',', generate_series(1, length('texto1,texto2,texto3') - length(replace('texto1,texto2,texto3', ',', '')) + 1)) AS columna_individual; ---  < V9
-
-SELECT regexp_split_to_table('INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER', ','); -- > V 9
-
-/* REMPLZA  EL TEXTO */
-select replace('hola = mundo','=' , ''); --> Return: 'hola   mundo'
-
-
-```
 
 ## Ver los objetos 
 ```
@@ -495,11 +480,7 @@ select extract(second from  timestamp'2009-12-31 12:25:50');
 
 ```
 
-
-### Manejo de strings 
-```
-split_part('16.0.4135.4', '.',1)
-```
+ 
 
 ### realizar insert ,  en caso de error no finalizar la transaccion 
 ```sql
@@ -530,8 +511,6 @@ string_agg(columnsname,',')
 
 --- versiones 8 
  array_to_string(array_agg(c.attname), ', ') AS column_names
-
-
 
 ```
 
@@ -634,11 +613,24 @@ SELECT * FROM mi_tabla WHERE 'perro' = ANY(mi_array);
 ```
 
 
-### String
+### Trabajando con strings
 
 ```SQL
----- divide en partes un string , colocando un delimitador y indica que parte quieres 
+
+--- convertir string a Hex
+ select encode( 'a', 'hex') ;
+
+----- Convertir a mayúsculas o minúsculas 
+select lower('HOLA');  --> Hola
+select  upper('Hola'); --> HOLA
+
+
+---- divide en partes un string, colocando un delimitador y indica que parte quieres que retorne
 SELECT SPLIT_PART('A,B,C', ',', 3); --- C
+
+--- convierte en filas el texto 
+SELECT regexp_split_to_table('INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER', ','); -- > V 9 
+SELECT split_part('texto1,texto2,texto3', ',', generate_series(1, length('texto1,texto2,texto3') - length(replace('texto1,texto2,texto3', ',', '')) + 1)) AS columna_individual; ---  < V9
 
 -- Cuenta la cantidad de caracteres 
 SELECT LENGTH('Hola Mundo'); --- 10
@@ -646,6 +638,34 @@ SELECT LENGTH('Hola Mundo'); --- 10
 ----- concatenar/juntar columnas 
 SELECT CONCAT(animal, ' ', comida, ' ', color) AS columna_concatenada FROM (select 'PERRO' as animal,'LECHE' as  comida, 'ROJO' as color) as b;
 SELECT  animal ||  ' ' ||  comida ||  ' ' ||  color  AS columna_concatenada FROM (select 'PERRO' as animal,'LECHE' as  comida, 'ROJO' as color) as b;
+
+---- Retorna la pocicion 
+SELECT POSITION('com' IN 'example.com');  ---> 9  
+
+---- Remplaza texto 
+select replace('test string','st','**') --> te** **ring
+
+--- postrar el texto que quieres 
+select substring(now()::text, 1, 4); ---> 2024
+select substring('arwdDxt' FROM 1 FOR length('arwdDxt') - 1); -- >  arwdDx
+
+
+   --- Encoding 
+   SELECT encode('Hola mundo', 'base64'); ---> SG9sYSBtdW5kbw== 
+   SELECT encode('Hola mundo', 'escape'); ---> Hola\040mundo 
+   SELECT encode('Hola mundo', 'hex');  ---> 486f6c61206d756e646f 
+   
+   --- Decoding  
+   SELECT convert_from(decode('SG9sYSBtdW5kbw==', 'base64'), 'UTF8');
+   SELECT convert_from(decode('Hola\040mundo', 'escape'), 'UTF8');
+   SELECT convert_from(decode('486f6c61206d756e646f', 'hex'), 'UTF8');
+   SELECT convert_from('\\xe4', 'LATIN1'); 
+
+# String Functions and Operators 
+https://www.postgresql.org/docs/8.2/functions-string.html
+
+
+ 
 ```
 
 
