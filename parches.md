@@ -78,6 +78,23 @@ Al instalar el paquete postgresql15-llvmjit-15.6-1PGDG.rhel8.x86_64.rpm, habilit
 https://odbc.postgresql.org/
 ```
 
+### archivo RPM para agregar el repositorio de PostgreSQL a tu sistema Red Hat o CentOS.
+ Este repositorio contiene paquetes de PostgreSQL y sus componentes, permitiéndote instalar y actualizar PostgreSQL fácilmente usando `yum` o `dnf`.
+
+Al instalar este archivo RPM, se configura tu sistema para acceder al repositorio de PostgreSQL, lo que facilita la instalación de diferentes versiones de PostgreSQL y sus herramientas asociadas. Aquí tienes cómo puedes usarlo:
+
+1. **Descargar e instalar el archivo RPM del repositorio**:
+   ```bash
+   sudo yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+   ```
+
+2. **Deshabilitar el módulo PostgreSQL predeterminado (si es necesario)**:
+   ```bash
+   sudo dnf -qy module disable postgresql
+   ```
+ 
+
+
 # Vulnerabilidades de seguridad 
 ```
 https://www.postgresql.org/support/security/
