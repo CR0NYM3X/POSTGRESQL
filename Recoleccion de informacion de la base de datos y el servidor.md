@@ -216,6 +216,10 @@ cat  postgresql.conf | grep "port ="
 
 # Todos los objetos de postgresql 
 ```sql 
+select * from 
+(
+
+
 SELECT 
 	nspname as schema
     ,relname AS object_name
@@ -227,7 +231,7 @@ SELECT
         WHEN relkind= 'S' THEN 'sequence'
         WHEN relkind= 'v' THEN 'view'
         WHEN relkind= 'm' THEN 'materialized view'
-        WHEN relkind= 'c' THEN 'type'
+      --WHEN relkind= 'c' THEN 'type'
         WHEN relkind= 't' THEN 'TOAST table'
         WHEN relkind= 'f' THEN 'foreign table'
         WHEN relkind= 'p' THEN 'partitioned table'
@@ -241,7 +245,31 @@ left join pg_type as pty on  cl.oid = pty.typrelid
 left join pg_namespace as nc on   cl.relnamespace= nc.oid
 
  WHERE not nspname in( 'information_schema','pg_catalog','pg_toast')  and not nspname ilike 'pg_temp%' 
- and relkind in('r' ,'p' ,'i' ,'S' ,'v' ,'m' ,'t' ,'f' ,'p' ,'I');
+ and relkind in('r' ,'p' ,'i' ,'S' ,'v' ,'m' ,'t' ,'f' ,'p' ,'I')
+ 
+ union all 
+ 
+ 
+  SELECT 
+			--p.oid,
+			n.nspname as  schema,
+            p.proname as object_name ,
+
+			(
+			CASE p.prokind
+				WHEN 'f'::"char" THEN 'FUNCTION'::text
+				WHEN 'p'::"char" THEN 'PROCEDURE'::text
+				ELSE NULL::text
+			END)::information_schema.character_data AS object_type,
+			p.proacl as privileges
+   FROM pg_proc as p
+   left join pg_namespace as n on    p.pronamespace = n.oid where  not nspname in( 'information_schema','pg_catalog','pg_toast')  and not nspname ilike 'pg_temp%'
+ 
+ 
+ 
+ ) as a  order by schema,object_type,object_name;
+ 
+
 ```
 
 # tamaños 
