@@ -32,7 +32,7 @@
 Una vez instalada, pg_auth_mon comenzará a registrar los intentos de autenticación en una tabla específica. Puedes consultar esta tabla para revisar los intentos de inicio de sesión:
 
 ```sql
-SELECT * FROM pg_auth_mon_log;
+SELECT * FROM pg_auth_mon;
 ```
 
 ### Beneficios de usar pg_auth_mon
