@@ -227,7 +227,12 @@ https://www.timescale.com/blog/top-8-postgresql-extensions/
 --- Forma de hacer un trigger para login
 https://www.dbi-services.com/blog/postgresql-17-login-event-triggers/
 
-
-
 https://github.com/okbob/session_exec
+
+
+La extensión pgrowlocks en PostgreSQL se utiliza para mostrar información sobre los bloqueos de filas en una tabla específica. Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pgrowlocks('mi_tabla');
+
+La extensión pg_freespacemap en PostgreSQL se utiliza para examinar el mapa de espacio libre (FSM) de una relación (tabla o índice). Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pg_freespace('mi_tabla');
+
+
 ```
