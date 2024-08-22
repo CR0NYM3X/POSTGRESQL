@@ -1,8 +1,10 @@
 
 ```SQL
 
-### **5. Seguridad:**  
- 
+### **5. Seguridad:**
+
+- ** pg_track_settings** Esta extensión permite rastrear cambios en configuraciones y podría adaptarse para monitorear roles y permisos.
+
 ************ SEGURIDAD EN INICIO DE SESIONES ************
 - ** pg_auth_mon** Monitorea y registra eventos de autenticación, como intentos de inicio de sesión exitosos y fallidos.
 - ** session_exec** Te permite ejecutar una funcion cuando se este iniciando una sesion, utilizado para monitorear y bloquear aplicaciones 
