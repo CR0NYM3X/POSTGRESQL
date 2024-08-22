@@ -5,6 +5,7 @@
  
 ************ SEGURIDAD EN INICIO DE SESIONES ************
 - ** pg_auth_mon** Monitorea y registra eventos de autenticación, como intentos de inicio de sesión exitosos y fallidos.
+- ** session_exec** Te permite ejecutar una funcion cuando se este iniciando una sesion, utilizado para monitorear y bloquear aplicaciones 
 
 ************ SEGURIDAD EN AUTENTICACIÓN ************
 - ** ldap_fdw:** Permite la integración con LDAP para autenticar usuarios directamente contra un servidor LDAP, centralizando la gestión de credenciales y permisos.
