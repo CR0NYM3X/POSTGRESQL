@@ -268,6 +268,16 @@ La extensión `session_exec` introduce una función de inicio de sesión que se 
     pg_ctl reload -D $PGDATA16 
     ```
 
+### Info Extra
+    ```sh
+    # En caso de querer pasar la extension en otra instancia puedes hacer lo siguiente
+    cp /usr/pgsql-16/lib/session_exec.so /usr/pgsql-15
+    cp /usr/pgsql-16/lib/bitcode/session_exec.index.bc /usr/pgsql-15
+    cp -r /usr/pgsql-16/lib/bitcode/session_exec /usr/pgsql-15
+    ```sh
+
+
+
 ### Comportamiento
 - Si la función especificada no existe, se generará una advertencia.
 - Si la función de inicio de sesión falla, se impedirá la conexión del usuario.
