@@ -34,10 +34,9 @@
 ************ SEGURIDAD EN PRIVILEGIOS ************
 - ** pg_authz** Proporciona una interfaz para la gestión de permisos y roles, facilitando la administración de acceso y seguridad.
    **Uso:** Permite administrar permisos y roles de usuario de manera más granular.
-
-- ** pg_roleaudit** Audita y reporta sobre cambios en los roles y permisos de los usuarios en PostgreSQL.
-   **Uso:** Utiliza `pg_roleaudit` para rastrear y auditar cambios en roles y permisos de usuario.
-
+ 
+ **pg_permissions**: Proporciona vistas para revisar los permisos de objetos en una base de datos PostgreSQL, facilitando la gestión y auditoría de permisos³³.
+ 
 
 ************ SEGURIDAD EN LA CAPA DE TRANSPORTE ************
 - ** sslutils:** Facilita la gestión de certificados SSL/TLS en PostgreSQL, mejorando la seguridad de las conexiones cifradas entre clientes y el servidor.
@@ -101,6 +100,14 @@
 
 
 ### **2. Replicación y Alta Disponibilidad:**
+
+
+************ failover ************
+ **pg_auto_failover**: Esta extensión y servicio para PostgreSQL gestiona la conmutación por error automatizada para un clúster de PostgreSQL, asegurando alta disponibilidad y consistencia de datos¹.
+ 
+ **pg_failover_slots**: Hace que las ranuras de replicación lógica sean utilizables en una conmutación por error física, sincronizando las ranuras de replicación entre el nodo primario y el de respaldo¹¹.
+ 
+ 
 
 ************ MANTENIMIENTOS ************
 - **pg_repack:** Reorganiza tablas e índices sin bloquear operaciones.
@@ -205,6 +212,38 @@ rendimiento general de la base de datos.
 -**tds_fdw ** Conecta y consulta otras bases SQL server de manera remota.
 - **postgres_fdw:** Conecta y consulta otras bases PostgreSQL de manera remota.
 - **plv8:** Extensión que permite escribir funciones en JavaScript.
+
+
+ 
+
+ **pg_background**: Permite ejecutar comandos SQL en segundo plano, lo que es útil para tareas como `VACUUM` o `CREATE INDEX CONCURRENTLY` desde un lenguaje procedimental⁷.
+ 
+ **pg_bigm**: Proporciona capacidad de búsqueda de texto completo mediante la creación de índices bigram (2-gram), lo que acelera las búsquedas de texto completo en PostgreSQL¹⁶.
+ 
+ 
+ **pg_comparator**: Compara bases de datos de servicios de prueba y producción en PostgreSQL, generando SQL para corregir diferencias⁵.
+ 
+ 
+ **pg_filedump**: Utilidad para formatear archivos de heap, índice o control de PostgreSQL en una forma legible para humanos, útil para la inspección de bajo nivel de tablas e índices²³.
+ 
+
+ **pg_readonly**: Permite establecer todas las bases de datos de un clúster en modo solo lectura, útil para situaciones donde se requiere asegurar que no se realicen modificaciones[^20^].
+ 
+ 
+ . **pg_wait_sampling**:
+   - **Descripción**: Esta extensión recopila Eventos estadísticas basadas en muestreo de eventos de espera en PostgreSQL. Permite obtener un historial de eventos de espera y un perfil de espera acumulado para todos los procesos, incluyendo los trabajadores en segundo plano⁵⁶.
+   - **Uso**: Es útil para diagnosticar problemas de rendimiento y analizar qué procesos están esperando y por cuánto tiempo. Para habilitarla, debes agregar `pg_wait_sampling` a la variable `shared_preload_libraries` en el archivo `postgresql.conf` y reiniciar el servidor⁵.
+ 
+ ### Tipos de Eventos Capturados
+ 
+
+- **LWLock**: Bloqueos ligeros utilizados internamente por PostgreSQL.
+- **Lock**: Bloqueos de nivel SQL, como bloqueos de filas o tablas.
+- **BufferPin**: Esperas relacionadas con la fijación de buffers en memoria.
+- **Activity**: Esperas relacionadas con la actividad del proceso, como `ClientRead`, `ClientWrite`, etc.
+- **IPC**: Esperas de comunicación entre procesos.
+- **Timeout**: Esperas relacionadas con tiempos de espera configurados.
+ 
 
 
 
