@@ -287,6 +287,8 @@ La extensión `session_exec` Te permite ejecutar funcion al iniciar una session.
     );
 
     copy tmp_authorized_app_users(id_md5,ip_server,port_server,db,username,ip_client,app_name,detected_at,details) from  '/tmp/authorized_app_users.csv'  WITH (FORMAT CSV);
+
+    select * from tmp_authorized_app_users;
 ```
 
 
