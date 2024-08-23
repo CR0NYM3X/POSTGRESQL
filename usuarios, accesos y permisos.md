@@ -899,7 +899,7 @@ select * from (
 
 
 
-#  todos los permisos en una sola tabla , testeado en versiones  11.22 - 16.3
+#  todos los permisos en una sola tabla , testeado en versiones  10 - 16.3
 PERMISOS DE LOS OBJETOS : TABLAS , VISTAS,  ESCHEMAS, BASES DE DATOS, FUNCIONES, SECUENCIAS, TYPPES 
 ```sql 
 
@@ -1072,6 +1072,167 @@ union all
 ) as a order by type, schema_name;
 
 ```
+
+
+#  todos los permisos en una sola tabla , testeado en version 8 
+```SQL 
+
+
+
+
+select 
+	inet_server_addr() as ip_server
+	,inet_server_port() as port
+	,current_database() db
+	,* from 
+ 
+(
+ 
+
+	select grantor,grantee,object_type,schema,object_name,privilege_type,is_grantable from 
+	(select * ,
+		case  
+		WHEN  letter_privilege like  '%r*%' and privilege_type = 'SELECT' 		  then true
+		WHEN  letter_privilege like  '%a*%' and privilege_type = 'INSERT' 		  then true
+		WHEN  letter_privilege like  '%w*%' and privilege_type = 'UPDATE' 		  then true
+		WHEN  letter_privilege like  '%d*%' and privilege_type = 'DELETE'		  then true
+		WHEN  letter_privilege like  '%D*%' and privilege_type = 'TRUNCATE' 	  then true
+		WHEN  letter_privilege like  '%x*%' and privilege_type = 'REFERENCES'	  then true
+		WHEN  letter_privilege like  '%t*%' and privilege_type = 'TRIGGER'		  then true
+		WHEN  letter_privilege like  '%C*%' and privilege_type = 'CREATE' 		  then true
+		WHEN  letter_privilege like  '%c*%' and privilege_type = 'CONNECT' 		  then true
+		WHEN  letter_privilege like  '%T*%' and privilege_type = 'TEMPORARY' 	  then true
+		WHEN  letter_privilege like  '%X*%' and privilege_type = 'EXECUTE' 		  then true
+		WHEN  letter_privilege like  '%U*%' and privilege_type = 'USAGE' 		  then true
+		WHEN  letter_privilege like  '%s*%' and privilege_type = 'SET' 			  then true
+		WHEN  letter_privilege like  '%A*%' and privilege_type = 'ALTER SYSTEM'   then true
+		else  false
+		end as is_grantable 
+		from 	
+		(select * from 	
+		(select  
+				
+				grantor
+				,grantee
+				,object_type
+				,schema
+				,object_name
+				,letter_privilege
+				,unnest(string_to_array(( 
+					CASE  WHEN letter_privilege like '%r%' THEN 'SELECT' 		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%a%' THEN 'INSERT' 		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%w%' THEN 'UPDATE' 		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%d%' THEN 'DELETE'		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%D%' THEN 'TRUNCATE' 		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%x%' THEN 'REFERENCES'	ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%t%' THEN 'TRIGGER'		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%C%' THEN 'CREATE' 		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%c%' THEN 'CONNECT' 		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%T%' THEN 'TEMPORARY' 	ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%X%' THEN 'EXECUTE' 		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%U%' THEN 'USAGE' 		ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%s%' THEN 'SET' 			ELSE '' END || ',' || 
+					CASE  WHEN letter_privilege like '%A%' THEN 'ALTER SYSTEM' ELSE '' END   
+				) , ',')) as privilege_type
+				
+			  
+		from (
+			SELECT 
+				schema
+				,object_name
+				,object_type
+				,split_part( split_part(array_to_string(relacl , ', ') , ', ', generate_series(1, length(array_to_string(relacl , ', ') ) - length( replace(array_to_string(relacl , ', ') , ', ', '')) + 1))  , '/', 2) AS grantor
+				,split_part(split_part( split_part(array_to_string(relacl , ', ') , ', ', generate_series(1, length(array_to_string(relacl , ', ') ) - length(replace(array_to_string(relacl , ', ') , ', ', '')) + 1))  , '/', 1), '=', 1) as grantee 
+				,split_part(split_part( split_part(array_to_string(relacl , ', ') , ', ', generate_series(1, length(array_to_string(relacl , ', ') ) - length(replace(array_to_string(relacl , ', ') , ', ', '')) + 1))  , '/', 1), '=', 2) as letter_privilege  
+			FROM 
+				( select * from (
+				 
+					 
+					 ---- ESQUEMAS 
+					select null as schema, nspname as object_name, 'SCHEMA' as object_type, nspacl  AS relacl FROM pg_namespace where not nspname in( 'information_schema','pg_catalog') and nspacl is not null 
+					 
+					 
+					 union all 
+					 
+					 --- BASE DE DATOS 
+					 select null as schema,datname as object_name,'DATABASE' AS object_type , datacl    from pg_database where datacl is not null  
+					 
+					 
+					 union all 
+					
+					select * from 
+					(
+					
+					------ TABLAS,VIEW,INDEX,SEQUENCES,TYPE,ETC
+					SELECT 
+						nspname as schema
+						,relname AS object_name
+						,CASE 
+							--WHEN (nc.oid = pg_my_temp_schema()) THEN 'LOCAL TEMPORARY'::text
+							WHEN relkind= 'r' THEN 'table'
+							WHEN relkind= 'p' THEN 'table'
+							WHEN relkind= 'i' THEN 'index'
+							WHEN relkind= 'S' THEN 'sequence'
+							WHEN relkind= 'v' THEN 'view'
+							WHEN relkind= 'm' THEN 'materialized view'
+							WHEN relkind= 'c' THEN 'type'
+							WHEN relkind= 't' THEN 'TOAST table'
+							WHEN relkind= 'f' THEN 'foreign table'
+							WHEN relkind= 'p' THEN 'partitioned table'
+							WHEN relkind= 'I' THEN 'partitioned index'
+							ELSE 'other'
+						END AS object_type
+						,CASE WHEN typacl is not null and relkind= 'c'  then   typacl  else relacl end as privileges 
+						--,relacl
+					FROM pg_class as cl
+					left join pg_type as pty on  cl.oid = pty.typrelid 
+					left join pg_namespace as nc on   cl.relnamespace= nc.oid
+
+					 WHERE relacl is not null and not nspname in( 'information_schema','pg_catalog','pg_toast')  and not nspname ilike 'pg_temp%' 
+					 and relkind in('r' ,'p' ,'i' ,'S' ,'v' ,'m' ,'t' ,'f' ,'p' ,'I')
+					 
+					 union all 
+					 
+					 ------ FUNCIONES 
+					  SELECT 
+								--p.oid,
+								n.nspname as  schema,
+								p.proname as object_name ,
+
+								(
+								CASE p.prokind
+									WHEN 'f'::"char" THEN 'FUNCTION'::text
+									WHEN 'p'::"char" THEN 'PROCEDURE'::text
+									ELSE NULL::text
+								END)::information_schema.character_data AS object_type,
+								p.proacl as privileges
+					   FROM pg_proc as p
+					   left join pg_namespace as n on    p.pronamespace = n.oid where  p.proacl is not null and  not nspname in( 'information_schema','pg_catalog','pg_toast')  and not nspname ilike 'pg_temp%'
+					 
+					 
+					 
+					 ) as a    
+				 
+				 
+				 
+						) as g   
+				)  as v
+			
+			) as f where not grantee in('',  'postgres','PUBLIC','pg_database_owner') 
+		) as a where privilege_type != ''
+		) as b ) as x ) as d ;
+
+```
+
+
+
+
+
+
+
+
+
+
 
 
 ### obtener los usuarios del pg_hba
