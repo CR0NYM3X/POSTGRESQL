@@ -362,6 +362,49 @@ cat /sysx/data/postgresql.conf | grep -Ei "shared_buffers|effective_cache_size|w
 
 
 # Mantenimientos : 
+ 
+ En PostgreSQL, algunos comandos de mantenimiento pueden bloquear las tablas mientras se ejecutan. Aquí tienes una lista de los más comunes:
+
+1. **VACUUM FULL**: Este comando recupera espacio en disco y compacta las tablas, pero requiere un bloqueo exclusivo en la tabla, lo que impide cualquier otra operación (lecturas y escrituras) mientras se ejecuta¹.
+
+2. **REINDEX**: Este comando reconstruye los índices de una tabla o base de datos. Durante su ejecución, los índices afectados están bloqueados, lo que puede afectar el rendimiento de las consultas que dependen de esos índices¹.
+
+3. **CLUSTER**: Este comando reorganiza físicamente una tabla según el orden de un índice especificado. Requiere un bloqueo exclusivo en la tabla, impidiendo otras operaciones mientras se ejecuta¹.
+
+4. **ALTER TABLE**: Algunas operaciones de `ALTER TABLE`, como agregar o eliminar columnas, pueden requerir un bloqueo exclusivo en la tabla, impidiendo otras operaciones hasta que se complete¹.
+
+5. **DROP TABLE**: Eliminar una tabla también requiere un bloqueo exclusivo, lo que impide cualquier otra operación en la tabla mientras se ejecuta¹.
+
+### Recomendaciones
+
+- **Planificación**: Programa estos comandos durante períodos de baja actividad para minimizar el impacto en los usuarios.
+- **Monitoreo**: Utiliza herramientas de monitoreo para identificar cuándo es necesario ejecutar estos comandos y para minimizar el tiempo de bloqueo.
+
+
+
+  
+## ¿Qué hace `CLUSTER`?
+
+1. **Reorganización Física**: `CLUSTER` ordena las filas de una tabla en el disco según el orden de un índice específico. Esto puede mejorar el rendimiento de las consultas que se benefician de un acceso secuencial a los datos⁵.
+2. **Mejora del Rendimiento**: Al ordenar físicamente las filas, las consultas que utilizan el índice especificado pueden ser más rápidas, ya que los datos relacionados están más cerca unos de otros en el disco⁵.
+
+### ¿Cuándo usar `CLUSTER`?
+
+- **Consultas Frecuentes**: Es útil cuando tienes consultas que frecuentemente acceden a los datos en el orden del índice.
+- **Tablas Grandes**: Puede ser beneficioso para tablas grandes donde el acceso secuencial a los datos puede mejorar significativamente el rendimiento.
+
+### Consideraciones
+
+- **Bloqueo Exclusivo**: `CLUSTER` requiere un bloqueo exclusivo en la tabla, lo que significa que otras operaciones no pueden ocurrir mientras se ejecuta⁵.
+- **Espacio en Disco**: La operación puede requerir espacio adicional en disco, ya que PostgreSQL crea una nueva copia de la tabla ordenada⁵.
+- **Planificación**: Es recomendable ejecutar `CLUSTER` durante períodos de baja actividad para minimizar el impacto en los usuarios.
+
+### Ejemplo de Uso
+
+```sql
+CLUSTER my_table USING my_index;
+```
+ 
 
 ## Reindex [documentación oficial](https://www.postgresql.org/docs/current/sql-reindex.html)
 Se utiliza para reconstruir los índices de una tabla o base de datos. La principal razón para utilizar REINDEX es mantener o mejorar el rendimiento de las consultas en la base de datos y una des las ventajas son: <br>
