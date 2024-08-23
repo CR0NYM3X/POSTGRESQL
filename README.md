@@ -35,9 +35,7 @@
 -> aprender sobre el particionamiento
 -> aprender sobre la compresion de la db
 
-
---> CREATE RULE
---> RLS se refiere a Row-Level Security 
+ 
 
 ```
 https://pgpedia.info/s/shared_preload_libraries.html
