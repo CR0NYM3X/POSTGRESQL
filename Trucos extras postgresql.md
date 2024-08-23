@@ -1,41 +1,24 @@
-
-SELECT pg_current_logfile() <br>
-select * from pg_ls_logdir()  <br>
-
- select * from pg_file_settings where name ='port';  <br>
- select * from pg_settings  <br>
- 
- select * from pg_hba_file_rules  <br>
- Select * from pg_config  <br> 
  
  
 
 
 CAST ('10' AS INTEGER); convertir string a int --- O  (idu_valorconfiguracion)::INT
 
-SELECT numerador / NULLIF(denominador, 0) AS resultado
-
---- Tipos de JOIN: 
-CROSS join --> Es como juntar 2 tablas con una coma ","  --- > https://www.postgresql.org/docs/current/queries-table-expressions.html
-
- SELECT regexp_replace('Hola 123 mu,ndo', '[a-zA-Z0-9\s]', '', 'g') --- quitar letras y números 
  
-select CLOCK_TIMESTAMP()   -- 2022-11-30 16:36:18 hora
+--- Tipos de JOIN: 
+ 
 
 select round(random()*10) ---- random 
 select round(random()* (3-1)  +1 )
 SELECT to_char((3::float/2::float), 'FM999999999.00')
 select (3::float/2::float)
-
 SELECT round((3/2)::numeric,2 ) -- ponerle 2 decimal en 00
 select TRUNC(5, 3) ---> agrega 3 decimales  trunc 5.000
-
-
 select ceiling(12.34) -- redondea todo hacia arriba
 select floor(12.23) --  redondea todo hacia abajo
 select cast(52.55 as decimal(18,2) ) -- le permite dejar 2 decimales y el 18 es la precisión o el redodeo
 
-Quitar el utlimo caracter
+ 
 ```sql
  
 
@@ -45,43 +28,9 @@ select LEFT('arwdDxt', LENGTH('arwdDxt') - 1); -- > V 8
 SELECT Abs(20) AS AbsNum; ---- esta función siempre te retorna un positivo
 SELECT sign(20) AS AbsNum; --- esta función siempre te retorana 1 si es número es positvo y si es negativo te retorna -1
 
-select lpad('Hola Mundo',20,'-'); -- retorna '----------Hola Mundo'. tambien hay rpad que hace lo mismo pero al reves
-
-
-
-
-
-
-
-select  concat( ' hola ' , SL , 'Mundo'   )   from   (  select E'\r\n' SL  )a
-select concat ( 'hola ',CHR(13),CHR(10) , 'mundo'  ) --  concat( E'homa \r\n mundo')   -------- Generar saltos de linea
-select regexp_replace(columna, E'[\\n\\r]+', ' ', 'g' ) as columna_nueva  ----- Eliminar saltos de linea
-select nullif('','a')
--------- Cambiar nulos a ceros :  select coalesce(  pagotargeta , 0)
-select encode(E''::bytea, 'hex') -- https://www.educba.com/postgresql,encode/
-
-
-select encode('asdasd', 'base64');
-select decode('MTExMQ==', 'base64')::text
-char_length(trim(imei)) ------ Saber el tamaño de caracteres 
-REPLACE(' text ', ' ', ''); ----- eliminar todos los espacios
-replace(replace(replace(trim(descripcion),' ','<>'),'><',''),'<>',' ') -- con esto quita todos los espacios y los cambia por 1 espacio
-
-select 'aaaa'||  CHR(10) || 'hola' -- salto de linea
- CHR(39)  ------- Comilla simple
-  CHR(34)  ------- Comilla dobles
- CHR(9) --- tab
-
-coalesce(  max(campoNull  ) , 0)  ----- Cambiar un campo null a 0
-
-
-SELECT * from mupaquetes where fec_fechamovto::date between '20210501' and '20210531'
-29555 BETWEEN num_dcfinicial AND num_dcffinal 
-
-select  sign(  -10 ) ---- no importa el valor siempre retorna 1 o -1 /  si el argumento es un valor positivo devuelve 1;-1 si es negativo y si es 0, 0. Ejemplo:
-
-
-
+ 
+ 
+SELECT * from mupaquetes where fec_fechamovto::date between '20210501' and '20210531' 29555 BETWEEN num_dcfinicial AND num_dcffinal 
 
 
 
@@ -439,6 +388,8 @@ https://www.depesz.com/
 
 ### Fechas 
 ```sql
+--- saber la fecha
+select CLOCK_TIMESTAMP()   -- 2022-11-30 16:36:18 hora
 
 --- colocar formato a la fecha
 SELECT TO_DATE('October 09, 2012', 'Month DD, YYYY');
@@ -617,6 +568,28 @@ SELECT * FROM mi_tabla WHERE 'perro' = ANY(mi_array);
 
 ```SQL
 
+###  Prefijos en texto 
+--- Los escapes como la E  permiten incluir caracteres especiales en las cadenas de texto: 
+SELECT E'Esta es una línea \n y esta es otra línea \t hola  \' ';
+
+
+
+--- **`U&`**: Indica una cadena Unicode con escapes de estilo Unicode.
+   SELECT U&'\0041\0042\0043'; -- Resulta en 'ABC'
+  
+-- **`B`**: Indica una cadena binaria.
+ 
+   SELECT B'101010'; -- Resulta en el valor binario 101010
+ 
+
+-- **`$$`**: Delimitadores de dólar para cadenas de texto que pueden incluir comillas simples sin necesidad de escape.
+SELECT $$O'Reilly$$; -- Resulta en 'O'Reilly'
+ 
+
+
+
+
+
 --- convertir string a Hex
  select encode( 'a', 'hex') ;
 
@@ -633,7 +606,11 @@ SELECT regexp_split_to_table('INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER',
 SELECT split_part('texto1,texto2,texto3', ',', generate_series(1, length('texto1,texto2,texto3') - length(replace('texto1,texto2,texto3', ',', '')) + 1)) AS columna_individual; ---  < V9
 
 -- Cuenta la cantidad de caracteres 
-SELECT LENGTH('Hola Mundo'); --- 10
+SELECT LENGTH('Hola Mundo'); ---> 10
+select char_length('Hola Mundo'); ---> 10
+
+--- Elimina los espacios de la izq y derecha
+select trim('  hola   '); ---> hola
 
 ----- concatenar/juntar columnas 
 SELECT CONCAT(animal, ' ', comida, ' ', color) AS columna_concatenada FROM (select 'PERRO' as animal,'LECHE' as  comida, 'ROJO' as color) as b;
@@ -645,10 +622,23 @@ SELECT POSITION('com' IN 'example.com');  ---> 9
 ---- Remplaza texto 
 select replace('test string','st','**') --> te** **ring
 
---- postrar el texto que quieres 
+---  extraer una subcadena de una cadena de texto dada
 select substring(now()::text, 1, 4); ---> 2024
 select substring('arwdDxt' FROM 1 FOR length('arwdDxt') - 1); -- >  arwdDx
+ SELECT SUBSTRING('Hola Mundo' FROM 6);  --- Extraer una subcadena desde una posición específica:  Mundo
+ SELECT SUBSTRING('Hola Mundo' FROM 1 FOR 4);  ---> Extraer una subcadena con una longitud específica:  Hola
+ SELECT SUBSTRING('abc123def'  FROM '[0-9]+'); ---> Usar con expresiones regulares : 123
 
+
+SUBSTRING(cadena [FROM posición_inicial] [FOR longitud])
+ 
+- **cadena**: La cadena de texto de la cual deseas extraer la subcadena.
+- **posición_inicial**: (Opcional) La posición desde donde comenzar a extraer. Si se omite, comienza desde el primer carácter.
+- **longitud**: (Opcional) El número de caracteres a extraer. Si se omite, extrae hasta el final de la cadena.
+
+
+ ---- Extraer texto 
+ SELECT LEFT('Hola Mundo', 6);  ---> Hola M 
 
    --- Encoding 
    SELECT encode('Hola mundo', 'base64'); ---> SG9sYSBtdW5kbw== 
@@ -664,7 +654,38 @@ select substring('arwdDxt' FROM 1 FOR length('arwdDxt') - 1); -- >  arwdDx
 # String Functions and Operators 
 https://www.postgresql.org/docs/8.2/functions-string.html
 
+ 
 
+--- Agregale al princio o al final una cierta cantidad de caracteres 
+select lpad('Hola Mundo',20,'-'); ---> '----------Hola Mundo'
+select rpad('Hola Mundo',20,'-'); ---> 'Hola Mundo----------'
+
+
+--- Saltos de linea 
+select   'hola ' || CHR(13)|| CHR(10)  ||  'mundo'  
+select   E'homa \r\n mundo' ;
+
+
+---- Remplazar 
+
+select regexp_replace(E'homa \r\n mundo', E'[\\n\\r]+', ' ', 'g' ) ;   ----- Eliminar saltos de linea  : homa   mundo 
+select REPLACE('Hola mundo', ' ', '');   --->  Elimina espacios :  Holamundo 
+select replace(replace(replace(trim(' hola            mundo       grande'),' ','<>'),'><',''),'<>',' '); -- en caso de tener mas 1 un espacio lo replaza por 1 espacio : "hola mundo grande"
+ SELECT regexp_replace('Hola 123 mu,ndo', '[a-zA-Z0-9\s]', '', 'g') --- quitar letras y números 
+
+--- si el parametro 1 es igual al parametro 2 retorna null en caso de no, retorna el param1
+select nullif('aaa','aaa')  --- Null
+
+
+---- En caso de que el parametro 1 sea null retornara el valor del parametro 2 
+select coalesce(  pagotargeta , 0) 
+
+
+---- Codigos Asci
+select CHR(10); -- salto de linea
+select CHR(39); -- Comilla simple
+select CHR(34); -- Comilla dobles
+select CHR(9) ; -- tab
  
 ```
 
