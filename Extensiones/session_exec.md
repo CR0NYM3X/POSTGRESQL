@@ -269,6 +269,31 @@ La extensión `session_exec` Te permite ejecutar funcion al iniciar una session.
     pg_ctl reload -D $PGDATA16 
     ```
 
+
+### Segunda opción para visualizar la información de los usuarios  
+```sql
+    CREATE TEMP TABLE tmp_authorized_app_users (
+    	id serial PRIMARY KEY,
+        id_md5 varchar(50)  ,
+    	ip_server  VARCHAR(100),
+    	port_server VARCHAR(100),
+    	db VARCHAR(100),
+        username VARCHAR(100) NOT NULL,
+    	ip_client VARCHAR(100)  ,
+        app_name VARCHAR(100)  ,
+        detected_at TIMESTAMP  , 
+        details TEXT
+    	,date_insert timestamp default now()::timestamp
+    );
+
+    copy tmp_authorized_app_users(id_md5,ip_server,port_server,db,username,ip_client,app_name,detected_at,details) from  '/tmp/authorized_app_users.csv'  WITH (FORMAT CSV);
+```
+
+
+
+
+
+
 ### Info Extra
     ```sh
     # En caso de querer pasar la extension en otra instancia puedes hacer lo siguiente
