@@ -231,7 +231,7 @@ SELECT
         WHEN relkind= 'S' THEN 'sequence'
         WHEN relkind= 'v' THEN 'view'
         WHEN relkind= 'm' THEN 'materialized view'
-      --WHEN relkind= 'c' THEN 'type'
+        WHEN relkind= 'c' THEN 'type'
         WHEN relkind= 't' THEN 'TOAST table'
         WHEN relkind= 'f' THEN 'foreign table'
         WHEN relkind= 'p' THEN 'partitioned table'
