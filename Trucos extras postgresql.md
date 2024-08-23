@@ -2,12 +2,21 @@
  
 
 
-CAST ('10' AS INTEGER); convertir string a int --- O  (idu_valorconfiguracion)::INT
 
  
 --- Tipos de JOIN: 
  
+ 
+ 
+ 
+```sql
 
+SELECT Abs(20) AS AbsNum; ---- esta función siempre te retorna un positivo
+SELECT sign(20) AS AbsNum; --- esta función siempre te retorana 1 si es número es positvo y si es negativo te retorna -1
+SELECT * from mupaquetes where fec_fechamovto::date between '20210501' and '20210531' 29555 BETWEEN num_dcfinicial AND num_dcffinal
+
+
+CAST ('10' AS INTEGER); convertir string a int --- O  (idu_valorconfiguracion)::INT
 select round(random()*10) ---- random 
 select round(random()* (3-1)  +1 )
 SELECT to_char((3::float/2::float), 'FM999999999.00')
@@ -17,20 +26,6 @@ select TRUNC(5, 3) ---> agrega 3 decimales  trunc 5.000
 select ceiling(12.34) -- redondea todo hacia arriba
 select floor(12.23) --  redondea todo hacia abajo
 select cast(52.55 as decimal(18,2) ) -- le permite dejar 2 decimales y el 18 es la precisión o el redodeo
-
- 
-```sql
- 
-
-select LEFT('arwdDxt', LENGTH('arwdDxt') - 1); -- > V 8
-```sql
-
-SELECT Abs(20) AS AbsNum; ---- esta función siempre te retorna un positivo
-SELECT sign(20) AS AbsNum; --- esta función siempre te retorana 1 si es número es positvo y si es negativo te retorna -1
-
- 
- 
-SELECT * from mupaquetes where fec_fechamovto::date between '20210501' and '20210531' 29555 BETWEEN num_dcfinicial AND num_dcffinal 
 
 
 
