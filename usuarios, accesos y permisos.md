@@ -1203,7 +1203,7 @@ select
 								  WHEN p.proisagg THEN 'agg'
 								  WHEN p.proiswindow THEN 'window'
 								  WHEN p.prorettype = 'pg_catalog.trigger'::pg_catalog.regtype THEN 'trigger'
-								  ELSE 'func'
+								  ELSE 'FUNCTION'
 								END  )::information_schema.character_data AS object_type,
 								p.proacl as privileges
 					   FROM pg_proc as p
@@ -1220,7 +1220,7 @@ select
 			
 			) as f where not grantee in('',  'postgres','PUBLIC','pg_database_owner') 
 		) as a where privilege_type != ''
-		) as b ) as x ) as d ;
+		) as b ) as x ) as d order by grantee ;
 
 ```
 
