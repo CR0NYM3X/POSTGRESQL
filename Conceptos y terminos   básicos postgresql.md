@@ -241,6 +241,56 @@ ALTER SYSTEM SET password_encryption = 'md5';
 **`pg_catalog:`** Almacena información sobre el catálogo del sistema de PostgreSQL. Contiene tablas y vistas que son esenciales para el funcionamiento interno de PostgreSQL. No se recomienda realizar modificaciones directas en esta base de datos.
 
 
+**`pg_temp:`** se utiliza para almacenar tablas temporales. Cada sesión de usuario tiene su propio esquema temporal, como pg_temp_8, para asegurar que las tablas temporales sean visibles solo para esa sesión
+
+**`pg_toast:`** Este esquema se usa para almacenar datos de tablas que son demasiado grandes para caber en una sola fila. PostgreSQL automáticamente mueve estos datos a tablas TOAST (The Oversized-Attribute Storage Technique) para manejar eficientemente grandes cantidades de datos
+
+### ¿Cómo funciona TOAST?
+
+1. **Compresión**: Los valores grandes se comprimen para reducir su tamaño.
+2. **Almacenamiento fuera de línea**: Si la compresión no es suficiente, los valores se dividen en múltiples filas físicas y se almacenan en una tabla TOAST asociada.
+3. **Transparencia**: Todo esto ocurre de manera transparente para el usuario, lo que significa que no necesitas hacer nada especial para manejar estos datos grandes; PostgreSQL se encarga de todo automáticamente¹².
+
+### Detalles Técnicos
+
+- **Tamaño de página fijo**: PostgreSQL utiliza un tamaño de página fijo (normalmente 8 kB), y no permite que las tuplas abarquen múltiples páginas.
+- **Representación varlena**: Los tipos de datos que soportan TOAST deben tener una representación de longitud variable (varlena), donde la primera palabra de cuatro bytes de cualquier valor almacenado contiene la longitud total del valor en bytes¹².
+ 
+
+
+ 
+### ¿Qué es una página en PostgreSQL?
+
+1. **Tamaño Fijo**: Las páginas tienen un tamaño fijo, que normalmente es de 8 kB, aunque este tamaño puede ser configurado al compilar el servidor¹.
+2. **Estructura de Almacenamiento**: Cada tabla e índice en PostgreSQL se almacena como una matriz de estas páginas. Dentro de una tabla, una página contiene varias filas de datos; en un índice, contiene entradas de índice¹.
+3. **Gestión de Datos**: PostgreSQL utiliza estas páginas para gestionar y organizar los datos en el disco de manera eficiente. Cada vez que se necesita leer o escribir datos, se hace en unidades de páginas completas¹.
+
+### ¿Por qué usar páginas?
+
+- **Eficiencia**: Trabajar con páginas de tamaño fijo permite a PostgreSQL optimizar las operaciones de lectura y escritura en disco.
+- **Manejo de Datos Grandes**: Las técnicas como TOAST (The Oversized-Attribute Storage Technique) dependen de este concepto de páginas para manejar datos que no caben en una sola página¹.
+ 
+ 
+  
+### ¿Cómo se generan las tuplas muertas?
+
+1. **Eliminación (DELETE)**: Cuando eliminas una fila, PostgreSQL no la borra físicamente de inmediato. En su lugar, marca la fila como eliminada, pero sigue ocupando espacio en la tabla¹.
+2. **Actualización (UPDATE)**: Al actualizar una fila, PostgreSQL crea una nueva versión de la fila con los datos actualizados y marca la versión antigua como eliminada. Esto también genera una tupla muerta¹.
+
+### ¿Por qué se hace esto?
+
+1. **MVCC (Control de Concurrencia Multiversión)**: PostgreSQL utiliza un sistema llamado MVCC para manejar la concurrencia. Esto permite que múltiples transacciones lean y escriban en la base de datos al mismo tiempo sin bloquearse entre sí. Las tuplas muertas son esenciales para este sistema, ya que permiten que las transacciones vean versiones consistentes de los datos¹.
+2. **Rendimiento**: Eliminar físicamente las filas inmediatamente podría ser costoso en términos de rendimiento, especialmente en sistemas con alta concurrencia. Al marcar las filas como eliminadas y manejarlas posteriormente con `VACUUM`, PostgreSQL puede optimizar mejor el uso de recursos¹.
+
+### Objetivo de las tuplas muertas
+
+El objetivo principal de las tuplas muertas es **mantener la consistencia y el rendimiento** de la base de datos. Permiten que las transacciones lean versiones consistentes de los datos sin interferir con otras operaciones y optimizan el uso de recursos al diferir la eliminación física de las filas hasta que sea más eficiente hacerlo¹.
+ 
+ 
+ 
+ 
+
+
 
 # psql --help
 ```
