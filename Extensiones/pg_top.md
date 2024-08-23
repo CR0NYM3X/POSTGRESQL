@@ -3,3 +3,7 @@ Similar al comando `top` de Linux, `pg_top` muestra el uso de recursos de Postgr
 
 
 ![Logo de GitHub](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/img/pg_top.png)
+
+
+# Bilbiografía
+https://pg_top.gitlab.io/
