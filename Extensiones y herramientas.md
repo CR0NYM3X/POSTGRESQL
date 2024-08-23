@@ -247,6 +247,19 @@ rendimiento general de la base de datos.
 
 
 
+
+
+CREATE EXTENSION cstore_fdw; --> permite almacenar datos en formato columnar en lugar del formato tradicional de filas.
+CREATE SERVER cstore_server FOREIGN DATA WRAPPER cstore_fdw;
+CREATE FOREIGN TABLE nombre_tabla (
+    columna1 tipo,
+    columna2 tipo
+) SERVER cstore_server OPTIONS (compression 'pglz');
+
+shared_preload_libraries = 'cstore_fdw'
+https://github.com/citusdata/cstore_fdw
+
+
 ```
 
 
