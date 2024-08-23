@@ -68,8 +68,8 @@ DO INSTEAD NOTHING;
 -- No hay una regla directa para TRUNCATE, pero puedes revocar permisos
 REVOKE TRUNCATE ON datos_generales FROM PUBLIC;
 
-
-
+--- ver reglas aplicadas 
+SELECT * FROM pg_rules;
 
 ``` 
 
@@ -113,4 +113,19 @@ USING (current_user = 'cliente_user');
 ALTER TABLE clientes FORCE ROW LEVEL SECURITY;
 
 
+-- ver politicas aplicadas 
+SELECT * FROM pg_policies;
 ```
+
+
+
+#### SECURITY LABEL con SELinux
+
+```sql
+--- Ver los security label
+SELECT * FROM pg_seclabel; 
+
+
+
+```
+
