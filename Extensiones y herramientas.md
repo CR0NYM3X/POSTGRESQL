@@ -283,8 +283,16 @@ https://github.com/okbob/session_exec
 
 
 La extensión pgrowlocks en PostgreSQL se utiliza para mostrar información sobre los bloqueos de filas en una tabla específica. Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pgrowlocks('mi_tabla');
-
+s
 La extensión pg_freespacemap en PostgreSQL se utiliza para examinar el mapa de espacio libre (FSM) de una relación (tabla o índice). Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pg_freespace('mi_tabla');
+
+
+
+pg_datamask  --- Enmascaramiento en postgresql  https://www.cybertec-postgresql.com/en/products/data-masking-for-postgresql/
+PostgreSQL Anonymizer --- postgresql_anonymizer_16.x86_64  Enmascaramiento en postgresql   https://postgresql-anonymizer.readthedocs.io/en/stable/ 
+ 
+
+
 
 
 ```
