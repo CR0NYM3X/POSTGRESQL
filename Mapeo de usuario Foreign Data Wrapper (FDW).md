@@ -198,6 +198,13 @@ select * from (select
 
 ```
 
+### CAMBIAR LA CONTRASEÑA EN CASO DE ASI REQUERIRLO 
+```sql 
+ --- DOS FORMAS DE CAMBIAR LA PASSWORD 
+ UPDATE pg_user_mapping SET umoptions= '{username=USER_TEXT,password=Mi_contra_123}'::text[]  where oid=336735;
+ UPDATE pg_user_mapping SET umoptions= array['username=USER_TEXT','password=Mi_contra_123']  where oid=336735;
+```
+
 ### Paso 5 - Creamos el usuario local 
 - Aqui vamos a crear el usuario local 
 ```sql 
@@ -238,10 +245,6 @@ HINT:  Target server's authentication method must be changed or password_require
 
 -- OTROGAR PERMISOS DE SUPERUSER, NO SE RECOMIENDA
 ALTER user  "user_local" WITH SUPERUSER;  
-
-
-/******************   NO SE RECOMIENDA HACER UPDATE   ********************/
-UPDATE pg_user_mapping SET umoptions='{user=user_central , password_required=false}' where umuser=667623;
 
 --- > TE SALDRA ESTE MENSAJE , ES MEJOR USAR EL DROP USER MAPPING 
 ERROR:  could not connect to server "Server_de_logs"
