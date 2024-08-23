@@ -1182,8 +1182,7 @@ select
 							WHEN relkind= 'I' THEN 'partitioned index'
 							ELSE 'other'
 						END AS object_type
-						,CASE WHEN typacl is not null and relkind= 'c'  then   typacl  else relacl end as privileges 
-						--,relacl
+						, relacl  as privileges 
 					FROM pg_class as cl
 					left join pg_type as pty on  cl.oid = pty.typrelid 
 					left join pg_namespace as nc on   cl.relnamespace= nc.oid
@@ -1200,11 +1199,12 @@ select
 								p.proname as object_name ,
 
 								(
-								CASE p.prokind
-									WHEN 'f'::"char" THEN 'FUNCTION'::text
-									WHEN 'p'::"char" THEN 'PROCEDURE'::text
-									ELSE NULL::text
-								END)::information_schema.character_data AS object_type,
+								CASE
+								  WHEN p.proisagg THEN 'agg'
+								  WHEN p.proiswindow THEN 'window'
+								  WHEN p.prorettype = 'pg_catalog.trigger'::pg_catalog.regtype THEN 'trigger'
+								  ELSE 'func'
+								END  )::information_schema.character_data AS object_type,
 								p.proacl as privileges
 					   FROM pg_proc as p
 					   left join pg_namespace as n on    p.pronamespace = n.oid where  p.proacl is not null and  not nspname in( 'information_schema','pg_catalog','pg_toast')  and not nspname ilike 'pg_temp%'
