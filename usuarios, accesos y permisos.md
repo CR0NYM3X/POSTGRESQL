@@ -1169,17 +1169,17 @@ select
 						,relname AS object_name
 						,CASE 
 							--WHEN (nc.oid = pg_my_temp_schema()) THEN 'LOCAL TEMPORARY'::text
-							WHEN relkind= 'r' THEN 'table'
-							WHEN relkind= 'p' THEN 'table'
-							WHEN relkind= 'i' THEN 'index'
-							WHEN relkind= 'S' THEN 'sequence'
-							WHEN relkind= 'v' THEN 'view'
-							WHEN relkind= 'm' THEN 'materialized view'
+							WHEN relkind= 'r' THEN 'TABLE'
+							WHEN relkind= 'p' THEN 'TABLE'
+							WHEN relkind= 'i' THEN 'INDEX'
+							WHEN relkind= 'S' THEN 'SEQUENCE'
+							WHEN relkind= 'v' THEN 'VIEW'
+							WHEN relkind= 'm' THEN 'MATERIALIZED VIEW'
 							WHEN relkind= 'c' THEN 'type'
-							WHEN relkind= 't' THEN 'TOAST table'
-							WHEN relkind= 'f' THEN 'foreign table'
-							WHEN relkind= 'p' THEN 'partitioned table'
-							WHEN relkind= 'I' THEN 'partitioned index'
+							WHEN relkind= 't' THEN 'TOAST TABLE'
+							WHEN relkind= 'f' THEN 'FOREIGN TABLE'
+							WHEN relkind= 'p' THEN 'PARTITIONED FOREIGN'
+							WHEN relkind= 'I' THEN 'PARTITIONED INDEX'
 							ELSE 'other'
 						END AS object_type
 						, relacl  as privileges 
