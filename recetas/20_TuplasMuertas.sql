@@ -1,0 +1,1 @@
+select n_live_tup, n_dead_tup, relname from pg_stat_all_tables; 
