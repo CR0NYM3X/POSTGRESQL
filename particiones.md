@@ -1,7 +1,6 @@
 
 # Particiones 
 
-
 ### ¿Qué es la partición de tablas?
 
 Imagina que tienes una mesa muy grande llena de papeles. Si necesitas encontrar un papel específico, puede ser muy difícil y tardado buscar en toda la mesa. Ahora, si divides esa mesa en varias secciones más pequeñas y organizas los papeles por secciones, encontrar lo que buscas será mucho más fácil y rápido. Eso es básicamente lo que hace la partición de tablas en PostgreSQL.
@@ -100,7 +99,12 @@ PostgreSQL se encarga de insertar los registros en la partición correcta sin qu
 3. **Mantenimiento Simplificado**: El mantenimiento es más sencillo porque todo está centralizado en la tabla principal y sus particiones.
 
 --- 
-# Ejemplos de particiones con Tablespaces
+# Ejemplos de Tablas particionadas con Tablespaces
+
+
+> [!IMPORTANT]
+> En el caso de que quieras particionar una tabla que tiene millones, es necesario migrar todos los datos a una nueva tabla particionada y renombrar una vez migrados los datos 
+
 
 ### Beneficios del Uso de Tablespaces
 
