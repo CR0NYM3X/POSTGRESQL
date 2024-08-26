@@ -402,6 +402,19 @@ from (select  oid,
 
 
 ### Implementar FDW para SQL SERVER 
+**Primero tenemos que tener instalado FreeTDS**
+FreeTDS es una biblioteca de programación de software libre que implementa el protocolo Tabular Data Stream (TDS).
+No es un programa en sí mismo, sino una colección de bibliotecas que los desarrolladores pueden usar para que sus aplicaciones se conecten a bases de datos SQL Server y Sybase1.
+Compatibilidad: Funciona con varios lenguajes de programación como Perl, PHP, y C/C++
+
+```sql
+-- ver si esta isntalado 
+rpm -qa | grep -Ei FreeTDS
+
+--- ver las configuraciones 
+vim /etc/freetds.conf
+```
+
 ```sql 
 
 	CREATE EXTENSION IF NOT EXISTS tds_fdw;
