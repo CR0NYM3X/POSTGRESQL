@@ -337,7 +337,7 @@ Time: 0.543 ms
 
 
 # Test  insertar directamente en la particion  
-Insertar directamente en la particion es una mala practica 
+Insertar directamente en una particion es una mala practica 
 
 **Desventajas de Insertar Directamente en la Partición**
 
@@ -355,24 +355,24 @@ postgres@postgres# INSERT INTO ventas_2020 (fecha, producto, cantidad, precio) V
 INSERT 0 1
 Time: 0.929 ms
 
-postgres@postgres# select * from ventas_2020;
+postgres@postgres#  select * from ventas_2020;
 +----+------------+------------+----------+--------+
 | id |   fecha    |  producto  | cantidad | precio |
 +----+------------+------------+----------+--------+
 |  1 | 2020-03-15 | Producto A |       10 | 100.00 |
 |  2 | 2020-07-22 | Producto B |        5 |  50.00 |
-| 13 | 2020-05-20 | Producto Z |       18 | 180.00 |
+| 11 | 2020-05-20 | Producto Z |       18 | 180.00 |
 +----+------------+------------+----------+--------+
 (3 rows)
 
-Time: 0.404 ms
+Time: 0.328 ms
 postgres@postgres# select * from ventas;
 +----+------------+------------+----------+--------+
 | id |   fecha    |  producto  | cantidad | precio |
 +----+------------+------------+----------+--------+
 |  1 | 2020-03-15 | Producto A |       10 | 100.00 |
 |  2 | 2020-07-22 | Producto B |        5 |  50.00 |
-| 13 | 2020-05-20 | Producto Z |       18 | 180.00 |
+| 11 | 2020-05-20 | Producto Z |       18 | 180.00 |
 |  3 | 2021-01-10 | Producto C |       20 | 200.00 |
 |  4 | 2021-11-05 | Producto D |        7 |  70.00 |
 |  5 | 2022-04-18 | Producto E |       15 | 150.00 |
@@ -382,6 +382,10 @@ postgres@postgres# select * from ventas;
 |  9 | 2024-05-20 | Producto I |       18 | 180.00 |
 | 10 | 2024-12-01 | Producto J |        9 |  90.00 |
 +----+------------+------------+----------+--------+
+(11 rows)
+
+Time: 0.370 ms
+
 
 ```
 
