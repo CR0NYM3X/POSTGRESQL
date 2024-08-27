@@ -462,6 +462,15 @@ string_agg(columnsname,',')
 
 ### Arrays 
 ```sql
+SELECT * FROM unnest(ARRAY['a', 'b', 'c']) WITH ORDINALITY;
++--------+------------+
+| unnest | ordinality |
++--------+------------+
+| a      |          1 |
+| b      |          2 |
+| c      |          3 |
++--------+------------+
+
 
 select array['hola','aaaa','jabon']; --- {hola,aaaa,jabon}
 select '{hola,aaaa,jabon}'::text[];  --- {hola,aaaa,jabon}
