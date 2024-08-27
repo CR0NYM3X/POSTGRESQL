@@ -35,6 +35,11 @@ entre otros. Permiten reaccionar a eventos de base de datos que no están relaci
 
 # Ejemplo de uso de trigger tipo eventos :
 
+### Eliminar un trigger
+```sql
+DROP TRIGGER mi_trigger ON mi_tabla;
+```
+
 ### consultar trigger
 ```sql
 select * from pg_trigger where tgname = 'trigger_do_nothing' limit 1;
