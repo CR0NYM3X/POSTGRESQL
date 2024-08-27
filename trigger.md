@@ -37,17 +37,8 @@ entre otros. Permiten reaccionar a eventos de base de datos que no están relaci
 
 ### las variables TG_ son variables especiales disponibles dentro de las funciones de trigger.
 ```
-TG_NAME :  Nombre del trigger que se activó. 
-TG_WHEN : Indica cuándo se activó el trigger (BEFORE, AFTER, INSTEAD OF). 
-TG_LEVEL :  Nivel del trigger (ROW o STATEMENT). 
-TG_OP :  Operación que activó el trigger (INSERT, UPDATE, DELETE, TRUNCATE). 
-TG_RELID:  D del objeto de la tabla que causó la invocación del trigger. 
-TG_TABLE_NAME:  Nombre de la tabla que causó la invocación del trigger.
-TG_TABLE_SCHEMA:  Esquema de la tabla que causó la invocación del trigger.
-TG_NARGS :  Número de argumentos dados a la función del trigger en la declaración CREATE TRIGGER.
-TG_ARGV[]: Número de argumentos dados a la función del trigger en la declaración CREATE TRIGGER.
-Ejemplo: Si la función del trigger recibe dos argumentos, TG_NARGS será 2.
-TG_TAG: Etiqueta del comando que activó el evento trigger. 
+TG_EVENT text # Muestra el tipo de trigger como por ejemplo ddl_command_end 
+TG_TAG text # Te muestra el tipo de acion como el CREATE
 ```
 
 ### Registros te permiten acceder a los valores
