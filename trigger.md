@@ -33,6 +33,31 @@ los datos en las tablas subyacentes que conforman la vista.
 **`EVENT TRIGGER:`** A diferencia de los triggers que responden a operaciones en las tablas (INSERT, UPDATE, DELETE), los EVENT TRIGGERS se activan por eventos a nivel del sistema de la base de datos, como la creación de una tabla, un cambio en la configuración del servidor,
 entre otros. Permiten reaccionar a eventos de base de datos que no están relacionados directamente con las operaciones CRUD en las tablas.
 
+--- 
+
+### las variables TG_ son variables especiales disponibles dentro de las funciones de trigger.
+```
+TG_NAME :  Nombre del trigger que se activó. 
+TG_WHEN : Indica cuándo se activó el trigger (BEFORE, AFTER, INSTEAD OF). 
+TG_LEVEL :  Nivel del trigger (ROW o STATEMENT). 
+TG_OP :  Operación que activó el trigger (INSERT, UPDATE, DELETE, TRUNCATE). 
+TG_RELID:  D del objeto de la tabla que causó la invocación del trigger. 
+TG_TABLE_NAME:  Nombre de la tabla que causó la invocación del trigger.
+TG_TABLE_SCHEMA:  Esquema de la tabla que causó la invocación del trigger.
+TG_NARGS :  Número de argumentos dados a la función del trigger en la declaración CREATE TRIGGER.
+TG_ARGV[]: Número de argumentos dados a la función del trigger en la declaración CREATE TRIGGER.
+Ejemplo: Si la función del trigger recibe dos argumentos, TG_NARGS será 2.
+TG_TAG: Etiqueta del comando que activó el evento trigger. 
+```
+
+### Registros te permiten acceder a los valores
+ Registros te permiten acceder a los valores de las filas antes y después de una operación de modificación, lo que es útil para validar datos, mantener integridad referencial, o realizar auditorías. 
+
+- **`NEW`**: Representa el nuevo registro que se va a insertar o actualizar en la tabla. Se utiliza en triggers `BEFORE INSERT`, `AFTER INSERT`, `BEFORE UPDATE` y `AFTER UPDATE`.
+- **`OLD`**: Representa el registro antiguo que está siendo actualizado o eliminado. Se utiliza en triggers `BEFORE UPDATE`, `AFTER UPDATE`, `BEFORE DELETE` y `AFTER DELETE`.
+
+
+
 # Ejemplo de uso de trigger tipo eventos :
 
 ### Eliminar un trigger
