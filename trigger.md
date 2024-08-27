@@ -315,7 +315,37 @@ SELECT * FROM clientes;
 
 
 # extra:
-auditorias con pgaudit: https://www.postgresql.org/message-id/attachment/41749/pgaudit-v2-03.patch
+ ```sql
+postgres@postgres# select proname from pg_proc where proname ilike '%trigger%';
++---------------------------------------+
+|                proname                |
++---------------------------------------+
+| suppress_redundant_updates_trigger    |
+| pg_get_triggerdef                     |
+| pg_trigger_depth                      |
+| trigger_in                            |
+| trigger_out                           |
+| event_trigger_in                      |
+| event_trigger_out                     |
+| pg_get_triggerdef                     |
+| tsvector_update_trigger               |
+| tsvector_update_trigger_column        |
+| pg_event_trigger_dropped_objects      |
+| pg_event_trigger_table_rewrite_oid    |
+| pg_event_trigger_table_rewrite_reason |
+| pg_event_trigger_ddl_commands         |
+| trigger_function_name                 |
+| trigger_auditoria_usuarios            |
++---------------------------------------+
+(16 rows)
+
+Time: 1.743 ms
+postgres@postgres#
+
+
+ --- Event Trigger Functions  https://www.postgresql.org/docs/current/functions-event-triggers.html
+ ```
+
 
 ### Bibliografías: 
 https://www.postgresql.org/docs/current/plpgsql-trigger.html <br>
@@ -329,5 +359,4 @@ How to Use Event Triggers in PostgreSQL:  https://www.enterprisedb.com/postgres-
 
 https://www.postgresql.org/docs/current/plpgsql-trigger.html <br> 
 
-
- Event Trigger Functions  --> https://www.postgresql.org/docs/current/functions-event-triggers.html <br> 
+ 
