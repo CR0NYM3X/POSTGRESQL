@@ -328,3 +328,6 @@ https://www.postgresql.org/docs/current/plpgsql-trigger.html <br>
 How to Use Event Triggers in PostgreSQL:  https://www.enterprisedb.com/postgres-tutorials/how-use-event-triggers-postgresql <br>
 
 https://www.postgresql.org/docs/current/plpgsql-trigger.html <br> 
+
+
+ Event Trigger Functions  --> https://www.postgresql.org/docs/current/functions-event-triggers.html <br> 
