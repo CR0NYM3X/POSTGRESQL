@@ -93,7 +93,7 @@
 
    -----------FUNCION PARA MONITOREAR LAS ACCIONES: TRUNCATE
    
-   CREATE OR REPLACE FUNCTION trigger_function_name()
+   CREATE OR REPLACE FUNCTION trigger_function_clientes_truncate()
    RETURNS TRIGGER AS
    $$
    BEGIN
@@ -144,7 +144,7 @@
    CREATE TRIGGER trigger_name
    BEFORE TRUNCATE ON clientes
    FOR EACH STATEMENT
-   EXECUTE FUNCTION trigger_function_name();
+   EXECUTE FUNCTION trigger_function_clientes_truncate();
 
 
    CREATE  EVENT TRIGGER trigger_ddl_clientes
