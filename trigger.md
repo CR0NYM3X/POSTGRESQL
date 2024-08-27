@@ -353,10 +353,8 @@ Libro PDF de Postgresql tambien viene sobre los triggers: https://www.postgresql
 Lista de comandos soportados Event trigger:   https://www.postgresql.org/docs/current/event-trigger-matrix.html <br>
 
 Trigger Before, after  https://www.postgresql.org/docs/current/sql-createtrigger.html <br> 
-https://www.postgresql.org/docs/current/plpgsql-trigger.html <br> 
 
 How to Use Event Triggers in PostgreSQL:  https://www.enterprisedb.com/postgres-tutorials/how-use-event-triggers-postgresql <br>
 
-https://www.postgresql.org/docs/current/plpgsql-trigger.html <br> 
 
  
