@@ -1,7 +1,7 @@
 # Objetivo
 Aprenderemos lo básico de funciones 
 
-# Descripcion rápida de los esquemas
+# Descripcion rápida de funciones
 Una función en PostgreSQL (o en cualquier sistema de gestión de bases de datos) sirve para encapsular un conjunto de instrucciones SQL y lógica de negocio en una unidad lógica y reutilizable. <br>
 
 Las funciones devuelven un valor, ya sea un valor escalar o una tabla, y pueden utilizarse en una consulta SQL como si fueran una columna.
@@ -196,7 +196,8 @@ La tabla information_schema.parameters contiene información sobre los parámetr
 SELECT parameter_name, data_type, ordinal_position FROM information_schema.parameters WHERE specific_name = 'nombre_unico_de_la_funcion';
 ```
 
-# try catch 
+# try catch función anónima/bloque anónimo
+los bloque anónimo o función anónima transitoria en PostgreSQL. Estos bloques se ejecutan usando la instrucción DO y permiten ejecutar código PL/pgSQL sin necesidad de crear una función permanente.
 ```SQL
 
 variables predefinidas para obtener información sobre el error que ocurrió.
