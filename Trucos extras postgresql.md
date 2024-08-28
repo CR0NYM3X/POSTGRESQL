@@ -684,8 +684,10 @@ select nullif('aaa','aaa')  --- Null
 ---- En caso de que el parametro 1 sea null retornara el valor del parametro 2 
 select coalesce(  pagotargeta , 0) 
 
+--- convertir string a ascii
+SELECT ASCII('\');
 
----- Codigos Asci
+----convertir ascii  a string
 select CHR(10); -- salto de linea
 select CHR(39); -- Comilla simple
 select CHR(34); -- Comilla dobles
