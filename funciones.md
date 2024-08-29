@@ -457,7 +457,9 @@ SELECT * FROM ejecutar_consulta_dinamica('select schemaname::varchar,tablename::
 # TIPS
 ```
 ----- 	EJECUTAR UNA FUNCION 
-perform mssql.fun_test_connection();
+perform mssql.fun_test_connection(); -- Se usa cuando quieres ejecutar una consulta SELECT pero no te interesa el resultado. Es útil para ejecutar funciones que tienen efectos secundarios (como modificar datos) pero cuyos resultados no necesitas procesar.
+
+SELECT mssql.fun_test_connection(); --- Se usa cuando quieres recuperar datos y hacer algo con ellos, como almacenarlos en una variable o devolverlos como resultado de la función. Si usas SELECT sin especificar un destino para los datos (como una variable), obtendrás un error porque PostgreSQL no sabe qué hacer con los resultados.
 
 ---- Ejecutar una funcion y guardar el resultado en variable
 var1 : =  mssql.fun_test_connection();
