@@ -362,6 +362,20 @@ cat /sysx/data/postgresql.conf | grep -Ei "shared_buffers|effective_cache_size|w
 
 
 # Mantenimientos : 
+
+**Recomendacion de frecuencia de mantenimientos**
+| Mantenimiento  | Hora de Ejecución | Frecuencia | Motivo |
+|----------------|-------------------|------------|--------|
+| `ANALYZE`      | 4:00 AM           | Diario     | Mantiene las estadísticas actualizadas para un rendimiento óptimo de las consultas. |
+| Backup         | 1:00 AM           | Diario     | Asegura la recuperación ante desastres mediante copias de seguridad regulares. |
+| `VACUUM`       | 2:00 AM           | Semanal    | Libera espacio ocupado por tuplas muertas y mantiene la base de datos en buen estado sin causar interrupciones significativas. |
+| `VACUUM FULL`  | 3:00 AM           | Mensual    | Bloquea objetos, Recupera espacio en disco y compacta las tablas, pero debe usarse con moderación debido a su impacto en el rendimiento. |
+| `REINDEX`      | 5:00 AM          | Mensual    | Bloquea objetos, Reconstruye los índices para mejorar el rendimiento de las consultas, minimizando la interrupción del servicio. |
+| `CLUSTER`      | 6:00 AM           | Trimestral | Reorganiza las tablas basándose en un índice, mejorando el rendimiento de las consultas que utilizan ese índice. |
+
+
+
+
  
  En PostgreSQL, algunos comandos de mantenimiento pueden bloquear las tablas mientras se ejecutan. Aquí tienes una lista de los más comunes:
 
@@ -433,6 +447,18 @@ REINDEX DATABASE database_name;
 
 
 ## Vacum [documentación Oficial](https://www.postgresql.org/docs/current/sql-vacuum.html)
+
+
+## Comparación
+
+| Característica       | `VACUUM`                          | `VACUUM FULL`                     |
+|----------------------|-----------------------------------|-----------------------------------|
+| **Eliminación de tuplas muertas** | Sí                                | Sí                                |
+| **Compactación de espacio**       | No                                | Sí                                |
+| **Reducción del tamaño del archivo** | No                                | Sí                                |
+| **Requiere bloqueo exclusivo**    | No                                | Sí                                |
+| **Tiempo de ejecución**           | Rápido                            | Lento                             |
+| **Impacto en el rendimiento**     | Bajo                              | Alto                              |
 
 Elimina las tuplas marcadas como obsoletas o muertas por transacciones anteriores. Cuando se insertan, actualizan o eliminan datos en una base de datos, PostgreSQL no elimina físicamente las tuplas obsoletas de inmediato; simplemente las marca como obsoletas. El comando VACUUM libera el espacio ocupado por estas tuplas obsoletas, lo que ayuda a reducir el tamaño de la base de datos y a mejorar el rendimiento.
 ```sh
