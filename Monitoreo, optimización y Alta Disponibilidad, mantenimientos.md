@@ -363,15 +363,15 @@ cat /sysx/data/postgresql.conf | grep -Ei "shared_buffers|effective_cache_size|w
 
 # Mantenimientos : 
 
-**Recomendacion de frecuencia de mantenimientos**
+**Recomendacion de frecuencia de mantenimientos, esto depende que transaccional es tu servidor**
 | Mantenimiento  | Hora de Ejecución | Frecuencia | Motivo |
 |----------------|-------------------|------------|--------|
 | `ANALYZE`      | 4:00 AM           | Diario     | Mantiene las estadísticas actualizadas para un rendimiento óptimo de las consultas. |
 | Backup         | 1:00 AM           | Diario     | Asegura la recuperación ante desastres mediante copias de seguridad regulares. |
-| `VACUUM`       | 2:00 AM           | Semanal    | Libera espacio ocupado por tuplas muertas y mantiene la base de datos en buen estado sin causar interrupciones significativas. |
-| `VACUUM FULL`  | 3:00 AM           | Mensual    | Bloquea objetos, Recupera espacio en disco y compacta las tablas, pero debe usarse con moderación debido a su impacto en el rendimiento. |
-| `REINDEX`      | 5:00 AM          | Mensual    | Bloquea objetos, Reconstruye los índices para mejorar el rendimiento de las consultas, minimizando la interrupción del servicio. |
-| `CLUSTER`      | 6:00 AM           | Trimestral | Reorganiza las tablas basándose en un índice, mejorando el rendimiento de las consultas que utilizan ese índice. |
+| `VACUUM`       | 2:00 AM           | Semanal/Diario    | Libera espacio ocupado por tuplas muertas y mantiene la base de datos en buen estado sin causar interrupciones significativas. |
+| `VACUUM FULL`  | 3:00 AM           | Mensual/Semanal    | Bloquea objetos, Recupera espacio en disco y compacta las tablas, pero debe usarse con moderación debido a su impacto en el rendimiento. |
+| `REINDEX`      | 5:00 AM          | Mensual/Semanal    | Bloquea objetos, Reconstruye los índices para mejorar el rendimiento de las consultas, minimizando la interrupción del servicio. |
+| `CLUSTER`      | 6:00 AM           | Trimestral/semanal | Reorganiza las tablas basándose en un índice, mejorando el rendimiento de las consultas que utilizan ese índice. |
 
 
 
