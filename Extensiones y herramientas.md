@@ -1,4 +1,13 @@
 
+### Validar extensiones que puedo instalar 
+```SQL
+select * from pg_available_extensions where name ilike '%fdw%'; 
+ ```
+### Ver extensiones instaladas 
+```SQL
+select * from pg_extension;
+```
+
 ```SQL
 
 ### **5. Seguridad:**
