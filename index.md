@@ -1,5 +1,4 @@
 
-DROP INDEX IF EXISTS index_emp_nombre CASCADE;
 
 # INDEX
 La indexación es un proceso en el que se crea una estructura adicional que almacena los valores de una columna específica de una tabla en un formato optimizado para la búsqueda rápida. Esto permite que las consultas que involucran esa columna sean mucho más eficientes, ya que no se requiere recorrer toda la tabla para encontrar los datos.
@@ -24,6 +23,9 @@ La reindexación en PostgreSQL es un proceso en el que se reconstruyen los índi
 # Por qué es importante la reindexación?
 La reindexación es importante porque los índices desorganizados pueden llevar a consultas lentas y degradación general del rendimiento de la base de datos. Con el tiempo, a medida que los datos se insertan, actualizan y eliminan, los índices pueden perder eficiencia. La reindexación periódica garantiza que los índices estén optimizados para la consulta y mantiene el rendimiento de la base de datos en un nivel óptimo.
 
+# Borar un index
+	DROP INDEX IF EXISTS public.index_emp_nombre ;
+
 
 
 # CREAR INDEX 
@@ -41,7 +43,6 @@ CREATE UNIQUE INDEX   nombre_del_indice ON nombre_de_tabla USING btree (columna1
 CREATE UNIQUE INDEX unique_email_active_users ON usuarios (email) WHERE activo = true;
 
 ```
-
 
 ```SQL
 
