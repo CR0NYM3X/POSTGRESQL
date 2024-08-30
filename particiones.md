@@ -320,7 +320,7 @@ postgres@postgres# select * from public.ventas;
 
  **Índices Globales:** A partir de PostgreSQL 15, se introducen los índices globales para tablas particionadas, lo que permite crear un índice único que abarca todas las particiones. Si estás utilizando una versión que soporta índices globales y te resulta útil para tu caso, podrías considerarlos.
 
-**[NOTA]** Si creas un index y despues creas una particion nueva, este index se creara de manera automatica.
+**[NOTA]** Si creas un index y despues creas una particion nueva, este index se creara de manera automatica en la nueva partición.
 
 ```sql
 postgres@postgres# CREATE INDEX   schemas_idx ON public.ventas (   fecha,producto  );
