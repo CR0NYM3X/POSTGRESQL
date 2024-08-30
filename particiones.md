@@ -592,7 +592,7 @@ postgres@postgres# \dt
 +--------+---------------------------+-------+----------+
 (0 row)
 
-postgres@angel#  select table_schema,table_name,table_type  from information_schema.tables where table_schema in('public','prttb') order by table_schema,table_name;3
+postgres@postgres#  select table_schema,table_name,table_type  from information_schema.tables where table_schema in('public','prttb') order by table_schema,table_name;3
 +--------------+------------+------------+
 | table_schema | table_name | table_type |
 +--------------+------------+------------+
