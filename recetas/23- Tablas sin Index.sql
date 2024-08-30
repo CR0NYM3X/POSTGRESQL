@@ -1,6 +1,6 @@
-# Encuentra tablas que no tienen index, el primary key no cuenta 
+---  Encuentra tablas que no tienen index, el primary key no cuenta 
 
-```sql
+ 
 select 
 	a.table_schema
 	,a.table_name
@@ -34,4 +34,4 @@ where a.table_schema not in('pg_catalog','information_schema')
 	and table_type = 'BASE TABLE' 
 	and indexname is null
 order by pg_catalog.pg_relation_size(a.table_schema || '.'|| a.table_name) desc ;
-```
+ 
