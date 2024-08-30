@@ -64,11 +64,39 @@ PostgreSQL soporta varios tipos de particionamiento:
    PARTITION BY KEY (id);
    ```
 
- 
+  
+### Comparación: Particiones vs. Tabla de Historial
 
- 
+| **Criterio**               | **Particiones**                                                                 | **Tabla de Historial**                                                                 |
+|----------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| **Rendimiento de Consultas** | Alta eficiencia en consultas que se benefician de la partición de datos. Las consultas que filtran por la columna de partición (por ejemplo, fecha) son mucho más rápidas. | Mejora el rendimiento al mantener la tabla principal más pequeña, pero las consultas históricas pueden ser más lentas. |
+| **Mantenimiento**          | Simplifica el mantenimiento al permitir operaciones en particiones específicas (por ejemplo, eliminación de datos antiguos). | Requiere tareas programadas para mover datos a la tabla de historial y truncar la tabla principal. |
+| **Complejidad de Implementación** | Requiere una planificación cuidadosa y una configuración inicial más compleja. | Más sencillo de implementar, especialmente si ya tienes experiencia con tareas programadas. |
+| **Flexibilidad**           | Muy flexible para manejar grandes volúmenes de datos y permite operaciones eficientes en subconjuntos de datos. | Menos flexible en términos de rendimiento para consultas históricas, pero más fácil de gestionar en términos de implementación. |
+| **Espacio en Disco**       | Puede requerir más espacio en disco debido a la necesidad de mantener múltiples particiones activas. | Puede ser más eficiente en términos de espacio si los datos históricos se archivan adecuadamente. |
+| **Escalabilidad**          | Altamente escalable, ideal para sistemas con crecimiento continuo de datos. | Escalable, pero puede requerir ajustes frecuentes en las tareas programadas para manejar el crecimiento de datos. |
+| **Disponibilidad de Datos** | Los datos están siempre disponibles en la tabla principal, lo que facilita el acceso a datos recientes y antiguos. | Los datos históricos están separados, lo que puede requerir consultas adicionales para acceder a ellos. |
+| **Ejemplo de Uso**         | Ideal para aplicaciones que requieren acceso rápido a datos recientes y un manejo eficiente de grandes volúmenes de datos. | Adecuado para aplicaciones donde los datos históricos se consultan con menos frecuencia y se necesita mantener la tabla principal ligera. |
+
+### Recomendación
+- **Particiones**: Si tu prioridad es el rendimiento y la escalabilidad a largo plazo, las particiones son la mejor opción. Son ideales para sistemas con un crecimiento continuo de datos y donde las consultas a datos recientes son frecuentes.
+- **Tabla de Historial**: Si buscas una solución más sencilla y tu carga de trabajo no es extremadamente alta, una tabla de historial con tareas programadas puede ser suficiente. Esta opción es más fácil de implementar y mantener, especialmente si los datos históricos no se consultan con frecuencia.
+
 --- 
 ### Particionar vs. Crear Tablas Separadas
+
+
+| **Criterio**               | **Particiones**                                                                 | **Crear Tablas Separadas**                                                                 |
+|----------------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| **Rendimiento de Consultas** | Alta eficiencia en consultas que se benefician de la eliminación de particiones no necesarias. Las consultas que filtran por la columna de partición son mucho más rápidas². | Puede ser menos eficiente, ya que las consultas pueden necesitar acceder a múltiples tablas, lo que aumenta la complejidad y el tiempo de ejecución. |
+| **Mantenimiento**          | Simplifica el mantenimiento al permitir operaciones en particiones específicas (por ejemplo, eliminación de datos antiguos). | Requiere más esfuerzo de mantenimiento, ya que cada tabla debe ser gestionada individualmente. |
+| **Complejidad de Implementación** | Requiere una planificación cuidadosa y una configuración inicial más compleja¹. | Más sencillo de implementar inicialmente, pero puede volverse complejo a medida que aumenta el número de tablas. |
+| **Flexibilidad**           | Muy flexible para manejar grandes volúmenes de datos y permite operaciones eficientes en subconjuntos de datos². | Menos flexible, ya que cada tabla es independiente y no se benefician de las optimizaciones de particionamiento. |
+| **Espacio en Disco**       | Puede requerir más espacio en disco debido a la necesidad de mantener múltiples particiones activas². | Puede ser más eficiente en términos de espacio si las tablas separadas se gestionan adecuadamente. |
+| **Escalabilidad**          | Altamente escalable, ideal para sistemas con crecimiento continuo de datos². | Escalable, pero puede requerir ajustes frecuentes y una gestión más compleja a medida que crece el número de tablas. |
+| **Disponibilidad de Datos** | Los datos están siempre disponibles en la tabla principal, lo que facilita el acceso a datos recientes y antiguos². | Los datos están distribuidos en múltiples tablas, lo que puede complicar el acceso y la gestión de datos históricos. |
+| **Ejemplo de Uso**         | Ideal para aplicaciones que requieren acceso rápido a datos recientes y un manejo eficiente de grandes volúmenes de datos². | Adecuado para aplicaciones donde los datos pueden ser fácilmente segmentados y no se requiere acceso frecuente a datos históricos. |
+
 
 #### Crear Tablas Separadas
 
@@ -99,9 +127,10 @@ PostgreSQL se encarga de insertar los registros en la partición correcta sin qu
 3. **Mantenimiento Simplificado**: El mantenimiento es más sencillo porque todo está centralizado en la tabla principal y sus particiones.
 
 --- 
+
 # Ejemplos de Tablas particionadas con Tablespaces
 
-**Para esste ejemplo se utilizo esta versión**
+**Para este ejemplo se utilizó una versión 16**
 ```sql
 postgres@postgres# select version();
 +---------------------------------------------------------------------------------------------------------+
@@ -111,7 +140,7 @@ postgres@postgres# select version();
 +---------------------------------------------------------------------------------------------------------+
 (1 row)
 Time: 0.450 ms
-```sql
+``` 
 
 > [!IMPORTANT]
 > En el caso de que quieras particionar una tabla que ya existe, es necesario crear nueva tabla particionada, migrar todos los datos a la tabla particionada y renombrar las tablas una vez migrados los datos 
@@ -128,7 +157,7 @@ Time: 0.450 ms
 - **Mantenimiento**: Realiza mantenimiento regular en cada tablespace para asegurar un rendimiento óptimo.
 
  
-### Paso 1:. **Crear las carpetas de los Tablespaces**:
+### Paso 1:. **Crear las carpetas de los Tablespaces en linux**:
 Se pueden guardar en diferentes discos si asi se requiere 
    ```sh
 	mkdir /tmp/particion_psql
@@ -139,7 +168,7 @@ Se pueden guardar en diferentes discos si asi se requiere
 	mkdir /tmp/particion_psql/ventas_2024
    ```
 
-### Paso 2: **Crear Tablespaces**:
+### Paso 2: **Crear Tablespaces en la base de datos**:
    ```sql
    CREATE TABLESPACE ts_2020 LOCATION '/tmp/particion_psql/ventas_2020';
    CREATE TABLESPACE ts_2021 LOCATION '/tmp/particion_psql/ventas_2021';
@@ -179,13 +208,24 @@ create schema prttb  ;
 ### Paso 5: **Crear Particiones  y Asignar Tablespaces**:
 Creamos las particiones de la tabla ventas en el esquema prttb, con su rango de fecha por año y le asignamos el Tablespaces 
 ```sql
+--- Particion Anual
 CREATE TABLE prttb.ventas_2020 PARTITION OF ventas FOR VALUES FROM ('2020-01-01') TO ('2021-01-01') TABLESPACE  ts_2020;
 CREATE TABLE prttb.ventas_2021 PARTITION OF ventas FOR VALUES FROM ('2021-01-01') TO ('2022-01-01') TABLESPACE  ts_2021;
 CREATE TABLE prttb.ventas_2022 PARTITION OF ventas FOR VALUES FROM ('2022-01-01') TO ('2023-01-01') TABLESPACE  ts_2022;
 CREATE TABLE prttb.ventas_2023 PARTITION OF ventas FOR VALUES FROM ('2023-01-01') TO ('2024-01-01') TABLESPACE  ts_2023;
 CREATE TABLE prttb.ventas_2024 PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2025-01-01') TABLESPACE  ts_2024;
 
--- [NOTA] -> Cuando llega un nuevo año, necesitas crear una nueva partición para ese año en tu tabla particionada, o usar partman. 
+-- [NOTA] -> Cuando llega un nuevo año, necesitas crear una nueva partición para ese año en tu tabla particionada,
+-- Tabién puedes crear JOBS para que cree las particiones automaticamente o usar la extension pg_partman.
+
+/* -- En caso de no querer Anual puedes ayudarte con estos ejemplos de Mensual y Diario
+----  Particion Mensual 
+CREATE TABLE ventas_2024_01 PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+
+--- Particion Diario
+CREATE TABLE ventas_2024_01_01 PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2024-01-02');
+*/
+
 ```
 
 ### Paso 6: Insertar registros en las particiones
