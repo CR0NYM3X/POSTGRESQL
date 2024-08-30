@@ -209,21 +209,21 @@ create schema prttb  ;
 Creamos las particiones de la tabla ventas en el esquema prttb, con su rango de fecha por año y le asignamos el Tablespaces 
 ```sql
 --- Particion Anual
-CREATE TABLE prttb.ventas_2020 PARTITION OF ventas FOR VALUES FROM ('2020-01-01') TO ('2021-01-01') TABLESPACE  ts_2020;
-CREATE TABLE prttb.ventas_2021 PARTITION OF ventas FOR VALUES FROM ('2021-01-01') TO ('2022-01-01') TABLESPACE  ts_2021;
-CREATE TABLE prttb.ventas_2022 PARTITION OF ventas FOR VALUES FROM ('2022-01-01') TO ('2023-01-01') TABLESPACE  ts_2022;
-CREATE TABLE prttb.ventas_2023 PARTITION OF ventas FOR VALUES FROM ('2023-01-01') TO ('2024-01-01') TABLESPACE  ts_2023;
-CREATE TABLE prttb.ventas_2024 PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2025-01-01') TABLESPACE  ts_2024;
+CREATE TABLE prttb.ventas_2020 PARTITION OF public.ventas FOR VALUES FROM ('2020-01-01') TO ('2021-01-01') TABLESPACE  ts_2020;
+CREATE TABLE prttb.ventas_2021 PARTITION OF public.ventas FOR VALUES FROM ('2021-01-01') TO ('2022-01-01') TABLESPACE  ts_2021;
+CREATE TABLE prttb.ventas_2022 PARTITION OF public.ventas FOR VALUES FROM ('2022-01-01') TO ('2023-01-01') TABLESPACE  ts_2022;
+CREATE TABLE prttb.ventas_2023 PARTITION OF public.ventas FOR VALUES FROM ('2023-01-01') TO ('2024-01-01') TABLESPACE  ts_2023;
+CREATE TABLE prttb.ventas_2024 PARTITION OF public.ventas FOR VALUES FROM ('2024-01-01') TO ('2025-01-01') TABLESPACE  ts_2024;
 
 -- [NOTA] -> Cuando llega un nuevo año, necesitas crear una nueva partición para ese año en tu tabla particionada,
 -- Tabién puedes crear JOBS para que cree las particiones automaticamente o usar la extension pg_partman.
 
 /* -- En caso de no querer Anual puedes ayudarte con estos ejemplos de Mensual y Diario
 ----  Particion Mensual 
-CREATE TABLE ventas_2024_01 PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+CREATE TABLE prttb.ventas_2024_01 PARTITION OF public.ventas FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
 
 --- Particion Diario
-CREATE TABLE ventas_2024_01_01 PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2024-01-02');
+CREATE TABLE prttb.ventas_2024_01_01 PARTITION OF public.ventas FOR VALUES FROM ('2024-01-01') TO ('2024-01-02');
 */
 
 ```
