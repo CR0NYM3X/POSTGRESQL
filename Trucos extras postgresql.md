@@ -627,7 +627,9 @@ SELECT POSITION('com' IN 'example.com');  ---> 9
 select replace('test string','st','**') --> te** **ring
 
 ---  extraer una subcadena de una cadena de texto dada
-select substring(now()::text, 1, 4); ---> 2024
+select substring('hola mundo', 1, 4); ---> hola 
+select substring('hola mundo', 5); ---> mundo
+
 select substring('arwdDxt' FROM 1 FOR length('arwdDxt') - 1); -- >  arwdDx
  SELECT SUBSTRING('Hola Mundo' FROM 6);  --- Extraer una subcadena desde una posición específica:  Mundo
  SELECT SUBSTRING('Hola Mundo' FROM 1 FOR 4);  ---> Extraer una subcadena con una longitud específica:  Hola
