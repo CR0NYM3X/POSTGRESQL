@@ -101,9 +101,20 @@ PostgreSQL se encarga de insertar los registros en la partición correcta sin qu
 --- 
 # Ejemplos de Tablas particionadas con Tablespaces
 
+**Para esste ejemplo se utilizo esta versión**
+```sql
+postgres@postgres# select version();
++---------------------------------------------------------------------------------------------------------+
+|                                                 version                                                 |
++---------------------------------------------------------------------------------------------------------+
+| PostgreSQL 16.4 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-22), 64-bit |
++---------------------------------------------------------------------------------------------------------+
+(1 row)
+Time: 0.450 ms
+```sql
 
 > [!IMPORTANT]
-> En el caso de que quieras particionar una tabla que tiene millones, es necesario migrar todos los datos a una nueva tabla particionada y renombrar una vez migrados los datos 
+> En el caso de que quieras particionar una tabla que ya existe, es necesario crear nueva tabla particionada, migrar todos los datos a la tabla particionada y renombrar las tablas una vez migrados los datos 
 
 
 ### Beneficios del Uso de Tablespaces
@@ -142,7 +153,7 @@ Se pueden guardar en diferentes discos si asi se requiere
 ```sql
 -- Crear la tabla principal con la clave primaria que incluye la columna de partición
 
-CREATE TABLE ventas (
+CREATE TABLE public.ventas (
     id SERIAL,
     fecha DATE NOT NULL,
     producto VARCHAR(100),
@@ -160,18 +171,24 @@ Time: 4.522 ms*/
 
 ```
 
-### Paso 4: **Crear Particiones  y Asignar Tablespaces**:
+### Paso 4: **Crear esquema prttb**:
+crear un esquema para guardar las tablas particionadas y no juntarlas con la public
 ```sql
-CREATE TABLE ventas_2020 PARTITION OF ventas FOR VALUES FROM ('2020-01-01') TO ('2021-01-01') TABLESPACE  ts_2020;
-CREATE TABLE ventas_2021 PARTITION OF ventas FOR VALUES FROM ('2021-01-01') TO ('2022-01-01') TABLESPACE  ts_2021;
-CREATE TABLE ventas_2022 PARTITION OF ventas FOR VALUES FROM ('2022-01-01') TO ('2023-01-01') TABLESPACE  ts_2022;
-CREATE TABLE ventas_2023 PARTITION OF ventas FOR VALUES FROM ('2023-01-01') TO ('2024-01-01') TABLESPACE  ts_2023;
-CREATE TABLE ventas_2024 PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2025-01-01') TABLESPACE  ts_2024;
+create schema prttb  ;
+```
+### Paso 5: **Crear Particiones  y Asignar Tablespaces**:
+Creamos las particiones de la tabla ventas en el esquema prttb, con su rango de fecha por año y le asignamos el Tablespaces 
+```sql
+CREATE TABLE prttb.ventas_2020 PARTITION OF ventas FOR VALUES FROM ('2020-01-01') TO ('2021-01-01') TABLESPACE  ts_2020;
+CREATE TABLE prttb.ventas_2021 PARTITION OF ventas FOR VALUES FROM ('2021-01-01') TO ('2022-01-01') TABLESPACE  ts_2021;
+CREATE TABLE prttb.ventas_2022 PARTITION OF ventas FOR VALUES FROM ('2022-01-01') TO ('2023-01-01') TABLESPACE  ts_2022;
+CREATE TABLE prttb.ventas_2023 PARTITION OF ventas FOR VALUES FROM ('2023-01-01') TO ('2024-01-01') TABLESPACE  ts_2023;
+CREATE TABLE prttb.ventas_2024 PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2025-01-01') TABLESPACE  ts_2024;
 
 -- [NOTA] -> Cuando llega un nuevo año, necesitas crear una nueva partición para ese año en tu tabla particionada, o usar partman. 
 ```
 
-### Paso 5: Insertar registros en las particiones
+### Paso 6: Insertar registros en las particiones
 
 ```sql
 -- Insertar registros en la partición de 2020
@@ -200,27 +217,36 @@ INSERT INTO ventas (fecha, producto, cantidad, precio) VALUES
 ('2024-12-01', 'Producto J', 9, 90.00);
 ```
 
-### Paso 6: Consultar los datos
+### Paso 7: Consultar los datos
 
 ```sql
-postgres@postgres# \dt+
-                                                      List of relations
-+--------+---------------------------+-------------------+----------+-------------+---------------+------------+-------------+
-| Schema |           Name            |       Type        |  Owner   | Persistence | Access method |    Size    | Description |
-+--------+---------------------------+-------------------+----------+-------------+---------------+------------+-------------+
-| public | ventas                    | partitioned table | postgres | permanent   |               | 0 bytes    |             |
-| public | ventas_2020               | table             | postgres | permanent   | heap          | 8192 bytes |             |
-| public | ventas_2021               | table             | postgres | permanent   | heap          | 8192 bytes |             |
-| public | ventas_2022               | table             | postgres | permanent   | heap          | 8192 bytes |             |
-| public | ventas_2023               | table             | postgres | permanent   | heap          | 8192 bytes |             |
-| public | ventas_2024               | table             | postgres | permanent   | heap          | 8192 bytes |             |
-+--------+---------------------------+-------------------+----------+-------------+---------------+------------+-------------+
-(7 rows)
+postgres@postgres# \dt
+                List of relations
++--------+--------+-------------------+----------+
+| Schema |  Name  |       Type        |  Owner   |
++--------+--------+-------------------+----------+
+| public | ventas | partitioned table | postgres |
++--------+--------+-------------------+----------+
+(1 row)
 
 
+postgres@postgres# select table_schema,table_name,table_type  from information_schema.tables where table_schema in('public','prttb') order by table_schema;
++--------------+-------------+------------+
+| table_schema | table_name  | table_type |
++--------------+-------------+------------+
+| prttb        | ventas_2020 | BASE TABLE |
+| prttb        | ventas_2021 | BASE TABLE |
+| prttb        | ventas_2022 | BASE TABLE |
+| prttb        | ventas_2023 | BASE TABLE |
+| prttb        | ventas_2024 | BASE TABLE |
+| public       | ventas      | BASE TABLE |
++--------------+-------------+------------+
+(6 rows)
+
+Time: 1.020 ms
 
 
-postgres@postgres# select * from ventas_2020;
+postgres@postgres# select * from prttb.ventas_2020;
 +----+------------+------------+----------+--------+
 | id |   fecha    |  producto  | cantidad | precio |
 +----+------------+------------+----------+--------+
@@ -229,7 +255,7 @@ postgres@postgres# select * from ventas_2020;
 +----+------------+------------+----------+--------+
 
 
-postgres@postgres# select * from ventas;
+postgres@postgres# select * from public.ventas;
 +----+------------+------------+----------+--------+
 | id |   fecha    |  producto  | cantidad | precio |
 +----+------------+------------+----------+--------+
@@ -254,12 +280,12 @@ postgres@postgres# select * from ventas;
 
  **Índices Globales:** A partir de PostgreSQL 15, se introducen los índices globales para tablas particionadas, lo que permite crear un índice único que abarca todas las particiones. Si estás utilizando una versión que soporta índices globales y te resulta útil para tu caso, podrías considerarlos.
 
+**[NOTA]** Si creas un index y despues creas una particion nueva, este index se creara de manera automatica.
 
 ```sql
 postgres@postgres# CREATE INDEX   schemas_idx ON public.ventas (   fecha,producto  );
 CREATE INDEX
 Time: 7.692 ms
-
 
 postgres@postgres# select *from pg_indexes where not schemaname in('pg_catalog','information_schema') and indexname ilike '%ventas%'  ;
 +------------+-------------+--------------------------------+------------+------------------------------------------------------------------------
@@ -278,9 +304,30 @@ postgres@postgres# select *from pg_indexes where not schemaname in('pg_catalog',
 | public     | ventas_2024 | ventas_2024_fecha_producto_idx | NULL       | CREATE INDEX ventas_2024_fecha_producto_idx ON public.ventas_2024 USING btree (fecha, producto) 
 +------------+-------------+--------------------------------+------------+------------------------------------------------------------------------
 
+postgres@postgres# CREATE TABLE prttb.ventas_2025 PARTITION OF ventas FOR VALUES FROM ('2025-01-01') TO ('2026-01-01') TABLESPACE  ts_2024;
+CREATE TABLE
+Time: 3.828 ms
+
+postgres@postgres# select *from pg_indexes where not schemaname in('pg_catalog','information_schema') and indexname ilike '%ventas%';
++------------+-------------+--------------------------------+------------+------------------------------------------------------------------------
+| schemaname |  tablename  |           indexname            | tablespace |                                            indexdef
++------------+-------------+--------------------------------+------------+------------------------------------------------------------------------
+| public     | ventas      | ventas_pkey                    | NULL       | CREATE UNIQUE INDEX ventas_pkey ON ONLY public.ventas USING btree (id,fecha)                  |
+| prttb      | ventas_2020 | ventas_2020_pkey               | NULL       | CREATE UNIQUE INDEX ventas_2020_pkey ON prttb.ventas_2020 USING btree (id, fecha)              |
+| prttb      | ventas_2021 | ventas_2021_pkey               | NULL       | CREATE UNIQUE INDEX ventas_2021_pkey ON prttb.ventas_2021 USING btree (id, fecha)              |
+| prttb      | ventas_2022 | ventas_2022_pkey               | NULL       | CREATE UNIQUE INDEX ventas_2022_pkey ON prttb.ventas_2022 USING btree (id, fecha)              |
+| prttb      | ventas_2023 | ventas_2023_pkey               | NULL       | CREATE UNIQUE INDEX ventas_2023_pkey ON prttb.ventas_2023 USING btree (id, fecha)              |
+| prttb      | ventas_2024 | ventas_2024_pkey               | NULL       | CREATE UNIQUE INDEX ventas_2024_pkey ON prttb.ventas_2024 USING btree (id, fecha)              |
+| prttb      | ventas_2020 | ventas_2020_fecha_producto_idx | NULL       | CREATE INDEX ventas_2020_fecha_producto_idx ON prttb.ventas_2020 USINGbtree (fecha, producto) |
+| prttb      | ventas_2021 | ventas_2021_fecha_producto_idx | NULL       | CREATE INDEX ventas_2021_fecha_producto_idx ON prttb.ventas_2021 USINGbtree (fecha, producto) |
+| prttb      | ventas_2022 | ventas_2022_fecha_producto_idx | NULL       | CREATE INDEX ventas_2022_fecha_producto_idx ON prttb.ventas_2022 USINGbtree (fecha, producto) |
+| prttb      | ventas_2023 | ventas_2023_fecha_producto_idx | NULL       | CREATE INDEX ventas_2023_fecha_producto_idx ON prttb.ventas_2023 USINGbtree (fecha, producto) |
+| prttb      | ventas_2024 | ventas_2024_fecha_producto_idx | NULL       | CREATE INDEX ventas_2024_fecha_producto_idx ON prttb.ventas_2024 USINGbtree (fecha, producto) |
+| prttb      | ventas_2025 | ventas_2025_pkey               | NULL       | CREATE UNIQUE INDEX ventas_2025_pkey ON prttb.ventas_2025 USING btree (id, fecha)              |
+| prttb      | ventas_2025 | ventas_2025_fecha_producto_idx | NULL       | CREATE INDEX ventas_2025_fecha_producto_idx ON prttb.ventas_2025 USING btree (fecha, producto) |
++------------+-------------+--------------------------------+------------+------------------------------------------------------------------------
 
 ```
-
 
 
 
@@ -316,21 +363,43 @@ postgres@postgres# select *from pg_indexes where not schemaname in('pg_catalog',
 -- Backup de un tablespace específico
 pg_basebackup -D /path/to/backup -T /path/to/tablespace=/path/to/backup/tablespace
 ```
+### Test, crear una particion con un rango de fechas que ya existe 
+```sql
 
+postgres@postgres# CREATE TABLE prttb.ventas_raras PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')  ;
+ERROR:  partition "ventas_raras" would overlap partition "ventas_2024"
+LINE 1: ...ventas_raras PARTITION OF ventas FOR VALUES FROM ('2024-01-0...
+                                                             ^
+Time: 2.796 ms
 
-# Test, intentar insertar un registro  con una fecha no definida.
+postgres@postgres# CREATE TABLE prttb.ventas_raras PARTITION OF ventas FOR VALUES FROM ('2024-01-01') TO ('2024-01-01')  ;
+ERROR:  empty range bound specified for partition "ventas_raras"
+LINE 1: ...ventas_raras PARTITION OF ventas FOR VALUES FROM ('2024-01-0...
+                                                             ^
+DETAIL:  Specified lower bound ('2024-01-01') is greater than or equal to upper bound ('2024-01-01').
+Time: 1.050 ms
+ 
+postgres@postgres# CREATE TABLE prttb.ventas_raras PARTITION OF ventas FOR VALUES FROM ('2025-01-01') TO ('2024-01-01')  ;
+ERROR:  empty range bound specified for partition "ventas_raras"
+LINE 1: ...ventas_raras PARTITION OF ventas FOR VALUES FROM ('2025-01-0...
+                                                             ^
+DETAIL:  Specified lower bound ('2025-01-01') is greater than or equal to upper bound ('2024-01-01').
+Time: 1.058 ms
+ 
+``` 
+
+# Test, realizar un insert con una fecha no definida.
 
 Si intentas insertar un registro con una fecha que no está cubierta por ninguna de las particiones existentes, PostgreSQL generará un error. Esto se debe a que no hay una partición definida para manejar esa fecha.
 
- 
 ```sql
-postgres@postgres# INSERT INTO ventas (fecha, producto, cantidad, precio) VALUES ('2025-01-10', 'Producto C', 20, 200.00);
+postgres@postgres# INSERT INTO public.ventas (fecha, producto, cantidad, precio) VALUES ('2025-01-10', 'Producto C', 20, 200.00);
 ERROR:  no partition of relation "ventas" found for row
 DETAIL:  Partition key of the failing row contains (fecha) = (2025-01-10).
 Time: 0.440 ms
 
 
-INSERT INTO ventas_2020 (fecha, producto, cantidad, precio) VALUES ('2025-05-20', 'Producto Z', 18, 180.00);
+INSERT INTO prttb.ventas_2020 (fecha, producto, cantidad, precio) VALUES ('2025-05-20', 'Producto Z', 18, 180.00);
 ERROR:  new row for relation "ventas_2020" violates partition constraint
 DETAIL:  Failing row contains (12, 2024-05-20, Producto Z, 18, 180.00).
 Time: 0.543 ms
@@ -355,11 +424,11 @@ Insertar directamente en una particion es una mala practica
 
  
 ```SQL 
-postgres@postgres# INSERT INTO ventas_2020 (fecha, producto, cantidad, precio) VALUES ('2020-05-20', 'Producto Z', 18, 180.00);
+postgres@postgres# INSERT INTO prttb.ventas_2020 (fecha, producto, cantidad, precio) VALUES ('2020-05-20', 'Producto Z', 18, 180.00);
 INSERT 0 1
 Time: 0.929 ms
 
-postgres@postgres#  select * from ventas_2020;
+postgres@postgres#  select * from prttb.ventas_2020;
 +----+------------+------------+----------+--------+
 | id |   fecha    |  producto  | cantidad | precio |
 +----+------------+------------+----------+--------+
@@ -370,7 +439,7 @@ postgres@postgres#  select * from ventas_2020;
 (3 rows)
 
 Time: 0.328 ms
-postgres@postgres# select * from ventas;
+postgres@postgres# select * from public.ventas;
 +----+------------+------------+----------+--------+
 | id |   fecha    |  producto  | cantidad | precio |
 +----+------------+------------+----------+--------+
@@ -399,7 +468,7 @@ Time: 0.370 ms
 
 ```sql
 
-postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas ;
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM public.ventas ;
 +----------------------------------------------------------------------------------------------------------------------+
 |                                                      QUERY PLAN                                                      |
 +----------------------------------------------------------------------------------------------------------------------+
@@ -418,7 +487,7 @@ Time: 0.474 ms
 
 
 
-postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE fecha = '2023-02-25' AND producto = 'Producto G';
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM public.ventas WHERE fecha = '2023-02-25' AND producto = 'Producto G';
 +--------------------------------------------------------------------------------------------------------------+
 |                                                  QUERY PLAN                                                  |
 +--------------------------------------------------------------------------------------------------------------+
@@ -437,7 +506,7 @@ postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE fecha = '2023-02-2
 # Eliminando particion
 
 ```SQL
-postgres@postgres# select *from ventas order by fecha;
+postgres@postgres# select *from public.ventas order by fecha;
 +----+------------+------------+----------+--------+
 | id |   fecha    |  producto  | cantidad | precio |
 +----+------------+------------+----------+--------+
@@ -457,11 +526,11 @@ postgres@postgres# select *from ventas order by fecha;
 
 Time: 0.621 ms
 postgres@postgres#
-postgres@postgres# drop table ventas_2023;
+postgres@postgres# drop table prttb.ventas_2023;
 DROP TABLE
 Time: 3.158 ms
 postgres@postgres#
-postgres@postgres# select *from ventas order by fecha;
+postgres@postgres# select *from public.ventas order by fecha;
 +----+------------+------------+----------+--------+
 | id |   fecha    |  producto  | cantidad | precio |
 +----+------------+------------+----------+--------+
@@ -483,7 +552,7 @@ postgres@postgres#
 
 
 # Eliminando tabla principal
-Cuando eliminas la tabla principal o tabla particionada como quieras llamarle , se eliminan todas sus particiones 
+Cuando eliminas la tabla principal o tabla particionada como quieras llamarle , también se eliminan todas sus particiones 
 ```sql
 postgres@postgres# \dt
                           List of relations
@@ -491,15 +560,27 @@ postgres@postgres# \dt
 | Schema |           Name            |       Type        |  Owner   |
 +--------+---------------------------+-------------------+----------+
 | public | ventas                    | partitioned table | postgres |
-| public | ventas_2020               | table             | postgres |
-| public | ventas_2021               | table             | postgres |
-| public | ventas_2022               | table             | postgres |
-| public | ventas_2023               | table             | postgres |
-| public | ventas_2024               | table             | postgres |
 +--------+---------------------------+-------------------+----------+
 (7 rows)
 
-postgres@postgres# drop table ventas;
+postgres@postgres#  select table_schema,table_name,table_type  from information_schema.tables where table_schema in('public','prttb') order by table_schema,table_name;3
++--------------+-------------+------------+
+| table_schema | table_name  | table_type |
++--------------+-------------+------------+
+| prttb        | ventas_2020 | BASE TABLE |
+| prttb        | ventas_2021 | BASE TABLE |
+| prttb        | ventas_2022 | BASE TABLE |
+| prttb        | ventas_2023 | BASE TABLE |
+| prttb        | ventas_2024 | BASE TABLE |
+| prttb        | ventas_2025 | BASE TABLE |
+| public       | ventas      | BASE TABLE |
++--------------+-------------+------------+
+(7 rows)
+
+Time: 1.377 ms
+
+
+postgres@postgres# drop table public.ventas;
 DROP TABLE
 Time: 4.481 ms
  
@@ -511,7 +592,12 @@ postgres@postgres# \dt
 +--------+---------------------------+-------+----------+
 (0 row)
 
-postgres@postgres#
+postgres@angel#  select table_schema,table_name,table_type  from information_schema.tables where table_schema in('public','prttb') order by table_schema,table_name;3
++--------------+------------+------------+
+| table_schema | table_name | table_type |
++--------------+------------+------------+
++--------------+------------+------------+
+(0 rows)
 
 
 ```
