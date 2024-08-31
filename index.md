@@ -132,6 +132,8 @@ ORDER BY
 
 ```
 
+
+
 -- indices : 
 https://dbasinapuros.com/tipos-de-indices-en-postgresql/
 
