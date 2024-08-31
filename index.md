@@ -27,6 +27,10 @@ La reindexación es importante porque los índices desorganizados pueden llevar 
 	DROP INDEX IF EXISTS public.index_emp_nombre ;
 
 
+# Usar CLUSTER
+El propósito de este comando es mejorar el rendimiento de las consultas que utilizan el índice idx_table_test. Al agrupar la tabla según este índice, los datos se almacenan físicamente en el orden del índice, lo que puede acelerar las búsquedas y mejorar la eficiencia de las consultas.
+
+	ALTER TABLE IF EXISTS public.table_test CLUSTER ON idx_table_test;
 
 # CREAR INDEX 
 ```SQL
