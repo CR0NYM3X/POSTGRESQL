@@ -287,4 +287,88 @@ Este curso se distingue por su enfoque en temas avanzados y específicos de Post
 
 ---
 
-Este plan de estudios está diseñado para proporcionar una comprensión integral y técnica de PostgreSQL, enfocándose en temas avanzados y específicos. ¿Hay algún otro detalle que te gustaría agregar o ajustar?
+# Plan de Estudios Avanzado: Gestión de Memoria en PostgreSQL
+
+## Módulo 1: Arquitectura Avanzada de PostgreSQL
+### Objetivo
+Comprender en profundidad la arquitectura de PostgreSQL y cómo maneja la memoria.
+
+### Temas
+- **Estructura Interna de PostgreSQL**
+  - Procesos y subprocesos.
+  - Gestión de memoria compartida.
+- **Tipos de Memoria en PostgreSQL**
+  - `shared_buffers`
+  - `work_mem`
+  - `maintenance_work_mem`
+  - `effective_cache_size`
+
+## Módulo 2: Configuración y Optimización de Parámetros de Memoria
+### Objetivo
+Aprender a ajustar y optimizar los parámetros de memoria para maximizar el rendimiento.
+
+### Temas
+- **Configuración de `shared_buffers`**
+  - Cálculo y ajuste óptimo.
+  - Impacto en el rendimiento.
+- **Ajuste de `work_mem` y `maintenance_work_mem`**
+  - Estrategias de configuración.
+  - Casos de uso específicos.
+- **Uso de `effective_cache_size`**
+  - Importancia y configuración.
+  - Relación con el sistema operativo.
+
+## Módulo 3: Monitoreo y Análisis del Rendimiento de la Memoria
+### Objetivo
+Utilizar herramientas avanzadas para monitorear y analizar el uso de memoria en PostgreSQL.
+
+### Temas
+- **Herramientas de Monitoreo Internas**
+  - `pg_stat_activity`
+  - `pg_stat_database`
+  - `pg_buffercache`
+- **Herramientas de Monitoreo Externas**
+  - pgAdmin
+  - Grafana con Prometheus
+  - Herramientas de línea de comandos (e.g., `top`, `htop`)
+
+## Módulo 4: Optimización de Consultas y su Impacto en la Memoria
+### Objetivo
+Optimizar consultas SQL para mejorar el uso de memoria y el rendimiento general.
+
+### Temas
+- **Análisis y Optimización de Consultas**
+  - Uso de `EXPLAIN` y `EXPLAIN ANALYZE`.
+  - Identificación de cuellos de botella.
+- **Estrategias de Indexación**
+  - Tipos de índices y su impacto en la memoria.
+  - Mantenimiento y optimización de índices.
+- **Técnicas Avanzadas de Optimización**
+  - Particionamiento de tablas.
+  - Uso de materialized views.
+
+## Módulo 5: Casos Prácticos y Mejores Prácticas
+### Objetivo
+Aplicar los conocimientos adquiridos en situaciones reales y seguir las mejores prácticas.
+
+### Temas
+- **Estudios de Caso**
+  - Optimización de una base de datos de gran tamaño.
+  - Ajuste de parámetros en un entorno de producción.
+- **Mejores Prácticas**
+  - Estrategias de backup y recuperación.
+  - Mantenimiento regular y monitoreo continuo.
+- **Documentación y Reportes**
+  - Generación de reportes de rendimiento.
+  - Documentación de cambios y configuraciones.
+
+## Recursos Adicionales
+- **Documentación Oficial de PostgreSQL**
+  - PostgreSQL Documentation
+- **Libros y Artículos**
+  - "PostgreSQL: Up and Running" de Regina Obe y Leo Hsu.
+  - Artículos técnicos en PostgreSQL Wiki.
+
+---
+
+
