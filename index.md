@@ -62,7 +62,7 @@ CREATE UNIQUE INDEX unique_email_active_users ON usuarios (email) WHERE activo =
 
 
 
---- Indices para los ilike 
+--- Indices   GIN  para los ilike 
 CREATE INDEX idx_nombre_text_pattern_ops ON nombre_tabla(nombre_column text_pattern_ops); -- C collation or text_pattern_ops
 
 /*
@@ -71,7 +71,7 @@ efectivo para patrones anclados al inicio de la cadena (LIKE 'patrón%'). No es 
 
 */
 
-
+--- Indices   trigram  para los ilike 
 CREATE EXTENSION pg_trgm;
 CREATE INDEX idx_nombre_trgm ON productos USING GIN (nombre gin_trgm_ops);
 
