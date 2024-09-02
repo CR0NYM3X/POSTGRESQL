@@ -1,6 +1,13 @@
  
  
+```sql
+--- Expresiones regulares
+SELECT * FROM productos WHERE nombre ~* 'man';
 
+--- Like
+SELECT * FROM productos WHERE nombre ILIKE '%man%';
+
+```
 
 
  
