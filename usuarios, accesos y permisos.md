@@ -540,7 +540,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuar
 # VER LOS DEFAULT 
 SELECT * FROM pg_default_acl;
 
-# DATABASE:
+# DATABASE: [Nota] - el create te permite crear indices, y crear los objetoso solo de ese indice
   GRANT CONNECT,CREATE, TEMPORARY ON DATABASE "tu_base_de_datos" TO "testuserdba";
   grant all privileges on database tu_bd to tu_usuario;
 
@@ -556,7 +556,7 @@ GRANT select ON table my_seuencia_test TO my_user_test; -- versiones 8.0
   GRANT USAGE, SELECT,UPDATE ON SEQUENCE mi_secuencia TO testuserdba;
 GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
 
-# SCHEMA:
+# SCHEMA:  [Nota] - el create te permite crear objetos dentro de un schema
   GRANT CREATE ON SCHEMA public TO mi_rol; ---  permite al usuario crear y modificar objetos en el esquema público
   GRANT USAGE ON SCHEMA public TO testuserdba; - otorga permisos para ver la estructura de los objetos de un esquea
   GRANT ALL PRIVILEGES ON SCHEMA mi_esquema TO mi_usuario; -- te da el permiso usage y create 
