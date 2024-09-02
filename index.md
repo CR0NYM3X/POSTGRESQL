@@ -6,9 +6,9 @@ La indexación es un proceso en el que se crea una estructura adicional que alma
 # Tipos de índices en PostgreSQL:
     1. Índices B-Tree: Son los más comunes y se utilizan para columnas que tienen valores repetidos, como las columnas de nombres, fechas y números. Proporcionan una búsqueda rápida en logaritmo de tiempo.
     2. Índices Hash: Adecuados para igualdad de búsqueda exacta. Sin embargo, no funcionan bien con rangos y consultas de rango.
-    3. Índices GIN y GiST: Son utilizados para tipos de datos más complejos como texto y geometría, permitiendo búsquedas y comparaciones más avanzadas.
+    3. Índices GIN y GiST: Son utilizados para tipos de datos más complejos como texto y geometría, permitiendo búsquedas y comparaciones más avanzadas, se usa en los ilike
     4. Índices SP-GiST: Útiles para tipos de datos con estructuras jerárquicas o multidimensionales.
-    5. Índices GIN y GiST a tiempo completo: Están diseñados para búsquedas de texto y búsqueda de texto completo.
+ 
 
 
 # Índices Compuestos vs. Índices No Compuestos  
