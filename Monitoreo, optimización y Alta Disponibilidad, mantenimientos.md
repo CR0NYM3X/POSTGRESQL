@@ -773,3 +773,28 @@ CREATE TABLE ejemplo (
 ) WITH (fillfactor = 70);
 ```
  
+
+### Desventajas de la técnica HOT
+
+Aunque la técnica HOT (Heap-Only Tuple) ofrece varias ventajas, también tiene algunas desventajas:
+
+1. **Limitaciones en las actualizaciones**: HOT solo se puede utilizar cuando las columnas actualizadas no están indexadas. Si necesitas actualizar columnas que están indexadas, no podrás beneficiarte de HOT¹.
+2. **Espacio en la página**: Para que HOT funcione, debe haber suficiente espacio libre en la página que contiene la fila original. Si las páginas están llenas, las actualizaciones no podrán aprovechar HOT¹.
+3. **Complejidad en el mantenimiento**: Aunque HOT reduce la necesidad de operaciones de vacuum, aún es necesario realizar mantenimiento periódico para evitar la acumulación de versiones antiguas de filas².
+
+### Cuándo usar HOT
+
+HOT es especialmente útil en los siguientes escenarios:
+
+- **Actualizaciones frecuentes**: Si tu aplicación realiza muchas actualizaciones en columnas no indexadas, HOT puede mejorar significativamente el rendimiento.
+- **Tablas grandes**: En tablas con muchas filas, HOT puede reducir la sobrecarga de las actualizaciones al evitar la creación de nuevas entradas en los índices.
+- **Espacio libre en páginas**: Si puedes ajustar el `fillfactor` para dejar espacio libre en las páginas, aumentarás la probabilidad de que las actualizaciones sean HOT.
+
+### Cuándo no usar HOT
+
+Evita depender de HOT en los siguientes casos:
+
+- **Actualizaciones en columnas indexadas**: Si necesitas actualizar columnas que están indexadas, HOT no será aplicable.
+- **Páginas llenas**: Si las páginas de tus tablas están constantemente llenas, HOT no podrá ser utilizado de manera efectiva.
+- **Requerimientos de rendimiento específicos**: En algunos casos, la complejidad añadida de gestionar HOT puede no justificar los beneficios, especialmente si las actualizaciones son poco frecuentes.
+ 
