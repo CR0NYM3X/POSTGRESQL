@@ -4,11 +4,14 @@
 La indexación es un proceso en el que se crea una estructura adicional que almacena los valores de una columna específica de una tabla en un formato optimizado para la búsqueda rápida. Esto permite que las consultas que involucran esa columna sean mucho más eficientes, ya que no se requiere recorrer toda la tabla para encontrar los datos.
 
 # Tipos de índices en PostgreSQL:
+```SQL
     1. Índices B-Tree: Son los más comunes y se utilizan para columnas que tienen valores repetidos, como las columnas de nombres, fechas y números. Proporcionan una búsqueda rápida en logaritmo de tiempo.
     2. Índices Hash: Adecuados para igualdad de búsqueda exacta. Sin embargo, no funcionan bien con rangos y consultas de rango.
     3. Índices GIN y GiST: Son utilizados para tipos de datos más complejos como texto y geometría, permitiendo búsquedas y comparaciones más avanzadas, se usa en los ilike
     4. Índices SP-GiST: Útiles para tipos de datos con estructuras jerárquicas o multidimensionales.
- 
+
+https://www.yugabyte.com/blog/postgresql-like-query-performance-variations/#c-collation-or-text_pattern_ops
+ ```
 
 
 # Índices Compuestos vs. Índices No Compuestos  
@@ -21,6 +24,7 @@ La indexación es un proceso en el que se crea una estructura adicional que alma
 | **Ejemplo de Creación**      | `CREATE INDEX idx_columna ON tabla(columna);` | `CREATE INDEX idx_compuesto ON tabla(columna1, columna2);` |
 | **Cuándo Usar**              | Consultas que filtran por una sola columna | Consultas que filtran por múltiples columnas y el orden de filtrado es importante |
 | **Cuándo No Usar**           |  Consultas que solo filtran por una columna o el orden de las columnas no es relevante  |Consultas que requieren filtrar por múltiples columnas | 
+
 
 
 # Lógica de la indexación:
@@ -55,6 +59,21 @@ CREATE UNIQUE INDEX   nombre_del_indice ON nombre_de_tabla USING btree (columna1
 --- Supongamos que tienes una tabla de usuarios y quieres asegurarte de que los correos 
 ---- electrónicos sean únicos, pero solo para los usuarios activos.
 CREATE UNIQUE INDEX unique_email_active_users ON usuarios (email) WHERE activo = true;
+
+
+
+--- Indices para los ilike 
+CREATE INDEX idx_nombre_text_pattern_ops ON nombre_tabla(nombre_column text_pattern_ops); -- C collation or text_pattern_ops
+
+/*
+text_pattern_ops es una clase de operador que se utiliza con índices B-Tree para optimizar las búsquedas de patrones de texto, especialmente aquellas que utilizan el operador LIKE
+efectivo para patrones anclados al inicio de la cadena (LIKE 'patrón%'). No es tan útil para patrones que contienen comodines al principio (LIKE '%patrón%').
+
+*/
+
+
+CREATE EXTENSION pg_trgm;
+CREATE INDEX idx_nombre_trgm ON productos USING GIN (nombre gin_trgm_ops);
 
 ```
 
