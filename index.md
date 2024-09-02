@@ -75,6 +75,16 @@ efectivo para patrones anclados al inicio de la cadena (LIKE 'patrón%'). No es 
 CREATE EXTENSION pg_trgm;
 CREATE INDEX idx_nombre_trgm ON productos USING GIN (nombre gin_trgm_ops);
 
+
+
+--- Indice  Full-Text Search 
+
+CREATE INDEX idx_nombre_gin ON productos USING GIN (to_tsvector('spanish', nombre));
+SELECT * FROM documentos WHERE to_tsvector('spanish', contenido) @@ to_tsquery('spanish','prueba');
+
+SELECT * FROM documentos WHERE to_tsvector('spanish', contenido) @@ plainto_tsquery('spanish','conte');
+
+
 ```
 
 
