@@ -29,6 +29,18 @@ para Verificar el estatus del servidor y DBA realizamos los siguientes pasos:  <
 - 7 .- Validar los tiempo de ejecucion de una consulta y compararlos con dias anteriores  <br>
 
 ```sql
+Detectar tablas que no tienen index
+Index que no se usan
+Detectar index duplicados
+Detectar index que faltan/ columna sin index
+Detectar index basura
+Detectar index compuestos
+         *** Estos solo son útiles solo si la consulta utiliza las columnas que agregaste al index compuestos que son más de una columna 
+Índices GIN y GiST
+Índices Bloat (Fragmentados)
+```
+
+```sql
 -- falta por investigar 
 indices  perdidos que hacen falta
 indices que no se usan
