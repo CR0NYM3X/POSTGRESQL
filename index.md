@@ -57,9 +57,16 @@ La reindexación es importante porque los índices desorganizados pueden llevar 
 
 
 # Usar CLUSTER
-El propósito de este comando es mejorar el rendimiento de las consultas que utilizan el índice idx_table_test. Al agrupar la tabla según este índice, los datos se almacenan físicamente en el orden del índice, lo que puede acelerar las búsquedas y mejorar la eficiencia de las consultas.
+El propósito de este comando es mejorar el rendimiento de las consultas que utilizan un indice.  agrupa  la tabla el índice indicado, los datos se almacenan físicamente en el orden del índice, lo que puede acelerar las búsquedas y mejorar la eficiencia de las consultas.
 
+```SQL
+	-- configurarle un cluster a una tabla
 	ALTER TABLE IF EXISTS public.table_test CLUSTER ON idx_table_test;
+
+  	-- Indicas que ejecute los clusteres 
+ 	cluster;
+```SQL
+
 
 # CREAR INDEX 
 ```SQL
