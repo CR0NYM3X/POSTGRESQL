@@ -740,4 +740,36 @@ en análisis de datos en tiempo real, la compilación JIT puede ser muy benefici
 
 
 
+ 
 
+### ¿Qué es HOT?
+
+HOT es una técnica que permite realizar actualizaciones en las filas de una tabla sin necesidad de modificar los índices asociados a esas filas. Esto es posible cuando:
+
+1. **No se modifican las columnas indexadas**: La actualización no afecta a ninguna columna que esté referenciada por un índice.
+2. **Espacio libre en la página**: Hay suficiente espacio libre en la página que contiene la fila original para almacenar la nueva versión de la fila⁴.
+
+### ¿Cómo se usa HOT?
+
+Para aprovechar la técnica HOT, PostgreSQL realiza las siguientes optimizaciones:
+
+1. **Evita nuevas entradas en los índices**: Cuando se actualiza una fila y se cumplen las condiciones mencionadas, no se crean nuevas entradas en los índices. Esto reduce significativamente el costo de las actualizaciones.
+2. **Elimina versiones antiguas**: Las versiones antiguas de las filas actualizadas pueden ser eliminadas durante las operaciones normales, sin necesidad de operaciones de vacuum periódicas⁴.
+
+### Beneficios de HOT
+
+- **Mejora el rendimiento**: Al reducir la necesidad de actualizar los índices, las operaciones de actualización son más rápidas y eficientes.
+- **Menor fragmentación**: Al eliminar las versiones antiguas de las filas de manera más eficiente, se reduce la fragmentación de las tablas.
+
+### Ejemplo de uso
+
+Para aumentar la probabilidad de que las actualizaciones sean HOT, puedes ajustar el parámetro `fillfactor` de una tabla. Este parámetro determina el porcentaje de espacio que se deja libre en cada página para futuras actualizaciones.
+
+```sql
+CREATE TABLE ejemplo (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT,
+    descripcion TEXT
+) WITH (fillfactor = 70);
+```
+ 
