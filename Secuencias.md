@@ -15,7 +15,7 @@ SELECT * FROM information_schema.sequences;
 
 ### Saber en que valor esta la secuencia 
 ```sql
-select currval('fdw_conf.test_seq'::regclass);
+select currval('public.test_seq'::regclass);
 
 select sequencename,increment_by,last_value from pg_sequences where sequencename = 'ctl_querys2_id_seq';
 ```
@@ -24,20 +24,31 @@ select sequencename,increment_by,last_value from pg_sequences where sequencename
 ```sql
 
 --- al ejecutar la secuencia sabes va sumar la siguiente secuencia 
-select nextval('fdw_conf.ctl_querys2_id_seq'::regclass);
+select nextval('public.ctl_querys2_id_seq'::regclass);
 ```
 
 ### Crear una secuencia
 ```sql
 CREATE SEQUENCE mi_secuencia START 1 INCREMENT 1;
 
-CREATE SEQUENCE fdw_conf.ctl_querys_id_seq
+CREATE SEQUENCE public.ctl_querys_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
+```
+
+### Consultar información de la secuencias 
+```sql
+postgres@postgres# select * from public.ctl_querys_id_seq;
++------------+---------+-----------+
+| last_value | log_cnt | is_called |
++------------+---------+-----------+
+|          1 |       0 | f         |
++------------+---------+-----------+
+(1 row)
 ```
 
 ### Asignar una secuencia a una columna 
