@@ -1,6 +1,24 @@
  
-### ¿Qué es un plan de ejecución?
-Un plan de ejecución muestra cómo PostgreSQL va a escanear las tablas involucradas en una consulta, ya sea mediante un escaneo secuencial, un escaneo de índice, etc. También muestra qué algoritmos de unión se utilizarán si hay múltiples tablas involucradas¹.
+### Planificador de Consultas
+
+El **planificador de consultas** (también conocido como optimizador de consultas) es el componente del sistema de base de datos que decide cómo ejecutar una consulta SQL de la manera más eficiente posible. Utiliza estadísticas sobre el contenido de las tablas (recopiladas mediante el comando `ANALYZE`) para estimar el costo de diferentes estrategias de ejecución y seleccionar la más eficiente¹.
+
+### Plan de Ejecución
+
+El **plan de ejecución** es el resultado del trabajo del planificador de consultas. Es un conjunto detallado de pasos que el sistema de base de datos seguirá para ejecutar la consulta. Este plan incluye información sobre qué índices se utilizarán, cómo se unirán las tablas, el orden de las operaciones, y más².
+
+### Ejemplo
+
+1. **Planificador de Consultas**:
+   - Recibe la consulta SQL.
+   - Analiza las estadísticas de las tablas involucradas.
+   - Genera varios planes posibles y estima el costo de cada uno.
+   - Selecciona el plan con el costo estimado más bajo.
+
+2. **Plan de Ejecución**:
+   - Es el plan seleccionado por el planificador.
+   - Detalla los pasos específicos que se seguirán para ejecutar la consulta.
+   - Puede ser visualizado usando el comando `EXPLAIN`.
 
 
  
