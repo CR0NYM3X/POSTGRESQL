@@ -34,13 +34,37 @@ https://www.yugabyte.com/blog/postgresql-like-query-performance-variations/#c-co
 |------------------------------|----------------------------------------|-------------------------------------------|
 | **Número de Columnas**       | Una sola columna                       | Dos o más columnas                        |
 | **Uso en Consultas**         | Ideal para consultas que filtran por una sola columna | Ideal para consultas que filtran por múltiples columnas en el orden indexado |
-| **Orden de las Columnas**    | No aplica                              | El orden de las columnas es importante    |
+| **Orden de las Columnas**    | No aplica                              | El orden de las columnas es importante, siempre se tiene que usar la primera columna que se coloco en el indice ya que de lo contrario el plan de ejecucion no usara el indice  |
 | **Rendimiento**              | Menos costoso en términos de espacio y mantenimiento | Puede mejorar el rendimiento de consultas complejas, pero más costoso en términos de espacio y mantenimiento |
 | **Ejemplo de Creación**      | `CREATE INDEX idx_columna ON tabla(columna);` | `CREATE INDEX idx_compuesto ON tabla(columna1, columna2);` |
 | **Cuándo Usar**              | Consultas que filtran por una sola columna | Consultas que filtran por múltiples columnas y el orden de filtrado es importante |
 | **Cuándo No Usar**           |  Consultas que solo filtran por una columna o el orden de las columnas no es relevante  |Consultas que requieren filtrar por múltiples columnas | 
 
 
+### Consideraciones Antes de Crear un Índice Compuesto en PostgreSQL
+
+1. **Consultas Comunes**:
+   - Evalúa si las consultas más frecuentes filtran por múltiples columnas en el orden en que planeas crear el índice compuesto.
+   - Ejemplo: Si las consultas suelen filtrar por `fecha` y `cliente_id`, un índice compuesto en `(fecha, cliente_id)` puede ser beneficioso.
+
+2. **Orden de las Columnas**:
+   - El orden de las columnas en el índice es crucial. Un índice en `(columna1, columna2)` es útil para consultas que filtran por `columna1` o por `columna1` y `columna2`, pero no para consultas que solo filtran por `columna2`, siempre se tiene que usar la primera columna que se coloco en el indice ya que de lo contrario el plan de ejecucion no usara el indice, no importa si agregas mas columnas, si las columnas estan revueltas, pero siempre debes de usar la primera columna del indice ya que si no se coloca la primera columna, no se usara el indice que creaste  y generara mas costo realizar la consulta 
+
+3. **Espacio en Disco**:
+   - Los índices compuestos ocupan más espacio en disco que los índices simples. Asegúrate de que el beneficio en rendimiento justifique el espacio adicional.
+
+4. **Costos de Mantenimiento**:
+   - Considera el costo de mantenimiento del índice. Las actualizaciones en las columnas indexadas pueden ser más costosas en términos de tiempo y recursos.
+
+5. **Rendimiento de Consultas**:
+   - Un índice compuesto puede mejorar el rendimiento de consultas complejas, pero solo si las consultas utilizan todas las columnas en el orden especificado.
+   - Ejemplo: Un índice en `(fecha ASC, cliente_id DESC)` es útil para consultas que ordenan por `fecha ASC` y `cliente_id DESC`.
+
+ 
+7. **Espacio Adicional y Fragmentación**:
+   - Los índices ordenados pueden requerir más espacio y pueden aumentar la fragmentación. Evalúa si esto es aceptable para tu caso de uso.
+
+ 
 
 # Lógica de la indexación:
 Cuando se crea un índice en PostgreSQL, el motor de la base de datos crea una estructura de datos adicional que contiene valores de la columna indexada y los punteros a las ubicaciones de los registros correspondientes en la tabla principal. Esto permite que las búsquedas sean mucho más eficientes, ya que PostgreSQL no necesita escanear toda la tabla, sino que puede saltar directamente a las ubicaciones relevantes a través del índice.
@@ -111,30 +135,6 @@ SELECT * FROM documentos WHERE to_tsvector('spanish', contenido) @@ plainto_tsqu
 
 
 
-### Consideraciones Antes de Crear un Índice Compuesto en PostgreSQL
-
-1. **Consultas Comunes**:
-   - Evalúa si las consultas más frecuentes filtran por múltiples columnas en el orden en que planeas crear el índice compuesto.
-   - Ejemplo: Si las consultas suelen filtrar por `fecha` y `cliente_id`, un índice compuesto en `(fecha, cliente_id)` puede ser beneficioso.
-
-2. **Orden de las Columnas**:
-   - El orden de las columnas en el índice es crucial. Un índice en `(columna1, columna2)` es útil para consultas que filtran por `columna1` o por `columna1` y `columna2`, pero no necesariamente para consultas que solo filtran por `columna2`.
-
-3. **Espacio en Disco**:
-   - Los índices compuestos ocupan más espacio en disco que los índices simples. Asegúrate de que el beneficio en rendimiento justifique el espacio adicional.
-
-4. **Costos de Mantenimiento**:
-   - Considera el costo de mantenimiento del índice. Las actualizaciones en las columnas indexadas pueden ser más costosas en términos de tiempo y recursos.
-
-5. **Rendimiento de Consultas**:
-   - Un índice compuesto puede mejorar el rendimiento de consultas complejas, pero solo si las consultas utilizan todas las columnas en el orden especificado.
-   - Ejemplo: Un índice en `(fecha ASC, cliente_id DESC)` es útil para consultas que ordenan por `fecha ASC` y `cliente_id DESC`.
-
- 
-7. **Espacio Adicional y Fragmentación**:
-   - Los índices ordenados pueden requerir más espacio y pueden aumentar la fragmentación. Evalúa si esto es aceptable para tu caso de uso.
-
- 
 
 
 ```SQL
