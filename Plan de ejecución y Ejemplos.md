@@ -1292,8 +1292,493 @@ postgres@postgres#  select * from pg_stat_user_tables where relname =  'test_ren
 
 
 
------------ Test index compuestos 
-
-
 
   ```
+
+
+
+# Ejemplos de Index unicos, index compuesto, indices no compuestos, vacuum, vacuum full 
+
+```sql
+
+drop table ventas ;
+
+postgres@postgres# CREATE TABLE ventas (
+    id SERIAL PRIMARY KEY ,
+    fecha DATE,
+    cliente_id INTEGER,
+    producto_id INTEGER,
+    cantidad INTEGER,
+    precio NUMERIC
+);
+CREATE TABLE
+Time: 5.363 ms
+
+
+postgres@postgres# INSERT INTO ventas ( fecha, cliente_id, producto_id, cantidad, precio)
+SELECT 
+    NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int,
+    (RANDOM() * 1000)::int,
+    (RANDOM() * 100)::int,
+    (RANDOM() * 10)::int,
+    (RANDOM() * 100)::numeric
+FROM generate_series(1, 1000000);
+INSERT 0 1000000
+Time: 4157.960 ms (00:04.158)
+
+
+
+postgres@postgres# select * from ventas limit 10;
++----+------------+------------+-------------+----------+------------------+
+| id |   fecha    | cliente_id | producto_id | cantidad |      precio      |
++----+------------+------------+-------------+----------+------------------+
+|  1 | 2022-04-03 |        492 |          74 |        1 | 94.1770186155875 |
+|  2 | 2022-01-01 |        489 |          78 |        5 |  41.307222160252 |
+|  3 | 2022-01-18 |        657 |          56 |        7 | 69.9000568546106 |
+|  4 | 2022-01-19 |        171 |          53 |        8 | 62.6333816531913 |
+|  5 | 2023-02-24 |        233 |          11 |        6 | 66.3530622604469 |
+|  6 | 2021-12-13 |        683 |          83 |        6 | 37.4883000833527 |
+|  7 | 2023-01-18 |        130 |          16 |        5 | 17.5114243295059 |
+|  8 | 2022-04-10 |        683 |          12 |        2 | 29.1244103602902 |
+|  9 | 2024-02-26 |        702 |          36 |        7 |  87.772643192318 |
+| 10 | 2022-12-31 |        454 |          94 |        9 | 66.3236911467353 |
++----+------------+------------+-------------+----------+------------------+
+(10 rows)
+
+
+postgres@postgres# CREATE INDEX idx_cliente_producto ON ventas (cliente_id, producto_id,cantidad);
+CREATE INDEX
+Time: 597.910 ms
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE cliente_id = 500 and  producto_id = 78 and cantidad = 8;
++------------------------------------------------------------------------------------------------------------------------------+
+|                                                          QUERY PLAN                                                          |
++------------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_cliente_producto on ventas  (cost=0.42..8.45 rows=1 width=32) (actual time=0.022..0.029 rows=3 loops=1) |
+|   Index Cond: ((cliente_id = 500) AND (producto_id = 78) AND (cantidad = 8))                                                 |
+| Planning Time: 0.093 ms                                                                                                      |
+| Execution Time: 0.050 ms                                                                                                     |
++------------------------------------------------------------------------------------------------------------------------------+
+
+(4 rows)
+
+Time: 1.839 ms
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE cliente_id = 500 and  producto_id = 78 and cantidad = 8 and precio = 0.64 and fecha = '2022-06-18';
++------------------------------------------------------------------------------------------------------------------------------+
+|                                                          QUERY PLAN                                                          |
++------------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_cliente_producto on ventas  (cost=0.42..8.45 rows=1 width=32) (actual time=0.038..0.039 rows=0 loops=1) |
+|   Index Cond: ((cliente_id = 500) AND (producto_id = 78) AND (cantidad = 8))                                                 |
+|   Filter: ((precio = 0.64) AND (fecha = '2022-06-18'::date))                                                                 | <--- Agrego un filtro extra, que son las columnas agregadas , que no estan en el index
+|   Rows Removed by Filter: 3                                                                                                  |
+| Planning Time: 0.132 ms                                                                                                      |
+| Execution Time: 0.064 ms                                                                                                     |
++------------------------------------------------------------------------------------------------------------------------------+
+(6 rows)
+
+Time: 0.826 ms
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE cliente_id = 500 and  producto_id = 78  ;
++------------------------------------------------------------------------------------------------------------------------------+
+|                                                          QUERY PLAN                                                          |
++------------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on ventas  (cost=4.52..39.76 rows=9 width=32) (actual time=0.038..0.105 rows=11 loops=1)                    |
+|   Recheck Cond: ((cliente_id = 500) AND (producto_id = 78))                                                                  |
+|   Heap Blocks: exact=11                                                                                                      |
+|   ->  Bitmap Index Scan on idx_cliente_producto  (cost=0.00..4.51 rows=9 width=0) (actual time=0.025..0.026 rows=11 loops=1) |
+|         Index Cond: ((cliente_id = 500) AND (producto_id = 78))                                                              |
+| Planning Time: 0.106 ms                                                                                                      |
+| Execution Time: 0.146 ms                                                                                                     |
++------------------------------------------------------------------------------------------------------------------------------+
+(7 rows)
+
+Time: 0.689 ms
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE cliente_id = 500  ;
++----------------------------------------------------------------------------------------------------------------------------------+
+|                                                            QUERY PLAN                                                            |
++----------------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on ventas  (cost=24.14..2842.72 rows=995 width=32) (actual time=0.354..6.744 rows=983 loops=1)                  |
+|   Recheck Cond: (cliente_id = 500)                                                                                               |
+|   Heap Blocks: exact=931                                                                                                         |
+|   ->  Bitmap Index Scan on idx_cliente_producto  (cost=0.00..23.89 rows=995 width=0) (actual time=0.202..0.203 rows=983 loops=1) |
+|         Index Cond: (cliente_id = 500)                                                                                           |
+| Planning Time: 0.110 ms                                                                                                          |
+| Execution Time: 6.841 ms                                                                                                         |
++----------------------------------------------------------------------------------------------------------------------------------+
+(7 rows)
+
+Time: 7.468 ms
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE   cantidad = 8  and  producto_id = 78  and  cliente_id = 500  ; ---> Cambiamos la posicion de las columnas
++------------------------------------------------------------------------------------------------------------------------------+
+|                                                          QUERY PLAN                                                          |
++------------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_cliente_producto on ventas  (cost=0.42..8.45 rows=1 width=32) (actual time=0.019..0.025 rows=3 loops=1) |
+|   Index Cond: ((cliente_id = 500) AND (producto_id = 78) AND (cantidad = 8))                                                 | < --- No importe que cabines las columnas el planificador de consultas las ordena 
+| Planning Time: 0.090 ms                                                                                                      |
+| Execution Time: 0.041 ms                                                                                                     |
++------------------------------------------------------------------------------------------------------------------------------+
+(4 rows)
+
+Time: 0.491 ms
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE  cantidad = 8  and producto_id = 78    ; --> Quitamos la primera columna del indice 
+|                                                       QUERY PLAN                                                        |
++-------------------------------------------------------------------------------------------------------------------------+
+| Gather  (cost=1000.00..15602.84 rows=939 width=32) (actual time=0.498..59.882 rows=974 loops=1)                         | <--- No usa el Index y genere mucho costo de ejecucion 
+|   Workers Planned: 2                                                                                                    |
+|   Workers Launched: 2                                                                                                   |
+|   ->  Parallel Seq Scan on ventas  (cost=0.00..14508.94 rows=391 width=32) (actual time=0.145..50.708 rows=325 loops=3) |
+|         Filter: ((cantidad = 8) AND (producto_id = 78))                                                                 |
+|         Rows Removed by Filter: 333006                                                                                  |
+| Planning Time: 0.085 ms                                                                                                 |
+| Execution Time: 59.982 ms                                                                                               |
++-------------------------------------------------------------------------------------------------------------------------+
+(8 rows)
+
+Time: 60.585 ms
+
+
+
+postgres@postgres# drop index idx_cliente_producto;
+DROP INDEX
+Time: 14.101 ms
+
+
+
+
+postgres@postgres# CREATE INDEX idx_cliente ON ventas (cliente_id);
+CREATE INDEX
+Time: 366.003 ms
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE cliente_id = 500;
++---------------------------------------------------------------------------------------------------------------------------+
+|                                                        QUERY PLAN                                                         |
++---------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on ventas  (cost=59.17..7625.60 rows=5000 width=52) (actual time=0.391..2.029 rows=1043 loops=1)         |
+|   Recheck Cond: (cliente_id = 500)                                                                                        |
+|   Heap Blocks: exact=988                                                                                                  |
+|   ->  Bitmap Index Scan on idx_cliente  (cost=0.00..57.92 rows=5000 width=0) (actual time=0.174..0.174 rows=1043 loops=1) |
+|         Index Cond: (cliente_id = 500)                                                                                    |
+| Planning Time: 0.236 ms                                                                                                   |
+| Execution Time: 2.114 ms                                                                                                  |
++---------------------------------------------------------------------------------------------------------------------------+
+(7 rows)
+
+Time: 2.977 ms
+
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE cliente_id = 500 and producto_id = 78   and cantidad = 8;
++-------------------------------------------------------------------------------------------------------------------------+
+|                                                       QUERY PLAN                                                        |
++-------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on ventas  (cost=19.89..2843.45 rows=1 width=32) (actual time=0.674..1.782 rows=3 loops=1)             |
+|   Recheck Cond: (cliente_id = 500)                                                                                      |
+|   Filter: ((producto_id = 78) AND (cantidad = 8))                                                                       |
+|   Rows Removed by Filter: 980                                                                                           |
+|   Heap Blocks: exact=931                                                                                                |
+|   ->  Bitmap Index Scan on idx_cliente  (cost=0.00..19.89 rows=995 width=0) (actual time=0.186..0.186 rows=983 loops=1) |
+|         Index Cond: (cliente_id = 500)                                                                                  |
+| Planning Time: 0.129 ms                                                                                                 |
+| Execution Time: 1.821 ms                                                                                                |
++-------------------------------------------------------------------------------------------------------------------------+
+(9 rows)
+
+
+/** COLUMNAS SIN INDICES  **/
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE  producto_id = 78   and cantidad = 8;
++-------------------------------------------------------------------------------------------------------------------------+
+|                                                       QUERY PLAN                                                        |
++-------------------------------------------------------------------------------------------------------------------------+
+| Gather  (cost=1000.00..15602.84 rows=939 width=32) (actual time=0.753..43.056 rows=974 loops=1)                         |
+|   Workers Planned: 2                                                                                                    |
+|   Workers Launched: 2                                                                                                   |
+|   ->  Parallel Seq Scan on ventas  (cost=0.00..14508.94 rows=391 width=32) (actual time=0.064..34.411 rows=325 loops=3) |
+|         Filter: ((producto_id = 78) AND (cantidad = 8))                                                                 |
+|         Rows Removed by Filter: 333006                                                                                  |
+| Planning Time: 0.071 ms                                                                                                 |
+| Execution Time: 43.121 ms                                                                                               |
++-------------------------------------------------------------------------------------------------------------------------+
+
+
+
+postgres@postgres# drop index idx_cliente;
+DROP INDEX
+Time: 12.275 ms
+
+
+/* USANDO INDICES UNICOS  */
+postgres@postgres# CREATE UNIQUE INDEX  idx_cliente_producto_unique ON ventas USING btree (cliente_id, precio);
+CREATE INDEX
+Time: 1002.724 ms (00:01.003)
+
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE cliente_id = 500;
++-----------------------------------------------------------------------------------------------------------------------------------------+
+|                                                               QUERY PLAN                                                                |
++-----------------------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on ventas  (cost=28.14..2846.72 rows=995 width=32) (actual time=0.287..1.479 rows=983 loops=1)                         |
+|   Recheck Cond: (cliente_id = 500)                                                                                                      |
+|   Heap Blocks: exact=931                                                                                                                |
+|   ->  Bitmap Index Scan on idx_cliente_producto_unique  (cost=0.00..27.89 rows=995 width=0) (actual time=0.169..0.169 rows=983 loops=1) |
+|         Index Cond: (cliente_id = 500)                                                                                                  |
+| Planning Time: 0.258 ms                                                                                                                 |
+| Execution Time: 1.533 ms                                                                                                                |
++-----------------------------------------------------------------------------------------------------------------------------------------+
+(7 rows)
+
+
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE precio = 500;
++----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                      |
++----------------------------------------------------------------------------------------------------------------------+
+| Gather  (cost=1000.00..14467.39 rows=1 width=32) (actual time=56.868..62.029 rows=0 loops=1)                         |
+|   Workers Planned: 2                                                                                                 |
+|   Workers Launched: 2                                                                                                |
+|   ->  Parallel Seq Scan on ventas  (cost=0.00..13467.29 rows=1 width=32) (actual time=54.287..54.289 rows=0 loops=3) |
+|         Filter: (precio = '500'::numeric)                                                                            |
+|         Rows Removed by Filter: 333330                                                                               |
+| Planning Time: 0.091 ms                                                                                              |
+| Execution Time: 62.045 ms                                                                                            |
++----------------------------------------------------------------------------------------------------------------------+
+(8 rows)
+
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM ventas WHERE cliente_id = 500 and  precio = 500;
++-------------------------------------------------------------------------------------------------------------------------------------+
+|                                                             QUERY PLAN                                                              |
++-------------------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_cliente_producto_unique on ventas  (cost=0.42..8.45 rows=1 width=32) (actual time=0.018..0.018 rows=0 loops=1) |
+|   Index Cond: ((cliente_id = 500) AND (precio = '500'::numeric))                                                                    |
+| Planning Time: 0.088 ms                                                                                                             |
+| Execution Time: 0.031 ms                                                                                                            |
++-------------------------------------------------------------------------------------------------------------------------------------+
+(4 rows)
+
+
+
+
+
+postgres@postgres# select 
+	pg_catalog.pg_size_pretty(pg_catalog.pg_relation_size(relid)) as size_total_pretty
+	,pg_catalog.pg_relation_size(relid) as size_total_kbs 
+	,(pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10) as size_for_tup_kbs
+	,((pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10) /* size_for_tup_kbs */  * n_dead_tup::numeric(20,10))::numeric(20,4) as  size_n_dead_tup
+	,* 
+from pg_stat_user_tables where relname = 'ventas';
+
++-[ RECORD 1 ]--------+---------------+
+| size_total_pretty   | 65 MB         |
+| size_total_kbs      | 67649536      |
+| size_for_tup_kbs    | 67.6495360000 |
+| size_n_dead_tup     | 0.0000        |
+| relid               | 17182         |
+| schemaname          | public        |
+| relname             | ventas        |
+| seq_scan            | 11            |
+| seq_tup_read        | 3000010       |
+| idx_scan            | 4             |
+| idx_tup_fetch       | 1998          |
+| n_tup_ins           | 1000000       |
+| n_tup_upd           | 0             |
+| n_tup_del           | 0             |
+| n_tup_hot_upd       | 0             |
+| n_live_tup          | 1000000       |
+| n_dead_tup          | 0             |
+| n_mod_since_analyze | 1000000       |
+| last_vacuum         | NULL          |
+| last_autovacuum     | NULL          |
+| last_analyze        | NULL          |
+| last_autoanalyze    | NULL          |
+| vacuum_count        | 0             |
+| autovacuum_count    | 0             |
+| analyze_count       | 0             |
+| autoanalyze_count   | 0             |
++---------------------+---------------+
+
+
+
+
+
+postgres@postgres#  select * from pg_stat_user_indexes where relname = 'ventas';
++-[ RECORD 1 ]--+----------------------+
+| relid         | 17182                |
+| indexrelid    | 17189                |
+| schemaname    | public               |
+| relname       | ventas               |
+| indexrelname  | ventas_pkey          |
+| idx_scan      | 0                    |
+| idx_tup_read  | 0                    |
+| idx_tup_fetch | 0                    |
++-[ RECORD 2 ]--+----------------------+
+| relid         | 17182                |
+| indexrelid    | 17191                |
+| schemaname    | public               |
+| relname       | ventas               |
+| indexrelname  | idx_cliente_producto |
+| idx_scan      | 3                    |
+| idx_tup_read  | 999                  |
+| idx_tup_fetch | 0                    |
++-[ RECORD 3 ]--+----------------------+
+| relid         | 17182                |
+| indexrelid    | 17192                |
+| schemaname    | public               |
+| relname       | ventas               |
+| indexrelname  | idx_cliente          |
+| idx_scan      | 1                    |
+| idx_tup_read  | 999                  |
+| idx_tup_fetch | 0                    |
++---------------+----------------------+
+
+
+ 
+  
+postgres@postgres# delete from  ventas where id >= 10000;
+DELETE 990001
+Time: 948.688 ms
+
+
+postgres@postgres# select 
+	pg_catalog.pg_size_pretty(pg_catalog.pg_relation_size(relid)) as size_total_pretty
+	,pg_catalog.pg_relation_size(relid)/1024 as size_kb_total 
+	,(pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10)/1024 as size_kb_for_tup
+	,((pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10) /* size_kb_for_tup */  * n_dead_tup::numeric(20,10))::numeric(20,4)/1024 as size_kb_n_dead_tup
+	,((pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10) /* size_kb_for_tup */  * n_live_tup::numeric(20,10))::numeric(20,4)/1024 as  size_kb_n_live_tup
+	,* 
+from pg_stat_user_tables where relname = 'ventas';
+
++-[ RECORD 1 ]--------+-------------------------------+
+| size_total_pretty   | 65 MB                         |
+| size_kb_total       | 66064                         |
+| size_kb_for_tup     | 0.06606400000000000000        |
+| size_kb_n_dead_tup  | 65403.426063964844            |
+| size_kb_n_live_tup  | 660.5739360351562500          |
+| relid               | 17182                         |
+| schemaname          | public                        |
+| relname             | ventas                        |
+| seq_scan            | 12                            |
+| seq_tup_read        | 4000010                       |
+| idx_scan            | 5                             |
+| idx_tup_fetch       | 1999                          |
+| n_tup_ins           | 1000000                       |
+| n_tup_upd           | 0                             |
+| n_tup_del           | 990001                        |
+| n_tup_hot_upd       | 0                             |
+| n_live_tup          | 9999                          |
+| n_dead_tup          | 990001                        |
+| n_mod_since_analyze | 990001                        |
+| last_vacuum         | NULL                          |
+| last_autovacuum     | NULL                          |
+| last_analyze        | NULL                          |
+| last_autoanalyze    | 2024-09-03 15:12:31.015562-07 |
+| vacuum_count        | 0                             |
+| autovacuum_count    | 0                             |
+| analyze_count       | 0                             |
+| autoanalyze_count   | 1                             |
++---------------------+-------------------------------+
+
+
+
+
+postgres@postgres# vacuum full ventas;
+VACUUM
+Time: 1934.252 ms (00:01.934)
+
+
+
+
+postgres@postgres# select 
+	pg_catalog.pg_size_pretty(pg_catalog.pg_relation_size(relid)) as size_total_pretty
+	,pg_catalog.pg_relation_size(relid)/1024 as size_kb_total 
+	,(pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10)/1024 as size_kb_for_tup
+	,((pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10) /* size_kb_for_tup */  * n_dead_tup::numeric(20,10))::numeric(20,4)/1024 as size_kb_n_dead_tup
+	,((pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10) /* size_kb_for_tup */  * n_live_tup::numeric(20,10))::numeric(20,4)/1024 as  size_kb_n_live_tup
+	,* 
+from pg_stat_user_tables where relname = 'ventas';
+
++-[ RECORD 1 ]--------+-------------------------------+
+| size_total_pretty   | 664 kB                        |
+| size_kb_total       | 664                           |
+| size_kb_for_tup     | 0.00066400000000000000        |
+| size_kb_n_dead_tup  | 657.3606639648437500          |
+| size_kb_n_live_tup  | 6.6393360351562500            |
+| relid               | 17182                         |
+| schemaname          | public                        |
+| relname             | ventas                        |
+| seq_scan            | 16                            |
+| seq_tup_read        | 5030007                       |
+| idx_scan            | 5                             |
+| idx_tup_fetch       | 1999                          |
+| n_tup_ins           | 1000000                       |
+| n_tup_upd           | 0                             |
+| n_tup_del           | 990001                        |
+| n_tup_hot_upd       | 0                             |
+| n_live_tup          | 9999                          |
+| n_dead_tup          | 990001                        |
+| n_mod_since_analyze | 990001                        |
+| last_vacuum         | NULL                          |
+| last_autovacuum     | NULL                          |
+| last_analyze        | NULL                          |
+| last_autoanalyze    | 2024-09-03 15:12:31.015562-07 |
+| vacuum_count        | 0                             |
+| autovacuum_count    | 0                             |
+| analyze_count       | 0                             |
+| autoanalyze_count   | 1                             |
++---------------------+-------------------------------+
+
+
+
+postgres@postgres# vacuum ventas;
+VACUUM
+Time: 293.358 ms
+
+
+
+postgres@postgres# select 
+	pg_catalog.pg_size_pretty(pg_catalog.pg_relation_size(relid)) as size_total_pretty
+	,pg_catalog.pg_relation_size(relid)/1024 as size_kb_total 
+	,(pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10)/1024 as size_kb_for_tup
+	,((pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10) /* size_kb_for_tup */  * n_dead_tup::numeric(20,10))::numeric(20,4)/1024 as size_kb_n_dead_tup
+	,((pg_catalog.pg_relation_size(relid)::numeric(20,10)/(n_live_tup + n_dead_tup )::numeric(20,10) )::numeric(20,10) /* size_kb_for_tup */  * n_live_tup::numeric(20,10))::numeric(20,4)/1024 as  size_kb_n_live_tup
+	,* 
+from pg_stat_user_tables where relname = 'ventas';
+
++-[ RECORD 1 ]--------+-------------------------------+
+| size_total_pretty   | 664 kB                        |
+| size_kb_total       | 664                           |
+| size_kb_for_tup     | 0.06640664066406250000        |
+| size_kb_n_dead_tup  | 0.00000000000000000000        |
+| size_kb_n_live_tup  | 664.0000000000000000          |
+| relid               | 17182                         |
+| schemaname          | public                        |
+| relname             | ventas                        |
+| seq_scan            | 16                            |
+| seq_tup_read        | 5030007                       |
+| idx_scan            | 5                             |
+| idx_tup_fetch       | 1999                          |
+| n_tup_ins           | 1000000                       |
+| n_tup_upd           | 0                             |
+| n_tup_del           | 990001                        |
+| n_tup_hot_upd       | 0                             |
+| n_live_tup          | 9999                          |
+| n_dead_tup          | 0                             |
+| n_mod_since_analyze | 990001                        |
+| last_vacuum         | 2024-09-03 15:14:55.326714-07 |
+| last_autovacuum     | NULL                          |
+| last_analyze        | NULL                          |
+| last_autoanalyze    | 2024-09-03 15:12:31.015562-07 |
+| vacuum_count        | 1                             |
+| autovacuum_count    | 0                             |
+| analyze_count       | 0                             |
+| autoanalyze_count   | 1                             |
++---------------------+-------------------------------+
+
+
+
+```
+
+
