@@ -3,6 +3,20 @@
 
 El **planificador de consultas** (también conocido como optimizador de consultas) es el componente del sistema de base de datos que decide cómo ejecutar una consulta SQL de la manera más eficiente posible. Utiliza estadísticas sobre el contenido de las tablas (recopiladas mediante el comando `ANALYZE`) para estimar el costo de diferentes estrategias de ejecución y seleccionar la más eficiente¹.
 
+
+1. **Generación de Planes Posibles**: El optimizador genera varios planes de ejecución posibles para una consulta. Cada plan representa una forma diferente de acceder y procesar los datos necesarios para cumplir con la consulta¹.
+
+2. **Evaluación de Costos**: Cada plan de ejecución tiene un costo asociado, que es una estimación del tiempo y los recursos necesarios para ejecutarlo. El optimizador evalúa estos costos para determinar cuál plan es el más eficiente¹.
+
+3. **Selección del Plan Óptimo**: Después de evaluar los costos de todos los planes posibles, el optimizador selecciona el plan con el costo más bajo. Este plan es el que se utiliza para ejecutar la consulta¹.
+
+4. **Uso de Índices**: El optimizador considera el uso de índices para acelerar el acceso a los datos. Si hay índices disponibles que puedan mejorar el rendimiento de la consulta, el optimizador los incluirá en los planes de ejecución².
+
+5. **Estrategias de Unión**: Para consultas que involucran múltiples tablas, el optimizador evalúa diferentes estrategias de unión (como uniones anidadas, uniones por hash, etc.) para encontrar la manera más eficiente de combinar los datos¹.
+
+El objetivo principal del optimizador es minimizar el tiempo de ejecución de las consultas y el uso de recursos del sistema, asegurando que las consultas se ejecuten de la manera más rápida y eficiente posible.
+ 
+
 ### Plan de Ejecución
 
 El **plan de ejecución** es el resultado del trabajo del planificador de consultas. Es un conjunto detallado de pasos que el sistema de base de datos seguirá para ejecutar la consulta. Este plan incluye información sobre qué índices se utilizarán, cómo se unirán las tablas, el orden de las operaciones, y más².
