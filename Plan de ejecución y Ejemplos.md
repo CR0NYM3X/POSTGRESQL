@@ -87,7 +87,7 @@ El **plan de ejecución** es el resultado del trabajo del planificador de consul
      ```plaintext
      Sort  (cost=5.00..10.00 rows=100 width=32)
      ```
-
+## Ejemplo de un plan de ejecución
 ```sql
 postgres@postgres# EXPLAIN  (VERBOSE,ANALYZE, COSTS , TIMING  , BUFFERS , FORMAT TEXT)   select * from empleados where salario  = 50000.00;
 +-----------------------------------------------------------------------------------------------------------+
