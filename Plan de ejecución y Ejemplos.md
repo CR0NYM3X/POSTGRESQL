@@ -18,23 +18,9 @@ El objetivo principal del optimizador es minimizar el tiempo de ejecución de la
  
 
 ### Plan de Ejecución
-
 El **plan de ejecución** es el resultado del trabajo del planificador de consultas. Es un conjunto detallado de pasos que el sistema de base de datos seguirá para ejecutar la consulta. Este plan incluye información sobre qué índices se utilizarán, cómo se unirán las tablas, el orden de las operaciones, y más².
 
 ### Ejemplo
-
-1. **Planificador de Consultas**:
-   - Recibe la consulta SQL.
-   - Analiza las estadísticas de las tablas involucradas.
-   - Genera varios planes posibles y estima el costo de cada uno.
-   - Selecciona el plan con el costo estimado más bajo.
-
-2. **Plan de Ejecución**:
-   - Es el plan seleccionado por el planificador.
-   - Detalla los pasos específicos que se seguirán para ejecutar la consulta.
-   - Puede ser visualizado usando el comando `EXPLAIN`.
-
-
  
 ### Tipos de Plan de Ejecución
 
@@ -102,6 +88,96 @@ El **plan de ejecución** es el resultado del trabajo del planificador de consul
      Sort  (cost=5.00..10.00 rows=100 width=32)
      ```
 
+```sql
+postgres@postgres# EXPLAIN  (VERBOSE,ANALYZE, COSTS , TIMING  , BUFFERS , FORMAT TEXT)   select * from empleados where salario  = 50000.00;
++-----------------------------------------------------------------------------------------------------------+
+|                                                QUERY PLAN                                                 |
++-----------------------------------------------------------------------------------------------------------+
+| Seq Scan on public.empleados  (cost=0.00..1.11 rows=1 width=35) (actual time=0.012..0.016 rows=1 loops=1) |
+|   Output: id, nombre, puesto, salario                                                                     |
+|   Filter: (empleados.salario = 50000.00)                                                                  |
+|   Rows Removed by Filter: 8                                                                               |
+|   Buffers: shared hit=1                                                                                   |
+| Query Identifier: 7404374987194118835                                                                     |
+| Planning Time: 0.067 ms                                                                                   |
+| Execution Time: 0.034 ms                                                                                  |
++-----------------------------------------------------------------------------------------------------------+
+(8 rows)
+```
+
+
+#### Seq Scan on public.empleados
+- **Seq Scan**: Indica que se está realizando un escaneo secuencial en la tabla `empleados` de la base de datos `public`.
+- **cost=0.00..1.11**: Este es el costo estimado de ejecutar el escaneo secuencial. El primer número (0.00) es el costo de inicio, y el segundo (1.11) es el costo total estimado.
+- **rows=1**: Estima que se devolverá 1 fila.
+- **width=35**: El ancho promedio de las filas en bytes.
+
+#### actual time=0.012..0.016
+- **actual time**: El tiempo real que tomó ejecutar el escaneo secuencial. El primer número (0.012 ms) es el tiempo de inicio, y el segundo (0.016 ms) es el tiempo total.
+
+#### Output: id, nombre, puesto, salario
+- **Output**: Las columnas que se están seleccionando en la consulta.
+
+#### Filter: (empleados.salario = 50000.00)
+- **Filter**: El filtro aplicado en la consulta, en este caso, seleccionando empleados con un salario de 50,000.00.
+
+#### Rows Removed by Filter: 8
+- **Rows Removed by Filter**: El número de filas que no cumplieron con el filtro y fueron descartadas.
+
+#### Buffers: shared hit=1
+- **Buffers**: Indica el uso de buffers de memoria. `shared hit=1` significa que se accedió a 1 página de memoria compartida que ya estaba en el caché.
+
+#### Query Identifier: 7404374987194118835
+- **Query Identifier**: Un identificador único para esta consulta específica.
+
+#### Planning Time: 0.067 ms
+- **Planning Time**: El tiempo que tomó planificar la consulta.
+
+#### Execution Time: 0.034 ms
+- **Execution Time**: El tiempo total que tomó ejecutar la consulta.
+
+
+### ¿Qué es el "cost" en PostgreSQL?
+
+En PostgreSQL, el "cost" es una estimación del costo de ejecutar una consulta. Se utiliza para determinar el plan de ejecución más eficiente. Hay tres tipos principales de costos:
+
+1. **Start-up Cost (Costo de Inicio)**: Es el costo estimado para preparar la ejecución de la consulta y obtener la primera fila de resultados.
+2. **Run Cost (Costo de Ejecución)**: Es el costo estimado para obtener todas las filas restantes después de la primera.
+3. **Total Cost (Costo Total)**: Es la suma del costo de inicio y el costo de ejecución.
+
+### Desglose del "cost"
+
+Cuando ves algo como `cost=0.00..1.11`, esto se desglosa de la siguiente manera:
+
+- **0.00**: Este es el costo de inicio. Representa el costo de preparar la consulta y obtener la primera fila.
+- **1.11**: Este es el costo total. Incluye el costo de inicio más el costo de obtener todas las filas restantes.
+
+### ¿Cómo se calculan estos costos?
+
+PostgreSQL utiliza varias métricas y estadísticas para estimar estos costos, incluyendo:
+
+- **Tamaño de la tabla**: Cuántas filas y páginas tiene la tabla.
+- **Selectividad del filtro**: Qué tan selectivo es el filtro aplicado (por ejemplo, `empleados.salario = 50000.00`).
+- **Índices**: Si hay índices disponibles que puedan acelerar la consulta.
+- **Configuraciones del sistema**: Parámetros de configuración como `random_page_cost` y `seq_page_cost`.
+ 
+
+1. **Planificador de Consultas**:
+   - Recibe la consulta SQL.
+   - Analiza las estadísticas de las tablas involucradas.
+   - Genera varios planes posibles y estima el costo de cada uno.
+   - Selecciona el plan con el costo estimado más bajo.
+
+2. **Plan de Ejecución**:
+   - Es el plan seleccionado por el planificador.
+   - Detalla los pasos específicos que se seguirán para ejecutar la consulta.
+   - Puede ser visualizado usando el comando `EXPLAIN`.
+
+
+
+
+
+
 # seq_page_cost
 
 El parámetro `seq_page_cost` en PostgreSQL es una configuración que establece la estimación del planificador sobre el costo de recuperar una página de disco durante un escaneo secuencial¹. Este costo se mide en unidades arbitrarias y por defecto está establecido en 1.0².
@@ -114,7 +190,37 @@ Puedes ajustar este parámetro para optimizar el rendimiento de tus consultas. P
 ```sql
 SET seq_page_cost = 0.5;
 ```
- 
+
+ ### Otros parametros para modificar los costos
+ ```sql
+postgres@postgres# select name,setting from pg_settings where name ilike '%cost%' order by name;
++------------------------------+---------+
+|             name             | setting |
++------------------------------+---------+
+| autovacuum_vacuum_cost_delay | 100     |
+| autovacuum_vacuum_cost_limit | -1      |
+| cpu_index_tuple_cost         | 0.005   |
+| cpu_operator_cost            | 0.0025  |
+| cpu_tuple_cost               | 0.01    |
+| jit_above_cost               | 100000  |
+| jit_inline_above_cost        | 500000  |
+| jit_optimize_above_cost      | 500000  |
+| parallel_setup_cost          | 1000    |
+| parallel_tuple_cost          | 0.1     |
+| random_page_cost             | 4       |
+| seq_page_cost                | 1       |
+| vacuum_cost_delay            | 20      |
+| vacuum_cost_limit            | 200     |
+| vacuum_cost_page_dirty       | 20      |
+| vacuum_cost_page_hit         | 1       |
+| vacuum_cost_page_miss        | 2       |
++------------------------------+---------+
+
+1. **cpu_tuple_cost**: Este es el costo de procesar cada fila (tuple) en el resultado de una consulta. El valor predeterminado es 0.01.
+2. **cpu_operator_cost**: Este es el costo de aplicar un operador a una fila. El valor predeterminado es 0.0025.
+3. **seq_page_cost**: Este es el costo de leer una página secuencialmente desde el disco. El valor predeterminado es 1.0.
+4. **random_page_cost**: Este es el costo de leer una página aleatoriamente desde el disco. El valor predeterminado es 4.0.
+```
 
 
 #  Comando EXPLAIN
