@@ -20,9 +20,9 @@ Un índice es una estructura de datos que almacena una referencia a los datos en
  
 # Tipos de índices en PostgreSQL:
 ```SQL
-    1. Índices B-Tree: Son los más comunes y se utilizan para columnas que tienen valores repetidos, como las columnas de nombres, fechas y números. Proporcionan una búsqueda rápida en logaritmo de tiempo.
+    1. Índices B-Tree: B-tree son ideales para consultas que utilizan operadores de comparación estándar. Son los más comunes y se utilizan para columnas que tienen valores repetidos, como las columnas de nombres, fechas y números. Proporcionan una búsqueda rápida en logaritmo de tiempo.
     2. Índices Hash: Adecuados para igualdad de búsqueda exacta. Sin embargo, no funcionan bien con rangos y consultas de rango.
-    3. Índices GIN y GiST: Son utilizados para tipos de datos más complejos como texto y geometría, permitiendo búsquedas y comparaciones más avanzadas, se usa en los ilike
+    3. Índices GIN y GiST: Son utilizados para tipos de datos más complejos como texto y geometría, JSONB, arrays, permitiendo búsquedas y comparaciones más avanzadas, se usa en los ilike
     4. Índices SP-GiST: Útiles para tipos de datos con estructuras jerárquicas o multidimensionales.
 
 https://www.yugabyte.com/blog/postgresql-like-query-performance-variations/#c-collation-or-text_pattern_ops
@@ -89,51 +89,667 @@ El propósito de este comando es mejorar el rendimiento de las consultas que uti
 
   	-- Indicas que ejecute los clusteres 
  	cluster;
+``` 
+
+
+# EJEMPLOS DE CREACION DE INDEX Y CLUSTER
 ```SQL
 
+-- Crear la tabla
+postgres@auditoria# CREATE TABLE pedidos (
+    id SERIAL PRIMARY KEY,  -- indisprimary
+    cliente_id INT,
+    producto_id INT,
+    cantidad INT,
+    precio DECIMAL,
+    fecha TIMESTAMP,
+    estado VARCHAR(20),
+    email VARCHAR(100),
+    nombre VARCHAR(100)
+);
+CREATE TABLE
+Time: 59.525 ms
 
-# CREAR INDEX 
-```SQL
---- este solo crea el indice 
-CREATE INDEX   nombre_del_indice ON nombre_de_tabla USING btree (columna1 ASC , columna2 desc );
 
----- crear un índice único compuesto, estamos añadiendo una restricción (constraint) a la tabla,
----  para que los valores de las columnas no sean iguales 
-CREATE UNIQUE INDEX   nombre_del_indice ON nombre_de_tabla USING btree (columna1 ASC , columna2 desc);
-
----- Ejemplo 1: Índice Único Condicional
---- Supongamos que tienes una tabla de usuarios y quieres asegurarte de que los correos 
----- electrónicos sean únicos, pero solo para los usuarios activos.
-CREATE UNIQUE INDEX unique_email_active_users ON usuarios (email) WHERE activo = true;
+-- Insertar datos en la tabla pedidos
+INSERT INTO pedidos (cliente_id, producto_id, cantidad, precio, fecha, estado, email, nombre)
+VALUES
+(1, 101, 2, 19.99, '2024-08-01 10:00:00', 'pendiente', 'cliente1@example.com', 'Juan Pérez'),
+(2, 102, 1, 49.99, '2024-08-02 11:30:00', 'completado', 'cliente2@example.com', 'María López'),
+(3, 103, 5, 9.99, '2024-08-03 14:45:00', 'pendiente', 'cliente3@example.com', 'Carlos García'),
+(4, 104, 3, 29.99, '2024-08-04 09:15:00', 'cancelado', 'cliente4@example.com', 'Ana Martínez'),
+(5, 105, 4, 15.99, '2024-08-05 16:00:00', 'pendiente', 'cliente5@example.com', 'Luis Fernández');
 
 
+postgres@auditoria# select * from pedidos;
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+| id | cliente_id | producto_id | cantidad | precio |        fecha        |   estado   |        email         |     nombre     |
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+|  1 |          1 |         101 |        2 |  19.99 | 2024-08-01 10:00:00 | pendiente  | cliente1@example.com | Juan Pérez     |
+|  2 |          2 |         102 |        1 |  49.99 | 2024-08-02 11:30:00 | completado | cliente2@example.com | María López    |
+|  3 |          3 |         103 |        5 |   9.99 | 2024-08-03 14:45:00 | pendiente  | cliente3@example.com | Carlos García  |
+|  4 |          4 |         104 |        3 |  29.99 | 2024-08-04 09:15:00 | cancelado  | cliente4@example.com | Ana Martínez   |
+|  5 |          5 |         105 |        4 |  15.99 | 2024-08-05 16:00:00 | pendiente  | cliente5@example.com | Luis Fernández |
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
 
---- Indices   GIN  para los ilike 
-CREATE INDEX idx_nombre_text_pattern_ops ON nombre_tabla(nombre_column text_pattern_ops); -- C collation or text_pattern_ops
 
-/*
-text_pattern_ops es una clase de operador que se utiliza con índices B-Tree para optimizar las búsquedas de patrones de texto, especialmente aquellas que utilizan el operador LIKE
-efectivo para patrones anclados al inicio de la cadena (LIKE 'patrón%'). No es tan útil para patrones que contienen comodines al principio (LIKE '%patrón%').
+--> Crear un índice indisclustered en la columna fecha
+--> Este comando realiza la operación de agrupamiento inmediatamente, reordenando físicamente las filas de la tabla pedidos según el índice idx_clustered_fecha.
 
-*/
+postgres@auditoria# CREATE INDEX idx_clustered_fecha ON pedidos (fecha desc );
+CREATE INDEX
+Time: 3.221 ms
 
---- Indices   trigram  para los ilike 
-CREATE EXTENSION pg_trgm;
-CREATE INDEX idx_nombre_trgm ON productos USING GIN (nombre gin_trgm_ops);
+postgres@auditoria# CLUSTER pedidos USING idx_clustered_fecha;  -- indisclustered
+CLUSTER
+Time: 29.073 ms
+
+
+
+postgres@auditoria# select indexrelid::regclass,indrelid::regclass,* from pg_index where indexrelid::regclass = 'idx_clustered_fecha'::regclass ;
++-[ RECORD 1 ]--------+---------------------+
+| indexrelid          | idx_clustered_fecha |
+| indrelid            | pedidos             |
+| indexrelid          | 382265              |
+| indrelid            | 382257              |
+| indnatts            | 1                   |
+| indnkeyatts         | 1                   |
+| indisunique         | f                   |
+| indnullsnotdistinct | f                   |
+| indisprimary        | f                   |
+| indisexclusion      | f                   |
+| indimmediate        | t                   |
+| indisclustered      | t                   | <--- indisclustered
+| indisvalid          | t                   |
+| indcheckxmin        | f                   |
+| indisready          | t                   |
+| indislive           | t                   |
+| indisreplident      | f                   |
+| indkey              | 6                   |
+| indcollation        | 0                   |
+| indclass            | 3128                |
+| indoption           | 3                   |
+| indexprs            | NULL                |
+| indpred             | NULL                |
++---------------------+---------------------+
+
+
+ 
+postgres@auditoria# select * from pedidos;
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+| id | cliente_id | producto_id | cantidad | precio |        fecha        |   estado   |        email         |     nombre     |
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+|  5 |          5 |         105 |        4 |  15.99 | 2024-08-05 16:00:00 | pendiente  | cliente5@example.com | Luis Fernández |
+|  4 |          4 |         104 |        3 |  29.99 | 2024-08-04 09:15:00 | cancelado  | cliente4@example.com | Ana Martínez   |
+|  3 |          3 |         103 |        5 |   9.99 | 2024-08-03 14:45:00 | pendiente  | cliente3@example.com | Carlos García  |
+|  2 |          2 |         102 |        1 |  49.99 | 2024-08-02 11:30:00 | completado | cliente2@example.com | María López    |
+|  1 |          1 |         101 |        2 |  19.99 | 2024-08-01 10:00:00 | pendiente  | cliente1@example.com | Juan Pérez     |
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+(5 rows)
+
+
+
+postgres@auditoria# drop INDEX  idx_clustered_fecha;
+DROP INDEX
+Time: 7.612 ms
+
+
+---> Aunque borres el index Cluster, la tabla seguira ordenada 
+postgres@auditoria#  select * from pedidos;
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+| id | cliente_id | producto_id | cantidad | precio |        fecha        |   estado   |        email         |     nombre     |
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+|  5 |          5 |         105 |        4 |  15.99 | 2024-08-05 16:00:00 | pendiente  | cliente5@example.com | Luis Fernández |
+|  4 |          4 |         104 |        3 |  29.99 | 2024-08-04 09:15:00 | cancelado  | cliente4@example.com | Ana Martínez   |
+|  3 |          3 |         103 |        5 |   9.99 | 2024-08-03 14:45:00 | pendiente  | cliente3@example.com | Carlos García  |
+|  2 |          2 |         102 |        1 |  49.99 | 2024-08-02 11:30:00 | completado | cliente2@example.com | María López    |
+|  1 |          1 |         101 |        2 |  19.99 | 2024-08-01 10:00:00 | pendiente  | cliente1@example.com | Juan Pérez     |
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+(5 rows)
+
+
+
+
+
+postgres@auditoria# select * from pg_stat_user_indexes where relname = 'pedidos';
++--------+------------+------------+---------+--------------+----------+---------------+--------------+---------------+
+| relid  | indexrelid | schemaname | relname | indexrelname | idx_scan | last_idx_scan | idx_tup_read | idx_tup_fetch |
++--------+------------+------------+---------+--------------+----------+---------------+--------------+---------------+
+| 382275 |     382281 | public     | pedidos | pedidos_pkey |        0 | NULL          |            0 |             0 |
++--------+------------+------------+---------+--------------+----------+---------------+--------------+---------------+
+(1 row)
+
+
+
+--->  Este comando establece el índice pedidos_pkey como el índice de agrupamiento predeterminado para la tabla pedidos.  No realiza la operación de agrupamiento inmediatamente. Simplemente indica que, en futuras operaciones de agrupamiento (cuando se use el comando CLUSTER sin especificar un índice), PostgreSQL utilizará este índice.
+
+postgres@auditoria# ALTER TABLE IF EXISTS public.pedidos CLUSTER ON pedidos_pkey;
+ALTER TABLE
+Time: 1.476 ms
+
+postgres@auditoria# cluster;
+CLUSTER
+Time: 29.078 ms
+
+
+postgres@auditoria# select * from pedidos;
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+| id | cliente_id | producto_id | cantidad | precio |        fecha        |   estado   |        email         |     nombre     |
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+|  1 |          1 |         101 |        2 |  19.99 | 2024-08-01 10:00:00 | pendiente  | cliente1@example.com | Juan Pérez     |
+|  2 |          2 |         102 |        1 |  49.99 | 2024-08-02 11:30:00 | completado | cliente2@example.com | María López    |
+|  3 |          3 |         103 |        5 |   9.99 | 2024-08-03 14:45:00 | pendiente  | cliente3@example.com | Carlos García  |
+|  4 |          4 |         104 |        3 |  29.99 | 2024-08-04 09:15:00 | cancelado  | cliente4@example.com | Ana Martínez   |
+|  5 |          5 |         105 |        4 |  15.99 | 2024-08-05 16:00:00 | pendiente  | cliente5@example.com | Luis Fernández |
++----+------------+-------------+----------+--------+---------------------+------------+----------------------+----------------+
+(5 rows)
+
+Time: 0.680 ms
+
+
+
+
+
+
+
+
+---->  Crear un índice único en la columna email
+postgres@auditoria# CREATE UNIQUE INDEX idx_unique_email ON pedidos (email,nombre); -- indisunique
+CREATE INDEX
+Time: 2.987 ms
+
+postgres@auditoria# select indexrelid::regclass,indrelid::regclass,* from pg_index where indexrelid::regclass = 'idx_unique_email'::regclass ;
++-[ RECORD 1 ]--------+------------------+
+| indexrelid          | idx_unique_email |
+| indrelid            | pedidos          |
+| indexrelid          | 382307           |
+| indrelid            | 382275           |
+| indnatts            | 1                |
+| indnkeyatts         | 1                |
+| indisunique         | t                | <--- Indica que es unico 
+| indnullsnotdistinct | f                |
+| indisprimary        | f                |
+| indisexclusion      | f                |
+| indimmediate        | t                |
+| indisclustered      | f                |
+| indisvalid          | t                |
+| indcheckxmin        | f                |
+| indisready          | t                |
+| indislive           | t                |
+| indisreplident      | f                |
+| indkey              | 8                |
+| indcollation        | 100              |
+| indclass            | 3126             |
+| indoption           | 0                |
+| indexprs            | NULL             |
+| indpred             | NULL             |
++---------------------+------------------+
+
+
+postgres@auditoria# insert into pedidos(email,nombre) select 'cliente1@example.com','Juan Pérez';
+ERROR:  duplicate key value violates unique constraint "idx_unique_email"
+DETAIL:  Key (email, nombre)=(cliente1@example.com, Juan Pérez) already exists.
+Time: 0.680 ms
+
+
+
+
+
+
+----> Crear un índice normal en la columna precio y verificar su validez
+CREATE INDEX idx_valido ON pedidos (precio);
+
+
+postgres@auditoria# explain analyze select * from pedidos where precio = 19.99;;
++----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                      |
++----------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_valido on pedidos  (cost=0.13..8.15 rows=1 width=550) (actual time=0.062..0.064 rows=1 loops=1) | <-- Indico ue uso el index idx_valido
+|   Index Cond: (precio = 19.99)                                                                                       |
+| Planning Time: 0.075 ms                                                                                              |
+| Execution Time: 0.079 ms                                                                                             |
++----------------------------------------------------------------------------------------------------------------------+
+(4 rows)
+
+
+postgres@auditoria# SELECT * FROM pg_index WHERE indexrelid = 'idx_valido'::regclass AND indisvalid;  
++-[ RECORD 1 ]--------+--------+
+| indexrelid          | 382309 |
+| indrelid            | 382275 |
+| indnatts            | 1      |
+| indnkeyatts         | 1      |
+| indisunique         | f      |
+| indnullsnotdistinct | f      |
+| indisprimary        | f      |
+| indisexclusion      | f      |
+| indimmediate        | t      |
+| indisclustered      | f      |
+| indisvalid          | t      | ---> indisvalid: Indica si el índice es válido para ser utilizado por el optimizador de consultas. Un índice puede ser inválido si está en proceso de creación o si ha fallado una operación de mantenimiento.
+| indcheckxmin        | f      |
+| indisready          | t      |
+| indislive           | t      |
+| indisreplident      | f      |
+| indkey              | 5      |
+| indcollation        | 0      |
+| indclass            | 3125   |
+| indoption           | 0      |
+| indexprs            | NULL   |
+| indpred             | NULL   |
++---------------------+--------+
+
+ 
+ 
+ 
+ 
+----> Crear Índice Compuestos, es muy importante que las columnas del indice se usen en la consulta, principalmente la primera columna del indice
+--- ya que puede haber ocasiones en las que no use el indice 
+postgres@auditoria# explain analyze select * from pedidos where precio = 9.99 and fecha = '2024-08-03 14:45:00';
++----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                      |
++----------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_valido on pedidos  (cost=0.13..8.15 rows=1 width=550) (actual time=0.017..0.019 rows=1 loops=1) |
+|   Index Cond: (precio = 9.99)                                                                                        |
+|   Filter: (fecha = '2024-08-03 14:45:00'::timestamp without time zone)                                               |
+| Planning Time: 0.086 ms                                                                                              |
+| Execution Time: 0.035 ms                                                                                             |
++----------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+postgres@auditoria# CREATE INDEX   idx_Compuestos_pedidos ON pedidos USING btree (precio ASC , fecha desc,estado );
+CREATE INDEX
+Time: 2.902 ms
+
+postgres@auditoria# explain analyze select * from pedidos where precio = 9.99 and fecha = '2024-08-03 14:45:00' and estado = 'pendiente';
++-------------------------------------------------------------------------------------------------------------------------------------------+
+|                                                                QUERY PLAN                                                                 |
++-------------------------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_compuestos_pedidos on pedidos  (cost=0.13..8.15 rows=1 width=550) (actual time=0.017..0.018 rows=1 loops=1)          |
+|   Index Cond: ((precio = 9.99) AND (fecha = '2024-08-03 14:45:00'::timestamp without time zone) AND ((estado)::text = 'pendiente'::text)) |
+| Planning Time: 0.251 ms                                                                                                                   |
+| Execution Time: 0.034 ms                                                                                                                  |
++-------------------------------------------------------------------------------------------------------------------------------------------+
+(4 rows)
+
+
+postgres@auditoria# explain analyze select * from pedidos where precio = 9.99 ;
++----------------------------------------------------------------------------------------------------------------------------------+
+|                                                            QUERY PLAN                                                            |
++----------------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_compuestos_pedidos on pedidos  (cost=0.13..8.15 rows=1 width=550) (actual time=0.021..0.023 rows=1 loops=1) |
+|   Index Cond: (precio = 9.99)                                                                                                    |
+| Planning Time: 0.109 ms                                                                                                          |
+| Execution Time: 0.084 ms                                                                                                         |
++----------------------------------------------------------------------------------------------------------------------------------+
+(4 rows)
+
+
+
+
+ 
+
+----->  Crear un índice de expresión basado en la longitud de la columna nombre
+
+postgres@auditoria# explain analyze select length(nombre),* from pedidos where length(nombre) >= 13;
++-----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                       |
++-----------------------------------------------------------------------------------------------------------------------+
+| Seq Scan on pedidos  (cost=10000000000.00..10000000001.08 rows=2 width=554) (actual time=0.016..0.018 rows=2 loops=1) |
+|   Filter: (length((nombre)::text) >= 13)                                                                              |
+|   Rows Removed by Filter: 3                                                                                           |
+| Planning Time: 0.080 ms                                                                                               |
+| Execution Time: 0.039 ms                                                                                              |
++-----------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+
+postgres@auditoria# CREATE INDEX idx_expr_length ON pedidos ((length(nombre)));  -- indexprs
+CREATE INDEX
+Time: 2.362 ms
+
+postgres@auditoria# explain analyze select length(nombre),* from pedidos where length(nombre) >= 13;
++---------------------------------------------------------------------------------------------------------------------------+
+|                                                        QUERY PLAN                                                         |
++---------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_expr_length on pedidos  (cost=0.13..8.17 rows=2 width=554) (actual time=0.031..0.033 rows=2 loops=1) |
+|   Index Cond: (length((nombre)::text) >= 13)                                                                              |
+| Planning Time: 0.381 ms                                                                                                   |
+| Execution Time: 0.058 ms                                                                                                  |
++---------------------------------------------------------------------------------------------------------------------------+
+(4 rows)
+
+
+---- La columna indexprs ya no es null esto quiere decir que es un index con expresiones 
+postgres@auditoria# SELECT * FROM pg_index WHERE indexrelid = 'idx_expr_length'::regclass ;
++-[ RECORD 1 ]--------+--------+
+| indexrelid          | 382310 |
+| indrelid            | 382275 |
+| indnatts            | 1      |
+| indnkeyatts         | 1      |
+| indisunique         | f      |
+| indnullsnotdistinct | f      |
+| indisprimary        | f      |
+| indisexclusion      | f      |
+| indimmediate        | t      |
+| indisclustered      | f      |
+| indisvalid          | t      |
+| indcheckxmin        | f      |
+| indisready          | t      |
+| indislive           | t      |
+| indisreplident      | f      |
+| indkey              | 0      |
+| indcollation        | 0      |
+| indclass            | 1978   |
+| indoption           | 0      |
+| indexprs            | ({FUNCEXPR :funcid 1317 :funcresulttype 23 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid
+100 :args ({RELABELTYPE :arg {VAR :varno 1 :varattno 9 :vartype 1043 :vartypmod 104 :varcollid 100 :varnullingrels (b) :varlevelsup 0 :varnosyn 1
+:varattnosyn 9 :location 49} :resulttype 25 :resulttypmod -1 :resultcollid 100 :relabelformat 2 :location -1}) :location 42}) |   
+| indpred             | NULL   |
++---------------------+--------+
+
+
+
+
+
+
+----->  Crear un índice parcial/Condicional en la columna fecha para los pedidos en estado 'pendiente'
+--- Un índice parcial es un índice que solo incluye las filas que cumplen con una condición específica.
+postgres@auditoria# CREATE INDEX idx_parcial_pendiente ON pedidos (fecha) WHERE estado = 'pendiente';
+CREATE INDEX
+Time: 3.191 ms
+
+
+postgres@auditoria# explain analyze select * from pedidos where estado =  'completado';
++-----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                       |
++-----------------------------------------------------------------------------------------------------------------------+
+| Seq Scan on pedidos  (cost=10000000000.00..10000000001.07 rows=1 width=554) (actual time=0.014..0.016 rows=1 loops=1) |
+|   Filter: ((estado)::text = 'completado'::text)                                                                       |
+|   Rows Removed by Filter: 4                                                                                           |
+| Planning Time: 0.103 ms                                                                                               |
+| Execution Time: 0.033 ms                                                                                              |
++-----------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+postgres@auditoria# explain analyze select * from pedidos where estado =  'pendiente';
++---------------------------------------------------------------------------------------------------------------------------------+
+|                                                           QUERY PLAN                                                            |
++---------------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_parcial_pendiente on pedidos  (cost=0.13..8.15 rows=1 width=554) (actual time=0.077..0.081 rows=3 loops=1) |
+| Planning Time: 0.115 ms                                                                                                         |
+| Execution Time: 0.103 ms                                                                                                        |
++---------------------------------------------------------------------------------------------------------------------------------+
+(3 rows)
+
+
+---- La columna indpred no se encuentra vacia, por lo cual es un indice parcial
+postgres@auditoria#  SELECT * FROM pg_index WHERE indexrelid = 'idx_parcial_pendiente'::regclass ;
++-[ RECORD 1 ]--------+--------+
+| indexrelid          | 382311 |
+| indrelid            | 382275 |
+| indnatts            | 1      |
+| indnkeyatts         | 1      |
+| indisunique         | f      |
+| indnullsnotdistinct | f      |
+| indisprimary        | f      |
+| indisexclusion      | f      |
+| indimmediate        | t      |
+| indisclustered      | f      |
+| indisvalid          | t      |
+| indcheckxmin        | f      |
+| indisready          | t      |
+| indislive           | t      |
+| indisreplident      | f      |
+| indkey              | 6      |
+| indcollation        | 0      |
+| indclass            | 3128   |
+| indoption           | 0      |
+| indexprs            | NULL   |
+| indpred             | {OPEXPR :opno 98 :opfuncid 67 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 100 :args ({RELABELTYPE :arg {VAR
+:varno 1 :varattno 7 :vartype 1043 :vartypmod 24 :varcollid 100 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 7 :location 60} :resul
+ttype 25 :resulttypmod -1 :resultcollid 100 :relabelformat 2 :location -1} {CONST :consttype 25 :consttypmod -1 :constcollid 100 :constlen -1 :con
+stbyval false :constisnull false :location 69 :constvalue 13 [ 52 0 0 0 112 101 110 100 105 101 110 116 101 ]}) :location 67} |
++---------------------+--------+
+
+
+ 
+
+postgres@auditoria# select * from pg_stat_user_indexes where relname = 'pedidos';
++--------+------------+------------+---------+------------------------+----------+-------------------------------+--------------+---------------+
+| relid  | indexrelid | schemaname | relname |      indexrelname      | idx_scan |         last_idx_scan         | idx_tup_read | idx_tup_fetch |
++--------+------------+------------+---------+------------------------+----------+-------------------------------+--------------+---------------+
+| 382275 |     382281 | public     | pedidos | pedidos_pkey           |        0 | NULL                          |            0 |             0 |
+| 382275 |     382308 | public     | pedidos | idx_unique_email       |        0 | NULL                          |            0 |             0 |
+| 382275 |     382309 | public     | pedidos | idx_valido             |        6 | 2024-09-03 18:17:49.489201-07 |            6 |             6 |
+| 382275 |     382310 | public     | pedidos | idx_expr_length        |        2 | 2024-09-03 18:16:51.096757-07 |            4 |             4 |
+| 382275 |     382314 | public     | pedidos | idx_compuestos_pedidos |        4 | 2024-09-03 18:23:01.715724-07 |            6 |             6 |
++--------+------------+------------+---------+------------------------+----------+-------------------------------+--------------+---------------+
+(5 rows)
+
+
+
+postgres@auditoria# select * from pg_indexes where tablename = 'pedidos';
+| schemaname | tablename |       indexname       | tablespace |                                                      indexdef
++------------+-----------+-----------------------+------------+---------------------------------------------------------------------------------------------------------------------+
+| public     | pedidos   | pedidos_pkey           | NULL       | CREATE UNIQUE INDEX pedidos_pkey ON public.pedidos USING btree (id)             |
+| public     | pedidos   | idx_unique_email       | NULL       | CREATE UNIQUE INDEX idx_unique_email ON public.pedidos USING btree (email, nombre)             |
+| public     | pedidos   | idx_valido             | NULL       | CREATE INDEX idx_valido ON public.pedidos USING btree (precio)              |
+| public     | pedidos   | idx_expr_length        | NULL       | CREATE INDEX idx_expr_length ON public.pedidos USING btree (length((nombre)::text))            |
+| public     | pedidos   | idx_compuestos_pedidos | NULL       | CREATE INDEX idx_compuestos_pedidos ON public.pedidos USING btree (precio, fechaDESC, estado) |
++------------+-----------+-----------------------+------------+---------------------------------------------------------------------------------------------------------------------+
+
+
+postgres@auditoria# drop index idx_unique_email;
+DROP INDEX
+Time: 12.255 ms
+postgres@auditoria# drop index idx_valido;
+DROP INDEX
+Time: 9.470 ms
+postgres@auditoria# drop index idx_expr_length;
+DROP INDEX
+Time: 9.584 ms
+postgres@auditoria# drop index idx_compuestos_pedidos;
+DROP INDEX
+Time: 8.255 ms
+
+
+
+
+
+-------> Crear un index   GIN con la extension trigram  para los ilike 
+
+/* CREAREMOS UN INDICE NORMAL */
+postgres@auditoria#  CREATE INDEX   idx_pedidos ON pedidos USING btree (estado );
+CREATE INDEX
+Time: 2.679 ms
+
+
+
+postgres@auditoria# explain analyze select * from pedidos where  estado ilike  '%pen%' ;
++-----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                       |
++-----------------------------------------------------------------------------------------------------------------------+
+| Seq Scan on pedidos  (cost=10000000000.00..10000000001.06 rows=1 width=550) (actual time=0.018..0.025 rows=3 loops=1) | <-- COMO VEMOS NO USO EL INDEX 
+|   Filter: ((estado)::text ~~* '%pen%'::text)                                                                          |
+|   Rows Removed by Filter: 2                                                                                           |
+| Planning Time: 0.414 ms                                                                                               |
+| Execution Time: 0.044 ms                                                                                              |
++-----------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+
+
+postgres@auditoria# CREATE EXTENSION pg_trgm;
+CREATE EXTENSION
+Time: 62.879 ms
+
+postgres@auditoria# CREATE INDEX idx_estado_trgm ON pedidos USING GIN (estado gin_trgm_ops);
+CREATE INDEX
+Time: 2.783 ms
+
+
+postgres@auditoria# explain analyze select * from pedidos where  estado ilike  '%pen%' ;
++------------------------------------------------------------------------------------------------------------------------+
+|                                                       QUERY PLAN                                                       |
++------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on pedidos  (cost=8.53..12.54 rows=1 width=550) (actual time=0.035..0.038 rows=3 loops=1)             |
+|   Recheck Cond: ((estado)::text ~~* '%pen%'::text)                                                                     |
+|   Heap Blocks: exact=1                                                                                                 |
+|   ->  Bitmap Index Scan on idx_estado_trgm  (cost=0.00..8.53 rows=1 width=0) (actual time=0.010..0.010 rows=3 loops=1) | <--- AQUI SI USO EL INDEX 
+|         Index Cond: ((estado)::text ~~* '%pen%'::text)                                                                 |
+| Planning Time: 0.258 ms                                                                                                |
+| Execution Time: 0.062 ms                                                                                               |
++------------------------------------------------------------------------------------------------------------------------+
+(7 rows)
+
+
+
+postgres@auditoria# drop index idx_estado_trgm;
+DROP INDEX
+Time: 8.139 ms
+
+
+
+
+
+----->  Indices  para los like 
+----- Crear El índice  text_pattern_ops en PostgreSQL se utiliza con índices B-Tree principalmente para mejorar el rendimiento de las consultas que involucran patrones de búsqueda con LIKE o expresiones regulares en columnas de tipo text, varchar o char.
+--- no sirve para los ilike 
+--- si tus consultas utilizan operadores de comparación estándar como <, <=, >, >=, este índice no será útil
+---  Si tu base de datos usa la configuración regional “C”, no necesitas text_pattern_ops porque un índice con la clase de operador predeterminada ya es adecuado para consultas de patrones1.
+
+
+postgres@auditoria#  explain analyze select * from pedidos where  estado like  'pen%' ;
++-----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                       |
++-----------------------------------------------------------------------------------------------------------------------+
+| Seq Scan on pedidos  (cost=10000000000.00..10000000001.06 rows=1 width=550) (actual time=0.008..0.010 rows=3 loops=1) |
+|   Filter: ((estado)::text ~~ 'pen%'::text)                                                                            |
+|   Rows Removed by Filter: 2                                                                                           |
+| Planning Time: 0.115 ms                                                                                               |
+| Execution Time: 0.027 ms                                                                                              |
++-----------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+Time: 0.580 ms
+
+
+postgres@auditoria#  explain analyze SELECT * FROM pedidos WHERE estado ~ '^pendi';
++-----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                       |
++-----------------------------------------------------------------------------------------------------------------------+
+| Seq Scan on pedidos  (cost=10000000000.00..10000000001.06 rows=1 width=550) (actual time=0.021..0.028 rows=3 loops=1) |
+|   Filter: ((estado)::text ~ '^pendi'::text)                                                                           |
+|   Rows Removed by Filter: 2                                                                                           |
+| Planning Time: 0.088 ms                                                                                               |
+| Execution Time: 0.046 ms                                                                                              |
++-----------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+
+
+
+postgres@auditoria# CREATE INDEX idx_pedidos_text_pattern_ops ON pedidos(estado text_pattern_ops);  -- C collation or text_pattern_ops
+CREATE INDEX
+Time: 2.966 ms
+
+ 
+postgres@auditoria# explain analyze select * from pedidos where  estado like  'pen%' ;
++----------------------------------------------------------------------------------------------------------------------------------------+
+|                                                               QUERY PLAN                                                               |
++----------------------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_pedidos_text_pattern_ops on pedidos  (cost=0.13..8.15 rows=1 width=550) (actual time=0.015..0.017 rows=3 loops=1) | <--- usa el index
+|   Index Cond: (((estado)::text ~>=~ 'pen'::text) AND ((estado)::text ~<~ 'peo'::text))                                                 |
+|   Filter: ((estado)::text ~~ 'pen%'::text)                                                                                             |
+| Planning Time: 0.180 ms                                                                                                                |
+| Execution Time: 0.033 ms                                                                                                               |
++----------------------------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+Time: 0.665 ms
+
+postgres@auditoria# explain analyze select * from pedidos where  estado like  '%pen%' ;
++-----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                       |
++-----------------------------------------------------------------------------------------------------------------------+
+| Seq Scan on pedidos  (cost=10000000000.00..10000000001.06 rows=1 width=550) (actual time=0.014..0.017 rows=3 loops=1) | <--- no usa el index
+|   Filter: ((estado)::text ~~ '%pen%'::text)                                                                           |
+|   Rows Removed by Filter: 2                                                                                           |
+| Planning Time: 0.077 ms                                                                                               |
+| Execution Time: 0.035 ms                                                                                              |
++-----------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+Time: 0.628 ms
+
+postgres@auditoria# explain analyze select * from pedidos where  estado like  '%pen' ;
++-----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                       |
++-----------------------------------------------------------------------------------------------------------------------+
+| Seq Scan on pedidos  (cost=10000000000.00..10000000001.06 rows=1 width=550) (actual time=0.013..0.014 rows=0 loops=1) | <--- no usa el index
+|   Filter: ((estado)::text ~~ '%pen'::text)                                                                            |
+|   Rows Removed by Filter: 5                                                                                           |
+| Planning Time: 0.061 ms                                                                                               |
+| Execution Time: 0.027 ms                                                                                              |
++-----------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+Time: 0.475 ms
+
+postgres@auditoria#  explain analyze SELECT * FROM pedidos WHERE estado ~ '^pendi';
++----------------------------------------------------------------------------------------------------------------------------------------+
+|                                                               QUERY PLAN                                                               |
++----------------------------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_pedidos_text_pattern_ops on pedidos  (cost=0.13..8.15 rows=1 width=550) (actual time=0.031..0.036 rows=3 loops=1) | <--- usa el index
+|   Index Cond: (((estado)::text ~>=~ 'pendi'::text) AND ((estado)::text ~<~ 'pendj'::text))                                             |
+|   Filter: ((estado)::text ~ '^pendi'::text)                                                                                            |
+| Planning Time: 0.100 ms                                                                                                                |
+| Execution Time: 0.054 ms                                                                                                               |
++----------------------------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+Time: 0.567 ms
+
+
+
+
+postgres@auditoria# drop index idx_pedidos_text_pattern_ops ;
+DROP INDEX
+Time: 8.022 ms
 
 
 
 --- Indice  Full-Text Search 
 
-CREATE INDEX idx_nombre_gin ON productos USING GIN (to_tsvector('spanish', nombre));
-SELECT * FROM documentos WHERE to_tsvector('spanish', contenido) @@ to_tsquery('spanish','prueba');
+postgres@auditoria# CREATE INDEX idx_pedidos_gin ON pedidos USING GIN (to_tsvector('spanish', estado));
+CREATE INDEX
+Time: 30.887 ms
 
-SELECT * FROM documentos WHERE to_tsvector('spanish', contenido) @@ plainto_tsquery('spanish','conte');
+
+postgres@auditoria# explain analyze SELECT * FROM pedidos WHERE to_tsvector('spanish', estado) @@ to_tsquery('spanish','pen');
++------------------------------------------------------------------------------------------------------------------------+
+|                                                       QUERY PLAN                                                       |
++------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on pedidos  (cost=8.51..12.78 rows=1 width=550) (actual time=0.015..0.016 rows=3 loops=1)             |
+|   Recheck Cond: (to_tsvector('spanish'::regconfig, (estado)::text) @@ '''pendient'''::tsquery)                         |
+|   Heap Blocks: exact=1                                                                                                 |
+|   ->  Bitmap Index Scan on idx_pedidos_gin  (cost=0.00..8.51 rows=1 width=0) (actual time=0.010..0.010 rows=3 loops=1) |
+|         Index Cond: (to_tsvector('spanish'::regconfig, (estado)::text) @@ '''pendient'''::tsquery)                     |
+| Planning Time: 0.098 ms                                                                                                |
+| Execution Time: 0.035 ms                                                                                               |
++------------------------------------------------------------------------------------------------------------------------+
+
+
+postgres@auditoria# explain analyze  SELECT * FROM pedidos WHERE to_tsvector('spanish', estado) @@ plainto_tsquery('spanish','conte');
++------------------------------------------------------------------------------------------------------------------------+
+|                                                       QUERY PLAN                                                       |
++------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on pedidos  (cost=8.51..12.78 rows=1 width=550) (actual time=0.013..0.014 rows=0 loops=1)             | <--- no retorno resultados rows=0
+|   Recheck Cond: (to_tsvector('spanish'::regconfig, (estado)::text) @@ '''cont'''::tsquery)                             |
+|   ->  Bitmap Index Scan on idx_pedidos_gin  (cost=0.00..8.51 rows=1 width=0) (actual time=0.010..0.010 rows=0 loops=1) |
+|         Index Cond: (to_tsvector('spanish'::regconfig, (estado)::text) @@ '''cont'''::tsquery)                         |
+| Planning Time: 0.123 ms                                                                                                |
+| Execution Time: 0.042 ms                                                                                               |
++------------------------------------------------------------------------------------------------------------------------+
+(6 rows)
 
 
 ```
-
-
 
 
 
