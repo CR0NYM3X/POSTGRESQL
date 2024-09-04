@@ -529,3 +529,67 @@ ADD CONSTRAINT fk_cliente
 
 
 ```
+
+
+
+
+### Tablas `UNLOGGED`
+
+Las tablas `UNLOGGED` son tablas que no generan registros WAL (Write-Ahead Log). Esto las hace mucho más rápidas para operaciones de escritura, pero con algunas desventajas:
+
+- **Ventajas**:
+  - **Rendimiento**: Las operaciones de escritura son significativamente más rápidas porque no se generan registros WAL.
+  - **Menos Impacto de `VACUUM`**: Menos cambios de `VACUUM` porque no se generan registros WAL.
+
+- **Desventajas**:
+  - **No Durabilidad**: Los datos en tablas `UNLOGGED` no son duraderos y se perderán en caso de un fallo del sistema.
+  - **No Replicación**: No se pueden usar en réplicas lógicas o físicas.
+  - **Truncamiento Automático**: Las tablas se truncan automáticamente después de un fallo del sistema.
+
+```sql
+-- Crear una tabla UNLOGGED
+CREATE UNLOGGED TABLE table_unlogged (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT,
+    valor INT
+);
+
+insert into table_unlogged(nombre,valor) select 
+    'name'|| (RANDOM() * 1000)::text,
+    (RANDOM() * 100)::int
+FROM generate_series(1, 10000);
+
+
+
+-- Convertir una tabla existente a UNLOGGED
+ALTER TABLE table_unlogged SET UNLOGGED;
+
+-- Revertir a LOGGED
+ALTER TABLE table_unlogged SET LOGGED;
+
+select * from table_unlogged ; 
+
+
+select * from information_schema.tables where table_name = 'table_unlogged';  
+select * from pg_tables where tablename = 'table_unlogged' ;  
+
+SELECT 
+    relname AS table_name,
+	relpersistence,
+    CASE 
+        WHEN relpersistence = 'p' THEN 'Persistent'
+        WHEN relpersistence = 'u' THEN 'Unlogged'
+        WHEN relpersistence = 't' THEN 'Temporary'
+        ELSE 'Unknown'
+    END AS table_type
+FROM 
+    pg_class
+WHERE 
+    relname= 'table_unlogged' ;
+	
+```
+
+
+
+
+
