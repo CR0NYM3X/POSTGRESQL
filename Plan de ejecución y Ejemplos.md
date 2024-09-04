@@ -335,6 +335,13 @@ select name,short_desc from pg_settings where category ilike '%plan%' ;
 ```
 
 
+### otros parametros 
+Con estos parametros puedes desactivar el uso de index 
+```sql
+show enable_indexonlyscan;
+show enable_indexscan;
+show enable_bitmapscan;
+```
 
 # Ver estadisticas de tablas y sus index 
  ```sql
