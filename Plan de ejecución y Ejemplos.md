@@ -341,6 +341,11 @@ Con estos parametros puedes desactivar el uso de index
 show enable_indexonlyscan;
 show enable_indexscan;
 show enable_bitmapscan;
+
+set enable_indexonlyscan off;
+set enable_indexscan off;
+set enable_bitmapscan off;
+
 ```
 
 # Ver estadisticas de tablas y sus index 
