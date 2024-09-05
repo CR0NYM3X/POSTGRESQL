@@ -429,10 +429,15 @@ stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te perm
 
  autovacuum_multixact_freeze_max_age = 400000000: Similar al parámetro anterior, pero específico para la edad máxima en transacciones para la congelación de multixactos. Los multixactos son conjuntos de transacciones que modifican las mismas tuplas. Ajustar este valor te permite controlar cuándo se ejecuta el vaciado automático de congelación de multixactos para evitar la acumulación de datos obsoletos en la base de datos.
 
-  autovacuum_vacuum_cost_delay = 8ms: Este parámetro controla cuánto tiempo PostgreSQL espera entre cada paso del vaciado automático. Un valor más alto reduce la carga en el sistema, pero ralentiza el proceso de vaciado automático, mientras que un valor más bajo acelera el vaciado automático pero aumenta la carga en el sistema.
+  autovacuum_vacuum_cost_delay = -1 : Este parámetro controla cuánto tiempo PostgreSQL espera entre cada paso del vaciado automático. Un valor más alto reduce la carga en el sistema, pero ralentiza el proceso de vaciado automático, mientras que un valor más bajo acelera el vaciado automático pero aumenta la carga en el sistema.
 
   autovacuum_vacuum_cost_limit = -1: Este parámetro controla el costo máximo que PostgreSQL está dispuesto a gastar en el vaciado automático. Un valor negativo significa que no hay límite en el costo del vaciado automático. Ajustar este valor te permite controlar cuántos recursos del sistema se asignan al vaciado automático en función de las necesidades y la capacidad de tu sistema.
 
+Función autovacuum_vacuum_cost_limit Y autovacuum_vacuum_cost_delay: Durante la ejecución de un VACUUM,
+PostgreSQL acumula un “costo” basado en las operaciones realizadas. Cuando este costo acumulado supera
+el límite definido por autovacuum_vacuum_cost_limit, el proceso de autovacuum se suspende por el tiempo
+especificado en autovacuum_vacuum_cost_delay antes de continuar. Esto ayuda a distribuir la carga del
+VACUUM a lo largo del tiempo, reduciendo el impacto en el rendimiento del sistema
 
    **Ejemplo**:
    - Si tienes una tabla con 10,000 tuplas:
