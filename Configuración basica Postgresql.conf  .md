@@ -434,6 +434,37 @@ stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te perm
   autovacuum_vacuum_cost_limit = -1: Este parámetro controla el costo máximo que PostgreSQL está dispuesto a gastar en el vaciado automático. Un valor negativo significa que no hay límite en el costo del vaciado automático. Ajustar este valor te permite controlar cuántos recursos del sistema se asignan al vaciado automático en función de las necesidades y la capacidad de tu sistema.
 
 
+   **Ejemplo**:
+   - Si tienes una tabla con 10,000 tuplas:
+     - `autovacuum_vacuum_threshold` = 50
+     - `autovacuum_vacuum_scale_factor` = 0.2
+     - **Cálculo**: 50 + (0.2 * 10,000) = 50 + 2,000 = 2,050
+     - **Resultado**: El VACUUM se ejecutará cuando se hayan modificado o eliminado al menos 2,050 tuplas.
+ 
+   **Ejemplo**:
+   - Si tienes una tabla con 10,000 tuplas:
+     - `autovacuum_analyze_threshold` = 50
+     - `autovacuum_analyze_scale_factor` = 0.1
+     - **Cálculo**: 50 + (0.1 * 10,000) = 50 + 1,000 = 1,050
+     - **Resultado**: El ANALYZE se ejecutará cuando se hayan modificado o eliminado al menos 1,050 tuplas.
+
+ 
+   **Ejemplo**:
+   - Si tienes una tabla con 10,000 tuplas:
+     - `autovacuum_vacuum_insert_threshold` = 200
+     - `autovacuum_vacuum_insert_scale_factor` = 0.05
+     - **Cálculo**: 200 + (0.05 * 10,000) = 200 + 500 = 700
+     - **Resultado**: El VACUUM se ejecutará cuando se hayan insertado al menos 700 tuplas.
+
+
+
+
+
+
+
+
+
+
 ############# también estan estos parámetros que son de mantenimientos pero se encuentran en otras categorías 
 -------- categoria:  RESOURCE USAGE (except WAL)  --------
 
