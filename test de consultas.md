@@ -1,4 +1,4 @@
- 
+ # Test de index en tablas grandes 
 ```sql
 postgres@postgres# CREATE TABLE ventas (
     id SERIAL PRIMARY KEY ,
@@ -236,3 +236,17 @@ postgres@postgres# explain analyze select * from ventas where fecha = '2022-10-1
 
  
 ``` 
+
+
+
+# Test de autovacuum
+
+
+```sql
+
+
+``` 
+
+
+
+
