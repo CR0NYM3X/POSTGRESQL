@@ -406,7 +406,7 @@ stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te perm
  autovacuum_max_workers = 3: # Puedes asignar 1 worker por cada 3 o 4 núcleos, Determina el número máximo de procesos autovacuum que pueden ejecutarse simultáneamente. Esto controla la cantidad de recursos del sistema que se asignan al vaciado automático de tablas. Ajustar este valor te permite equilibrar la carga del sistema con la necesidad de mantener las tablas limpias y optimizadas.
     - **Explicación**: Si tienes muchas tablas grandes, aumentar este número puede ayudar a mantenerlas optimizadas.
 
- autovacuum_naptime = 5min: Especifica cuánto tiempo debe esperar PostgreSQL entre ejecuciones de autovacuum en cada tabla. Este parámetro controla la frecuencia con la que se ejecuta el proceso de vaciado automático. Un valor más bajo significa que PostgreSQL vaciará las tablas más frecuentemente, lo que puede aumentar la carga en el sistema, mientras que un valor más alto significa que el vaciado automático se ejecutará con menos frecuencia.
+ autovacuum_naptime = 1min: Define cuánto tiempo debe esperar el autovacuum antes de volver a ejecutar una nueva ronda de limpieza y análisis.
   - **Explicación**: Cada minuto, PostgreSQL revisará si alguna tabla necesita ser limpiada o analizada.
 
   autovacuum_vacuum_threshold = 10000: Este valor indica el número mínimo de tuplas que deben haber cambiado en una tabla antes de que PostgreSQL ejecute el vaciado automático en ella. Si el número de tuplas cambiadas desde el último vaciado es inferior a este umbral, el vaciado automático no se ejecutará en esa tabla. Ajustar este valor te permite controlar cuándo se activa el proceso de vaciado automático en función de la actividad en la tabla.
