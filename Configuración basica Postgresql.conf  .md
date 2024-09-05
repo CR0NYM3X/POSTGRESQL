@@ -404,20 +404,26 @@ stats_fetch_consistency = cache:  # cache, none, snapshotEste parámetro te perm
  autovacuum = on: Este parámetro controla si PostgreSQL debe ejecutar automáticamente el proceso de vaciado de tablas (autovacuum). Cuando está activado (on), PostgreSQL monitorea el nivel de actividad en las tablas y ejecuta el vaciado automáticamente según sea necesario para prevenir la fragmentación y optimizar el rendimiento de la base de datos.
 
  autovacuum_max_workers = 3: # Puedes asignar 1 worker por cada 3 o 4 núcleos, Determina el número máximo de procesos autovacuum que pueden ejecutarse simultáneamente. Esto controla la cantidad de recursos del sistema que se asignan al vaciado automático de tablas. Ajustar este valor te permite equilibrar la carga del sistema con la necesidad de mantener las tablas limpias y optimizadas.
- 
+    - **Explicación**: Si tienes muchas tablas grandes, aumentar este número puede ayudar a mantenerlas optimizadas.
+
  autovacuum_naptime = 5min: Especifica cuánto tiempo debe esperar PostgreSQL entre ejecuciones de autovacuum en cada tabla. Este parámetro controla la frecuencia con la que se ejecuta el proceso de vaciado automático. Un valor más bajo significa que PostgreSQL vaciará las tablas más frecuentemente, lo que puede aumentar la carga en el sistema, mientras que un valor más alto significa que el vaciado automático se ejecutará con menos frecuencia.
+  - **Explicación**: Cada minuto, PostgreSQL revisará si alguna tabla necesita ser limpiada o analizada.
 
   autovacuum_vacuum_threshold = 10000: Este valor indica el número mínimo de tuplas que deben haber cambiado en una tabla antes de que PostgreSQL ejecute el vaciado automático en ella. Si el número de tuplas cambiadas desde el último vaciado es inferior a este umbral, el vaciado automático no se ejecutará en esa tabla. Ajustar este valor te permite controlar cuándo se activa el proceso de vaciado automático en función de la actividad en la tabla.
+   - **Explicación**: Si al menos 50 filas han sido modificadas, PostgreSQL ejecutará `VACUUM` para limpiar la tabla.
 
   autovacuum_vacuum_insert_threshold = 10000: Similar al parámetro anterior, pero específico para la inserción de nuevas tuplas en una tabla. Este valor controla cuántas tuplas nuevas deben agregarse antes de que PostgreSQL ejecute el vaciado automático en la tabla. Ajustar este valor te permite controlar cuándo se activa el vaciado automático en función de la cantidad de inserciones en la tabla.
 
   autovacuum_analyze_threshold = 5000: Determina el número mínimo de tuplas que deben haber cambiado en una tabla antes de que PostgreSQL ejecute el proceso de análisis automático en ella. El análisis automático actualiza las estadísticas de la tabla, lo que ayuda al planificador de consultas a tomar decisiones más eficientes. Ajustar este valor te permite controlar cuándo se activa el proceso de análisis automático en función de la actividad en la tabla.
+   - **Explicación**: Si al menos 50 filas han sido modificadas, PostgreSQL ejecutará `ANALYZE` para actualizar las estadísticas de la tabla.
 
   autovacuum_vacuum_scale_factor = 0.4: Este factor se utiliza para determinar el tamaño de la tabla en relación con el umbral de vaciado antes de que se ejecute el vaciado automático. Por ejemplo, si el umbral de vaciado es 100 y el factor de escala es 0.2, el vaciado automático se activará cuando el tamaño de la tabla sea al menos el 20% del umbral. Ajustar este valor te permite adaptar el comportamiento de vaciado automático a las características específicas de tus tablas.
- 
+    - **Explicación**: Si tienes una tabla con 1000 filas, y este parámetro es 0.2, PostgreSQL ejecutará `VACUUM` después de que se modifiquen 250 filas (50 + 0.2 * 1000).
+
  autovacuum_vacuum_insert_scale_factor = 0.4: Similar al parámetro anterior, pero específico para el número de inserciones en una tabla en relación con el umbral de inserción antes de que se ejecute el vaciado automático. Ajustar este valor te permite controlar cuándo se activa el vaciado automático en función de la actividad de inserción en la tabla.
 
  autovacuum_analyze_scale_factor = 0.2: Similar a los parámetros anteriores, pero específico para el número de cambios en una tabla en relación con el umbral de análisis antes de que se ejecute el análisis automático. Ajustar este valor te permite controlar cuándo se activa el análisis automático en función de la actividad en la tabla.
+  - **Explicación**: Si tienes una tabla con 1000 filas, y este parámetro es 0.1, PostgreSQL ejecutará `ANALYZE` después de que se modifiquen 150 filas (50 + 0.1 * 1000).
 
   autovacuum_freeze_max_age = 200000000: Este parámetro controla la edad máxima en transacciones antes de que se realice un vaciado automático de congelación de tuplas. Las tuplas congeladas son aquellas que han sido marcadas como inmutables y no cambian. Ajustar este valor te permite controlar cuándo se ejecuta el vaciado automático de congelación para evitar la acumulación de datos obsoletos en la base de datos.
 
