@@ -1059,6 +1059,111 @@ postgres@postgres# EXPLAIN ANALYZE SELECT * FROM mi_tabla WHERE mi_json->>'nombr
  
 
 
++-----------------------------------------------------------------------------------------------------------------------+
++-----------------------------------------------------------------------------------------------------------------------+
++-----------------------------------------------------------------------------------------------------------------------+
+
+
+
+
+### Paso 1: Crear la Tabla
+
+Primero, creamos la tabla con las columnas necesarias:
+
+
+CREATE TABLE mi_tabla (
+    id SERIAL PRIMARY KEY,
+    ip_server VARCHAR(15),
+    port INTEGER,
+    id_procesos INTEGER[]
+);
+
+
+### Paso 2: Insertar Datos de Prueba
+
+Usamos `generate_series` para insertar miles de registros en la tabla. En este ejemplo, cada array contendrá 10 números aleatorios entre 1 y 100.
+
+-- truncate table mi_tabla RESTART IDENTITY ;
+
+INSERT INTO mi_tabla (ip_server, port, id_procesos)
+SELECT 
+    '10.50.50.' || (random() * 255)::int,
+    (random() * 10000)::int,
+    ARRAY(
+        SELECT (random() * 100)::int
+        FROM generate_series(1, 10)
+    )
+FROM generate_series(1, 500000);
+
+
+
+
+
+### Paso 4: Ejecutar la Consulta
+
+postgres@postgres# select * from mi_tabla limit 10;
++----+--------------+------+---------------------------------+
+| id |  ip_server   | port |           id_procesos           |
++----+--------------+------+---------------------------------+
+|  1 | 10.50.50.79  | 1189 | {73,10,74,56,74,77,32,88,58,59} |
+|  2 | 10.50.50.162 | 1484 | {73,10,74,56,74,77,32,88,58,59} |
+|  3 | 10.50.50.163 |  624 | {73,10,74,56,74,77,32,88,58,59} |
+|  4 | 10.50.50.169 | 1078 | {73,10,74,56,74,77,32,88,58,59} |
+|  5 | 10.50.50.166 | 1662 | {73,10,74,56,74,77,32,88,58,59} |
+|  6 | 10.50.50.66  | 8563 | {73,10,74,56,74,77,32,88,58,59} |
+|  7 | 10.50.50.168 | 2301 | {73,10,74,56,74,77,32,88,58,59} |
+|  8 | 10.50.50.254 |  186 | {73,10,74,56,74,77,32,88,58,59} |
+|  9 | 10.50.50.112 | 9524 | {73,10,74,56,74,77,32,88,58,59} |
+| 10 | 10.50.50.215 | 8881 | {73,10,74,56,74,77,32,88,58,59} |
++----+--------------+------+---------------------------------+
+(10 rows)
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM mi_tabla WHERE ip_server = '10.50.50.2'   AND port = 8798   AND id_procesos @> ARRAY[10, 20, 30]; 
+];+---------------------------------------------------------------------------------------------------------------------+
+|                                                     QUERY PLAN                                                      |
++---------------------------------------------------------------------------------------------------------------------+
+| Seq Scan on mi_tabla  (cost=0.00..375.73 rows=1 width=59) (actual time=3.285..3.287 rows=0 loops=1)                 |
+|   Filter: ((id_procesos @> '{10,20,30}'::integer[]) AND ((ip_server)::text = '10.50.50.2'::text) AND (port = 8798)) |
+|   Rows Removed by Filter: 10000                                                                                     |
+| Planning Time: 0.184 ms                                                                                             |
+| Execution Time: 3.301 ms                                                                                            |
++---------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+
+postgres@postgres# CREATE INDEX idx_ip_port ON mi_tabla (ip_server, port);
+CREATE INDEX
+Time: 31.895 ms
+
+
+postgres@postgres# CREATE INDEX idx_id_procesos ON mi_tabla USING GIN (id_procesos);
+CREATE INDEX
+Time: 16.186 ms
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM mi_tabla WHERE ip_server = '10.50.50.2'   AND port = 8798   AND id_procesos @> ARRAY[10, 20, 30];
++-----------------------------------------------------------------------------------------------------------------------+
+|                                                      QUERY PLAN                                                       |
++-----------------------------------------------------------------------------------------------------------------------+
+| Index Scan using idx_ip_port on mi_tabla  (cost=0.42..8.44 rows=1 width=81) (actual time=0.022..0.022 rows=0 loops=1) |
+|   Index Cond: (((ip_server)::text = '10.50.50.2'::text) AND (port = 8798))                                            |
+|   Filter: (id_procesos @> '{10,20,30}'::integer[])                                                                    |
+| Planning Time: 0.118 ms                                                                                               |
+| Execution Time: 0.036 ms                                                                                              |
++-----------------------------------------------------------------------------------------------------------------------+
+
+
+
+
+
+
+
+
+
+
+
+
 ```
 
 
