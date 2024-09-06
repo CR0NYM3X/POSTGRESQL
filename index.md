@@ -22,7 +22,7 @@ Un índice es una estructura de datos que almacena una referencia a los datos en
 ```SQL
     1. Índices B-Tree: B-tree son ideales para consultas que utilizan operadores de comparación estándar. Son los más comunes y se utilizan para columnas que tienen valores repetidos, como las columnas de nombres, fechas y números. Proporcionan una búsqueda rápida en logaritmo de tiempo.
     2. Índices Hash: Adecuados para igualdad de búsqueda exacta. Sin embargo, no funcionan bien con rangos y consultas de rango.
-    3. Índices GIN y GiST: Son utilizados para tipos de datos más complejos como documentos de texto (usando tsvector) y geometría, JSONB, arrays, permitiendo búsquedas y comparaciones más avanzadas, se usa en los ilike
+    3. Índices GIN y GiST: Son utilizados para tipos de datos más complejos como documentos de texto (usando tsvector) y geometría, JSONB, arrays, permitiendo búsquedas y comparaciones más avanzadas
     4. Índices SP-GiST: Útiles para tipos de datos con estructuras jerárquicas o multidimensionales.
 
 https://www.yugabyte.com/blog/postgresql-like-query-performance-variations/#c-collation-or-text_pattern_ops
