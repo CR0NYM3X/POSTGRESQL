@@ -749,6 +749,316 @@ postgres@auditoria# explain analyze  SELECT * FROM pedidos WHERE to_tsvector('sp
 (6 rows)
 
 
+-----------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
+
+### Crear la Tabla y el Índice para columnas type array 
+
+Creamos la tabla y el índice GIN como antes:
+
+--- drop table mi_tabla;
+
+CREATE TABLE mi_tabla (
+    id SERIAL PRIMARY KEY,
+    mi_array INTEGER[]
+);
+
+
+
+### Insertar Datos de Prueba
+
+INSERT INTO mi_tabla (mi_array)
+SELECT array_agg((random() * 100)::int)
+FROM generate_series(1, 10000) AS s(i),
+     generate_series(1, 10) AS t(j)
+GROUP BY s.i;
+
+
+--- truncate table mi_tabla RESTART IDENTITY ; 
+
+
+
+### Consultas de Prueba
+
+Ahora, puedes realizar consultas para verificar la eficiencia del índice.
+
+postgres@postgres#  SELECT * FROM mi_tabla WHERE mi_array && ARRAY[10, 20, 30] limit 10;
++----+---------------------------------+
+| id |            mi_array             |
++----+---------------------------------+
+|  3 | {56,88,20,65,21,84,12,77,43,66} |
+|  4 | {42,14,76,68,15,20,72,93,43,97} |
+|  5 | {55,49,17,58,83,74,10,49,52,22} |
+|  7 | {81,43,75,65,1,58,24,30,62,16}  |
+| 14 | {39,3,37,20,58,88,11,54,50,80}  |
+| 15 | {30,76,91,23,48,28,43,50,22,77} |
+| 19 | {68,10,32,83,66,34,60,56,94,5}  |
+| 21 | {45,73,58,79,35,20,51,36,84,38} |
+| 25 | {49,92,40,10,32,34,39,92,94,81} |
+| 31 | {60,76,88,20,59,88,63,5,52,26}  |
++----+---------------------------------+
+(10 rows)
+
+
+postgres@postgres# explain analyze SELECT * FROM mi_tabla WHERE mi_array && ARRAY[10, 20, 30];
++----------------------------------------------------------------------------------------------------------+
+|                                                QUERY PLAN                                                |
++----------------------------------------------------------------------------------------------------------+
+| Seq Scan on mi_tabla  (cost=0.00..320.85 rows=235 width=36) (actual time=0.029..3.365 rows=2594 loops=1) |
+|   Filter: (mi_array && '{10,20,30}'::integer[])                                                          |
+|   Rows Removed by Filter: 7406                                                                           |
+| Planning Time: 0.061 ms                                                                                  |
+| Execution Time: 3.463 ms                                                                                 |
++----------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+
+ 
+postgres@postgres#  CREATE INDEX  index_mi_tabla ON mi_tabla(  mi_array );
+CREATE INDEX
+Time: 26.363 ms
+
+postgres@postgres# explain analyze SELECT * FROM mi_tabla WHERE mi_array && ARRAY[10, 20, 30];
++----------------------------------------------------------------------------------------------------------+
+|                                                QUERY PLAN                                                |
++----------------------------------------------------------------------------------------------------------+
+| Seq Scan on mi_tabla  (cost=0.00..249.00 rows=149 width=36) (actual time=0.025..3.263 rows=2594 loops=1) |
+|   Filter: (mi_array && '{10,20,30}'::integer[])                                                          |
+|   Rows Removed by Filter: 7406                                                                           |
+| Planning Time: 0.201 ms                                                                                  |
+| Execution Time: 3.380 ms                                                                                 |
++----------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+
+postgres@postgres# CREATE INDEX idx_mi_array ON mi_tabla USING GIN (mi_array);
+CREATE INDEX
+Time: 25.851 ms
+postgres@postgres# explain analyze SELECT * FROM mi_tabla WHERE mi_array && ARRAY[10, 20, 30];
++---------------------------------------------------------------------------------------------------------------------------+
+|                                                        QUERY PLAN                                                         |
++---------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on mi_tabla  (cost=30.90..163.23 rows=149 width=36) (actual time=0.304..0.939 rows=2594 loops=1)         |
+|   Recheck Cond: (mi_array && '{10,20,30}'::integer[])                                                                     |
+|   Heap Blocks: exact=124                                                                                                  |
+|   ->  Bitmap Index Scan on idx_mi_array  (cost=0.00..30.86 rows=149 width=0) (actual time=0.284..0.284 rows=2594 loops=1) | <--- uso el index idx_mi_array
+|         Index Cond: (mi_array && '{10,20,30}'::integer[])                                                                 |
+| Planning Time: 0.202 ms                                                                                                   |
+| Execution Time: 1.045 ms                                                                                                  | <--- Mejoro el resultado 
++---------------------------------------------------------------------------------------------------------------------------+
+(7 rows)
+
+
+
+
+-- Buscar filas que contengan el valor 50 en el array
+EXPLAIN ANALYZE
+SELECT * FROM mi_tabla WHERE mi_array @> ARRAY[50];
+
+-- Buscar filas que contengan los valores 20 y 30 en el array
+EXPLAIN ANALYZE
+SELECT * FROM mi_tabla WHERE mi_array @> ARRAY[20, 30];
+
+-- Buscar filas que contengan cualquier valor del array [10, 20, 30]
+EXPLAIN ANALYZE
+SELECT * FROM mi_tabla WHERE mi_array && ARRAY[10, 20, 30];
+
+
+### Operadores de Array en PostgreSQL
+
+1. **Contiene (`@>`)**:
+   Verifica si el array de la columna contiene todos los elementos del array proporcionado.
+
+   SELECT * FROM mi_tabla WHERE mi_array @> ARRAY[1, 2];
+  
+
+2. **Está contenido (`<@`)**:
+   Verifica si todos los elementos del array de la columna están contenidos en el array proporcionado.
+
+   SELECT * FROM mi_tabla WHERE ARRAY[1, 2] <@ mi_array;
+  
+
+3. **Superposición (`&&`)**:
+   Verifica si hay algún elemento común entre el array de la columna y el array proporcionado.
+
+   SELECT * FROM mi_tabla WHERE mi_array && ARRAY[1, 2];
+  
+
+4. **Igualdad (`=`)**:
+   Verifica si dos arrays son iguales.
+
+    SELECT * FROM mi_tabla WHERE mi_array = ARRAY[1, 2, 3];
+  
+
+5. **Desigualdad (`<>`)**:
+   Verifica si dos arrays son diferentes.
+   
+   SELECT * FROM mi_tabla WHERE mi_array <> ARRAY[1, 2, 3];
+  
+
+6. **Concatenación (`||`)**:
+   Concatenar dos arrays.
+   
+   SELECT mi_array || ARRAY[4, 5, 6] FROM mi_tabla;
+  
+
+7. **Acceso por índice (`[]`)**:
+   Acceder a un elemento específico del array por su índice (los índices empiezan en 1).
+   
+   SELECT mi_array[1] FROM mi_tabla;
+  
+
+8. **Longitud del array (`array_length`)**:
+   Obtener la longitud del array.
+   
+   SELECT array_length(mi_array, 1) FROM mi_tabla;
+
+
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+
+
+### Índices para Columnas JSON en PostgreSQL
+
+
+ 
+#### Crear la Tabla y los Índices
+
+-- drop table mi_tabla;
+
+ -- Crear una tabla con una columna JSON
+CREATE TABLE mi_tabla (
+    id SERIAL PRIMARY KEY,
+    mi_json JSONB
+);
+
+
+
+-- Crear un índice GIN
+CREATE INDEX idx_mi_json_gin ON mi_tabla USING GIN (mi_json);
+
+-- Crear un índice BTREE en un campo específico del JSON
+CREATE INDEX idx_mi_json_btree ON mi_tabla ((mi_json->>'nombre'));
+
+
+#### Insertar Datos de Prueba
+
+INSERT INTO mi_tabla (mi_json)
+SELECT jsonb_build_object(
+    'nombre', 'Nombre' || s.i,
+    'edad', (random() * 100)::int,
+    'hobbies', jsonb_agg('Hobby' || t.j)
+)
+FROM generate_series(1, 10000) AS s(i),
+     generate_series(1, 5) AS t(j)
+GROUP BY s.i;
+
+
+
+#### Consultas de Prueba
+
+postgres@postgres# select * from mi_tabla limit 10;
++----+-----------------------------------------------------------------------------------------------------+
+| id |                                               mi_json                                               |
++----+-----------------------------------------------------------------------------------------------------+
+|  1 | {"edad": 69, "nombre": "Nombre6114", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]} |
+|  2 | {"edad": 80, "nombre": "Nombre4790", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]} |
+|  3 | {"edad": 46, "nombre": "Nombre273", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]}  |
+|  4 | {"edad": 42, "nombre": "Nombre3936", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]} |
+|  5 | {"edad": 96, "nombre": "Nombre5761", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]} |
+|  6 | {"edad": 49, "nombre": "Nombre5468", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]} |
+|  7 | {"edad": 94, "nombre": "Nombre7662", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]} |
+|  8 | {"edad": 49, "nombre": "Nombre4326", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]} |
+|  9 | {"edad": 9, "nombre": "Nombre2520", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]}  |
+| 10 | {"edad": 45, "nombre": "Nombre9038", "hobbies": ["Hobby1", "Hobby2", "Hobby3", "Hobby4", "Hobby5"]} |
++----+-----------------------------------------------------------------------------------------------------+
+(10 rows)
+
+
+-- Buscar registros donde el JSON contiene un campo específico
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM mi_tabla WHERE mi_json @> '{"nombre": "Nombre4326"}';
++-------------------------------------------------------------------------------------------------------+
+|                                              QUERY PLAN                                               |
++-------------------------------------------------------------------------------------------------------+
+| Seq Scan on mi_tabla  (cost=0.00..499.39 rows=245 width=36) (actual time=0.017..2.647 rows=1 loops=1) |
+|   Filter: (mi_json @> '{"nombre": "Nombre4326"}'::jsonb)                                              |
+|   Rows Removed by Filter: 9999                                                                        |
+| Planning Time: 0.048 ms                                                                               |
+| Execution Time: 2.662 ms                                                                              |
++-------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+
+-- Buscar registros donde el campo 'nombre' es 'Ana'
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM mi_tabla WHERE mi_json->>'nombre' = 'Nombre4326';
++-------------------------------------------------------------------------------------------------------+
+|                                              QUERY PLAN                                               |
++-------------------------------------------------------------------------------------------------------+
+| Seq Scan on mi_tabla  (cost=0.00..560.66 rows=123 width=36) (actual time=0.039..2.399 rows=1 loops=1) |
+|   Filter: ((mi_json ->> 'nombre'::text) = 'Nombre4326'::text)                                         |
+|   Rows Removed by Filter: 9999                                                                        |
+| Planning Time: 0.051 ms                                                                               |
+| Execution Time: 2.419 ms                                                                              |
++-------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+
+1. **Índice GIN (Generalized Inverted Index)**: Es muy eficiente para consultas que buscan elementos dentro de un JSON.
+postgres@postgres# CREATE INDEX idx_mi_json_gin ON mi_tabla USING GIN (mi_json);
+CREATE INDEX
+Time: 69.341 ms
+
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM mi_tabla WHERE mi_json @> '{"nombre": "Nombre4326"}';
++---------------------------------------------------------------------------------------------------------------------------+
+|                                                        QUERY PLAN                                                         |
++---------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on mi_tabla  (cost=22.04..188.78 rows=100 width=36) (actual time=0.060..0.061 rows=1 loops=1)            |
+|   Recheck Cond: (mi_json @> '{"nombre": "Nombre4326"}'::jsonb)                                                            |
+|   Heap Blocks: exact=1                                                                                                    |
+|   ->  Bitmap Index Scan on idx_mi_json_gin  (cost=0.00..22.02 rows=100 width=0) (actual time=0.053..0.053 rows=1 loops=1) |
+|         Index Cond: (mi_json @> '{"nombre": "Nombre4326"}'::jsonb)                                                        |
+| Planning Time: 0.244 ms                                                                                                   |
+| Execution Time: 0.083 ms                                                                                                  |
++---------------------------------------------------------------------------------------------------------------------------+
+(7 rows)
+
+
+
+2. **Índice BTREE**:  Útil para consultas que comparan valores específicos dentro de un JSON.
+postgres@postgres# CREATE INDEX idx_mi_jsonb_nombre ON mi_tabla ((mi_json->>'nombre'));
+CREATE INDEX
+Time: 38.801 ms
+
+
+postgres@postgres# EXPLAIN ANALYZE SELECT * FROM mi_tabla WHERE mi_json->>'nombre' = 'Nombre4326';
++-----------------------------------------------------------------------------------------------------------------------------+
+|                                                         QUERY PLAN                                                          |
++-----------------------------------------------------------------------------------------------------------------------------+
+| Bitmap Heap Scan on mi_tabla  (cost=4.67..120.24 rows=50 width=36) (actual time=0.027..0.028 rows=1 loops=1)                |
+|   Recheck Cond: ((mi_json ->> 'nombre'::text) = 'Nombre4326'::text)                                                         |
+|   Heap Blocks: exact=1                                                                                                      |
+|   ->  Bitmap Index Scan on idx_mi_jsonb_nombre  (cost=0.00..4.66 rows=50 width=0) (actual time=0.021..0.021 rows=1 loops=1) |
+|         Index Cond: ((mi_json ->> 'nombre'::text) = 'Nombre4326'::text)                                                     |
+| Planning Time: 0.073 ms                                                                                                     |
+| Execution Time: 0.045 ms                                                                                                    |
++-----------------------------------------------------------------------------------------------------------------------------+
+(7 rows)
+
+
+
+
+### Explicación de los Índices
+
+- **GIN**: Este índice es ideal para consultas que buscan elementos dentro de un JSON, como `@>` y `?`.
+- **BTREE**: Este índice es útil para consultas que comparan valores específicos dentro de un JSON, como `->>`.
+ 
+
+
 ```
 
 
