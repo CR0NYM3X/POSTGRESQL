@@ -29,7 +29,7 @@ select extname,extversion from pg_extension ;
 +--------------------+------------+
 ```
 
-# PRIVILEGIOS NECESARIOS EN LOS POSTGRESQL
+# PRIVILEGIOS NECESARIOS
 ```
 --------------- PSQL  --------------
 grant pg_monitor to systest;
