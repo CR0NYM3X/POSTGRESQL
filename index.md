@@ -837,7 +837,8 @@ ORDER BY
 
 ```
 
-
+### Renombrar index
+	ALTER INDEX fdw_conf.fdw_confunique_ctl_dbms RENAME TO idx_unique_ctl_dbms;
 
 -- indices : 
 https://dbasinapuros.com/tipos-de-indices-en-postgresql/
