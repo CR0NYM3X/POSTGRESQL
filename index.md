@@ -1051,6 +1051,29 @@ postgres@postgres# EXPLAIN ANALYZE SELECT * FROM mi_tabla WHERE mi_json->>'nombr
 
 
 
+-- Acceder a un campo específico
+SELECT mi_json->'nombre' AS nombre FROM mi_tabla;
+
+-- Acceder a un campo específico como texto
+SELECT mi_json->>'edad' AS edad FROM mi_tabla;
+
+-- Acceder a un elemento de un array JSON
+SELECT mi_json#>'{hobbies, 0}' AS primer_hobby FROM mi_tabla;
+
+-- Verificar si un objeto JSON contiene otro objeto JSON
+SELECT * FROM mi_tabla WHERE mi_json @> '{"nombre": "Juan"}';
+
+-- Verificar si una clave existe en el objeto JSON
+SELECT * FROM mi_tabla WHERE mi_json ? 'edad';
+
+-- Verificar si alguna de las claves en el array existe en el objeto JSON
+SELECT * FROM mi_tabla WHERE mi_json ?| array['nombre', 'apellido'];
+
+-- Verificar si todas las claves en el array existen en el objeto JSON
+SELECT * FROM mi_tabla WHERE mi_json ?& array['nombre', 'edad'];
+
+
+
 
 ### Explicación de los Índices
 
