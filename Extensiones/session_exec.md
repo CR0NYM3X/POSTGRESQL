@@ -1,5 +1,5 @@
 ### Descripción
-La extensión `session_exec` Te permite ejecutar funcion al iniciar una session. Esto es útil para realizar tareas como auditorías, inicialización de variables de sesión, o cualquier otra lógica que necesites ejecutar al inicio de cada sesión.
+La extensión `session_exec` Te permite ejecutar una funcion al iniciar una session. Esto es útil para realizar tareas como auditorías, inicialización de variables de sesión, o cualquier otra lógica que necesites ejecutar al inicio de cada sesión.
 
 
 ### Ejemplo: Configuración para bloquear usuarios que usan pgadmin y DBeaver y dejar un reporte de los usuarios
