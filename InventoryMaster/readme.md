@@ -31,14 +31,28 @@ select extname,extversion from pg_extension ;
 
 # PRIVILEGIOS NECESARIOS EN LOS POSTGRESQL
 ```
---------------- PRIVILEGIOS QUE SE OCUPAN --------------
+--------------- PSQL  --------------
 grant pg_monitor to systest;
 grant pg_stat_scan_tables to systest;
 grant pg_read_all_stats to systest;
 grant pg_read_all_settings to systest;
 grant pg_read_server_files to systest;
 grant pg_execute_server_program to systest;
-CONNECT, USAGE
+GRANT CONNECT ON DATABASE tu_base_de_datos TO systest
+GRANT USAGE ON SCHEMA public TO systest;
+
+
+--------------- MSQL  --------------
+GRANT VIEW ANY ERROR LOG  TO [systest]
+GRANT VIEW SERVER SECURITY AUDIT  TO [systest]
+GRANT VIEW ANY DATABASE  TO [systest]
+GRANT VIEW ANY SECURITY DEFINITION  TO [systest]
+GRANT VIEW ANY PERFORMANCE DEFINITION  TO [systest]
+GRANT VIEW ANY DEFINITION  TO [systest]
+GRANT VIEW SERVER SECURITY STATE  TO [systest]
+GRANT VIEW SERVER PERFORMANCE STATE  TO [systest]
+GRANT VIEW SERVER STATE  TO [systest]
+GRANT execute on [dbo].[sp_help_revlogin]   to [systest]
 
 ```
 
