@@ -527,7 +527,11 @@ ADD CONSTRAINT fk_cliente
 	FOREIGN KEY (cliente_id) 
 	REFERENCES clientes(cliente_id);
 
-
+--- multiples columnas 
+ALTER TABLE fdw_conf.blacklist_server
+ADD CONSTRAINT fk_cat_server
+	FOREIGN KEY (ip_server, port)
+	REFERENCES public.cat_server (ip_server, port);
 ```
 
 
