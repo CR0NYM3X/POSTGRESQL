@@ -169,7 +169,7 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     	ELSE 
 
             --- Si quieres que aparezca un mensaje cuando se conectan exitosamente en la terminal descomenta el RAISE NOTICE
-            --- RAISE NOTICE 'Usuario conectado con exito';
+            --- RAISE NOTICE E'\n ****** Usuario % conectado con exito ****** ', session_user ;
 
     		--- realiza el registro de los usuarios conectados en el archivo authorized_app_users.csv
     	    COPY (select md5(now()::text),coalesce(inet_server_addr()::text,'unix_socket'), current_setting('port') , current_database() , session_user ,coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'usuario conectado') TO PROGRAM 'cat >> /tmp/authorized_app_users.csv' WITH (FORMAT CSV);
@@ -178,7 +178,8 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
         END IF;
     
     END;
-    $$ LANGUAGE plpgsql  SECURITY DEFINER ;
+    $$ LANGUAGE plpgsql
+    SECURITY DEFINER ; --- Se agrega SECURITY DEFINER para que se ejecute la funcion con permisos del postgres ya que usa la funcion copy y requere de privilegios 
 
     ```
 
