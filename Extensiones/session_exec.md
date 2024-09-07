@@ -137,13 +137,14 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     ```sql
     --- Crea el esquema nuevo para que la funcion no se mescle con la información del esquema public
     CREATE SCHEMA IF NOT EXISTS sec_dba AUTHORIZATION postgres;
+    grant usage  on schema sec_dba to PUBLIC;
 
     --- Creando la funcion 
     CREATE OR REPLACE FUNCTION sec_dba.check_app() RETURNS void AS $$
     BEGIN
          IF 
     		/*    USUARIOS QUE QUIERES QUE VALIDE  */ 
-    		  current_user in('ale','user_test','user_app')
+    		  session_user in('ale','user_test','user_app')
     		
     		and
     	 
@@ -157,13 +158,13 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     		 THEN
     	   
     	    --- realiza el registro de los usuarios bloqueados en el archivo unauthorized_app_users.csv
-    	    COPY (select md5(now()::text),coalesce(inet_server_addr()::text,'unix_socket'),current_setting('port') , current_database() , current_user , coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'Se detecto el uso de una aplicación no autorizada') TO PROGRAM 'cat >> /tmp/unauthorized_app_users.csv' WITH (FORMAT CSV);
+    	    COPY (select md5(now()::text),coalesce(inet_server_addr()::text,'unix_socket'),current_setting('port') , current_database() , session_user , coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'Se detecto el uso de una aplicación no autorizada') TO PROGRAM 'cat >> /tmp/unauthorized_app_users.csv' WITH (FORMAT CSV);
     	   
     	   
     	   -- select pg_terminate_backend(pg_backend_pid()); -- Esta query cierra la session
     	   
     	   --- Este genera una EXCEPTION y le mostrara un mensaje en la aplicacion al cliente 
-    	     RAISE EXCEPTION '  El usuario: [%] esta realizando una conexión a la base de datos [%] desde la aplicación [%] no autorizada,  en caso de  que este mensaje sea un error, favor de ponerse en contacto con el área de DBA seguridad.  ',    current_user , current_database(),  current_setting('application_name') ;
+    	     RAISE EXCEPTION '  El usuario: [%] esta realizando una conexión a la base de datos [%] desde la aplicación [%] no autorizada,  en caso de  que este mensaje sea un error, favor de ponerse en contacto con el área de DBA seguridad.  ',    session_user , current_database(),  current_setting('application_name') ;
     	
     	ELSE 
 
@@ -171,13 +172,13 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
             --- RAISE NOTICE 'Usuario conectado con exito';
 
     		--- realiza el registro de los usuarios conectados en el archivo authorized_app_users.csv
-    	    COPY (select md5(now()::text),coalesce(inet_server_addr()::text,'unix_socket'), current_setting('port') , current_database() , current_user ,coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'usuario conectado') TO PROGRAM 'cat >> /tmp/authorized_app_users.csv' WITH (FORMAT CSV);
+    	    COPY (select md5(now()::text),coalesce(inet_server_addr()::text,'unix_socket'), current_setting('port') , current_database() , session_user ,coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'usuario conectado') TO PROGRAM 'cat >> /tmp/authorized_app_users.csv' WITH (FORMAT CSV);
     	   
     	
         END IF;
     
     END;
-    $$ LANGUAGE plpgsql   ;
+    $$ LANGUAGE plpgsql  SECURITY DEFINER ;
 
     ```
 
