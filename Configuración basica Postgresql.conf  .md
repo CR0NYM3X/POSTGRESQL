@@ -9,7 +9,35 @@ Doc Man:
 /usr/pgsql-15/bin/initdb -E SQL_ASCII -D /sysx/data
 ``` 
 
-## 
+# Formas de cambiar parametros 
+```sql
+
+-- Cambiar el nivel de mensajes del cliente a 'log' para la sesión actual
+SET client_min_messages TO 'log';
+
+-- Cambiar el nivel de mensajes del cliente a 'log' solo para la transacción actual
+BEGIN;
+SET LOCAL client_min_messages TO 'log';
+-- Aquí irían tus operaciones SQL
+COMMIT;
+ 
+
+### Usando `pg_catalog.set_config`
+
+ 
+-- Cambiar el nivel de mensajes del cliente a 'log' para la sesión actual
+SELECT pg_catalog.set_config('client_min_messages', 'log', false);
+
+-- Cambiar el nivel de mensajes del cliente a 'log' solo para la transacción actual
+BEGIN;
+PERFORM pg_catalog.set_config('client_min_messages', 'log', true);
+-- Aquí irían tus operaciones SQL
+COMMIT;
+ 
+ 
+```
+
+## archivos   conf
 ```sql
 postgresql.conf
 postgresql.auto.conf
