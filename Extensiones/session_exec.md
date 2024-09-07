@@ -299,12 +299,16 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
 
 
 ### Info Extra
-    ```sh
+```sh
+    En caso de que quieras tener un monitoreo en tiempo real, puedes utilizar la extension postgres_fdw
+    para mandar la información de manera inmediata a un servidor central y detectar al instante los
+     usuarios que estan intentando logearse con aplicaciones restringidas  
+    
     # En caso de querer pasar la extension en otra instancia puedes hacer lo siguiente
     cp /usr/pgsql-16/lib/session_exec.so /usr/pgsql-15
     cp /usr/pgsql-16/lib/bitcode/session_exec.index.bc /usr/pgsql-15
     cp -r /usr/pgsql-16/lib/bitcode/session_exec /usr/pgsql-15
-    ```sh
+```
 
 
 
@@ -314,3 +318,6 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
 
 
  
+
+
+
