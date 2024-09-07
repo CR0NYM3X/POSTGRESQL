@@ -164,7 +164,7 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     	   -- select pg_terminate_backend(pg_backend_pid()); -- Esta query cierra la session
     	   
     	   --- Este genera una EXCEPTION y le mostrara un mensaje en la aplicacion al cliente 
-    	     RAISE EXCEPTION '  El usuario: [%] esta realizando una conexión a la base de datos [%] desde la aplicación [%] no autorizada,  en caso de  que este mensaje sea un error, favor de ponerse en contacto con el área de DBA seguridad.  ',    session_user , current_database(),  current_setting('application_name') ;
+    	      RAISE EXCEPTION E' \n\n El usuario: [%] esta realizando una conexión a la base de datos [%] desde la aplicación [%] no autorizada. Esta acción está en violación de nuestras políticas de seguridad y no corresponde al propósito para el cual se creó el usuario. Si crees que este mensaje es un error, por favor contacta al equipo de seguridad de DBA inmediatamente. \n\n ',    session_user , current_database(),  current_setting('application_name') ;
     	
     	ELSE 
 
