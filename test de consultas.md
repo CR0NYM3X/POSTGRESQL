@@ -14,12 +14,12 @@ Time: 5.363 ms
 
 postgres@postgres# INSERT INTO ventas ( fecha, cliente_id, producto_id, cantidad, precio)
 postgres-# SELECT
-postgres-#     NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int,
-postgres-#     (RANDOM() * 1000)::int,
-postgres-#     (RANDOM() * 100)::int,
-postgres-#     (RANDOM() * 10)::int,
-postgres-#     (RANDOM() * 100)::numeric
-postgres-# FROM generate_series(1, 500000000);
+      NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int,
+      (RANDOM() * 1000)::int,
+      (RANDOM() * 100)::int,
+      (RANDOM() * 10)::int,
+      (RANDOM() * 100)::numeric
+  FROM generate_series(1, 500000000);
 INSERT 0 500000000
 Time: 2168710.545 ms (36:08.711) --> 36.14 Min
 
