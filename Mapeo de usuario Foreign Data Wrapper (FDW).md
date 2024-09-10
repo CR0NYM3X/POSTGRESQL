@@ -394,6 +394,21 @@ from (select  oid,
 
 
 
+---- EJEMPLO MODIFICAR LA QUERY DE UNA TABLA  
+update pg_foreign_table set   
+ftoptions  =  array[ftoptions[1]] || 
+array[
+	CASE WHEN ftoptions[2]::text ILIKE '%OFFSET%' THEN
+		regexp_replace(ftoptions[2]::text, 'OFFSET .*? ROWS ONLY', ' OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY ;')
+	ELSE  
+		replace(ftoptions[2]::text,';',' OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY ;')
+	END
+	]
+where ftrelid = 402503 
+
+
+
+
 
     
 
