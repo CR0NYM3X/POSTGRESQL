@@ -246,7 +246,8 @@ ALTER SYSTEM SET password_encryption = 'md5';
 **`pg_toast:`** Este esquema se usa para almacenar datos de tablas que son demasiado grandes para caber en una sola fila. PostgreSQL automáticamente mueve estos datos a tablas TOAST (The Oversized-Attribute Storage Technique) para manejar eficientemente grandes cantidades de datos
 
 ### ¿Cómo funciona TOAST?
-
+PostgreSQL utiliza automáticamente la compresión para datos grandes almacenados en columnas de tipo `TEXT`, `BYTEA` y `VARCHAR` mediante el mecanismo TOAST (The Oversized-Attribute Storage Technique). Este mecanismo utiliza el algoritmo de compresión LZ4 para comprimir datos que exceden un cierto tamaño⁴.
+ 
 1. **Compresión**: Los valores grandes se comprimen para reducir su tamaño.
 2. **Almacenamiento fuera de línea**: Si la compresión no es suficiente, los valores se dividen en múltiples filas físicas y se almacenan en una tabla TOAST asociada.
 3. **Transparencia**: Todo esto ocurre de manera transparente para el usuario, lo que significa que no necesitas hacer nada especial para manejar estos datos grandes; PostgreSQL se encarga de todo automáticamente¹².
