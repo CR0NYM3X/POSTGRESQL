@@ -54,6 +54,10 @@ CRUD = Create, Read, Update, Delete
 --- id del proceso actual 
 pg_backend_pid()
 
+
+SELECT proname, proowner, pg_get_userbyid(proowner) AS owner_name
+FROM pg_proc;
+
 /* ves que con que usuario iniciaste session */
 SELECT session_user;
 
