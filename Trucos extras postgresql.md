@@ -461,8 +461,7 @@ string_agg(columnsname,',')
 
 ### Arrays 
 ```sql
---- modificar un array 
-select array_replace( '{server=10.10.10.12,version=1.1}'::text[], 'version=1.1', 'version=2.0')
+
 
 SELECT * FROM unnest(ARRAY['a', 'b', 'c']) WITH ORDINALITY;
 +--------+------------+
@@ -519,6 +518,7 @@ SELECT * FROM mi_tabla WHERE 'perro' = ANY(mi_array);
 
  **array_replace**: Reemplaza todas las ocurrencias de un valor específico en un array con otro valor.
  SELECT array_replace(ARRAY[1, 2, 3, 2], 2, 5); -- Resultado: {1,5,3,5}
+select array_replace( '{server=10.10.10.12,version=1.1}'::text[], 'version=1.1', 'version=2.0')
  
 
  **unnest**: Expande un array en una serie de filas
