@@ -461,6 +461,9 @@ string_agg(columnsname,',')
 
 ### Arrays 
 ```sql
+--- modificar un array 
+select array_replace( '{server=10.10.10.12,version=1.1}'::text[], 'version=1.1', 'version=2.0')
+
 SELECT * FROM unnest(ARRAY['a', 'b', 'c']) WITH ORDINALITY;
 +--------+------------+
 | unnest | ordinality |
