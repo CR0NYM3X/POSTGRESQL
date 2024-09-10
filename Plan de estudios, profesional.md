@@ -6,6 +6,13 @@
 - **Instalación y Configuración Inicial**
   - Instalación en diferentes sistemas operativos
   - Configuración básica y avanzada
+  - ¿Para qué sirve PostgreSQL?
+  - ¿Hasta dónde puedo llegar con PostgreSQL?
+  - Ventajas de PostgreSQL frente a la competencia
+  - RDBMS vs NoSQL: ¿Cuál es la diferencia?
+  - ¿Por qué deberías usar PostgreSQL?
+  - ¿Quiénes confían en PostgreSQL?
+  - Limitaciones y desventajas de PostgreSQL
 
 ## A Quién Va Dirigido
 Este curso está diseñado para profesionales con un alto nivel académico, incluyendo doctores en diversas áreas de tecnología, que buscan una comprensión profunda y técnica de PostgreSQL.
