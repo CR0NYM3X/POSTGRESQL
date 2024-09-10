@@ -181,6 +181,9 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     $$ LANGUAGE plpgsql
     SECURITY DEFINER ; --- Se agrega SECURITY DEFINER para que se ejecute la funcion con permisos del postgres ya que usa la funcion copy y requere de privilegios 
 
+    --- Asignamos como owner el rol pg_execute_server_program para que no quede como owner el postgres por seguridad 
+    ALTER FUNCTION  sec_dba.check_app()  OWNER TO pg_execute_server_program;
+
     ```
 
 4. **Automatizar la creacion de la funcion en todas las base de datos**:
