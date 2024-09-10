@@ -335,15 +335,7 @@ when 'v' then 'VIEW'
 when 'c' then 'TYPE'
 ```
 
-# usar el row partition
-```sql
-SELECT 
-    columna1,
-    columna2,
-    ROW_NUMBER() OVER (PARTITION BY columna1 ORDER BY columna2) AS numero_fila
-FROM 
-    tu_tabla;
-```
+
 
 
 # como hacer un RollBack en la base de datos
@@ -794,3 +786,90 @@ postgres@auditoria# select id,ip_server from cat_server order by id  limit 5 off
 (5 rows)
 
 ``` 
+
+
+
+
+### ¿Qué son las funciones de ventana?
+
+Las funciones de ventana en PostgreSQL son una herramienta poderosa para realizar cálculos sobre un conjunto de filas relacionadas con la fila actual, sin reducir el número de filas en el resultado. Aquí te dejo una explicación detallada y algunos ejemplos avanzados:
+
+```sql
+### Componentes de las funciones de ventana
+
+1. **OVER Clause**: Define el marco de la ventana.
+2. **PARTITION BY**: Divide las filas en particiones.
+3. **ORDER BY**: Ordena las filas dentro de cada partición.
+4. **Frame Specification**: Define el rango de filas sobre el cual se realiza el cálculo.
+
+### Ejemplos Avanzados
+
+#### 1. Ranking Functions
+Estas funciones asignan un rango a cada fila dentro de una partición.
+
+
+SELECT empno, salary, 
+       RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS rank
+FROM employees;
+
+
+#### 2. Aggregate Functions
+Estas funciones realizan cálculos agregados sobre el marco de la ventana.
+
+
+SELECT department, empno, salary, 
+       AVG(salary) OVER (PARTITION BY department) AS avg_salary
+FROM employees;
+
+
+#### 3. Lead and Lag Functions
+Permiten acceder a datos de filas anteriores o posteriores sin necesidad de auto-joins.
+
+
+SELECT empno, salary, 
+       LAG(salary, 1) OVER (ORDER BY empno) AS prev_salary,
+       LEAD(salary, 1) OVER (ORDER BY empno) AS next_salary
+FROM employees;
+
+
+#### 4. Window Frame Specification
+Permite definir un rango específico de filas para el cálculo.
+
+
+SELECT empno, salary, 
+       SUM(salary) OVER (ORDER BY empno 
+                         ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_sum
+FROM employees;
+
+
+### Uso Avanzado
+
+#### 1. Cálculo de Percentiles
+Puedes calcular percentiles utilizando funciones de ventana.
+
+
+SELECT empno, salary, 
+       PERCENT_RANK() OVER (PARTITION BY department ORDER BY salary) AS percentile_rank
+FROM employees;
+
+
+#### 2. Primer y Último Valor
+Accede al primer o último valor en el marco de la ventana.
+
+
+SELECT empno, salary, 
+       FIRST_VALUE(salary) OVER (PARTITION BY department ORDER BY salary) AS first_salary,
+       LAST_VALUE(salary) OVER (PARTITION BY department ORDER BY salary 
+                                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_salary
+FROM employees;
+
+
+# usar el row partition
+
+SELECT 
+    columna1,
+    columna2,
+    ROW_NUMBER() OVER (PARTITION BY columna1 ORDER BY columna2) AS numero_fila
+FROM 
+    tu_tabla;
+```
