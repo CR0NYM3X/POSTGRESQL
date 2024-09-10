@@ -1,6 +1,6 @@
 
 # INDEX
-Un índice es una estructura de datos que almacena una referencia a los datos en una tabla, permitiendo que las búsquedas y otras operaciones sean mucho más rápidas. Piensa en un índice como el índice de un libro, que te permite encontrar rápidamente la página donde se menciona un tema específico, se utilizan cuando se usa el `SELECT`
+Un índice es una estructura de datos que almacena una referencia a los datos en una tabla, permitiendo que las búsquedas y otras operaciones sean mucho más rápidas. Piensa en un índice como el índice de un libro, que te permite encontrar rápidamente la página donde se menciona un tema específico.
 
 ## Impacto diferente en las operaciones de `INSERT`, `UPDATE` y `DELETE` en comparación con las consultas `SELECT`.
 
@@ -20,10 +20,124 @@ Un índice es una estructura de datos que almacena una referencia a los datos en
  
 # Tipos de índices en PostgreSQL:
 ```SQL
-    1. Índices B-Tree: B-tree son ideales para consultas que utilizan operadores de comparación estándar. Son los más comunes y se utilizan para columnas que tienen valores repetidos, como las columnas de nombres, fechas y números. Proporcionan una búsqueda rápida en logaritmo de tiempo.
-    2. Índices Hash: Adecuados para igualdad de búsqueda exacta. Sin embargo, no funcionan bien con rangos y consultas de rango.
-    3. Índices GIN y GiST: Son utilizados para tipos de datos más complejos como documentos de texto (usando tsvector) y geometría, JSONB, arrays, permitiendo búsquedas y comparaciones más avanzadas
-    4. Índices SP-GiST: Útiles para tipos de datos con estructuras jerárquicas o multidimensionales.
+## Índice B-Tree
+
+### Descripción
+El índice B-Tree es el tipo de índice más común y se utiliza para ordenar y buscar datos rápidamente.
+
+### Cuándo Usarlo
+- Cuando necesitas buscar datos que están ordenados.
+- Para consultas que utilizan operadores como `<`, `<=`, `=`, `>=`, `>`.
+
+### Cuándo No Usarlo
+- No es ideal para datos que cambian con mucha frecuencia.
+- No es eficiente para búsquedas de igualdad en datos muy grandes.
+
+### Escenario de Uso
+- **Escenario**: Una tabla de empleados donde necesitas buscar empleados por su salario.
+- **Operadores**: `<`, `<=`, `=`, `>=`, `>`
+
+## Índice Hash
+
+### Descripción
+El índice Hash es útil para búsquedas de igualdad, es decir, cuando buscas un valor específico.
+
+### Cuándo Usarlo
+- Cuando necesitas buscar un valor exacto.
+- Ideal para columnas con valores únicos.
+
+### Cuándo No Usarlo
+- No es adecuado para búsquedas de rango (por ejemplo, valores entre X e Y).
+- No se puede usar para ordenar datos.
+
+### Escenario de Uso
+- **Escenario**: Una tabla de usuarios donde necesitas buscar un usuario por su ID.
+- **Operadores**: `=`
+
+## Índice GiST
+
+### Descripción
+El índice GiST (Generalized Search Tree) es flexible y puede ser utilizado para una variedad de tipos de datos y consultas.
+
+### Cuándo Usarlo
+- Para datos geométricos o de texto.
+- Cuando necesitas realizar búsquedas complejas, como proximidad o similitud.
+
+### Cuándo No Usarlo
+- No es tan rápido como B-Tree para búsquedas simples.
+- Puede ser más complejo de configurar y mantener.
+
+### Escenario de Uso
+- **Escenario**: Una tabla de ubicaciones donde necesitas buscar puntos cercanos a una ubicación específica.
+- **Operadores**: `&&`, `@>`, `<@`, `~`, `~*`
+
+## Índice GIN
+
+### Descripción
+El índice GIN (Generalized Inverted Index) es ideal para búsquedas de texto completo y datos que contienen múltiples valores.
+
+### Cuándo Usarlo
+- Para columnas que contienen arrays o documentos JSON.
+- Ideal para búsquedas de texto completo.
+
+### Cuándo No Usarlo
+- No es eficiente para búsquedas de igualdad simples.
+- Puede consumir más espacio en disco.
+
+### Escenario de Uso
+- **Escenario**: Una tabla de artículos donde necesitas buscar artículos que contienen ciertas palabras clave.
+- **Operadores**: `@>`, `<@`, `&&`
+
+## Índice BRIN
+
+### Descripción
+El índice BRIN (Block Range INdex) es eficiente para grandes tablas donde los datos están ordenados físicamente.
+
+### Cuándo Usarlo
+- Para tablas muy grandes con datos ordenados.
+- Ideal para consultas que escanean grandes rangos de datos.
+
+### Cuándo No Usarlo
+- No es adecuado para tablas pequeñas.
+- No es eficiente para búsquedas de igualdad.
+
+### Escenario de Uso
+- **Escenario**: Una tabla de registros de sensores donde los datos están ordenados por fecha y hora.
+- **Operadores**: `<`, `<=`, `=`, `>=`, `>`
+
+## Índice SP-GiST
+
+### Descripción
+El índice SP-GiST (Space-Partitioned Generalized Search Tree) permite la creación de índices para datos que pueden ser particionados en el espacio, como datos geométricos.
+
+### Cuándo Usarlo
+- Para datos espaciales o geométricos.
+- Ideal para consultas que requieren particionamiento del espacio, como puntos en un mapa.
+
+### Cuándo No Usarlo
+- No es adecuado para datos que no se benefician del particionamiento espacial.
+- Puede ser más complejo de configurar y mantener.
+
+### Escenario de Uso
+- **Escenario**: Una tabla de ubicaciones geográficas donde necesitas buscar áreas específicas.
+- **Operadores**: `&&`, `@>`, `<@`, `~`, `~*`
+
+## Extensión Bloom
+
+### Descripción
+La extensión Bloom permite la creación de índices Bloom, que son útiles para columnas con muchos valores distintos.
+
+### Cuándo Usarlo
+- Para tablas con muchas columnas y valores distintos.
+- Ideal para consultas que involucran múltiples columnas.
+
+### Cuándo No Usarlo
+- No es eficiente para búsquedas de igualdad simples.
+- Puede consumir más espacio en disco.
+
+### Escenario de Uso
+- **Escenario**: Una tabla de productos donde necesitas buscar productos que cumplen con múltiples criterios.
+- **Operadores**: `=`, `&&`
 
 https://www.yugabyte.com/blog/postgresql-like-query-performance-variations/#c-collation-or-text_pattern_ops
  ```
