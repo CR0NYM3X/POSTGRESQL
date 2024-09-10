@@ -70,6 +70,10 @@ LEAKPROOF: Indica que la función no revela información sobre sus argumentos a 
 
 WINDOW: Indica que la función es una función de ventana.
 SUPPORT: Especifica una función de soporte para optimizaciones
+
+COST 100: El parámetro COST establece un costo estimado para la función, que el planificador de consultas de PostgreSQL
+ usa para decidir el plan de ejecución más eficiente. El valor por defecto es 100, pero puedes ajustarlo para reflejar
+mejor el costo relativo de la función en comparación con otras operaciones
 ```
 
 
