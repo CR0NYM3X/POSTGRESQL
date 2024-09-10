@@ -778,3 +778,19 @@ FROM json_to_recordset(
 ```
 
 
+
+###  Recorrer una tabla grande 
+```sql
+postgres@auditoria# select id,ip_server from cat_server order by id  limit 5 offset 0;
++----+---------------+
+| id |   ip_server   |
++----+---------------+
+|  1 | 10.28.228.238 |
+|  2 | 10.31.128.16  |
+|  3 | 10.28.228.23  |
+|  4 | 10.28.228.30  |
+|  5 | 10.30.123.26  |
++----+---------------+
+(5 rows)
+
+``` 
