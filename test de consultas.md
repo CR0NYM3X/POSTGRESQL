@@ -13,7 +13,7 @@ Time: 5.363 ms
 
 
 postgres@postgres# INSERT INTO ventas ( fecha, cliente_id, producto_id, cantidad, precio)
-postgres-# SELECT
+SELECT
       NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int,
       (RANDOM() * 1000)::int,
       (RANDOM() * 100)::int,
