@@ -1,4 +1,9 @@
 
+### Buscar extensiones disponibles para instalar en el servidor 
+```SQL
+dns search pg_cron
+ ```
+
 ### Validar extensiones que puedo instalar 
 ```SQL
 select * from pg_available_extensions where name ilike '%fdw%'; 
@@ -276,6 +281,8 @@ https://github.com/citusdata/cstore_fdw
 
 ## Blibliografía
 ```SQL
+---- https://www.postgresql.org/ftp/projects/ 
+
 https://www.timescale.com/blog/top-8-postgresql-extensions/
 
 --- Extensiones
