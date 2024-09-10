@@ -336,12 +336,139 @@ Además del método heap, PostgreSQL permite definir otros métodos de acceso a 
 1. **MVCC (Control de Concurrencia Multiversión)**: PostgreSQL utiliza un sistema llamado MVCC para manejar la concurrencia. Esto permite que múltiples transacciones lean y escriban en la base de datos al mismo tiempo sin bloquearse entre sí. Las tuplas muertas son esenciales para este sistema, ya que permiten que las transacciones vean versiones consistentes de los datos¹.
 2. **Rendimiento**: Eliminar físicamente las filas inmediatamente podría ser costoso en términos de rendimiento, especialmente en sistemas con alta concurrencia. Al marcar las filas como eliminadas y manejarlas posteriormente con `VACUUM`, PostgreSQL puede optimizar mejor el uso de recursos¹.
 
+
 ### Objetivo de las tuplas muertas
 
 El objetivo principal de las tuplas muertas es **mantener la consistencia y el rendimiento** de la base de datos. Permiten que las transacciones lean versiones consistentes de los datos sin interferir con otras operaciones y optimizan el uso de recursos al diferir la eliminación física de las filas hasta que sea más eficiente hacerlo¹.
  
- 
- 
+### Efectos del  MVCC
+ ```sql
+CREATE TABLE ventas (
+     id SERIAL PRIMARY KEY ,
+     fecha DATE,
+     cliente_id INTEGER,
+     producto_id INTEGER,
+     cantidad INTEGER,
+     precio NUMERIC
+ );
+CREATE TABLE
+Time: 5.745 ms
+
+
+postgres@postgres#   INSERT INTO ventas ( fecha, cliente_id, producto_id, cantidad, precio)
+SELECT
+    NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int,
+    (RANDOM() * 1000)::int,
+    (RANDOM() * 100)::int,
+    (RANDOM() * 10)::int,
+    (RANDOM() * 100)::numeric
+FROM generate_series(1, 5);
+INSERT 0 20
+Time: 1.959 ms
+
+
+postgres@postgres# select * from ventas;
++----+------------+------------+-------------+----------+------------------+
+| id |   fecha    | cliente_id | producto_id | cantidad |      precio      |
++----+------------+------------+-------------+----------+------------------+
+|  1 | 2022-08-06 |        905 |          54 |        3 |  67.525051208213 |
+|  2 | 2022-01-30 |         89 |          73 |        7 | 84.1188056394458 |
+|  3 | 2024-04-02 |        375 |          28 |        7 | 13.6253997683525 |
+|  4 | 2023-03-23 |        646 |          82 |        5 | 66.7211717925966 |
+|  5 | 2022-08-12 |        744 |          68 |        7 | 91.8418753426522 |
++----+------------+------------+-------------+----------+------------------+
+(5 rows)
+
+
+postgres@postgres# update ventas set cliente_id = 2020 where id = 2 ;
+UPDATE 1
+Time: 1.115 ms
+postgres@postgres# select * from ventas;
++----+------------+------------+-------------+----------+------------------+
+| id |   fecha    | cliente_id | producto_id | cantidad |      precio      |
++----+------------+------------+-------------+----------+------------------+
+|  1 | 2022-08-06 |        905 |          54 |        3 |  67.525051208213 |
+|  3 | 2024-04-02 |        375 |          28 |        7 | 13.6253997683525 |
+|  4 | 2023-03-23 |        646 |          82 |        5 | 66.7211717925966 |
+|  5 | 2022-08-12 |        744 |          68 |        7 | 91.8418753426522 |
+|  2 | 2022-01-30 |       2020 |          73 |        7 | 84.1188056394458 | <--- Efecto de MVCC, te coloca la fila al final ya que no la actualiza, crea una nueva
++----+------------+------------+-------------+----------+------------------+
+(5 rows)
+
+postgres@postgres# \d ventas
+                                Table "public.ventas"
++-------------+---------+-----------+----------+------------------------------------+
+|   Column    |  Type   | Collation | Nullable |              Default               |
++-------------+---------+-----------+----------+------------------------------------+
+| id          | integer |           | not null | nextval('ventas_id_seq'::regclass) |
+| fecha       | date    |           |          |                                    |
+| cliente_id  | integer |           |          |                                    |
+| producto_id | integer |           |          |                                    |
+| cantidad    | integer |           |          |                                    |
+| precio      | numeric |           |          |                                    |
++-------------+---------+-----------+----------+------------------------------------+
+Indexes:
+    "ventas_pkey" PRIMARY KEY, btree (id)
+
+postgres@postgres# CLUSTER ventas USING ventas_pkey;
+CLUSTER
+Time: 29.171 ms
+
+
+postgres@postgres# select * from ventas ;
++----+------------+------------+-------------+----------+------------------+
+| id |   fecha    | cliente_id | producto_id | cantidad |      precio      |
++----+------------+------------+-------------+----------+------------------+
+|  1 | 2022-08-06 |        905 |          54 |        3 |  67.525051208213 |
+|  2 | 2022-01-30 |       2020 |          73 |        7 | 84.1188056394458 |
+|  3 | 2024-04-02 |        375 |          28 |        7 | 13.6253997683525 |
+|  4 | 2023-03-23 |        646 |          82 |        5 | 66.7211717925966 |
+|  5 | 2022-08-12 |        744 |          68 |        7 | 91.8418753426522 |
++----+------------+------------+-------------+----------+------------------+
+(5 rows)
+
+Time: 0.617 ms
+
+
+postgres@postgres# update ventas set cliente_id = 2020 where id = 2 ;
+UPDATE 1
+Time: 1.364 ms
+
+postgres@postgres# select * from ventas ;
++----+------------+------------+-------------+----------+------------------+
+| id |   fecha    | cliente_id | producto_id | cantidad |      precio      |
++----+------------+------------+-------------+----------+------------------+
+|  1 | 2022-08-06 |        905 |          54 |        3 |  67.525051208213 |
+|  3 | 2024-04-02 |        375 |          28 |        7 | 13.6253997683525 |
+|  4 | 2023-03-23 |        646 |          82 |        5 | 66.7211717925966 |
+|  5 | 2022-08-12 |        744 |          68 |        7 | 91.8418753426522 |
+|  2 | 2022-01-30 |       2020 |          73 |        7 | 84.1188056394458 |
++----+------------+------------+-------------+----------+------------------+
+(5 rows)
+
+Time: 0.499 ms
+
+postgres@postgres# cluster;
+CLUSTER
+Time: 25.964 ms
+
+postgres@postgres# select * from ventas ;
++----+------------+------------+-------------+----------+------------------+
+| id |   fecha    | cliente_id | producto_id | cantidad |      precio      |
++----+------------+------------+-------------+----------+------------------+
+|  1 | 2022-08-06 |        905 |          54 |        3 |  67.525051208213 |
+|  2 | 2022-01-30 |       2020 |          73 |        7 | 84.1188056394458 |
+|  3 | 2024-04-02 |        375 |          28 |        7 | 13.6253997683525 |
+|  4 | 2023-03-23 |        646 |          82 |        5 | 66.7211717925966 |
+|  5 | 2022-08-12 |        744 |          68 |        7 | 91.8418753426522 |
++----+------------+------------+-------------+----------+------------------+
+(5 rows)
+
+
+
+```
+  
+  
  
 
 
