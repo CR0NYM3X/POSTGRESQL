@@ -204,6 +204,9 @@ Time: 4.522 ms*/
 crear un esquema para guardar las tablas particionadas y no juntarlas con la public
 ```sql
 create schema prttb  ;
+
+-- Sirve para conectarnos o usar el esquema
+-- set search_path to   "prttb";
 ```
 ### Paso 5: **Crear Particiones  y Asignar Tablespaces**:
 Creamos las particiones de la tabla ventas en el esquema prttb, con su rango de fecha por año y le asignamos el Tablespaces 
@@ -639,5 +642,42 @@ postgres@postgres#  select table_schema,table_name,table_type  from information_
 +--------------+------------+------------+
 (0 rows)
 
+
+```
+
+
+
+# Extras 
+```SQL
+
+--- /*****  Ver todas las particiones y sus esquemas  *****\
+SELECT 
+		npar.nspname AS schema_name_partitioned,
+		cpar.relname AS table_partitioned,
+		nrel.nspname AS schema_name_partition,
+		crel.relname AS tables_partition
+FROM pg_inherits i
+INNER JOIN pg_class crel ON i.inhrelid = crel.oid and not crel.oid in(select conindid from pg_constraint)
+INNER JOIN pg_class cpar ON i.inhparent = cpar.oid and not cpar.oid in(select conindid from pg_constraint)
+INNER JOIN pg_namespace nrel ON crel.relnamespace = nrel.oid
+INNER JOIN pg_namespace npar ON cpar.relnamespace = npar.oid
+ORDER BY inhparent ,inhrelid 
+;
+
++-------------------------+-------------------+-----------------------+------------------+
+| schema_name_partitioned | table_partitioned | schema_name_partition | tables_partition |
++-------------------------+-------------------+-----------------------+------------------+
+| public                  | ventas            | prttb                 | ventas_2020      |
+| public                  | ventas            | prttb                 | ventas_2021      |
+| public                  | ventas            | prttb                 | ventas_2022      |
+| public                  | ventas            | prttb                 | ventas_2023      |
+| public                  | ventas            | prttb                 | ventas_2024      |
++-------------------------+-------------------+-----------------------+------------------+
+(4 rows)
+
+
+--- /***** se utiliza para separar una partición de su tabla particionada principal.  *****\
+postgres@postgres# ALTER TABLE public.ventas DETACH PARTITION prttb.ventas_2022;
+ALTER TABLE
 
 ```
