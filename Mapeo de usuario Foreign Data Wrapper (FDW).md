@@ -240,7 +240,8 @@ Info Extra
 Performance Tips for Postgres FDW
 -- Por default FDW usa fetch para recorrer en lineas de 100, modificamos las lineas recorridas y mejoramos el tiempo 
 
-ALTER SERVER remote_server OPTIONS (fetch_size '10000');
+ALTER SERVER server_de_logs  OPTIONS (SET fetch_size '20000');
+ALTER SERVER server_de_logs  OPTIONS (SET connect_timeout '10000'); -- establece el tiempo de espera para la conexion 
 
 https://www.ongres.com/blog/boost-query-performance-using-fdw-with-minimal-changes/
 https://www.crunchydata.com/blog/performance-tips-for-postgres-fdw#increasing-fetch-count
