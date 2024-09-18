@@ -2,6 +2,7 @@
 # INDEX
 Un índice es una estructura de datos que almacena una referencia a los datos en una tabla, permitiendo que las búsquedas y otras operaciones sean mucho más rápidas. Piensa en un índice como el índice de un libro, que te permite encontrar rápidamente la página donde se menciona un tema específico.
 
+
 ## Impacto diferente en las operaciones de `INSERT`, `UPDATE` y `DELETE` en comparación con las consultas `SELECT`.
 
 ### Impacto de los Índices en `INSERT`
@@ -194,7 +195,7 @@ La reindexación es importante porque los índices desorganizados pueden llevar 
 	DROP INDEX IF EXISTS public.index_emp_nombre ;
 
 
-# Usar CLUSTER
+## Usar CLUSTER
 El propósito de este comando es mejorar el rendimiento de las consultas que utilizan un indice.  agrupa  la tabla el índice indicado, los datos se almacenan físicamente en el orden del índice, lo que puede acelerar las búsquedas y mejorar la eficiencia de las consultas.
 
 ```SQL
@@ -203,7 +204,37 @@ El propósito de este comando es mejorar el rendimiento de las consultas que uti
 
   	-- Indicas que ejecute los clusteres 
  	cluster;
-``` 
+```
+
+
+
+ 
+# ¿Para qué sirve `CREATE INDEX CONCURRENTLY`?
+
+1. **Evitar bloqueos**:
+   - A diferencia del comando `CREATE INDEX` estándar, que bloquea la tabla para operaciones de escritura mientras se crea el índice, `CREATE INDEX CONCURRENTLY` permite que las operaciones de escritura continúen. Esto es especialmente útil en bases de datos de producción donde no se puede permitir el tiempo de inactividad.
+
+2. **Proceso en segundo plano**:
+   - El índice se crea en segundo plano, lo que puede llevar más tiempo que un índice creado de manera estándar, pero permite que la base de datos siga siendo accesible para los usuarios.
+
+3. **Uso típico**:
+   - Es ideal para tablas grandes donde el tiempo de creación del índice podría ser significativo y el bloqueo de la tabla no es una opción viable.
+
+### Ejemplo de uso
+
+```sql
+CREATE INDEX CONCURRENTLY idx_clustered_fecha ON pedidos (fecha desc );
+```
+
+### Consideraciones
+
+- **Rendimiento**: La creación concurrente de índices puede ser más lenta que la creación estándar debido a la necesidad de manejar las operaciones de escritura en curso.
+- **Fallos**: Si la creación del índice falla, puede dejar la tabla en un estado inconsistente, por lo que es importante revisar los logs y asegurarse de que el índice se haya creado correctamente.
+
+Este comando es muy útil para mantener la disponibilidad de la base de datos mientras se realizan tareas de mantenimiento importantes¹.
+
+ 
+
 
 
 # EJEMPLOS DE CREACION DE INDEX Y CLUSTER
