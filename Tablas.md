@@ -4,7 +4,15 @@ Aprenderemos todo lo que se puede hacer con una tabla [documentacion oficial par
 
 
 ### informacion de tabla 
- ```sql 
+ ```sql
+---- saber el tipo de las columnas 
+SELECT attname, format_type(atttypid, atttypmod)
+FROM pg_attribute
+WHERE attrelid = 'empleados'::regclass
+AND attnum > 0
+AND NOT attisdropped;
+
+
 select relname as tabla ,
  pg_table_size(c.oid)/(1024*1024) table_size_MB ,
  pg_indexes_size(c.oid) /(1024*1024)  as indexes_size_MB ,
