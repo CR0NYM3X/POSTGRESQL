@@ -1,7 +1,7 @@
 
 ### Buscar extensiones disponibles para instalar en el servidor 
 ```SQL
-dns search pg_cron
+dnf search pg_cron
  ```
 
 ### Validar extensiones que puedo instalar 
