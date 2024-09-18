@@ -14,6 +14,56 @@ Las funciones devuelven un valor, ya sea un valor escalar o una tabla, y pueden 
 
 
 
+
+# Tipos de funciones  
+```sql
+
+**Funciones SQL**: Estas funciones están escritas en el lenguaje SQL y son ideales para operaciones simples y directas.
+/*no necesitas el bloque BEGIN...END porque sql es un lenguaje de consulta directa.  */ 
+
+CREATE FUNCTION my_function() RETURNS text AS $$
+   SELECT 'Hello, World!';
+$$ LANGUAGE sql;
+
+
+
+**Funciones PL/pgSQL**: Estas funciones utilizan el lenguaje procedural PL/pgSQL, que es más potente y permite estructuras de control como bucles y condiciones.
+
+   CREATE FUNCTION increment_by_one(x integer) RETURNS integer AS $$
+   BEGIN
+       RETURN x + 1;
+   END;
+   $$ LANGUAGE plpgsql;
+
+
+**Funciones de ventana**: Estas funciones realizan cálculos sobre un conjunto de filas relacionadas con la fila actual, sin agruparlas en una sola fila de salida.
+ 
+   SELECT depname, empno, salary, 
+          avg(salary) OVER (PARTITION BY depname) AS avg_salary
+   FROM empsalary;
+ 
+
+**Funciones agregadas**: Realizan cálculos sobre un conjunto de valores y devuelven un solo valor.
+
+   SELECT avg(salary) FROM empsalary;
+ 
+
+. **Funciones de trigger**: Estas funciones se ejecutan automáticamente en respuesta a ciertos eventos en una tabla o vista.
+ 
+   CREATE FUNCTION log_update() RETURNS trigger AS $$
+   BEGIN
+       INSERT INTO log_table VALUES (NEW.*);
+       RETURN NEW;
+   END;
+   $$ LANGUAGE plpgsql;
+ 
+
+```
+
+
+
+
+
 # Ejemplos de uso
 
 
@@ -486,4 +536,5 @@ RETURNS VOID
 --- Salir del bucle    
    EXIT;   
 ```
+
 
