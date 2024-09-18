@@ -917,3 +917,33 @@ Estas estadísticas pueden ser especialmente útiles en tablas grandes o en cons
  
 [PostgreSQL Documentation](https://www.postgresql.org/docs/current/sql-createstatistics.html)
 ```
+
+
+### ¿Para qué sirve `MERGE INTO`?
+```sql
+El comando `MERGE INTO` en SQL se utiliza para combinar datos de una tabla de origen con una tabla de destino. Este comando permite realizar operaciones de inserción, actualización o eliminación en la tabla de destino basándose en las coincidencias encontradas con la tabla de origen. Es especialmente útil para sincronizar dos tablas, asegurando que la tabla de destino refleje los cambios en la tabla de origen.
+ 
+
+1. **Sincronización de tablas**:
+   - Inserta nuevas filas en la tabla de destino si no existen en la tabla de origen.
+   - Actualiza las filas existentes en la tabla de destino si coinciden con las filas de la tabla de origen.
+   - Elimina las filas de la tabla de destino si no existen en la tabla de origen.
+
+2. **Operaciones condicionales**:
+   - Puedes especificar condiciones para determinar cuándo insertar, actualizar o eliminar filas.
+
+### Ejemplo de uso
+ 
+MERGE INTO tabla_destino AS destino
+USING tabla_origen AS origen
+ON destino.id = origen.id
+WHEN MATCHED THEN
+    UPDATE SET destino.columna1 = origen.columna1
+WHEN NOT MATCHED THEN
+    INSERT (id, columna1) VALUES (origen.id, origen.columna1);
+ 
+
+En este ejemplo:
+- Si una fila en `tabla_origen` coincide con una fila en `tabla_destino` (basado en la columna `id`), se actualiza la fila en `tabla_destino`.
+- Si no hay coincidencia, se inserta una nueva fila en `tabla_destino`.
+ ```
