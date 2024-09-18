@@ -876,3 +876,44 @@ SELECT
 FROM 
     tu_tabla;
 ```
+
+
+
+### ¿Para qué sirve `CREATE STATISTICS`?
+```sql
+
+El comando `CREATE STATISTICS` en PostgreSQL se utiliza para crear estadísticas personalizadas sobre una o más columnas de una tabla. Estas estadísticas ayudan al optimizador de consultas a tomar decisiones más informadas sobre los planes de ejecución, lo que puede mejorar significativamente el rendimiento de las consultas.
+
+
+1. **Mejorar el rendimiento de las consultas**:
+   - Al proporcionar estadísticas adicionales, el optimizador puede estimar mejor la selectividad de las condiciones de las consultas, lo que resulta en planes de ejecución más eficientes.
+
+2. **Estadísticas multicolumna**:
+   - Puedes crear estadísticas sobre combinaciones de columnas que el optimizador no puede inferir automáticamente. Esto es útil cuando las columnas tienen una correlación significativa.
+
+3. **Tipos de estadísticas**:
+   - **NDISTINCT**: Estima el número de valores distintos en una combinación de columnas.
+   - **Dependencies**: Captura dependencias entre columnas.
+   - **MCE (Most Common Elements)**: Identifica los elementos más comunes en una combinación de columnas.
+
+### Ejemplo de uso
+ 
+CREATE STATISTICS stats_name (ndistinct, dependencies)
+ON (columna1, columna2)
+FROM nombre_de_la_tabla;
+ 
+
+En este ejemplo, se crean estadísticas `NDISTINCT` y `Dependencies` sobre las columnas `columna1` y `columna2` de `nombre_de_la_tabla`.
+
+### Ver estadísticas creadas
+
+Para ver las estadísticas creadas, puedes consultar la vista `pg_statistic_ext`:
+ 
+SELECT * FROM pg_statistic_ext WHERE stxname = 'stats_name';
+ 
+
+Estas estadísticas pueden ser especialmente útiles en tablas grandes o en consultas complejas donde las estimaciones precisas son cruciales para el rendimiento¹.
+
+ 
+[PostgreSQL Documentation](https://www.postgresql.org/docs/current/sql-createstatistics.html)
+```
