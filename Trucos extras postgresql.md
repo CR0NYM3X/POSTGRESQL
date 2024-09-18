@@ -343,9 +343,10 @@ when 'c' then 'TYPE'
 
 
 
-El **begin** Permite que las transacciones/operaciones sean aisladas y transparentes unas de otras, esto quiere decir que si una sesion nueva se abre, no va detectar los cambios realizados en el cuando se incia el begin como son los insert,update,delete etc, 
+El **begin o start** Permite que las transacciones/operaciones sean aisladas y transparentes unas de otras, esto quiere decir que si una sesion nueva se abre, no va detectar los cambios realizados en el cuando se incia el begin como son los insert,update,delete etc, 
  ```
-BEGIN TRANSACTION;
+BEGIN TRANSACTION  ISOLATION LEVEL REPEATABLE READ;
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ;
  ```
 El **commit**  se usa para guardar los cambios que se realizaron, como los insert,detelete, etc y estas seguro de que todo salio bien
  ```
