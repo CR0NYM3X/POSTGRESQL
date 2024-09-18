@@ -589,6 +589,26 @@ client_encoding = 'UTF8'	 # establece la codificación (conjunto de caracteres) 
 
 
 datestyle = 'iso, ymd'  #  permite configura el formato de la  fecha, por defaul es "mdy"  = "mm-dd-yyyy", nosotros usamos ymd
+intervalstyle = postgres # se utiliza para definir el formato de salida y la interpretación de los intervalos de tiempo. Este parámetro afecta cómo se muestran y se interpretan los intervalos en las consultas.
+
+### Valores posibles de `IntervalStyle`
+
+1. **`postgres`**:
+   - Formato tradicional de PostgreSQL.
+   - Ejemplo: `@ 1 day 2 hours`
+
+2. **`postgres_verbose`**:
+   - Formato detallado de PostgreSQL.
+   - Ejemplo: `@ 1 day 2 hours 0 mins 0.00 secs`
+
+3. **`sql_standard`**:
+   - Formato estándar SQL.
+   - Ejemplo: `1 02:00:00`
+
+4. **`iso_8601`**:
+   - Formato ISO 8601.
+   - Ejemplo: `P1DT2H` (1 día y 2 horas)
+
 
 
 ------------------ Tiempo --------------- 
