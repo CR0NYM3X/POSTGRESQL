@@ -207,6 +207,13 @@ $$;
 
 ########## BUCLES CURSORES  ########## 
 
+
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ
+DECLARE c1 CURSOR FOR SELECT id, fecha, cliente_id, producto_id, cantidad, precio FROM public.ventas;
+FETCH 10000 FROM c1 --- cada vez que ejecutes este comando estara recorriendo 10000 lineas 
+COMMIT TRANSACTION
+
+
 DO $$
 DECLARE
     nombre_cur CURSOR FOR
@@ -229,6 +236,8 @@ BEGIN
     CLOSE nombre_cur; -- Cerrar el cursor
 END;
 $$;
+
+
 
 
 -----------
