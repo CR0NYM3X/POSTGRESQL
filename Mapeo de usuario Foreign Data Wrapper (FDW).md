@@ -237,6 +237,15 @@ select   oid ,umuser, usename , umserver ,umoptions from pg_user_mapping left jo
 
 Info Extra  
 ```
+Performance Tips for Postgres FDW
+-- Por default FDW usa fetch para recorrer en lineas de 100, modificamos las lineas recorridas y mejoramos el tiempo 
+
+ALTER SERVER remote_server OPTIONS (fetch_size '10000');
+
+https://www.ongres.com/blog/boost-query-performance-using-fdw-with-minimal-changes/
+https://www.crunchydata.com/blog/performance-tips-for-postgres-fdw#increasing-fetch-count
+
+
 /****************** SI COLOCAS FALSE EN LA PASSWORD DEL USER MAPPING ********************/
 ---> TE VA SOLICITAR QUE EL USER_LOCAL SEA SUPERUSER YA QUE TE VA SALIR ESTE ERROR 
  
