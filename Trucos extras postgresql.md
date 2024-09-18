@@ -1,5 +1,29 @@
- 
- 
+
+ # Saber el tipo 
+```sql
+
+postgres@postgres# 
+select			
+	pg_typeof('holaaa')
+	,pg_typeof(1)
+	,pg_typeof(1.2)
+	,pg_typeof(1.588888)
+	,pg_typeof(array['a','b'])
+	,pg_typeof(array[1,2])
+	,pg_typeof(true)
+	,pg_typeof('2024-08-01'::date);
+
++-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
+| pg_typeof | pg_typeof | pg_typeof | pg_typeof | pg_typeof | pg_typeof | pg_typeof | pg_typeof |
++-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
+| unknown   | integer   | numeric   | numeric   | text[]    | integer[] | boolean   | date      |
++-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
+(1 row)
+
+
+```
+
+
 ```sql
 --- Expresiones regulares
 SELECT * FROM productos WHERE nombre ~* 'man';
@@ -706,7 +730,26 @@ select CHR(10); -- salto de linea
 select CHR(39); -- Comilla simple
 select CHR(34); -- Comilla dobles
 select CHR(9) ; -- tab
- 
+
+
+
+**Funciones de JSON**: Estas funciones permiten trabajar con datos en formato JSON. Por ejemplo, `jsonb_array_elements`, `jsonb_each`.
+   SELECT jsonb_each('{"a":1, "b":2}');
+
+**Funciones de rango**: Estas funciones permiten trabajar con tipos de datos de rango. Por ejemplo, `range_merge`, `range_intersect`.
+   SELECT range_merge(int4range(1, 5), int4range(3, 10));
+
+ **Funciones de búsqueda de texto**: Estas funciones permiten realizar búsquedas de texto completo. Por ejemplo, `to_tsvector`, `to_tsquery`.
+   SELECT to_tsvector('The quick brown fox');
+
+
+select cast('1' as integer);
+select cast('10000000000' as integer);
+select cast('10000000000' as bigint);
+select cast('abc' as integer);
+select cast('1' as text);
+select cast('true' as boolean);
+
 ```
 
 
