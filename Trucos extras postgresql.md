@@ -1,4 +1,6 @@
 
+
+
  # Saber el tipo 
 ```sql
 
@@ -305,42 +307,6 @@ $$ LANGUAGE plpgsql;
 ```
 
 
-# join
-
-
-```sql
-# INNER JOIN: Devuelve filas cuando hay al menos una coincidencia en ambas tablas.
-
-SELECT * FROM tabla1 INNER JOIN tabla2 ON tabla1.columna = tabla2.columna;
-
-/* LEFT JOIN (o LEFT OUTER JOIN): Devuelve todas las filas de la tabla izquierda y las filas
- coincidentes de la tabla derecha. Si no hay coincidencias, se devuelven NULL para las columnas de la tabla derecha. */ 
-
-SELECT * FROM tabla1 LEFT JOIN tabla2 ON tabla1.columna = tabla2.columna;
-
-/* RIGHT JOIN (o RIGHT OUTER JOIN): Devuelve todas las filas de la tabla derecha y las filas coincidentes
-de la tabla izquierda. Si no hay coincidencias, se devuelven NULL para las columnas de la tabla izquierda. */ 
-
-SELECT * FROM tabla1 RIGHT JOIN tabla2 ON tabla1.columna = tabla2.columna;
-
-/* FULL JOIN (o FULL OUTER JOIN): Devuelve todas las filas cuando hay una coincidencia
-en una de las tablas. Devuelve NULL en las columnas de la tabla que no tiene una coincidencia. */
-
-SELECT * FROM tabla1  FULL JOIN tabla2 ON tabla1.columna = tabla2.columna;
-
-/*
-CROSS JOIN: Devuelve el producto cartesiano de las filas de las tablas involucradas, es decir,
-combina cada fila de la primera tabla con cada fila de la segunda tabla.
- */
-SELECT * FROM tabla1 CROSS JOIN tabla2;
-
-/* LEFT JOIN LATERAL: Combina cada fila de la primera tabla con el resultado de aplicar una
- expresión de tabla a cada fila de la segunda tabla, pero solo devuelve filas de la primera tabla
-incluso si no hay coincidencias en la expresión de tabla. */ 
-
-SELECT * FROM tabla1 LEFT JOIN LATERAL funcion_tabla2(tabla1.columna) AS tabla2_resultado ON true;
-
-```
 
 # Crear uniones entre tablas 
 ```sql
@@ -1000,3 +966,295 @@ En este ejemplo:
 - Si una fila en `tabla_origen` coincide con una fila en `tabla_destino` (basado en la columna `id`), se actualiza la fila en `tabla_destino`.
 - Si no hay coincidencia, se inserta una nueva fila en `tabla_destino`.
  ```
+
+
+
+ # uso de FILTER
+ Se utiliza para aplicar condiciones a funciones de agregación, permitiendo que solo las filas que cumplen con ciertas condiciones sean incluidas en los cálculos.
+ por ejemplo las funciones  COUNT, SUM , MIN, MAX son funcion agregada 
+```sql 
+
+SELECT 
+    COUNT(*) AS total_ventas,
+    COUNT(*) FILTER (where precio = 99.8429332268752) AS precio_99,
+	COUNT(*) FILTER (where fecha = '2022-06-05') AS fecha_filtrada
+FROM ventas;
+
+
++--------------+-----------+----------------+
+| total_ventas | precio_99 | fecha_filtrada |
++--------------+-----------+----------------+
+|    499999999 |         1 |         501385 |
++--------------+-----------+----------------+
+(1 row)
+
+Time: 18101.188 ms (00:18.101)
+```
+ 
+
+
+# Ejemplos de JOINS
+
+
+```sql
+
+### Tablas de Ejemplo
+
+Vamos a crear dos tablas: `clientes` y `pedidos`.
+
+ 
+CREATE TABLE clientes (
+    id_cliente SERIAL PRIMARY KEY,
+    nombre VARCHAR(50)
+);
+
+CREATE TABLE pedidos (
+    id_pedido SERIAL PRIMARY KEY,
+    id_cliente INT,
+    producto VARCHAR(50),
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+);
+
+INSERT INTO clientes (nombre) VALUES ('Juan'), ('Ana'), ('Luis');
+INSERT INTO pedidos (id_cliente, producto) VALUES (1, 'Laptop'), (2, 'Teléfono'), (2, 'Tablet');
+
+
+
+postgres@postgres# select * from clientes;
++------------+--------+
+| id_cliente | nombre |
++------------+--------+
+|          1 | Juan   |
+|          2 | Ana    |
+|          3 | Luis   |
++------------+--------+
+(3 rows)
+
+Time: 0.742 ms
+postgres@postgres# select * from pedidos;
++-----------+------------+----------+
+| id_pedido | id_cliente | producto |
++-----------+------------+----------+
+|         1 |          1 | Laptop   |
+|         2 |          2 | Teléfono |
+|         3 |          2 | Tablet   |
++-----------+------------+----------+
+(3 rows)
+
+
+
+
+### Tipos de Joins
+
+1. **INNER JOIN**
+   - **Descripción**: Devuelve las filas que tienen coincidencias en ambas tablas.
+   - **Ejemplo**:
+    
+     SELECT clientes.nombre, pedidos.producto FROM clientes
+     INNER JOIN pedidos ON clientes.id_cliente = pedidos.id_cliente;
+     
+   - **Resultado**:
+	+--------+----------+
+	| nombre | producto |
+	+--------+----------+
+	| Juan   | Laptop   |
+	| Ana    | Teléfono |
+	| Ana    | Tablet   |
+	+--------+----------+
+	(3 rows)
+     
+
+2. **LEFT JOIN (o LEFT OUTER JOIN)**
+   - **Descripción**: Devuelve todas las filas de la tabla izquierda y las filas coincidentes de la tabla derecha. Las filas sin coincidencias en la tabla derecha tendrán valores NULL.
+   - **Ejemplo**:
+    
+     SELECT clientes.nombre, pedidos.producto FROM clientes
+     LEFT JOIN pedidos ON clientes.id_cliente = pedidos.id_cliente;
+     
+   - **Resultado**:
+	+--------+----------+
+	| nombre | producto |
+	+--------+----------+
+	| Juan   | Laptop   |
+	| Ana    | Teléfono |
+	| Ana    | Tablet   |
+	| Luis   | NULL     |
+	+--------+----------+
+	(4 rows)
+     
+
+3. **RIGHT JOIN (o RIGHT OUTER JOIN)**
+   - **Descripción**: Devuelve todas las filas de la tabla derecha y las filas coincidentes de la tabla izquierda. Las filas sin coincidencias en la tabla izquierda tendrán valores NULL.
+   - **Ejemplo**:
+    
+     SELECT clientes.nombre, pedidos.producto FROM clientes
+     RIGHT JOIN pedidos ON clientes.id_cliente = pedidos.id_cliente;
+     
+   - **Resultado**:
+	+--------+----------+
+	| nombre | producto |
+	+--------+----------+
+	| Juan   | Laptop   |
+	| Ana    | Teléfono |
+	| Ana    | Tablet   |
+	+--------+----------+
+	(3 rows)
+
+     
+
+4. **FULL JOIN (o FULL OUTER JOIN)**
+   - **Descripción**: Devuelve todas las filas cuando hay una coincidencia en una de las tablas. Las filas sin coincidencias en cualquiera de las tablas tendrán valores NULL.
+   - **Ejemplo**:
+    
+     SELECT clientes.nombre, pedidos.producto FROM clientes
+     FULL JOIN pedidos ON clientes.id_cliente = pedidos.id_cliente;
+     
+   - **Resultado**:
+	+--------+----------+
+	| nombre | producto |
+	+--------+----------+
+	| Juan   | Laptop   |
+	| Ana    | Teléfono |
+	| Ana    | Tablet   |
+	| Luis   | NULL     |
+	+--------+----------+
+
+     
+
+5. **CROSS JOIN**
+   - **Descripción**: Devuelve el producto cartesiano de las dos tablas, es decir, todas las combinaciones posibles de filas.
+  
+  - **Ejemplo**:
+    
+     SELECT clientes.nombre, pedidos.producto FROM clientes CROSS JOIN pedidos;
+     
+   - **Resultado**:
+	+--------+----------+
+	| nombre | producto |
+	+--------+----------+
+	| Juan   | Laptop   |
+	| Juan   | Teléfono |
+	| Juan   | Tablet   |
+	| Ana    | Laptop   |
+	| Ana    | Teléfono |
+	| Ana    | Tablet   |
+	| Luis   | Laptop   |
+	| Luis   | Teléfono |
+	| Luis   | Tablet   |
+	+--------+----------+
+	(9 rows)
+     
+
+6. **SELF JOIN**
+   - **Descripción**: Es un join de una tabla consigo misma. Útil para comparar filas dentro de la misma tabla.
+   - **Ejemplo**:
+    
+     SELECT c1.nombre AS cliente1, c2.nombre AS cliente2
+     FROM clientes c1
+     JOIN clientes c2 ON c1.id_cliente <> c2.id_cliente;
+     
+   - **Resultado**:
+	+----------+----------+
+	| cliente1 | cliente2 |
+	+----------+----------+
+	| Juan     | Ana      |
+	| Juan     | Luis     |
+	| Ana      | Juan     |
+	| Ana      | Luis     |
+	| Luis     | Juan     |
+	| Luis     | Ana      |
+	+----------+----------+
+	(6 rows)
+     
+ 
+ 
+
+7. **LATERAL JOIN**
+	- **Descripción**: Permite que una subconsulta en la cláusula FROM haga referencia a columnas de tablas anteriores en la misma cláusula FROM.
+	- **Ejemplo**:
+ 
+	  SELECT c.nombre, p.producto
+	  FROM clientes c,
+	  LATERAL (
+		SELECT producto
+		FROM pedidos p
+		WHERE p.id_cliente = c.id_cliente
+	  ) p;
+	  
+	- **Resultado**:
+	+--------+----------+
+	| nombre | producto |
+	+--------+----------+
+	| Juan   | Laptop   |
+	| Ana    | Teléfono |
+	| Ana    | Tablet   |
+	+--------+----------+
+	(3 rows)
+
+  
+
+8. **NATURAL JOIN**
+	- **Descripción**: Realiza un join basado en todas las columnas con el mismo nombre en ambas tablas.
+	- **Ejemplo**:
+	 
+	  SELECT *
+	  FROM clientes
+	  NATURAL JOIN pedidos;
+	  
+	- **Resultado**:
+	+------------+--------+-----------+----------+
+	| id_cliente | nombre | id_pedido | producto |
+	+------------+--------+-----------+----------+
+	|          1 | Juan   |         1 | Laptop   |
+	|          2 | Ana    |         2 | Teléfono |
+	|          2 | Ana    |         3 | Tablet   |
+	+------------+--------+-----------+----------+
+
+	  
+
+9. **SEMI JOIN**
+	- **Descripción**: Devuelve las filas de la primera tabla donde existen filas coincidentes en la segunda tabla, pero no devuelve las filas de la segunda tabla.
+	- **Ejemplo**:
+	 
+	  SELECT c.nombre
+	  FROM clientes c
+	  WHERE EXISTS (
+		SELECT 1
+		FROM pedidos p
+		WHERE p.id_cliente = c.id_cliente
+	  );
+	  
+	- **Resultado**:
+	+--------+
+	| nombre |
+	+--------+
+	| Juan   |
+	| Ana    |
+	+--------+
+	(2 rows)
+
+  
+
+10. **ANTI JOIN**
+	- **Descripción**: Devuelve las filas de la primera tabla donde no existen filas coincidentes en la segunda tabla.
+	- **Ejemplo**:
+	 
+	  SELECT c.nombre
+	  FROM clientes c
+	  WHERE NOT EXISTS (
+		SELECT 1
+		FROM pedidos p
+		WHERE p.id_cliente = c.id_cliente
+	  );
+	  
+	- **Resultado**:
+	+--------+
+	| nombre |
+	+--------+
+	| Luis   |
+	+--------+
+	(1 row)
+
+
+```
+
