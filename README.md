@@ -38,6 +38,21 @@
  
 
 ```
+
+
+# Páginas para aprender más de Postgresql
+```
+https://www.crunchydata.com/postgres-tips
+https://www.crunchydata.com/developers/tutorials
+https://access.crunchydata.com/documentation/
+
+https://ongres.com/blog/
+
+---- página recomendada para aprender cosas avanzadas de postgresql  
+https://www.tutorialdba.com/ <br>
+https://www.todopostgresql.com/
+https://it-inzhener.com/en/articles/category/name=postgresql
+
 https://pgpedia.info/s/shared_preload_libraries.html
 https://www.sqlservercentral.com/articles/rules-in-postgresql
 
@@ -46,11 +61,7 @@ https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf <br>
 https://wiki.postgresql.org/wiki/Main_Page/es
 https://doxygen.postgresql.org/index.html
 
-https://access.crunchydata.com/documentation/
 
 
 
----- página recomendada para aprender cosas avanzadas de postgresql <br>
-https://www.tutorialdba.com/ <br>
-https://www.todopostgresql.com/
-https://it-inzhener.com/en/articles/category/name=postgresql
+```
