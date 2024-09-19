@@ -60,7 +60,7 @@ https://www.sqlservercentral.com/articles/rules-in-postgresql
 https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf <br>
 https://wiki.postgresql.org/wiki/Main_Page/es
 https://doxygen.postgresql.org/index.html
-
+https://www.docs4dev.com/docs/en/postgre-sql/10.7/reference/pgarchivecleanup.html
 
 --- Postgres Performance
 https://www.hydra.so/blog-posts/2022-08-08-postgres-performance-monitoring-best-practices-and-tools
