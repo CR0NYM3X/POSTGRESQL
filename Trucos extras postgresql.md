@@ -1258,3 +1258,68 @@ postgres@postgres# select * from pedidos;
 
 ```
 
+
+
+## View tables using TOAST
+```
+SELECT
+		c.relname AS source_table_name,
+		c.relpages AS source_table_number_of_pages,
+		c.reltuples AS source_table_number_of_tuples,
+		c.reltoastrelid AS toast_table_oid,
+		t.relname AS toast_table_name,
+		t.relpages AS toast_table_number_of_pages,
+		t.reltuples AS toast_table_number_of_tuples
+	 FROM
+		pg_class c
+		JOIN pg_class t ON c.reltoastrelid = t.oid
+	 WHERE
+		t.relpages > 0;
+--- https://www.crunchydata.com/postgres-tips#view-tables-using-toast
+```
+
+
+## Are you close to overflowing an integer?
+```
+SELECT
+	seqs.relname AS sequence,
+	format_type(s.seqtypid, NULL) sequence_datatype,
+CONCAT(tbls.relname, '.', attrs.attname) AS owned_by,
+	format_type(attrs.atttypid, atttypmod) AS column_datatype,
+	pg_sequence_last_value(seqs.oid::regclass) AS last_sequence_value,
+TO_CHAR((
+	CASE WHEN format_type(s.seqtypid, NULL) = 'smallint' THEN
+		(pg_sequence_last_value(seqs.relname::regclass) / 32767::float)
+	WHEN format_type(s.seqtypid, NULL) = 'integer' THEN
+		(pg_sequence_last_value(seqs.relname::regclass) / 2147483647::float)
+	WHEN format_type(s.seqtypid, NULL) = 'bigint' THEN
+		(pg_sequence_last_value(seqs.relname::regclass) / 9223372036854775807::float)
+	END) * 100, 'fm9999999999999999999990D00%') AS sequence_percent,
+TO_CHAR((
+	CASE WHEN format_type(attrs.atttypid, NULL) = 'smallint' THEN
+		(pg_sequence_last_value(seqs.relname::regclass) / 32767::float)
+	WHEN format_type(attrs.atttypid, NULL) = 'integer' THEN
+		(pg_sequence_last_value(seqs.relname::regclass) / 2147483647::float)
+	WHEN format_type(attrs.atttypid, NULL) = 'bigint' THEN
+		(pg_sequence_last_value(seqs.relname::regclass) / 9223372036854775807::float)
+	END) * 100, 'fm9999999999999999999990D00%') AS column_percent
+FROM
+	pg_depend d
+	JOIN pg_class AS seqs ON seqs.relkind = 'S'
+		AND seqs.oid = d.objid
+	JOIN pg_class AS tbls ON tbls.relkind = 'r'
+		AND tbls.oid = d.refobjid
+	JOIN pg_attribute AS attrs ON attrs.attrelid = d.refobjid
+		AND attrs.attnum = d.refobjsubid
+	JOIN pg_sequence s ON s.seqrelid = seqs.oid
+WHERE
+	d.deptype = 'a'
+	AND d.classid = 1259;
+
+
+
+--- https://www.crunchydata.com/postgres-tips#are-you-close-to-overflowing-an-integer 
+
+```
+
+
