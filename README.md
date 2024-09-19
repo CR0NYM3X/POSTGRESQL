@@ -62,6 +62,9 @@ https://wiki.postgresql.org/wiki/Main_Page/es
 https://doxygen.postgresql.org/index.html
 
 
+--- Postgres Performance
+https://www.hydra.so/blog-posts/2022-08-08-postgres-performance-monitoring-best-practices-and-tools
+
 
 
 ```
