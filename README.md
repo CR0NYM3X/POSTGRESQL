@@ -67,4 +67,10 @@ https://www.hydra.so/blog-posts/2022-08-08-postgres-performance-monitoring-best-
 
 
 
+----- Eventos  de Postgresql:
+https://postgrespro.com/events
+https://postgresconf.org/conferences
+
+https://www.crunchydata.com/events
+
 ```
