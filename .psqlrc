@@ -1,7 +1,7 @@
 -- quita la información dafault que muestra al ingresar a psql
 \set QUIET on
 
-
+\x auto
 
 -- supuestamente muestra en mayusculas los select 
 \set COMP_KEYWORD_CASE upper
