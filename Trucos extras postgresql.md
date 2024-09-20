@@ -1323,3 +1323,20 @@ postgres@postgres# select proname  from pg_proc where proname ilike '%pg_get_%' 
 +-------------------------------------+
 (12 rows)
 ```
+
+
+# Apagado de emergencia
+
+```
+1. **Apagado Ordenado**:
+- **Uso de `SIGQUIT`**: Debe usarse solo en situaciones de emergencia debido a los riesgos de pérdida de datos no confirmados y la necesidad de una recuperación más extensa.
+ 
+
+2. **Apagado Inmediato**:
+   ```sh
+   kill -QUIT <PID>
+   ```
+```
+ 
+
+ 
