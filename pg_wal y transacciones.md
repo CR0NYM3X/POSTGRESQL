@@ -1,3 +1,45 @@
+
+# pasos que sigue PostgreSQL cuando se realiza una modificación de datos, como un `INSERT`, `UPDATE` o `DELETE`:
+
+### 1. Recepción de la Consulta
+El cliente envía la consulta SQL al servidor PostgreSQL.
+
+### 2. Análisis y Planificación
+1. **Parser**: La consulta se analiza sintácticamente para convertirla en una estructura de árbol de análisis.
+2. **Rewriter**: Si hay reglas definidas, se aplican en esta etapa para modificar la consulta.
+3. **Planner/Optimizer**: El planificador genera un plan de ejecución óptimo para la consulta, considerando estadísticas y costos.
+
+### 3. Ejecución del Plan
+1. **Inicio de la Transacción**: Si la consulta es parte de una transacción, se asegura que la transacción esté iniciada.
+2. **Ejecución del Plan**: El plan de ejecución se lleva a cabo. Para un `INSERT`, se añaden nuevas filas; para un `UPDATE`, se modifican las filas existentes; y para un `DELETE`, se eliminan las filas correspondientes.
+
+### 4. Registro en el WAL (Write-Ahead Log)
+1. **Generación de Entradas WAL**: Se generan entradas en el WAL para cada modificación. Estas entradas registran los cambios antes de que se escriban en las tablas.
+2. **Flujo de WAL**: Las entradas WAL se envían al disco y, si está configurado, a los servidores de réplica.
+
+### 5. Modificación de Datos en Memoria
+1. **Buffers de Memoria**: Los cambios se aplican primero en los buffers de memoria compartida.
+2. **Dirty Buffers**: Los buffers modificados se marcan como "sucios" (dirty) y se programan para ser escritos en disco más tarde.
+
+### 6. Checkpoints
+1. **Checkpoints Periódicos**: PostgreSQL realiza checkpoints periódicos para asegurar que los datos en memoria se escriban en disco.
+2. **Sincronización de WAL y Datos**: Durante un checkpoint, se asegura que todas las entradas WAL hasta ese punto se hayan aplicado a las tablas en disco.
+
+### 7. Confirmación de la Transacción
+1. **Commit**: Si la consulta es parte de una transacción, se realiza un commit, asegurando que todos los cambios sean permanentes.
+2. **Liberación de Recursos**: Se liberan los recursos utilizados por la transacción.
+
+### 8. Replicación y Archivado
+1. **Replicación**: Si hay servidores de réplica configurados, las entradas WAL se envían a estos servidores para mantener la consistencia.
+2. **Archivado**: Las entradas WAL se archivan según la configuración de archivado continuo.
+
+### 9. Mantenimiento y Vacío
+1. **Vacuum**: PostgreSQL realiza operaciones de mantenimiento como `VACUUM` para recuperar espacio y actualizar estadísticas.
+2. **Autovacuum**: El proceso `autovacuum` se ejecuta automáticamente para mantener la base de datos en buen estado.
+
+
+ --- 
+
 Para determinar si un servidor Postgre```sql es muy transaccional, es decir, si maneja un gran número de transacciones por segundo (TPS), puedes realizar las siguientes acciones:
 
 ### 1. **Monitorear las transacciones por segundo (TPS):**
@@ -247,11 +289,11 @@ El checkpoint record se almacena en los archivos WAL, que generalmente se encuen
 
 
 ### 1. `pg_resetwal -f -D /sysx/data`
-**Propósito**: Este comando se utiliza para resetear el Write-Ahead Log (WAL) y otra información de control almacenada en el archivo `pg_control`. Es una herramienta de último recurso para recuperar un servidor de base de datos que no puede arrancar debido a la corrupción de estos archivos¹.
+**Propósito**: Este comando se utiliza para resetear el Write-Ahead Log (WAL). Es una herramienta de último recurso para recuperar un servidor de base de datos que no puede arrancar debido a la corrupción de estos archivos.
 
 **Cuándo Usarlo**:
 - **Último Recurso**: Solo debe usarse cuando el servidor no puede arrancar debido a la corrupción del WAL.
-- **Previo Respaldo**: Siempre respalda tus datos antes de usar este comando, ya que puede llevar a la pérdida de datos.
+- **Previo Respaldo**: Siempre respalda tus datos antes de usar este comando, ya que puede llevar a la pérdida de datos, si tienes configurado el parametro archive_mode,archive_command cuando uses pg_resetwal estos se van archivar
 
 **Importancia**:
 - **Recuperación**: Permite que un servidor corrupto vuelva a arrancar.
@@ -280,6 +322,30 @@ Ruta: /sysx/data14/global/pg_control
 +--------------------+--------------------+---------------------+--------------------------+
 |               1300 |          202107181 | 7381508807802424143 | 2024-09-19 10:29:53-07   |
 +--------------------+--------------------+---------------------+--------------------------+
+
+postgres@postgres# select *from  pg_control_checkpoint();
++-[ RECORD 1 ]---------+--------------------------+
+| checkpoint_lsn       | 1/A0000028               |
+| redo_lsn             | 1/A0000028               |
+| redo_wal_file        | 0000000100000001000000A0 |
+| timeline_id          | 1                        |
+| prev_timeline_id     | 1                        |
+| full_page_writes     | t                        |
+| next_xid             | 0:1084                   |
+| next_oid             | 17277                    |
+| next_multixact_id    | 1                        |
+| next_multi_offset    | 0                        |
+| oldest_xid           | 726                      |
+| oldest_xid_dbid      | 1                        |
+| oldest_active_xid    | 0                        |
+| oldest_multi_xid     | 1                        |
+| oldest_multi_dbid    | 1                        |
+| oldest_commit_ts_xid | 0                        |
+| newest_commit_ts_xid | 0                        |
+| checkpoint_time      | 2024-09-20 10:17:38-07   |
++----------------------+--------------------------+
+
+
 ```
 
 
@@ -364,29 +430,6 @@ Esto asegurará que los archivos WAL antiguos se limpien automáticamente durant
 
 
 
-[postgres@SERVER_TEST pg_wal]$ pwd
-/sysx/data14/pg_wal
-
-[postgres@SERVER_TEST pg_wal]$ ls -lhtr
-total 16M
-drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
--rw-------. 1 postgres postgres 16M Sep 18 18:36 000000010000000000000008    <---- Archivo Wal, Checkpoint Record 
-
-
-------- Esto pasa si quieres dumpear el wal Checkpoint Record 
-[postgres@SERVER_TEST pg_wal]$ pg_waldump 000000010000000000000008
-pg_waldump: error: could not find a valid record after 0/8000000
-
-------- Esto pasa si quieres Eliminar el archivo wal  Checkpoint Record 
-[postgres@SERVER_TEST pg_wal]$ pg_archivecleanup -d  /sysx/data14/pg_wal  000000010000000000000008
-pg_archivecleanup: keeping WAL file "/sysx/data14/pg_wal/000000010000000000000008" and later
-
-
-
-
-
-
-
 ### Parámetros checkpoints y su Función
 
 1. **`log_checkpoints = on`**
@@ -432,6 +475,7 @@ pg_archivecleanup: keeping WAL file "/sysx/data14/pg_wal/00000001000000000000000
 +---------------------------+------------+
 
 archive_command = "scp %f replica:/usr/share/wal_archive:%r"
+archive_command = 'cp %p /path/to/archive/%f'
 archive_cleanup_command = 'pg_archivecleanup /usr/share/wal_archive %r'
 archive_cleanup_command = 'pg_archivecleanup -d /mnt/standby/archive %r 2>>cleanup.log'
 
@@ -1682,3 +1726,88 @@ https://www.percona.com/blog/postgresql-wal-retention-and-clean-up-pg_archivecle
 
 
 
+
+
+
+# Eliminacion de archivos wal
+
+``` 
+Método 1: Usar el comando pg_controldata
+
+Este comando te permite obtener información sobre el estado de tu base de datos, incluyendo el último punto de control (checkpoint).
+
+1. Ejecuta pg_controldata: En tu servidor, ejecuta el siguiente comando para obtener información detallada:
+
+pg_controldata /var/lib/postgresql/data
+
+Esto te dará una salida como la siguiente:
+
+Latest checkpoint's REDO location: 0/4000020
+Latest checkpoint's TimeLineID: 1
+Latest checkpoint's NextOID: 123456
+
+En este caso, el punto importante es el REDO location: 0/4000020. Este valor indica el último archivo WAL que contiene información necesaria para la recuperación.
+
+
+2. Interpretar el REDO location: El valor 0/4000020 se refiere a un archivo WAL específico. Los archivos WAL tienen nombres en formato hexadecimal, como 000000010000000000000040. Esto corresponde al segmento 000000010000000000000040 (los primeros caracteres corresponden a la línea de tiempo y los siguientes son el número del archivo).
+
+Si listamos los archivos WAL en el directorio pg_wal, obtendremos algo así:
+
+ls /var/lib/postgresql/data/pg_wal
+
+Supongamos que la salida es:
+
+00000001000000000000003E
+00000001000000000000003F
+000000010000000000000040
+000000010000000000000041
+
+El archivo 000000010000000000000040 es el más reciente usado en el último checkpoint.
+
+Los archivos 00000001000000000000003E y 00000001000000000000003F son anteriores al último checkpoint y pueden ser eliminados si ya no se necesitan para replicación o recuperación.
+
+
+
+3. Eliminar los archivos WAL antiguos: Si estás seguro de que los archivos anteriores al checkpoint ya no son necesarios (por ejemplo, si tienes backups recientes o replicación actualizada), puedes eliminarlos con:
+
+rm /var/lib/postgresql/data/pg_wal/00000001000000000000003E
+rm /var/lib/postgresql/data/pg_wal/00000001000000000000003F
+
+
+
+Método 2: Usar pg_stat_replication para verificaciones de replicación
+
+Si estás usando replicación, primero verifica que los nodos secundarios hayan replicado los WAL antiguos antes de eliminarlos. Usa esta consulta para verificar el estado de la replicación:
+
+SELECT application_name, replay_lsn 
+FROM pg_stat_replication;
+
+El valor replay_lsn indica hasta qué punto los nodos secundarios han replicado los WAL.
+
+Asegúrate de que el valor replay_lsn es igual o mayor al último archivo WAL que estás considerando eliminar.
+
+
+Ejemplo resumido:
+
+Archivos WAL actuales:
+
+00000001000000000000003E
+00000001000000000000003F
+000000010000000000000040  (último checkpoint)
+000000010000000000000041
+
+Puedes eliminar los archivos 00000001000000000000003E y 00000001000000000000003F si:
+
+Ya no son necesarios para restauración o replicación.
+
+El último checkpoint fue en 000000010000000000000040.
+
+
+
+Consideraciones finales:
+
+Siempre asegúrate de tener backups válidos antes de eliminar cualquier archivo WAL.
+
+Si usas archivado WAL (archive_mode = on), asegúrate de que los archivos que vas a eliminar ya hayan sido archivados exitosamente.
+
+``` 
