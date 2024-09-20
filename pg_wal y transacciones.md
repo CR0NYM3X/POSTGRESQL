@@ -37,6 +37,184 @@ El cliente envía la consulta SQL al servidor PostgreSQL.
 1. **Vacuum**: PostgreSQL realiza operaciones de mantenimiento como `VACUUM` para recuperar espacio y actualizar estadísticas.
 2. **Autovacuum**: El proceso `autovacuum` se ejecuta automáticamente para mantener la base de datos en buen estado.
 
+---
+
+
+# Hacer una transaccion
+**`[NOTA]`** Cada sesión puede tener su propia transacción independiente. Por lo tanto, si ejecutas un BEGIN en una sesión y no lo cierras, solo afectará a esa sesión específica. Otras sesiones no se verán afectadas por la transacción no cerrada en la primera sesión. <br><br>
+ 
+El **begin o start** Permite que las transacciones/operaciones sean aisladas y transparentes unas de otras, esto quiere decir que si una sesion nueva se abre, no va detectar los cambios realizados en el cuando se incia el begin como son los insert,update,delete etc, 
+ ```
+BEGIN TRANSACTION  ISOLATION LEVEL REPEATABLE READ;
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+ ```
+El **commit**  se usa para guardar los cambios que se realizaron, como los insert,detelete, etc y estas seguro de que todo salio bien
+ ```
+COMMIT:
+ ```
+el **rollback** se usa en caso de que algo salio mal  y no quieres que se guarden los cambios entonces puedes hacer los rollback completo o un un rollback punto de guardado
+ ```
+rollback;
+ROLLBACK TO SAVEPOINT my_savepoint;
+ ```
+
+el **savepoint** sirve para hacer un punto de guardado, en caso de realizar varios cambios en un begin 
+ ```
+savepoint my_name_savepoint;
+
+-- tiene el propósito de destruir el punto de guardado 
+RELEASE SAVEPOINT my_savepoint;
+ ```
+
+
+### Ejemplo uso de Transacciones
+ ```sql
+postgres@postgres# create table personas
+ (  id     integer
+ , nombre character varying(100)
+ , edad   integer
+ , ciudad character varying(100) );
+CREATE TABLE
+Time: 2.290 ms
+
+
+postgres@postgres# insert into personas values
+ (  1 ,'Juan' , 28 ,'Culiacán' ),
+ (  2 ,'Ana'  , 35 ,'Mazatlán' ),
+ (  3 ,'Luis' , 22 ,'Guadalajara' );
+INSERT 0 3
+Time: 2.562 ms
+
+
+postgres@postgres# select *from personas;
++----+--------+------+-------------+
+| id | nombre | edad |   ciudad    |
++----+--------+------+-------------+
+|  1 | Juan   |   28 | Culiacán    |
+|  2 | Ana    |   35 | Mazatlán    |
+|  3 | Luis   |   22 | Guadalajara |
++----+--------+------+-------------+
+(3 rows)
+
+
+
+postgres@postgres# START TRANSACTION ISOLATION LEVEL Serializable ;
+START TRANSACTION
+Time: 0.389 ms
+postgres@postgres#*
+
+postgres@postgres#*  savepoint hice_un_update_1;
+SAVEPOINT
+Time: 0.381 ms
+postgres@postgres#* update personas set nombre= 'Panfilo' where id = 1 ;
+UPDATE 1
+Time: 1.687 ms
+
+postgres@postgres#* select * from personas;
++----+---------+------+-------------+
+| id | nombre  | edad |   ciudad    |
++----+---------+------+-------------+
+|  2 | Ana     |   35 | Mazatlán    |
+|  3 | Luis    |   22 | Guadalajara |
+|  1 | Panfilo |   28 | Culiacán    |
++----+---------+------+-------------+
+(3 rows)
+
+
+postgres@postgres#* savepoint hice_un_update_2;
+SAVEPOINT
+Time: 0.364 ms
+
+postgres@postgres#* update personas set nombre= 'Pedro' where id = 1 ;
+UPDATE 1
+Time: 0.891 ms
+
+
+postgres@postgres#* select * from personas;
++----+--------+------+-------------+
+| id | nombre | edad |   ciudad    |
++----+--------+------+-------------+
+|  2 | Ana    |   35 | Mazatlán    |
+|  3 | Luis   |   22 | Guadalajara |
+|  1 | Pedro  |   28 | Culiacán    |
++----+--------+------+-------------+
+(3 rows)
+
+
+postgres@postgres#* savepoint hice_un_delete;
+SAVEPOINT
+Time: 0.303 ms
+
+
+postgres@postgres#* delete  from personas   where id = 1 ;
+DELETE 1
+Time: 0.471 ms
+
+
+postgres@postgres#*  select * from personas;
++----+--------+------+-------------+
+| id | nombre | edad |   ciudad    |
++----+--------+------+-------------+
+|  2 | Ana    |   35 | Mazatlán    |
+|  3 | Luis   |   22 | Guadalajara |
++----+--------+------+-------------+
+(2 rows)
+
+
+
+postgres@postgres#* savepoint hice_un_insert;
+SAVEPOINT
+Time: 0.288 ms
+
+postgres@postgres#* insert into personas values(4,'Maria',50,'Monterrey');
+INSERT 0 1
+Time: 0.456 ms
+
+
+postgres@postgres#*  select * from personas;
++----+--------+------+-------------+
+| id | nombre | edad |   ciudad    |
++----+--------+------+-------------+
+|  2 | Ana    |   35 | Mazatlán    |
+|  3 | Luis   |   22 | Guadalajara |
+|  4 | Maria  |   50 | Monterrey   |
++----+--------+------+-------------+
+(3 rows)
+ 
+ 
+postgres@postgres#* ROLLBACK TO SAVEPOINT hice_un_delete;
+ROLLBACK
+Time: 0.395 ms
+
+--- Se Regresa el "hice_un_delete"
+postgres@postgres#* select * from personas;
++----+--------+------+-------------+
+| id | nombre | edad |   ciudad    |
++----+--------+------+-------------+
+|  2 | Ana    |   35 | Mazatlán    |
+|  3 | Luis   |   22 | Guadalajara |
+|  1 | Pedro  |   28 | Culiacán    |
++----+--------+------+-------------+
+(3 rows)
+
+
+postgres@postgres# commit;
+COMMIT
+Time: 0.434 ms
+
+
+postgres@postgres#* select * from personas;
++----+--------+------+-------------+
+| id | nombre | edad |   ciudad    |
++----+--------+------+-------------+
+|  2 | Ana    |   35 | Mazatlán    |
+|  3 | Luis   |   22 | Guadalajara |
+|  1 | Pedro  |   28 | Culiacán    |
++----+--------+------+-------------+
+(3 rows)
+ ```
+
+
 
  --- 
 
