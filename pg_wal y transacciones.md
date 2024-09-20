@@ -1989,3 +1989,507 @@ Siempre asegúrate de tener backups válidos antes de eliminar cualquier archivo
 Si usas archivado WAL (archive_mode = on), asegúrate de que los archivos que vas a eliminar ya hayan sido archivados exitosamente.
 
 ``` 
+
+
+
+
+# Ejemplo de lo que pasa cuando se corrompe un wal o se elimina un wal no confirmado con checkpoint
+```sql
+
+
+--------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+EVIDENCIA DE LOGS CUANDO DETIENES EL SERVICIO POSTGRESQL DE DISTINTAS FORMAS
+
+--------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+------------ APAGANDO EL SERVICIO POSTGRESQL DE MANERA NORMAL CON pg_ctl------------
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl stop -D $PGDATA14
+waiting for server to shut down.... done
+server stopped
+
+****** LOG ******
+<2024-09-20 12:38:14 MST     1744708 66edcf07.1a9f44 >LOG:  received fast shutdown request
+<2024-09-20 12:38:14 MST     1744708 66edcf07.1a9f44 >LOG:  aborting any active transactions
+<2024-09-20 12:38:14 MST     1744708 66edcf07.1a9f44 >LOG:  background worker "logical replication launcher" (PID 1744717) exited with exit code 1
+<2024-09-20 12:38:14 MST     1744711 66edcf08.1a9f47 >LOG:  shutting down
+<2024-09-20 12:38:14 MST     1744711 66edcf08.1a9f47 >LOG:  checkpoint starting: shutdown immediate
+<2024-09-20 12:38:14 MST     1744711 66edcf08.1a9f47 >LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.020 s, sync=0.003 s, total=0.031 s; sync files=2, longest=0.002 s, average=0.002 s; distance=16383 kB, estimate=16383 kB
+<2024-09-20 12:38:14 MST     1744708 66edcf07.1a9f44 >LOG:  database system is shut down
+
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-20 12:39:46 MST     1744854 66edcf82.1a9fd6 >LOG:  redirecting log output to logging collector process
+<2024-09-20 12:39:46 MST     1744854 66edcf82.1a9fd6 >HINT:  Future log output will appear in directory "pg_log".
+ done
+server started
+
+****** LOG ******
+<2024-09-20 12:39:46 MST     1744854 66edcf82.1a9fd6 >LOG:  starting PostgreSQL 14.13 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-22), 64-bit
+<2024-09-20 12:39:46 MST     1744854 66edcf82.1a9fd6 >LOG:  listening on IPv4 address "0.0.0.0", port 5414
+<2024-09-20 12:39:46 MST     1744854 66edcf82.1a9fd6 >LOG:  listening on IPv6 address "::", port 5414
+<2024-09-20 12:39:46 MST     1744854 66edcf82.1a9fd6 >LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5414"
+<2024-09-20 12:39:46 MST     1744854 66edcf82.1a9fd6 >LOG:  listening on Unix socket "/tmp/.s.PGSQL.5414"
+<2024-09-20 12:39:46 MST     1744856 66edcf82.1a9fd8 >LOG:  database system was shut down at 2024-09-20 12:38:14 MST
+<2024-09-20 12:39:46 MST     1744854 66edcf82.1a9fd6 >LOG:  database system is ready to accept connections
+
+
+
+------------ MATANDO EL PROCESO CON KILL ------------
+@ Cuando usas kill sin especificar una señal, por defecto envía la señal SIGTERM. PostgreSQL maneja SIGTERM como una solicitud para un apagado ordenado
+
+[postgres@SERVER_TEST pg_wal]$ kill  $(head -1  $PGDATA14/postmaster.pid)
+[postgres@SERVER_TEST pg_wal]$
+ 
+ ****** LOG ******
+<2024-09-20 12:43:14 MST     1744963 66edd039.1aa043 >LOG:  received smart shutdown request
+<2024-09-20 12:43:14 MST     1744963 66edd039.1aa043 >LOG:  background worker "logical replication launcher" (PID 1744972) exited with exit code 1
+<2024-09-20 12:43:14 MST     1744966 66edd039.1aa046 >LOG:  shutting down
+<2024-09-20 12:43:14 MST     1744966 66edd039.1aa046 >LOG:  checkpoint starting: shutdown immediate
+<2024-09-20 12:43:14 MST     1744966 66edd039.1aa046 >LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.019 s, sync=0.002 s, total=0.026 s; sync files=2, longest=0.001 s, average=0.001 s; distance=16384 kB, estimate=16384 kB
+<2024-09-20 12:43:14 MST     1744963 66edd039.1aa043 >LOG:  database system is shut down
+
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-20 12:43:33 MST     1745014 66edd065.1aa076 >LOG:  redirecting log output to logging collector process
+<2024-09-20 12:43:33 MST     1745014 66edd065.1aa076 >HINT:  Future log output will appear in directory "pg_log".
+ done
+server started
+
+****** LOG ******
+<2024-09-20 12:43:33 MST     1745014 66edd065.1aa076 >LOG:  starting PostgreSQL 14.13 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-22), 64-bit
+<2024-09-20 12:43:33 MST     1745014 66edd065.1aa076 >LOG:  listening on IPv4 address "0.0.0.0", port 5414
+<2024-09-20 12:43:33 MST     1745014 66edd065.1aa076 >LOG:  listening on IPv6 address "::", port 5414
+<2024-09-20 12:43:33 MST     1745014 66edd065.1aa076 >LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5414"
+<2024-09-20 12:43:34 MST     1745014 66edd065.1aa076 >LOG:  listening on Unix socket "/tmp/.s.PGSQL.5414"
+<2024-09-20 12:43:34 MST     1745016 66edd066.1aa078 >LOG:  database system was shut down at 2024-09-20 12:43:14 MST
+<2024-09-20 12:43:34 MST     1745014 66edd065.1aa076 >LOG:  database system is ready to accept connections
+
+
+------------ MATANDO EL PROCESO CON KILL CON SIGQUIT ------------
+@ Cuando usas kill -QUIT, envías la señal SIGQUIT. Apagado Inmediato: PostgreSQL maneja SIGQUIT como una solicitud para un apagado inmediato.  
+
+[postgres@SERVER_TEST pg_wal]$ kill -QUIT $(head -1  $PGDATA14/postmaster.pid)
+[postgres@SERVER_TEST pg_wal]$
+
+---- Tambien puedes lograr lo mismo usando "-m i"
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_ctl stop -D $PGDATA14 -m i
+waiting for server to shut down.... done
+server stopped
+
+
+****** LOG ******
+<2024-09-20 12:40:32 MST     1744854 66edcf82.1a9fd6 >LOG:  received immediate shutdown request
+<2024-09-20 12:40:32 MST     1744854 66edcf82.1a9fd6 >LOG:  database system is shut down
+
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-20 12:41:34 MST     1744891 66edcfed.1a9ffb >LOG:  redirecting log output to logging collector process
+<2024-09-20 12:41:34 MST     1744891 66edcfed.1a9ffb >HINT:  Future log output will appear in directory "pg_log".
+ done
+server started
+
+****** LOG ******
+<2024-09-20 12:41:34 MST     1744891 66edcfed.1a9ffb >LOG:  starting PostgreSQL 14.13 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-22), 64-bit
+<2024-09-20 12:41:34 MST     1744891 66edcfed.1a9ffb >LOG:  listening on IPv4 address "0.0.0.0", port 5414
+<2024-09-20 12:41:34 MST     1744891 66edcfed.1a9ffb >LOG:  listening on IPv6 address "::", port 5414
+<2024-09-20 12:41:34 MST     1744891 66edcfed.1a9ffb >LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5414"
+<2024-09-20 12:41:34 MST     1744891 66edcfed.1a9ffb >LOG:  listening on Unix socket "/tmp/.s.PGSQL.5414"
+<2024-09-20 12:41:34 MST     1744893 66edcfee.1a9ffd >LOG:  database system was interrupted; last known up at 2024-09-20 12:39:46 MST
+<2024-09-20 12:41:34 MST     1744893 66edcfee.1a9ffd >LOG:  database system was not properly shut down; automatic recovery in progress
+<2024-09-20 12:41:34 MST     1744893 66edcfee.1a9ffd >LOG:  redo starts at 1/B50000A0
+<2024-09-20 12:41:34 MST     1744893 66edcfee.1a9ffd >LOG:  invalid record length at 1/B50000D8: wanted 24, got 0
+<2024-09-20 12:41:34 MST     1744893 66edcfee.1a9ffd >LOG:  redo done at 1/B50000A0 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+<2024-09-20 12:41:34 MST     1744893 66edcfee.1a9ffd >LOG:  checkpoint starting: end-of-recovery immediate
+<2024-09-20 12:41:34 MST     1744893 66edcfee.1a9ffd >LOG:  checkpoint complete: wrote 0 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.020 s, sync=0.001 s, total=0.026 s; sync files=0, longest=0.000 s, average=0.000 s; distance=0 kB, estimate=0 kB
+<2024-09-20 12:41:34 MST     1744891 66edcfed.1a9ffb >LOG:  database system is ready to accept connections
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+ESCENARIO DONDE SE NO BORRA EL ARCHIVO WAL DONDE SE GUARDO LA MODIFICACION Y SE DETIENE EL SERVICIO POSTGRESQL
+DE FORMA IMEDIATA
+
+--------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 97M
+-rw-------. 1 postgres postgres  16M Sep 20 12:51 0000000100000001000000BE
+-rw-------. 1 postgres postgres  16M Sep 20 12:52 0000000100000001000000BF
+-rw-------. 1 postgres postgres  16M Sep 20 12:56 0000000100000001000000BA
+-rw-------. 1 postgres postgres  16M Sep 20 12:56 0000000100000001000000BB
+-rw-------. 1 postgres postgres  16M Sep 20 12:56 0000000100000001000000BC
+-rw-------. 1 postgres postgres  16M Sep 20 12:56 0000000100000001000000BD
+drwx------. 2 postgres postgres 4.0K Sep 20 12:56 archive_status
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_controldata -D $PGDATA14 | grep REDO
+Latest checkpoint's REDO location:    1/BA000028
+Latest checkpoint's REDO WAL file:    0000000100000001000000BA
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump  0000000100000001000000BE | wc -l
+pg_waldump: fatal: could not find a valid record after 1/BE000000
+0
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump  0000000100000001000000BF | wc -l
+pg_waldump: fatal: could not find a valid record after 1/BF000000
+0
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump  0000000100000001000000BA | wc -l
+213376
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump  0000000100000001000000BB | wc -l
+215976
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump  0000000100000001000000BC | wc -l
+216307
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump  0000000100000001000000BD | wc -l
+pg_waldump: fatal: error in WAL record at 1/BD96F220: invalid record length at 1/BD96F258: wanted 24, got 0
+127460
+
+
+
+[postgres@SERVER_TEST pg_wal]$ psql -X -p 5414 -c "create table personas
+(  id     integer                
+, nombre character varying(100) 
+, edad   integer                
+, ciudad character varying(100) );
+
+insert into personas values
+(  1 ,'Juan' , 28 ,'Culiacán' ),
+(  2 ,'Ana'  , 35 ,'Mazatlán' ),
+(  3 ,'Luis' , 22 ,'Guadalajara' );
+
+select *from personas;"
+CREATE TABLE
+INSERT 0 3
+ id | nombre | edad |   ciudad
+----+--------+------+-------------
+  1 | Juan   |   28 | Culiacán
+  2 | Ana    |   35 | Mazatlán
+  3 | Luis   |   22 | Guadalajara
+(3 rows)
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_controldata -D $PGDATA14 | grep REDO
+Latest checkpoint's REDO location:    1/BA000028
+Latest checkpoint's REDO WAL file:    0000000100000001000000BA
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_ctl stop -D $PGDATA14 -m i
+waiting for server to shut down.... done
+server stopped
+
+****** LOG ******
+<2024-09-20 12:59:08 MST     1745734 66edd373.1aa346 >LOG:  received immediate shutdown request
+<2024-09-20 12:59:08 MST     1745734 66edd373.1aa346 >LOG:  database system is shut down
+
+[postgres@SERVER_TEST pg_wal]$ psql -p 5414
+psql: error: connection to server on socket "/run/postgresql/.s.PGSQL.5414" failed: No such file or directory
+        Is the server running locally and accepting connections on that socket?
+
+
+
+[postgres@SERVER_TEST pg_wal]$
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-20 13:00:22 MST     1746155 66edd456.1aa4eb >LOG:  redirecting log output to logging collector process
+<2024-09-20 13:00:22 MST     1746155 66edd456.1aa4eb >HINT:  Future log output will appear in directory "pg_log".
+ done
+server started
+
+****** LOG ******
+<2024-09-20 13:00:22 MST     1746155 66edd456.1aa4eb >LOG:  starting PostgreSQL 14.13 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-22), 64-bit
+<2024-09-20 13:00:22 MST     1746155 66edd456.1aa4eb >LOG:  listening on IPv4 address "0.0.0.0", port 5414
+<2024-09-20 13:00:22 MST     1746155 66edd456.1aa4eb >LOG:  listening on IPv6 address "::", port 5414
+<2024-09-20 13:00:22 MST     1746155 66edd456.1aa4eb >LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5414"
+<2024-09-20 13:00:22 MST     1746155 66edd456.1aa4eb >LOG:  listening on Unix socket "/tmp/.s.PGSQL.5414"
+<2024-09-20 13:00:22 MST     1746157 66edd456.1aa4ed >LOG:  database system was interrupted; last known up at 2024-09-20 12:56:35 MST
+<2024-09-20 13:00:22 MST     1746157 66edd456.1aa4ed >LOG:  database system was not properly shut down; automatic recovery in progress
+<2024-09-20 13:00:22 MST     1746157 66edd456.1aa4ed >LOG:  redo starts at 1/BA0000A0
+<2024-09-20 13:00:22 MST     1746157 66edd456.1aa4ed >LOG:  invalid record length at 1/BD987598: wanted 24, got 0
+<2024-09-20 13:00:22 MST     1746157 66edd456.1aa4ed >LOG:  redo done at 1/BD987560 system usage: CPU: user: 0.47 s, system: 0.06 s, elapsed: 0.56 s
+<2024-09-20 13:00:22 MST     1746157 66edd456.1aa4ed >LOG:  checkpoint starting: end-of-recovery immediate
+<2024-09-20 13:00:23 MST     1746157 66edd456.1aa4ed >LOG:  checkpoint complete: wrote 2172 buffers (0.3%); 0 WAL file(s) added, 0 removed, 3 recycled; write=0.042 s, sync=0.002 s, total=0.052 s; sync files=56, longest=0.001 s, average=0.001 s; distance=58909 kB, estimate=58909 kB
+<2024-09-20 13:00:23 MST     1746155 66edd456.1aa4eb >LOG:  database system is ready to accept connections
+
+
+[postgres@SERVER_TEST pg_wal]$  psql -X -p 5414 -c "select * from personas;"
+ id | nombre | edad |   ciudad
+----+--------+------+-------------
+  1 | Juan   |   28 | Culiacán
+  2 | Ana    |   35 | Mazatlán
+  3 | Luis   |   22 | Guadalajara
+(3 rows)
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_controldata -D $PGDATA14 | grep REDO
+Latest checkpoint's REDO location:    1/BD987598
+Latest checkpoint's REDO WAL file:    0000000100000001000000BD
+
+
+
+
+
+
+ 
+
+--------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+ESCENARIO DONDE SE BORRA EL ARCHIVO WAL DONDE SE GUARDO LA MODIFICACION Y SE DETIENE EL SERVICIO POSTGRESQL
+DE FORMA IMEDIATA
+
+--------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl stop -D $PGDATA14
+waiting for server to shut down.... done
+server stopped
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_resetwal -f -D $PGDATA14
+Write-ahead log reset
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-20 13:16:17 MST     1747522 66edd811.1aaa42 >LOG:  redirecting log output to logging collector process
+<2024-09-20 13:16:17 MST     1747522 66edd811.1aaa42 >HINT:  Future log output will appear in directory "pg_log".
+ done
+server started
+
+
+[postgres@SERVER_TEST pg_wal]$ psql -X  -p 5414 -d postgres  -c "\dt"
+Did not find any relations.
+
+
+[postgres@SERVER_TEST pg_wal]$  ls -lhtr
+total 17M
+drwx------. 2 postgres postgres 4.0K Sep 20 13:56 archive_status
+-rw-------. 1 postgres postgres  16M Sep 20 13:56 0000000100000001000000EF
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_controldata -D $PGDATA14 | grep REDO
+Latest checkpoint's REDO location:    1/E5000028
+Latest checkpoint's REDO WAL file:    0000000100000001000000EF
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump 0000000100000001000000EF
+rmgr: XLOG        len (rec/tot):    114/   114, tx:          0, lsn: 1/EA000028, prev 0/00000000, desc: CHECKPOINT_SHUTDOWN redo 1/EA000028; tli 1; prev tli 1; fpw true; xid 0:1149; oid 74689; multi 1; offset 0; oldest xid 726 in DB 1; oldest multi 1 in DB 1; oldest/newest commit timestamp xid: 0/0; oldest running xid 0; shutdown
+rmgr: XLOG        len (rec/tot):     54/    54, tx:          0, lsn: 1/EA0000A0, prev 1/EA000028, desc: PARAMETER_CHANGE max_connections=100 max_worker_processes=8 max_wal_senders=10 max_prepared_xacts=0 max_locks_per_xact=64 wal_level=replica wal_log_hints=off track_commit_timestamp=off
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 1/EA0000D8, prev 1/EA0000A0, desc: RUNNING_XACTS nextXid 1149 latestCompletedXid 1148 oldestRunningXid 1149
+pg_waldump: fatal: error in WAL record at 1/EA0000D8: invalid record length at 1/EA000110: wanted 24, got 0
+
+
+[postgres@SERVER_TEST pg_wal]$ psql -X  -p 5414 -d postgres  -c "SELECT pg_switch_wal(); "
+ pg_switch_wal
+---------------
+ 1/EF000128
+(1 row)
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_controldata -D $PGDATA14 | grep REDO
+Latest checkpoint's REDO location:    1/EA000028
+Latest checkpoint's REDO WAL file:    0000000100000001000000EF
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 33M
+-rw-------. 1 postgres postgres  16M Sep 20 13:54 0000000100000001000000EF
+-rw-------. 1 postgres postgres  16M Sep 20 13:54 0000000100000001000000F0
+drwx------. 2 postgres postgres 4.0K Sep 20 13:54 archive_status
+
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump 0000000100000001000000F0
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 1/EB000028, prev 1/EA000110, desc: RUNNING_XACTS nextXid 1149 latestCompletedXid 1148 oldestRunningXid 1149
+pg_waldump: fatal: error in WAL record at 1/EB000028: invalid record length at 1/EB000060: wanted 24, got 0
+
+   
+
+
+[postgres@SERVER_TEST pg_wal]$ psql -X -p 5414 -d postgres -c " create table personas
+ (  id     integer
+ , nombre character varying(100)
+ , edad   integer
+ , ciudad character varying(100) );
+
+ insert into personas values
+ (  1 ,'Juan' , 28 ,'Culiacán' ),
+ (  2 ,'Ana'  , 35 ,'Mazatlán' ),
+ (  3 ,'Luis' , 22 ,'Guadalajara' );
+ 
+ select * from personas;"
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+ id | nombre | edad |   ciudad
+----+--------+------+-------------
+  1 | Juan   |   28 | Culiacán
+  2 | Ana    |   35 | Mazatlán
+  3 | Luis   |   22 | Guadalajara
+(3 rows)
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 33M
+-rw-------. 1 postgres postgres  16M Sep 20 13:48 0000000100000001000000EF
+-rw-------. 1 postgres postgres  16M Sep 20 13:51 0000000100000001000000F0
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_controldata -D $PGDATA14 | grep REDO
+Latest checkpoint's REDO location:    1/E5000028
+Latest checkpoint's REDO WAL file:    0000000100000001000000EF
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump  0000000100000001000000F0
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 1/F0000028, prev 1/EF000110, desc: RUNNING_XACTS nextXid 1150 latestCompletedXid 1149 oldestRunningXid 1150
+rmgr: XLOG        len (rec/tot):     30/    30, tx:          0, lsn: 1/F0000060, prev 1/F0000028, desc: NEXTOID 82881
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1150, lsn: 1/F0000080, prev 1/F0000060, desc: LOCK xid 1150 db 13748 rel 74689
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1150, lsn: 1/F00000B0, prev 1/F0000080, desc: CREATE base/13748/74689
+rmgr: Heap        len (rec/tot):     54/  4938, tx:       1150, lsn: 1/F00000E0, prev 1/F00000B0, desc: INSERT off 65 flags 0x00, blkref #0: rel 1663/13748/1247 blk 17 FPW
+rmgr: Btree       len (rec/tot):     53/  4133, tx:       1150, lsn: 1/F0001430, prev 1/F00000E0, desc: INSERT_LEAF off 202, blkref #0: rel 1663/13748/2703 blk 4 FPW
+rmgr: Btree       len (rec/tot):     53/  7225, tx:       1150, lsn: 1/F0002470, prev 1/F0001430, desc: INSERT_LEAF off 173, blkref #0: rel 1663/13748/2704 blk 4 FPW
+rmgr: Heap2       len (rec/tot):     57/  3369, tx:       1150, lsn: 1/F00040C8, prev 1/F0002470, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/13748/2608 blk 67 FPW
+rmgr: Btree       len (rec/tot):     53/  4257, tx:       1150, lsn: 1/F0004DF8, prev 1/F00040C8, desc: INSERT_LEAF off 149, blkref #0: rel 1663/13748/2673 blk 5 FPW
+rmgr: Btree       len (rec/tot):     53/  7533, tx:       1150, lsn: 1/F0005EA0, prev 1/F0004DF8, desc: INSERT_LEAF off 266, blkref #0: rel 1663/13748/2674 blk 1 FPW
+rmgr: Heap        len (rec/tot):    211/   211, tx:       1150, lsn: 1/F0007C28, prev 1/F0005EA0, desc: INSERT off 66 flags 0x00, blkref #0: rel 1663/13748/1247 blk 17
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F0007D00, prev 1/F0007C28, desc: INSERT_LEAF off 202, blkref #0: rel 1663/13748/2703 blk 4
+rmgr: Btree       len (rec/tot):     53/  8237, tx:       1150, lsn: 1/F0007D40, prev 1/F0007D00, desc: INSERT_LEAF off 86, blkref #0: rel 1663/13748/2704 blk 1 FPW
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1150, lsn: 1/F0009D88, prev 1/F0007D40, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/13748/2608 blk 67
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F0009DE0, prev 1/F0009D88, desc: INSERT_LEAF off 149, blkref #0: rel 1663/13748/2673 blk 5
+rmgr: Btree       len (rec/tot):     53/  1457, tx:       1150, lsn: 1/F0009E28, prev 1/F0009DE0, desc: INSERT_LEAF off 49, blkref #0: rel 1663/13748/2674 blk 4 FPW
+rmgr: Heap        len (rec/tot):     54/  3514, tx:       1150, lsn: 1/F000A3F8, prev 1/F0009E28, desc: INSERT off 91 flags 0x00, blkref #0: rel 1663/13748/1259 blk 6 FPW
+rmgr: Btree       len (rec/tot):     53/  7993, tx:       1150, lsn: 1/F000B1B8, prev 1/F000A3F8, desc: INSERT_LEAF off 395, blkref #0: rel 1663/13748/2662 blk 2 FPW
+rmgr: Btree       len (rec/tot):     53/  7981, tx:       1150, lsn: 1/F000D110, prev 1/F000B1B8, desc: INSERT_LEAF off 100, blkref #0: rel 1663/13748/2663 blk 1 FPW
+rmgr: Btree       len (rec/tot):     53/  1973, tx:       1150, lsn: 1/F000F058, prev 1/F000D110, desc: INSERT_LEAF off 94, blkref #0: rel 1663/13748/3455 blk 5 FPW
+rmgr: Heap2       len (rec/tot):     63/  7403, tx:       1150, lsn: 1/F000F810, prev 1/F000F058, desc: MULTI_INSERT 4 tuples flags 0x02, blkref #0: rel 1663/13748/1249 blk 94 FPW
+rmgr: Btree       len (rec/tot):     53/  2801, tx:       1150, lsn: 1/F0011518, prev 1/F000F810, desc: INSERT_LEAF off 99, blkref #0: rel 1663/13748/2658 blk 25 FPW
+rmgr: Btree       len (rec/tot):     53/  1173, tx:       1150, lsn: 1/F0012028, prev 1/F0011518, desc: INSERT_LEAF off 54, blkref #0: rel 1663/13748/2659 blk 16 FPW
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F00124C0, prev 1/F0012028, desc: INSERT_LEAF off 100, blkref #0: rel 1663/13748/2658 blk 25
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F0012508, prev 1/F00124C0, desc: INSERT_LEAF off 55, blkref #0: rel 1663/13748/2659 blk 16
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F0012548, prev 1/F0012508, desc: INSERT_LEAF off 99, blkref #0: rel 1663/13748/2658 blk 25
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F0012590, prev 1/F0012548, desc: INSERT_LEAF off 56, blkref #0: rel 1663/13748/2659 blk 16
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F00125D0, prev 1/F0012590, desc: INSERT_LEAF off 99, blkref #0: rel 1663/13748/2658 blk 25
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F0012618, prev 1/F00125D0, desc: INSERT_LEAF off 57, blkref #0: rel 1663/13748/2659 blk 16
+rmgr: Heap2       len (rec/tot):    700/   700, tx:       1150, lsn: 1/F0012658, prev 1/F0012618, desc: MULTI_INSERT 5 tuples flags 0x00, blkref #0: rel 1663/13748/1249 blk 94
+rmgr: Heap2       len (rec/tot):     57/  7037, tx:       1150, lsn: 1/F0012918, prev 1/F0012658, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/13748/1249 blk 93 FPW
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F00144B0, prev 1/F0012918, desc: INSERT_LEAF off 100, blkref #0: rel 1663/13748/2658 blk 25
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F00144F8, prev 1/F00144B0, desc: INSERT_LEAF off 54, blkref #0: rel 1663/13748/2659 blk 16
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F0014538, prev 1/F00144F8, desc: INSERT_LEAF off 104, blkref #0: rel 1663/13748/2658 blk 25
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F0014580, prev 1/F0014538, desc: INSERT_LEAF off 54, blkref #0: rel 1663/13748/2659 blk 16
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F00145C0, prev 1/F0014580, desc: INSERT_LEAF off 100, blkref #0: rel 1663/13748/2658 blk 25
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F0014608, prev 1/F00145C0, desc: INSERT_LEAF off 54, blkref #0: rel 1663/13748/2659 blk 16
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F0014648, prev 1/F0014608, desc: INSERT_LEAF off 105, blkref #0: rel 1663/13748/2658 blk 25
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F0014690, prev 1/F0014648, desc: INSERT_LEAF off 54, blkref #0: rel 1663/13748/2659 blk 16
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F00146D0, prev 1/F0014690, desc: INSERT_LEAF off 100, blkref #0: rel 1663/13748/2658 blk 25
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F0014718, prev 1/F00146D0, desc: INSERT_LEAF off 54, blkref #0: rel 1663/13748/2659 blk 16
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1150, lsn: 1/F0014758, prev 1/F0014718, desc: INSERT_LEAF off 106, blkref #0: rel 1663/13748/2658 blk 25
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1150, lsn: 1/F00147A0, prev 1/F0014758, desc: INSERT_LEAF off 54, blkref #0: rel 1663/13748/2659 blk 16
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1150, lsn: 1/F00147E0, prev 1/F00147A0, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/13748/2608 blk 67
+rmgr: Btree       len (rec/tot):     53/  7617, tx:       1150, lsn: 1/F0014838, prev 1/F00147E0, desc: INSERT_LEAF off 269, blkref #0: rel 1663/13748/2673 blk 4 FPW
+rmgr: Btree       len (rec/tot):     53/  6301, tx:       1150, lsn: 1/F0016618, prev 1/F0014838, desc: INSERT_LEAF off 108, blkref #0: rel 1663/13748/2674 blk 48 FPW
+rmgr: Heap2       len (rec/tot):    144/   144, tx:       1150, lsn: 1/F0017EB8, prev 1/F0016618, desc: PRUNE latestRemovedXid 1149 nredirected 0 ndead 43, blkref #0: rel 1663/13748/1249 blk 94
+rmgr: Heap        len (rec/tot):     81/    81, tx:       1150, lsn: 1/F0017F48, prev 1/F0017EB8, desc: INSERT+INIT off 1 flags 0x00, blkref #0: rel 1663/13748/74689 blk 0
+rmgr: Heap        len (rec/tot):     77/    77, tx:       1150, lsn: 1/F0017FA0, prev 1/F0017F48, desc: INSERT off 2 flags 0x00, blkref #0: rel 1663/13748/74689 blk 0
+rmgr: Heap        len (rec/tot):     83/    83, tx:       1150, lsn: 1/F0017FF0, prev 1/F0017FA0, desc: INSERT off 3 flags 0x00, blkref #0: rel 1663/13748/74689 blk 0
+rmgr: Transaction len (rec/tot):    501/   501, tx:       1150, lsn: 1/F0018060, prev 1/F0017FF0, desc: COMMIT 2024-09-20 13:57:07.584304 MST; inval msgs: catcache 76 catcache 75 catcache 76 catcache 75 catcache 51 catcache 50 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 snapshot 2608 relcache 74689
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 1/F0018258, prev 1/F0018060, desc: RUNNING_XACTS nextXid 1151 latestCompletedXid 1150 oldestRunningXid 1151
+pg_waldump: fatal: error in WAL record at 1/F0018258: invalid record length at 1/F0018290: wanted 24, got 0
+
+
+
+
+
+
+--- Este archivo que vamos eliminar tiene mas lineas esto quiere decir que aqui se guardo 
+[postgres@SERVER_TEST pg_wal]$ rm 0000000100000001000000F0
+[postgres@SERVER_TEST pg_wal]$
+
+pg_archivecleanup -n /sysx/data14/pg_wal
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 17M
+-rw-------. 1 postgres postgres  16M Sep 20 13:56 0000000100000001000000EF
+drwx------. 2 postgres postgres 4.0K Sep 20 13:56 archive_status
+
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_ctl stop -D $PGDATA14 -m i
+waiting for server to shut down.... done
+server stopped
+
+
+****** LOG ******
+<2024-09-20 13:11:20 MST     1746155 66edd456.1aa4eb >LOG:  received immediate shutdown request
+<2024-09-20 13:11:20 MST     1746155 66edd456.1aa4eb >LOG:  database system is shut down
+
+
+[postgres@SERVER_TEST pg_wal]$ psql -p 5414 -d postgres
+psql: error: connection to server on socket "/run/postgresql/.s.PGSQL.5414" failed: No such file or directory
+        Is the server running locally and accepting connections on that socket?
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-20 13:12:40 MST     1747141 66edd738.1aa8c5 >LOG:  redirecting log output to logging collector process
+<2024-09-20 13:12:40 MST     1747141 66edd738.1aa8c5 >HINT:  Future log output will appear in directory "pg_log".
+ done
+server started
+
+
+****** LOG ******
+<2024-09-20 13:58:29 MST     1750181 66ede1f5.1ab4a5 >LOG:  starting PostgreSQL 14.13 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-22), 64-bit
+<2024-09-20 13:58:29 MST     1750181 66ede1f5.1ab4a5 >LOG:  listening on IPv4 address "0.0.0.0", port 5414
+<2024-09-20 13:58:29 MST     1750181 66ede1f5.1ab4a5 >LOG:  listening on IPv6 address "::", port 5414
+<2024-09-20 13:58:29 MST     1750181 66ede1f5.1ab4a5 >LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5414"
+<2024-09-20 13:58:29 MST     1750181 66ede1f5.1ab4a5 >LOG:  listening on Unix socket "/tmp/.s.PGSQL.5414"
+<2024-09-20 13:58:29 MST     1750183 66ede1f5.1ab4a7 >LOG:  database system was interrupted; last known up at 2024-09-20 13:56:09 MST
+<2024-09-20 13:58:29 MST     1750183 66ede1f5.1ab4a7 >LOG:  database system was not properly shut down; automatic recovery in progress
+<2024-09-20 13:58:29 MST     1750183 66ede1f5.1ab4a7 >LOG:  redo starts at 1/EF0000A0
+<2024-09-20 13:58:29 MST     1750183 66ede1f5.1ab4a7 >LOG:  redo done at 1/EF000110 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+<2024-09-20 13:58:29 MST     1750183 66ede1f5.1ab4a7 >LOG:  checkpoint starting: end-of-recovery immediate
+<2024-09-20 13:58:29 MST     1750183 66ede1f5.1ab4a7 >LOG:  checkpoint complete: wrote 0 buffers (0.0%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.020 s, sync=0.001 s, total=0.047 s; sync files=0, longest=0.000 s, average=0.000 s; distance=16384 kB, estimate=16384 kB
+<2024-09-20 13:58:29 MST     1750181 66ede1f5.1ab4a5 >LOG:  database system is ready to accept connections
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 33M
+-rw-------. 1 postgres postgres  16M Sep 20 13:56 0000000100000001000000F1
+-rw-------. 1 postgres postgres  16M Sep 20 13:58 0000000100000001000000F0
+drwx------. 2 postgres postgres 4.0K Sep 20 13:58 archive_status
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_controldata -D $PGDATA14 | grep REDO
+Latest checkpoint's REDO location:    1/F0000028
+Latest checkpoint's REDO WAL file:    0000000100000001000000F0
+
+
+
+[postgres@SERVER_TEST pg_wal]$  psql -X -p 5414 -d postgres -c "\dt"
+Did not find any relations.
+
+
+[postgres@SERVER_TEST pg_wal]$ psql -X -p 5414 -d postgres  -c "select * from personas;"
+ERROR:  relation "personas" does not exist
+LINE 1: select * from personas;
+                      ^
+
+ 
+``` 
