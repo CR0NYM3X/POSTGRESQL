@@ -54,6 +54,8 @@ CRUD = Create, Read, Update, Delete
 --- id del proceso actual 
 pg_backend_pid()
 
+-- Vez el id de la transaccion 
+SELECT txid_current();
 
 SELECT proname, proowner, pg_get_userbyid(proowner) AS owner_name
 FROM pg_proc;
