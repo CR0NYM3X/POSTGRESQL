@@ -468,7 +468,78 @@ postgres@postgres# select * from ventas ;
 
 ```
   
-  
+
+
+
+
+
+En PostgreSQL, los "snapshots" son una parte fundamental del sistema de control de concurrencia multiversión (MVCC, por sus siglas en inglés). 
+
+### ¿Qué es un Snapshot en PostgreSQL?
+
+Un snapshot en PostgreSQL es una vista consistente de la base de datos en un momento específico. Los snapshots permiten a las transacciones ver un estado de la base de datos que no cambia, incluso si otras transacciones están realizando modificaciones. Esto es esencial para mantener la consistencia y el aislamiento de las transacciones.
+
+### ¿Para Qué Sirve un Snapshot?
+
+1. **Consistencia de Lectura**:
+   - Los snapshots aseguran que una transacción puede leer datos consistentes sin ser afectada por otras transacciones concurrentes que están realizando escrituras.
+
+2. **Aislamiento de Transacciones**:
+   - Permiten diferentes niveles de aislamiento de transacciones, como `READ COMMITTED` y `REPEATABLE READ`, proporcionando un control granular sobre cómo las transacciones interactúan entre sí.
+
+3. **Recuperación de Datos**:
+   - Los snapshots pueden ser utilizados en procesos de recuperación y replicación para asegurar que los datos se restauren a un estado consistente.
+
+### ¿Cómo se Configura un Snapshot?
+
+Los snapshots se gestionan automáticamente en PostgreSQL, pero puedes influir en su comportamiento a través de la configuración de transacciones y niveles de aislamiento.
+
+#### Configuración de Niveles de Aislamiento
+
+1. **READ COMMITTED**:
+   - Este es el nivel de aislamiento por defecto. Cada comando dentro de una transacción ve un snapshot consistente de la base de datos en el momento en que se ejecuta el comando.
+   ```sql
+   SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+   ```
+
+2. **REPEATABLE READ**:
+   - Todas las consultas dentro de una transacción ven el mismo snapshot, asegurando que los datos no cambien durante la duración de la transacción.
+   ```sql
+   SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+   ```
+
+3. **SERIALIZABLE**:
+   - Este nivel de aislamiento asegura que las transacciones se ejecuten de manera que el resultado sea el mismo que si se hubieran ejecutado secuencialmente.
+   ```sql
+   SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+   ```
+
+#### Ejemplo de Uso de Snapshots
+
+1. **Iniciar una Transacción con un Nivel de Aislamiento Específico**:
+   ```sql
+   BEGIN;
+   SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+   SELECT * FROM my_table;
+   -- Realiza operaciones de lectura/escritura
+   COMMIT;
+   ```
+
+2. **Verificar el Snapshot Actual**:
+   - Puedes usar la función `txid_current_snapshot()` para ver el snapshot actual de una transacción.
+   ```sql
+   SELECT txid_current_snapshot();
+   select * from pg_current_snapshot();
+   ```
+
+### Conclusión
+
+Los snapshots en PostgreSQL son esenciales para mantener la consistencia y el aislamiento de las transacciones. Aunque se gestionan automáticamente, puedes configurar los niveles de aislamiento de las transacciones para controlar cómo se utilizan los snapshots. Esto te permite asegurar que tus transacciones se ejecuten de manera consistente y segura.
+
+ 
+
+
+
  
 
 
