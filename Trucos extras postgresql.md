@@ -1323,3 +1323,27 @@ WHERE
 ```
 
 
+
+
+
+# Ver las definiciones de los objetos 
+```
+postgres@postgres# select proname  from pg_proc where proname ilike '%pg_get_%' and  proname ilike '%def%'  group by proname;
++-------------------------------------+
+|               proname               |
++-------------------------------------+
+| pg_get_constraintdef                |
+| pg_get_function_arg_default         |
+| pg_get_functiondef                  |
+| pg_get_indexdef                     |
+| pg_get_partition_constraintdef      |
+| pg_get_partkeydef                   |
+| pg_get_ruledef                      |
+| pg_get_statisticsobjdef             |
+| pg_get_statisticsobjdef_columns     |
+| pg_get_statisticsobjdef_expressions |
+| pg_get_triggerdef                   |
+| pg_get_viewdef                      |
++-------------------------------------+
+(12 rows)
+```
