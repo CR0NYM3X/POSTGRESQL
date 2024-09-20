@@ -4,11 +4,17 @@
 ### Quitar permisos en eschema public por seguridad 
 POR SEGURIDAD CUANDO UN USUARIO SE CONECTA TIENE ACCESO A MUCHAS TABLAS Y ESQUEMAS DEL SISTEMAS QUE TE PERMITEN VER EL INVENTARIO DE LA BASE DE DATOS
 ```sql
+
+REVOKE usage ON SCHEMA pg_catalog FROM PUBLIC;
+REVOKE usage ON SCHEMA information_schema FROM PUBLIC;
+
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON DATABASE postgres FROM PUBLIC;
 
 REVOKE all privileges on all tables in schema  pg_catalog from PUBLIC;
 REVOKE all privileges on all tables in schema  information_schema from PUBLIC;
+
+REVOKE all privileges on table pg_proc   from PUBLIC;
 
 select table_schema from information_schema.table_privileges where  grantee = 'PUBLIC' group by table_schema ;
 
