@@ -16,7 +16,7 @@ REVOKE all privileges on all tables in schema  information_schema from PUBLIC;
 
 REVOKE all privileges on table pg_proc   from PUBLIC;
 
-select table_schema from information_schema.table_privileges where  grantee = 'PUBLIC' group by table_schema ;
+select table_schema,table_name from information_schema.table_privileges where  grantee = 'PUBLIC' order by  table_schema,table_name  ;
 
  
 
