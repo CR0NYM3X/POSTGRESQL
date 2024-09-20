@@ -437,6 +437,19 @@ archive_cleanup_command = 'pg_archivecleanup -d /mnt/standby/archive %r 2>>clean
 
 
 
+postgres@postgres#  select name,setting from pg_settings where name ilike '%checkpoint%';
++------------------------------+---------+
+|             name             | setting |
++------------------------------+---------+
+| checkpoint_completion_target | 0.9     |
+| checkpoint_flush_after       | 32      |
+| checkpoint_timeout           | 300     |
+| checkpoint_warning           | 30      |
+| log_checkpoints              | on      |
++------------------------------+---------+
+
+
+
 postgres@postgres# select name,setting,unit from pg_settings where name ilike '%wal%';
 +-------------------------------+-----------+------+
 |             name              |  setting  | unit |
@@ -468,6 +481,8 @@ postgres@postgres# select name,setting,unit from pg_settings where name ilike '%
 | wal_writer_flush_after        | 128       | 8kB  |
 +-------------------------------+-----------+------+
 
+forzar la creación de un nuevo archivo WAL (Write-Ahead Logging). PostgreSQL crea un nuevo archivo WAL cuando el archivo actual alcanza su tamaño máximo (por defecto, 16MB).
+SELECT pg_switch_wal();  
 
 postgres@postgres# select proname  from pg_proc where proname ilike '%wal%';
 +-------------------------------+
@@ -491,6 +506,19 @@ postgres@postgres# select proname  from pg_proc where proname ilike '%wal%';
 | pg_wal_replay_resume          |
 | pg_ls_waldir                  |
 +-------------------------------+
+
+postgres@postgres# select proname  from pg_proc where proname ilike '%checkpoint%';
++----------------------------------------------+
+|                   proname                    |
++----------------------------------------------+
+| pg_stat_get_bgwriter_timed_checkpoints       |
+| pg_stat_get_bgwriter_requested_checkpoints   |
+| pg_stat_get_bgwriter_buf_written_checkpoints |
+| pg_stat_get_checkpoint_write_time            |
+| pg_stat_get_checkpoint_sync_time             |
+| pg_control_checkpoint                        |
++----------------------------------------------+
+
 
 postgres@postgres# select * from pg_stat_archiver ;
 +----------------+-------------------+--------------------+--------------+-----------------+------------------+------------------------------+
@@ -552,6 +580,1081 @@ postgres@postgres# select pg_ls_waldir();
 # EJEMPLO   WAL Y CHECKPOINT
 ```SQL
 
+
+
+
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_ctl stop -D $PGDATA14
+waiting for server to shut down.... done
+server stopped
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_resetwal -f -D $PGDATA14
+Write-ahead log reset
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-19 15:05:18 MST     1687430 66eca01e.19bf86 >LOG:  redirecting log output to logging collector process
+<2024-09-19 15:05:18 MST     1687430 66eca01e.19bf86 >HINT:  Future log output will appear in directory "pg_log".
+ done
+server started
+
+
+[postgres@SERVER_TEST pg_wal]$ cd /sysx/data14/pg_wal
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 16M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 13:21 00000001000000000000005B
+[postgres@SERVER_TEST pg_wal]$
+
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_waldump -f  00000001000000000000005B
+rmgr: XLOG        len (rec/tot):    114/   114, tx:          0, lsn: 0/5B000028, prev 0/00000000, desc: CHECKPOINT_SHUTDOWN redo 0/5B000028; tli 1; prev tli 1; fpw true; xid 0:1011; oid 17060; multi 1; offset 0; oldest xid 726 in DB 1; oldest multi 1 in DB 1; oldest/newest commit timestamp xid: 0/0; oldest running xid 0; shutdown
+rmgr: XLOG        len (rec/tot):     54/    54, tx:          0, lsn: 0/5B0000A0, prev 0/5B000028, desc: PARAMETER_CHANGE max_connections=100 max_worker_processes=8 max_wal_senders=10 max_prepared_xacts=0 max_locks_per_xact=64 wal_level=replica wal_log_hints=off track_commit_timestamp=off
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B0000D8, prev 0/5B0000A0, desc: RUNNING_XACTS nextXid 1011 latestCompletedXid 1010 oldestRunningXid 1011
+
+
+[postgres@SERVER_TEST pg_log]$ $PGBIN14/psql -X -p 5414  -c   "create database test_checkpoint;"
+CREATE DATABASE
+
+
+rmgr: XLOG        len (rec/tot):     30/    30, tx:          0, lsn: 0/5B000110, prev 0/5B0000D8, desc: NEXTOID 25252
+rmgr: Heap        len (rec/tot):     54/  4722, tx:       1011, lsn: 0/5B000130, prev 0/5B000110, desc: INSERT off 19 flags 0x00, blkref #0: rel 1664/0/1262 blk 0 FPW
+rmgr: Btree       len (rec/tot):     53/   569, tx:       1011, lsn: 0/5B0013A8, prev 0/5B000130, desc: INSERT_LEAF off 17, blkref #0: rel 1664/0/2671 blk 1 FPW
+rmgr: Btree       len (rec/tot):     53/   433, tx:       1011, lsn: 0/5B0015E8, prev 0/5B0013A8, desc: INSERT_LEAF off 17, blkref #0: rel 1664/0/2672 blk 1 FPW
+rmgr: Standby     len (rec/tot):     54/    54, tx:          0, lsn: 0/5B0017A0, prev 0/5B0015E8, desc: RUNNING_XACTS nextXid 1012 latestCompletedXid 1010 oldestRunningXid 1011; 1 xacts: 1011
+rmgr: Standby     len (rec/tot):     54/    54, tx:          0, lsn: 0/5B0017D8, prev 0/5B0017A0, desc: RUNNING_XACTS nextXid 1012 latestCompletedXid 1010 oldestRunningXid 1011; 1 xacts: 1011
+rmgr: XLOG        len (rec/tot):    114/   114, tx:          0, lsn: 0/5B001810, prev 0/5B0017D8, desc: CHECKPOINT_ONLINE redo 0/5B0017A0; tli 1; prev tli 1; fpw true; xid 0:1012; oid 25252; multi 1; offset 0; oldest xid 726 in DB 1; oldest multi 1 in DB 1; oldest/newest commit timestamp xid: 0/0; oldest running xid 1011; online
+rmgr: Database    len (rec/tot):     42/    42, tx:       1011, lsn: 0/5B001888, prev 0/5B001810, desc: CREATE copy dir 1663/1 to 1663/17060
+rmgr: Standby     len (rec/tot):     54/    54, tx:          0, lsn: 0/5B0018B8, prev 0/5B001888, desc: RUNNING_XACTS nextXid 1012 latestCompletedXid 1010 oldestRunningXid 1011; 1 xacts: 1011
+rmgr: XLOG        len (rec/tot):    114/   114, tx:          0, lsn: 0/5B0018F0, prev 0/5B0018B8, desc: CHECKPOINT_ONLINE redo 0/5B0018B8; tli 1; prev tli 1; fpw true; xid 0:1012; oid 25252; multi 1; offset 0; oldest xid 726 in DB 1; oldest multi 1 in DB 1; oldest/newest commit timestamp xid: 0/0; oldest running xid 1011; online
+rmgr: Transaction len (rec/tot):     66/    66, tx:       1011, lsn: 0/5B001968, prev 0/5B0018F0, desc: COMMIT 2024-09-19 13:28:13.820813 MST; inval msgs: catcache 21; sync
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B0019B0, prev 0/5B001968, desc: RUNNING_XACTS nextXid 1012 latestCompletedXid 1011 oldestRunningXid 1012
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "CREATE TABLE ventas (    id SERIAL PRIMARY KEY ,    fecha DATE,    cliente_id INTEGER,    producto_id INTEGER,    cantidad INTEGER,    precio NUMERIC);"
+CREATE TABLE
+
+
+
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B0019E8, prev 0/5B0019B0, desc: LOCK xid 1012 db 17060 rel 17061
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B001A18, prev 0/5B0019E8, desc: CREATE base/17060/17061
+rmgr: Heap        len (rec/tot):     54/   874, tx:       1012, lsn: 0/5B001A48, prev 0/5B001A18, desc: INSERT off 2 flags 0x01, blkref #0: rel 1663/17060/1259 blk 0 FPW
+rmgr: Btree       len (rec/tot):     53/  2393, tx:       1012, lsn: 0/5B001DB8, prev 0/5B001A48, desc: INSERT_LEAF off 115, blkref #0: rel 1663/17060/2662 blk 2 FPW
+rmgr: Btree       len (rec/tot):     53/  4065, tx:       1012, lsn: 0/5B002730, prev 0/5B001DB8, desc: INSERT_LEAF off 103, blkref #0: rel 1663/17060/2663 blk 2 FPW
+rmgr: Btree       len (rec/tot):     53/  3693, tx:       1012, lsn: 0/5B003718, prev 0/5B002730, desc: INSERT_LEAF off 180, blkref #0: rel 1663/17060/3455 blk 4 FPW
+rmgr: Heap2       len (rec/tot):     61/  7217, tx:       1012, lsn: 0/5B0045A0, prev 0/5B003718, desc: MULTI_INSERT 3 tuples flags 0x03, blkref #0: rel 1663/17060/1249 blk 16 FPW
+rmgr: Btree       len (rec/tot):     53/  4125, tx:       1012, lsn: 0/5B0061F0, prev 0/5B0045A0, desc: INSERT_LEAF off 108, blkref #0: rel 1663/17060/2658 blk 14 FPW
+rmgr: Btree       len (rec/tot):     53/  7673, tx:       1012, lsn: 0/5B007210, prev 0/5B0061F0, desc: INSERT_LEAF off 379, blkref #0: rel 1663/17060/2659 blk 9 FPW
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B009028, prev 0/5B007210, desc: INSERT_LEAF off 109, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B009070, prev 0/5B009028, desc: INSERT_LEAF off 380, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B0090B0, prev 0/5B009070, desc: INSERT_LEAF off 108, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B0090F8, prev 0/5B0090B0, desc: INSERT_LEAF off 381, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Heap2       len (rec/tot):    830/   830, tx:       1012, lsn: 0/5B009138, prev 0/5B0090F8, desc: MULTI_INSERT 6 tuples flags 0x02, blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B009478, prev 0/5B009138, desc: INSERT_LEAF off 108, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B0094C0, prev 0/5B009478, desc: INSERT_LEAF off 379, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B009500, prev 0/5B0094C0, desc: INSERT_LEAF off 112, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B009548, prev 0/5B009500, desc: INSERT_LEAF off 379, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B009588, prev 0/5B009548, desc: INSERT_LEAF off 108, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B0095D0, prev 0/5B009588, desc: INSERT_LEAF off 379, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B009610, prev 0/5B0095D0, desc: INSERT_LEAF off 113, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B009658, prev 0/5B009610, desc: INSERT_LEAF off 379, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B009698, prev 0/5B009658, desc: INSERT_LEAF off 108, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B0096E0, prev 0/5B009698, desc: INSERT_LEAF off 379, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B009720, prev 0/5B0096E0, desc: INSERT_LEAF off 114, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B009768, prev 0/5B009720, desc: INSERT_LEAF off 379, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Heap2       len (rec/tot):     57/  8205, tx:       1012, lsn: 0/5B0097A8, prev 0/5B009768, desc: MULTI_INSERT 1 tuples flags 0x03, blkref #0: rel 1663/17060/2608 blk 54 FPW
+rmgr: Btree       len (rec/tot):     53/  5797, tx:       1012, lsn: 0/5B00B7D0, prev 0/5B0097A8, desc: INSERT_LEAF off 198, blkref #0: rel 1663/17060/2673 blk 42 FPW
+rmgr: Btree       len (rec/tot):     53/  5937, tx:       1012, lsn: 0/5B00CE90, prev 0/5B00B7D0, desc: INSERT_LEAF off 95, blkref #0: rel 1663/17060/2674 blk 48 FPW
+rmgr: Sequence    len (rec/tot):     99/    99, tx:       1012, lsn: 0/5B00E5E0, prev 0/5B00CE90, desc: LOG rel 1663/17060/17061, blkref #0: rel 1663/17060/17061 blk 0
+rmgr: Heap        len (rec/tot):    104/   104, tx:       1012, lsn: 0/5B00E648, prev 0/5B00E5E0, desc: INSERT+INIT off 1 flags 0x00, blkref #0: rel 1663/17060/2224 blk 0
+rmgr: Btree       len (rec/tot):     90/    90, tx:       1012, lsn: 0/5B00E6B0, prev 0/5B00E648, desc: NEWROOT lev 0, blkref #0: rel 1663/17060/5002 blk 1, blkref #2: rel 1663/17060/5002 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B00E710, prev 0/5B00E6B0, desc: INSERT_LEAF off 1, blkref #0: rel 1663/17060/5002 blk 1
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B00E750, prev 0/5B00E710, desc: LOCK xid 1012 db 17060 rel 17062
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B00E780, prev 0/5B00E750, desc: CREATE base/17060/17062
+rmgr: Heap        len (rec/tot):     54/  8162, tx:       1012, lsn: 0/5B00E7B0, prev 0/5B00E780, desc: INSERT off 43 flags 0x01, blkref #0: rel 1663/17060/1247 blk 13 FPW
+rmgr: Btree       len (rec/tot):     53/  4813, tx:       1012, lsn: 0/5B0107B0, prev 0/5B00E7B0, desc: INSERT_LEAF off 236, blkref #0: rel 1663/17060/2703 blk 2 FPW
+rmgr: Btree       len (rec/tot):     53/  6137, tx:       1012, lsn: 0/5B011A80, prev 0/5B0107B0, desc: INSERT_LEAF off 166, blkref #0: rel 1663/17060/2704 blk 2 FPW
+rmgr: Heap2       len (rec/tot):     57/  6921, tx:       1012, lsn: 0/5B013298, prev 0/5B011A80, desc: MULTI_INSERT 1 tuples flags 0x03, blkref #0: rel 1663/17060/2608 blk 64 FPW
+rmgr: Btree       len (rec/tot):     53/  2269, tx:       1012, lsn: 0/5B014DC0, prev 0/5B013298, desc: INSERT_LEAF off 78, blkref #0: rel 1663/17060/2673 blk 40 FPW
+rmgr: Btree       len (rec/tot):     53/  5321, tx:       1012, lsn: 0/5B0156A0, prev 0/5B014DC0, desc: INSERT_LEAF off 187, blkref #0: rel 1663/17060/2674 blk 52 FPW
+rmgr: Heap        len (rec/tot):    211/   211, tx:       1012, lsn: 0/5B016B88, prev 0/5B0156A0, desc: INSERT+INIT off 1 flags 0x00, blkref #0: rel 1663/17060/1247 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B016C60, prev 0/5B016B88, desc: INSERT_LEAF off 236, blkref #0: rel 1663/17060/2703 blk 2
+rmgr: Btree       len (rec/tot):     53/  6945, tx:       1012, lsn: 0/5B016CA0, prev 0/5B016C60, desc: INSERT_LEAF off 63, blkref #0: rel 1663/17060/2704 blk 4 FPW
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1012, lsn: 0/5B0187E0, prev 0/5B016CA0, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B018838, prev 0/5B0187E0, desc: INSERT_LEAF off 78, blkref #0: rel 1663/17060/2673 blk 40
+rmgr: Btree       len (rec/tot):     53/  4117, tx:       1012, lsn: 0/5B018880, prev 0/5B018838, desc: INSERT_LEAF off 144, blkref #0: rel 1663/17060/2674 blk 50 FPW
+rmgr: Heap        len (rec/tot):    203/   203, tx:       1012, lsn: 0/5B019898, prev 0/5B018880, desc: INSERT off 3 flags 0x00, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B019968, prev 0/5B019898, desc: INSERT_LEAF off 116, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B0199A8, prev 0/5B019968, desc: INSERT_LEAF off 103, blkref #0: rel 1663/17060/2663 blk 2
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B0199F0, prev 0/5B0199A8, desc: INSERT_LEAF off 181, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: Heap2       len (rec/tot):    180/   180, tx:       1012, lsn: 0/5B019A30, prev 0/5B0199F0, desc: MULTI_INSERT 1 tuples flags 0x00, blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap2       len (rec/tot):     65/  2901, tx:       1012, lsn: 0/5B019AE8, prev 0/5B019A30, desc: MULTI_INSERT 5 tuples flags 0x03, blkref #0: rel 1663/17060/1249 blk 54 FPW
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01A658, prev 0/5B019AE8, desc: INSERT_LEAF off 117, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01A698, prev 0/5B01A658, desc: INSERT_LEAF off 388, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01A6D8, prev 0/5B01A698, desc: INSERT_LEAF off 117, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01A720, prev 0/5B01A6D8, desc: INSERT_LEAF off 389, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01A760, prev 0/5B01A720, desc: INSERT_LEAF off 117, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01A7A8, prev 0/5B01A760, desc: INSERT_LEAF off 390, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01A7E8, prev 0/5B01A7A8, desc: INSERT_LEAF off 120, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01A830, prev 0/5B01A7E8, desc: INSERT_LEAF off 391, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01A870, prev 0/5B01A830, desc: INSERT_LEAF off 117, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01A8B8, prev 0/5B01A870, desc: INSERT_LEAF off 392, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01A8F8, prev 0/5B01A8B8, desc: INSERT_LEAF off 121, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01A940, prev 0/5B01A8F8, desc: INSERT_LEAF off 393, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Heap2       len (rec/tot):    830/   830, tx:       1012, lsn: 0/5B01A980, prev 0/5B01A940, desc: MULTI_INSERT 6 tuples flags 0x02, blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01ACC0, prev 0/5B01A980, desc: INSERT_LEAF off 119, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01AD08, prev 0/5B01ACC0, desc: INSERT_LEAF off 388, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01AD48, prev 0/5B01AD08, desc: INSERT_LEAF off 124, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01AD90, prev 0/5B01AD48, desc: INSERT_LEAF off 388, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01ADD0, prev 0/5B01AD90, desc: INSERT_LEAF off 119, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01AE18, prev 0/5B01ADD0, desc: INSERT_LEAF off 388, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01AE58, prev 0/5B01AE18, desc: INSERT_LEAF off 125, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01AEA0, prev 0/5B01AE58, desc: INSERT_LEAF off 388, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01AEE0, prev 0/5B01AEA0, desc: INSERT_LEAF off 119, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01AF28, prev 0/5B01AEE0, desc: INSERT_LEAF off 388, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01AF68, prev 0/5B01AF28, desc: INSERT_LEAF off 126, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01AFB0, prev 0/5B01AF68, desc: INSERT_LEAF off 388, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1012, lsn: 0/5B01AFF0, prev 0/5B01AFB0, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01B048, prev 0/5B01AFF0, desc: INSERT_LEAF off 199, blkref #0: rel 1663/17060/2673 blk 42
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01B090, prev 0/5B01B048, desc: INSERT_LEAF off 96, blkref #0: rel 1663/17060/2674 blk 48
+rmgr: Heap        len (rec/tot):    512/   512, tx:       1012, lsn: 0/5B01B0D8, prev 0/5B01B090, desc: INSERT+INIT off 1 flags 0x00, blkref #0: rel 1663/17060/2604 blk 0
+rmgr: Btree       len (rec/tot):     90/    90, tx:       1012, lsn: 0/5B01B2D8, prev 0/5B01B0D8, desc: NEWROOT lev 0, blkref #0: rel 1663/17060/2656 blk 1, blkref #2: rel 1663/17060/2656 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01B338, prev 0/5B01B2D8, desc: INSERT_LEAF off 1, blkref #0: rel 1663/17060/2656 blk 1
+rmgr: Btree       len (rec/tot):     90/    90, tx:       1012, lsn: 0/5B01B378, prev 0/5B01B338, desc: NEWROOT lev 0, blkref #0: rel 1663/17060/2657 blk 1, blkref #2: rel 1663/17060/2657 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01B3D8, prev 0/5B01B378, desc: INSERT_LEAF off 1, blkref #0: rel 1663/17060/2657 blk 1
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1012, lsn: 0/5B01B418, prev 0/5B01B3D8, desc: LOCK off 47: xid 1012: flags 0x00 LOCK_ONLY EXCL_LOCK , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):    194/   194, tx:       1012, lsn: 0/5B01B450, prev 0/5B01B418, desc: UPDATE off 47 xmax 1012 flags 0x00 ; new off 26 xmax 0, blkref #0: rel 1663/17060/1249 blk 54, blkref #1: rel 1663/17060/1249 blk 16
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01B518, prev 0/5B01B450, desc: INSERT_LEAF off 124, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01B558, prev 0/5B01B518, desc: INSERT_LEAF off 395, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1012, lsn: 0/5B01B598, prev 0/5B01B558, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01B5F0, prev 0/5B01B598, desc: INSERT_LEAF off 200, blkref #0: rel 1663/17060/2673 blk 42
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01B638, prev 0/5B01B5F0, desc: INSERT_LEAF off 188, blkref #0: rel 1663/17060/2674 blk 52
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1012, lsn: 0/5B01B680, prev 0/5B01B638, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01B6D8, prev 0/5B01B680, desc: INSERT_LEAF off 201, blkref #0: rel 1663/17060/2673 blk 42
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01B720, prev 0/5B01B6D8, desc: INSERT_LEAF off 187, blkref #0: rel 1663/17060/2674 blk 52
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B01B768, prev 0/5B01B720, desc: LOCK xid 1012 db 17060 rel 17066
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B01B798, prev 0/5B01B768, desc: CREATE base/17060/17066
+rmgr: Heap        len (rec/tot):    203/   203, tx:       1012, lsn: 0/5B01B7C8, prev 0/5B01B798, desc: INSERT off 4 flags 0x00, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01B898, prev 0/5B01B7C8, desc: INSERT_LEAF off 117, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     53/  3325, tx:       1012, lsn: 0/5B01B8D8, prev 0/5B01B898, desc: INSERT_LEAF off 71, blkref #0: rel 1663/17060/2663 blk 5 FPW
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01C5F0, prev 0/5B01B8D8, desc: INSERT_LEAF off 182, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: Heap2       len (rec/tot):    440/   440, tx:       1012, lsn: 0/5B01C630, prev 0/5B01C5F0, desc: MULTI_INSERT 3 tuples flags 0x02, blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01C7E8, prev 0/5B01C630, desc: INSERT_LEAF off 130, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01C830, prev 0/5B01C7E8, desc: INSERT_LEAF off 401, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01C870, prev 0/5B01C830, desc: INSERT_LEAF off 131, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01C8B8, prev 0/5B01C870, desc: INSERT_LEAF off 402, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01C8F8, prev 0/5B01C8B8, desc: INSERT_LEAF off 130, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01C940, prev 0/5B01C8F8, desc: INSERT_LEAF off 403, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Heap2       len (rec/tot):    830/   830, tx:       1012, lsn: 0/5B01C980, prev 0/5B01C940, desc: MULTI_INSERT 6 tuples flags 0x02, blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01CCC0, prev 0/5B01C980, desc: INSERT_LEAF off 133, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01CD08, prev 0/5B01CCC0, desc: INSERT_LEAF off 401, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01CD48, prev 0/5B01CD08, desc: INSERT_LEAF off 134, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01CD90, prev 0/5B01CD48, desc: INSERT_LEAF off 401, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01CDD0, prev 0/5B01CD90, desc: INSERT_LEAF off 133, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01CE18, prev 0/5B01CDD0, desc: INSERT_LEAF off 401, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01CE58, prev 0/5B01CE18, desc: INSERT_LEAF off 135, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01CEA0, prev 0/5B01CE58, desc: INSERT_LEAF off 401, blkref #0: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01CEE0, prev 0/5B01CEA0, desc: INSERT_LEAF off 133, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):    800/   800, tx:       1012, lsn: 0/5B01CF28, prev 0/5B01CEE0, desc: SPLIT_R level 0, firstrightoff 364, newitemoff 401, postingoff 0, blkref #0: rel 1663/17060/2659 blk 9, blkref #1: rel 1663/17060/2659 blk 10
+rmgr: Btree       len (rec/tot):     61/   273, tx:       1012, lsn: 0/5B01D248, prev 0/5B01CF28, desc: INSERT_UPPER off 9, blkref #0: rel 1663/17060/2659 blk 3 FPW, blkref #1: rel 1663/17060/2659 blk 9
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01D360, prev 0/5B01D248, desc: INSERT_LEAF off 136, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01D3A8, prev 0/5B01D360, desc: INSERT_LEAF off 38, blkref #0: rel 1663/17060/2659 blk 10
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B01D3E8, prev 0/5B01D3A8, desc: CREATE base/17060/17067
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B01D418, prev 0/5B01D3E8, desc: LOCK xid 1012 db 17060 rel 17067
+rmgr: Heap        len (rec/tot):    203/   203, tx:       1012, lsn: 0/5B01D448, prev 0/5B01D418, desc: INSERT off 5 flags 0x00, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01D518, prev 0/5B01D448, desc: INSERT_LEAF off 118, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     88/    88, tx:       1012, lsn: 0/5B01D558, prev 0/5B01D518, desc: INSERT_LEAF off 72, blkref #0: rel 1663/17060/2663 blk 5
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01D5B0, prev 0/5B01D558, desc: INSERT_LEAF off 183, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: Heap2       len (rec/tot):    310/   310, tx:       1012, lsn: 0/5B01D5F0, prev 0/5B01D5B0, desc: MULTI_INSERT 2 tuples flags 0x02, blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01D728, prev 0/5B01D5F0, desc: INSERT_LEAF off 139, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01D770, prev 0/5B01D728, desc: INSERT_LEAF off 47, blkref #0: rel 1663/17060/2659 blk 10
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B01D7B0, prev 0/5B01D770, desc: INSERT_LEAF off 140, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B01D7F8, prev 0/5B01D7B0, desc: INSERT_LEAF off 48, blkref #0: rel 1663/17060/2659 blk 10
+rmgr: Heap        len (rec/tot):     54/  8014, tx:       1012, lsn: 0/5B01D838, prev 0/5B01D7F8, desc: INSERT off 35 flags 0x01, blkref #0: rel 1663/17060/2610 blk 0 FPW
+rmgr: Btree       len (rec/tot):     53/  3213, tx:       1012, lsn: 0/5B01F7A0, prev 0/5B01D838, desc: INSERT_LEAF off 156, blkref #0: rel 1663/17060/2678 blk 1 FPW
+rmgr: Btree       len (rec/tot):     53/  3213, tx:       1012, lsn: 0/5B020448, prev 0/5B01F7A0, desc: INSERT_LEAF off 156, blkref #0: rel 1663/17060/2679 blk 1 FPW
+rmgr: Heap2       len (rec/tot):    121/   121, tx:       1012, lsn: 0/5B0210D8, prev 0/5B020448, desc: MULTI_INSERT 2 tuples flags 0x02, blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B021158, prev 0/5B0210D8, desc: INSERT_LEAF off 200, blkref #0: rel 1663/17060/2673 blk 42
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B0211A0, prev 0/5B021158, desc: INSERT_LEAF off 190, blkref #0: rel 1663/17060/2674 blk 52
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B0211E8, prev 0/5B0211A0, desc: INSERT_LEAF off 201, blkref #0: rel 1663/17060/2673 blk 42
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B021230, prev 0/5B0211E8, desc: INSERT_LEAF off 191, blkref #0: rel 1663/17060/2674 blk 52
+rmgr: XLOG        len (rec/tot):     49/   137, tx:       1012, lsn: 0/5B021278, prev 0/5B021230, desc: FPI , blkref #0: rel 1663/17060/17067 blk 0 FPW
+rmgr: Heap        len (rec/tot):    188/   188, tx:       1012, lsn: 0/5B021308, prev 0/5B021278, desc: INPLACE off 4, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap        len (rec/tot):    188/   188, tx:       1012, lsn: 0/5B0213C8, prev 0/5B021308, desc: INPLACE off 5, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap        len (rec/tot):     80/    80, tx:       1012, lsn: 0/5B021488, prev 0/5B0213C8, desc: HOT_UPDATE off 3 xmax 1012 flags 0x60 ; new off 6 xmax 0, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1012, lsn: 0/5B0214D8, prev 0/5B021488, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B021530, prev 0/5B0214D8, desc: INSERT_LEAF off 200, blkref #0: rel 1663/17060/2673 blk 42
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B021578, prev 0/5B021530, desc: INSERT_LEAF off 189, blkref #0: rel 1663/17060/2674 blk 52
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B0215C0, prev 0/5B021578, desc: CREATE base/17060/17068
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1012, lsn: 0/5B0215F0, prev 0/5B0215C0, desc: LOCK xid 1012 db 17060 rel 17068
+rmgr: Heap        len (rec/tot):    203/   203, tx:       1012, lsn: 0/5B021620, prev 0/5B0215F0, desc: INSERT off 7 flags 0x00, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B0216F0, prev 0/5B021620, desc: INSERT_LEAF off 119, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B021730, prev 0/5B0216F0, desc: INSERT_LEAF off 105, blkref #0: rel 1663/17060/2663 blk 2
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B021778, prev 0/5B021730, desc: INSERT_LEAF off 184, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: Heap2       len (rec/tot):    180/   180, tx:       1012, lsn: 0/5B0217B8, prev 0/5B021778, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B021870, prev 0/5B0217B8, desc: INSERT_LEAF off 141, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B0218B0, prev 0/5B021870, desc: INSERT_LEAF off 49, blkref #0: rel 1663/17060/2659 blk 10
+rmgr: Heap        len (rec/tot):    197/   197, tx:       1012, lsn: 0/5B0218F0, prev 0/5B0218B0, desc: INSERT off 41 flags 0x00, blkref #0: rel 1663/17060/2610 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B0219B8, prev 0/5B0218F0, desc: INSERT_LEAF off 156, blkref #0: rel 1663/17060/2678 blk 1
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1012, lsn: 0/5B0219F8, prev 0/5B0219B8, desc: INSERT_LEAF off 157, blkref #0: rel 1663/17060/2679 blk 1
+rmgr: Heap        len (rec/tot):     54/  3350, tx:       1012, lsn: 0/5B021A38, prev 0/5B0219F8, desc: INSERT off 12 flags 0x01, blkref #0: rel 1663/17060/2606 blk 2 FPW
+rmgr: Btree       len (rec/tot):     53/  2253, tx:       1012, lsn: 0/5B022768, prev 0/5B021A38, desc: INSERT_LEAF off 108, blkref #0: rel 1663/17060/2579 blk 1 FPW
+rmgr: Btree       len (rec/tot):     53/  5117, tx:       1012, lsn: 0/5B023038, prev 0/5B022768, desc: INSERT_LEAF off 107, blkref #0: rel 1663/17060/2664 blk 1 FPW
+rmgr: Btree       len (rec/tot):     53/  5541, tx:       1012, lsn: 0/5B024450, prev 0/5B023038, desc: INSERT_LEAF off 108, blkref #0: rel 1663/17060/2665 blk 1 FPW
+rmgr: Btree       len (rec/tot):     53/  2253, tx:       1012, lsn: 0/5B0259F8, prev 0/5B024450, desc: INSERT_LEAF off 106, blkref #0: rel 1663/17060/2666 blk 1 FPW
+rmgr: Btree       len (rec/tot):     53/  2253, tx:       1012, lsn: 0/5B0262E0, prev 0/5B0259F8, desc: INSERT_LEAF off 108, blkref #0: rel 1663/17060/2667 blk 1 FPW
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1012, lsn: 0/5B026BB0, prev 0/5B0262E0, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B026C08, prev 0/5B026BB0, desc: INSERT_LEAF off 207, blkref #0: rel 1663/17060/2673 blk 42
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B026C50, prev 0/5B026C08, desc: INSERT_LEAF off 191, blkref #0: rel 1663/17060/2674 blk 52
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1012, lsn: 0/5B026C98, prev 0/5B026C50, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B026CF0, prev 0/5B026C98, desc: INSERT_LEAF off 203, blkref #0: rel 1663/17060/2673 blk 42
+rmgr: Btree       len (rec/tot):     53/  4201, tx:       1012, lsn: 0/5B026D38, prev 0/5B026CF0, desc: INSERT_LEAF off 107, blkref #0: rel 1663/17060/2674 blk 30 FPW
+rmgr: XLOG        len (rec/tot):     49/   137, tx:       1012, lsn: 0/5B027DA8, prev 0/5B026D38, desc: FPI , blkref #0: rel 1663/17060/17068 blk 0 FPW
+rmgr: Heap        len (rec/tot):    188/   188, tx:       1012, lsn: 0/5B027E38, prev 0/5B027DA8, desc: INPLACE off 6, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap        len (rec/tot):    188/   188, tx:       1012, lsn: 0/5B027EF8, prev 0/5B027E38, desc: INPLACE off 7, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap2       len (rec/tot):     85/    85, tx:       1012, lsn: 0/5B027FB8, prev 0/5B027EF8, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B028028, prev 0/5B027FB8, desc: INSERT_LEAF off 199, blkref #0: rel 1663/17060/2673 blk 42
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1012, lsn: 0/5B028070, prev 0/5B028028, desc: INSERT_LEAF off 192, blkref #0: rel 1663/17060/2674 blk 52
+rmgr: Heap        len (rec/tot):     68/    68, tx:       1012, lsn: 0/5B0280B8, prev 0/5B028070, desc: HOT_UPDATE off 1 xmax 1012 flags 0x20 ; new off 2 xmax 0, blkref #0: rel 1663/17060/2224 blk 0
+rmgr: Transaction len (rec/tot):   1925/  1925, tx:       1012, lsn: 0/5B028100, prev 0/5B0280B8, desc: COMMIT 2024-09-19 13:29:06.643535 MST; inval msgs: catcache 55 catcache 51 catcache 50 catcache 51 catcache 50 catcache 51 catcache 50 catcache 7 catcache 6 catcache 32 catcache 19 catcache 51 catcache 50 catcache 51 catcache 50 catcache 51 catcache 50 catcache 51 catcache 50 catcache 7 catcache 6 catcache 7 catcache 6 catcache 32 catcache 51 catcache 50 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 76 catcache 75 catcache 76 catcache 75 catcache 51 catcache 50 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 55 catcache 51 catcache 50 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 snapshot 2608 relcache 17062 relcache 17068 relcache 17068 relcache 17062 snapshot 2608 relcache 17062 snapshot 2608 relcache 17066 relcache 17067 relcache 17067 relcache 17066 snapshot 2608 relcache 17066 relcache 17062 snapshot 2608 snapshot 2608 relcache 17062 relcache 17061 snapshot 2608
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B028888, prev 0/5B028100, desc: RUNNING_XACTS nextXid 1013 latestCompletedXid 1012 oldestRunningXid 1013
+
+
+
+
+ 
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "INSERT INTO ventas ( fecha, cliente_id, producto_id, cantidad, precio) SELECT  NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int, (RANDOM() * 1000)::int, (RANDOM() * 100)::int, (RANDOM() * 10)::int, (RANDOM() * 100)::numeric  FROM generate_series(1, 10); select * from ventas; "
+INSERT 0 10
+
+rmgr: Heap2       len (rec/tot):     56/    56, tx:          0, lsn: 0/5B0288C0, prev 0/5B028888, desc: PRUNE latestRemovedXid 0 nredirected 0 ndead 1, blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B0288F8, prev 0/5B0288C0, desc: RUNNING_XACTS nextXid 1013 latestCompletedXid 1012 oldestRunningXid 1013
+rmgr: Sequence    len (rec/tot):     99/    99, tx:       1013, lsn: 0/5B028930, prev 0/5B0288F8, desc: LOG rel 1663/17060/17061, blkref #0: rel 1663/17060/17061 blk 0
+rmgr: Heap        len (rec/tot):     88/    88, tx:       1013, lsn: 0/5B028998, prev 0/5B028930, desc: INSERT+INIT off 1 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     90/    90, tx:       1013, lsn: 0/5B0289F0, prev 0/5B028998, desc: NEWROOT lev 0, blkref #0: rel 1663/17060/17068 blk 1, blkref #2: rel 1663/17060/17068 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028A50, prev 0/5B0289F0, desc: INSERT_LEAF off 1, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Heap        len (rec/tot):     88/    88, tx:       1013, lsn: 0/5B028A90, prev 0/5B028A50, desc: INSERT off 2 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028AE8, prev 0/5B028A90, desc: INSERT_LEAF off 2, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Heap        len (rec/tot):     88/    88, tx:       1013, lsn: 0/5B028B28, prev 0/5B028AE8, desc: INSERT off 3 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028B80, prev 0/5B028B28, desc: INSERT_LEAF off 3, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Heap        len (rec/tot):     86/    86, tx:       1013, lsn: 0/5B028BC0, prev 0/5B028B80, desc: INSERT off 4 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028C18, prev 0/5B028BC0, desc: INSERT_LEAF off 4, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Heap        len (rec/tot):     88/    88, tx:       1013, lsn: 0/5B028C58, prev 0/5B028C18, desc: INSERT off 5 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028CB0, prev 0/5B028C58, desc: INSERT_LEAF off 5, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Heap        len (rec/tot):     88/    88, tx:       1013, lsn: 0/5B028CF0, prev 0/5B028CB0, desc: INSERT off 6 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028D48, prev 0/5B028CF0, desc: INSERT_LEAF off 6, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Heap        len (rec/tot):     88/    88, tx:       1013, lsn: 0/5B028D88, prev 0/5B028D48, desc: INSERT off 7 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028DE0, prev 0/5B028D88, desc: INSERT_LEAF off 7, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Heap        len (rec/tot):     88/    88, tx:       1013, lsn: 0/5B028E20, prev 0/5B028DE0, desc: INSERT off 8 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028E78, prev 0/5B028E20, desc: INSERT_LEAF off 8, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Heap        len (rec/tot):     88/    88, tx:       1013, lsn: 0/5B028EB8, prev 0/5B028E78, desc: INSERT off 9 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028F10, prev 0/5B028EB8, desc: INSERT_LEAF off 9, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Heap        len (rec/tot):     88/    88, tx:       1013, lsn: 0/5B028F50, prev 0/5B028F10, desc: INSERT off 10 flags 0x00, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1013, lsn: 0/5B028FA8, prev 0/5B028F50, desc: INSERT_LEAF off 10, blkref #0: rel 1663/17060/17068 blk 1
+rmgr: Transaction len (rec/tot):     34/    34, tx:       1013, lsn: 0/5B028FE8, prev 0/5B028FA8, desc: COMMIT 2024-09-19 13:30:04.995277 MST
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B029010, prev 0/5B028FE8, desc: RUNNING_XACTS nextXid 1014 latestCompletedXid 1013 oldestRunningXid 1014
+
+
+
+
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "delete from ventas where id >= 7; select * from ventas; "
+DELETE 4
+
+
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1014, lsn: 0/5B029048, prev 0/5B029010, desc: DELETE off 7 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1014, lsn: 0/5B029080, prev 0/5B029048, desc: DELETE off 8 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1014, lsn: 0/5B0290B8, prev 0/5B029080, desc: DELETE off 9 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1014, lsn: 0/5B0290F0, prev 0/5B0290B8, desc: DELETE off 10 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Transaction len (rec/tot):     34/    34, tx:       1014, lsn: 0/5B029128, prev 0/5B0290F0, desc: COMMIT 2024-09-19 13:31:45.395943 MST
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B029150, prev 0/5B029128, desc: RUNNING_XACTS nextXid 1015 latestCompletedXid 1014 oldestRunningXid 1015
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "update ventas set producto_id = 5050 where id <= 2; select * from ventas; "
+UPDATE 2
+ id |   fecha    | cliente_id | producto_id | cantidad |      precio
+----+------------+------------+-------------+----------+------------------
+  3 | 2022-01-03 |        313 |          49 |        9 | 54.7796239938034
+  4 | 2024-05-11 |        306 |          89 |        8 |  70.444649478393
+  5 | 2022-12-15 |        834 |          17 |        7 | 34.1966019941825
+  6 | 2022-10-08 |         86 |           1 |        6 | 39.7199323921129
+  1 | 2022-03-04 |        339 |        5050 |        4 | 27.1322501550163
+  2 | 2024-06-04 |         36 |        5050 |        2 | 73.8933668489125
+(6 rows)
+
+
+
+
+rmgr: Heap        len (rec/tot):     72/    72, tx:       1015, lsn: 0/5B029188, prev 0/5B029150, desc: HOT_UPDATE off 1 xmax 1015 flags 0x60 ; new off 11 xmax 0, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Heap        len (rec/tot):     72/    72, tx:       1015, lsn: 0/5B0291D0, prev 0/5B029188, desc: HOT_UPDATE off 2 xmax 1015 flags 0x60 ; new off 12 xmax 0, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Transaction len (rec/tot):     34/    34, tx:       1015, lsn: 0/5B029218, prev 0/5B0291D0, desc: COMMIT 2024-09-19 13:33:49.142672 MST
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B029240, prev 0/5B029218, desc: RUNNING_XACTS nextXid 1016 latestCompletedXid 1015 oldestRunningXid 1016
+
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "truncate table ventas; select * from ventas; "
+TRUNCATE TABLE
+ id | fecha | cliente_id | producto_id | cantidad | precio
+----+-------+------------+-------------+----------+--------
+(0 rows)
+
+rmgr: Heap        len (rec/tot):     72/    72, tx:       1015, lsn: 0/5B029188, prev 0/5B029150, desc: HOT_UPDATE off 1 xmax 1015 flags 0x60 ; new off 11 xmax 0, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Heap        len (rec/tot):     72/    72, tx:       1015, lsn: 0/5B0291D0, prev 0/5B029188, desc: HOT_UPDATE off 2 xmax 1015 flags 0x60 ; new off 12 xmax 0, blkref #0: rel 1663/17060/17062 blk 0
+rmgr: Transaction len (rec/tot):     34/    34, tx:       1015, lsn: 0/5B029218, prev 0/5B0291D0, desc: COMMIT 2024-09-19 13:33:49.142672 MST
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B029240, prev 0/5B029218, desc: RUNNING_XACTS nextXid 1016 latestCompletedXid 1015 oldestRunningXid 1016
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1016, lsn: 0/5B029278, prev 0/5B029240, desc: LOCK xid 1016 db 17060 rel 17062
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1016, lsn: 0/5B0292A8, prev 0/5B029278, desc: CREATE base/17060/17070
+rmgr: Heap        len (rec/tot):    123/   123, tx:       1016, lsn: 0/5B0292D8, prev 0/5B0292A8, desc: UPDATE off 6 xmax 1016 flags 0x60 ; new off 8 xmax 0, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1016, lsn: 0/5B029358, prev 0/5B0292D8, desc: INSERT_LEAF off 117, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1016, lsn: 0/5B029398, prev 0/5B029358, desc: INSERT_LEAF off 104, blkref #0: rel 1663/17060/2663 blk 2
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1016, lsn: 0/5B0293E0, prev 0/5B029398, desc: INSERT_LEAF off 185, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1016, lsn: 0/5B029420, prev 0/5B0293E0, desc: LOCK xid 1016 db 17060 rel 17066
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1016, lsn: 0/5B029450, prev 0/5B029420, desc: CREATE base/17060/17071
+rmgr: Heap        len (rec/tot):    123/   123, tx:       1016, lsn: 0/5B029480, prev 0/5B029450, desc: UPDATE off 4 xmax 1016 flags 0x60 ; new off 9 xmax 0, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1016, lsn: 0/5B029500, prev 0/5B029480, desc: INSERT_LEAF off 119, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     80/    80, tx:       1016, lsn: 0/5B029540, prev 0/5B029500, desc: INSERT_LEAF off 72, blkref #0: rel 1663/17060/2663 blk 5
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1016, lsn: 0/5B029590, prev 0/5B029540, desc: INSERT_LEAF off 186, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1016, lsn: 0/5B0295D0, prev 0/5B029590, desc: LOCK xid 1016 db 17060 rel 17068
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1016, lsn: 0/5B029600, prev 0/5B0295D0, desc: CREATE base/17060/17072
+rmgr: Heap        len (rec/tot):     94/    94, tx:       1016, lsn: 0/5B029630, prev 0/5B029600, desc: UPDATE off 7 xmax 1016 flags 0x60 ; new off 10 xmax 0, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1016, lsn: 0/5B029690, prev 0/5B029630, desc: INSERT_LEAF off 122, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1016, lsn: 0/5B0296D0, prev 0/5B029690, desc: INSERT_LEAF off 107, blkref #0: rel 1663/17060/2663 blk 2
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1016, lsn: 0/5B029718, prev 0/5B0296D0, desc: INSERT_LEAF off 187, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: XLOG        len (rec/tot):     49/   137, tx:       1016, lsn: 0/5B029758, prev 0/5B029718, desc: FPI , blkref #0: rel 1663/17060/17072 blk 0 FPW
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1016, lsn: 0/5B0297E8, prev 0/5B029758, desc: LOCK xid 1016 db 17060 rel 17067
+rmgr: Storage     len (rec/tot):     42/    42, tx:       1016, lsn: 0/5B029818, prev 0/5B0297E8, desc: CREATE base/17060/17073
+rmgr: Heap        len (rec/tot):     94/    94, tx:       1016, lsn: 0/5B029848, prev 0/5B029818, desc: UPDATE off 5 xmax 1016 flags 0x60 ; new off 11 xmax 0, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1016, lsn: 0/5B0298A8, prev 0/5B029848, desc: INSERT_LEAF off 121, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     88/    88, tx:       1016, lsn: 0/5B0298E8, prev 0/5B0298A8, desc: INSERT_LEAF off 74, blkref #0: rel 1663/17060/2663 blk 5
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1016, lsn: 0/5B029940, prev 0/5B0298E8, desc: INSERT_LEAF off 188, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: XLOG        len (rec/tot):     49/   137, tx:       1016, lsn: 0/5B029980, prev 0/5B029940, desc: FPI , blkref #0: rel 1663/17060/17073 blk 0 FPW
+rmgr: Standby     len (rec/tot):     78/    78, tx:          0, lsn: 0/5B029A10, prev 0/5B029980, desc: LOCK xid 1016 db 17060 rel 17068 xid 1016 db 17060 rel 17062 xid 1016 db 17060 rel 17067 xid 1016 db 17060 rel 17066
+rmgr: Standby     len (rec/tot):     54/    54, tx:          0, lsn: 0/5B029A60, prev 0/5B029A10, desc: RUNNING_XACTS nextXid 1017 latestCompletedXid 1015 oldestRunningXid 1016; 1 xacts: 1016
+rmgr: Transaction len (rec/tot):    361/   361, tx:       1016, lsn: 0/5B029A98, prev 0/5B029A60, desc: COMMIT 2024-09-19 13:35:50.285460 MST; rels: base/17060/17067 base/17060/17068 base/17060/17066 base/17060/17062; inval msgs: catcache 51 catcache 50 catcache 51 catcache 50 catcache 51 catcache 50 catcache 51 catcache 50 relcache 17066 relcache 17067 relcache 17067 relcache 17062 relcache 17068 relcache 17068 relcache 17066 relcache 17062
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "alter table ventas rename to ventas_new; select * from ventas; "
+ALTER TABLE
+ERROR:  relation "ventas" does not exist
+LINE 1: ...er table ventas rename to ventas_new; select * from ventas;
+                                                               ^
+
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1018, lsn: 0/5B02A090, prev 0/5B02A058, desc: LOCK xid 1018 db 17060 rel 17062
+rmgr: Heap        len (rec/tot):     82/    82, tx:       1018, lsn: 0/5B02A0C0, prev 0/5B02A090, desc: UPDATE off 8 xmax 1018 flags 0x60 KEYS_UPDATED ; new off 13 xmax 0, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1018, lsn: 0/5B02A118, prev 0/5B02A0C0, desc: INSERT_LEAF off 119, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1018, lsn: 0/5B02A158, prev 0/5B02A118, desc: INSERT_LEAF off 107, blkref #0: rel 1663/17060/2663 blk 2
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1018, lsn: 0/5B02A1A0, prev 0/5B02A158, desc: INSERT_LEAF off 187, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1018, lsn: 0/5B02A1E0, prev 0/5B02A1A0, desc: LOCK off 43: xid 1018: flags 0x00 LOCK_ONLY EXCL_LOCK KEYS_UPDATED , blkref #0: rel 1663/17060/1247 blk 13
+rmgr: Heap        len (rec/tot):    230/   230, tx:       1018, lsn: 0/5B02A218, prev 0/5B02A1E0, desc: UPDATE off 43 xmax 1018 flags 0x00 KEYS_UPDATED ; new off 4 xmax 0, blkref #0: rel 1663/17060/1247 blk 14, blkref #1: rel 1663/17060/1247 blk 13
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1018, lsn: 0/5B02A300, prev 0/5B02A218, desc: INSERT_LEAF off 240, blkref #0: rel 1663/17060/2703 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1018, lsn: 0/5B02A340, prev 0/5B02A300, desc: INSERT_LEAF off 168, blkref #0: rel 1663/17060/2704 blk 2
+rmgr: Heap        len (rec/tot):     82/    82, tx:       1018, lsn: 0/5B02A388, prev 0/5B02A340, desc: UPDATE off 1 xmax 1018 flags 0x60 KEYS_UPDATED ; new off 5 xmax 0, blkref #0: rel 1663/17060/1247 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1018, lsn: 0/5B02A3E0, prev 0/5B02A388, desc: INSERT_LEAF off 238, blkref #0: rel 1663/17060/2703 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1018, lsn: 0/5B02A420, prev 0/5B02A3E0, desc: INSERT_LEAF off 65, blkref #0: rel 1663/17060/2704 blk 4
+rmgr: Transaction len (rec/tot):     38/    38, tx:       1018, lsn: 0/5B02A468, prev 0/5B02A420, desc: ABORT 2024-09-19 13:38:42.675070 MST
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B02A490, prev 0/5B02A468, desc: RUNNING_XACTS nextXid 1019 latestCompletedXid 1018 oldestRunningXid 1019
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "alter table ventas rename to ventas_new; select * from ventas_new; "
+ALTER TABLE
+
+
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1019, lsn: 0/5B02A4C8, prev 0/5B02A490, desc: LOCK xid 1019 db 17060 rel 17062
+rmgr: Heap        len (rec/tot):     82/    82, tx:       1019, lsn: 0/5B02A4F8, prev 0/5B02A4C8, desc: UPDATE off 8 xmax 1019 flags 0x60 KEYS_UPDATED ; new off 14 xmax 0, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1019, lsn: 0/5B02A550, prev 0/5B02A4F8, desc: INSERT_LEAF off 120, blkref #0: rel 1663/17060/2662 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1019, lsn: 0/5B02A590, prev 0/5B02A550, desc: INSERT_LEAF off 108, blkref #0: rel 1663/17060/2663 blk 2
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1019, lsn: 0/5B02A5D8, prev 0/5B02A590, desc: INSERT_LEAF off 188, blkref #0: rel 1663/17060/3455 blk 4
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1019, lsn: 0/5B02A618, prev 0/5B02A5D8, desc: LOCK off 43: xid 1019: flags 0x00 LOCK_ONLY EXCL_LOCK KEYS_UPDATED , blkref #0: rel 1663/17060/1247 blk 13
+rmgr: Heap        len (rec/tot):    230/   230, tx:       1019, lsn: 0/5B02A650, prev 0/5B02A618, desc: UPDATE off 43 xmax 1019 flags 0x00 KEYS_UPDATED ; new off 6 xmax 0, blkref #0: rel 1663/17060/1247 blk 14, blkref #1: rel 1663/17060/1247 blk 13
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1019, lsn: 0/5B02A738, prev 0/5B02A650, desc: INSERT_LEAF off 242, blkref #0: rel 1663/17060/2703 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1019, lsn: 0/5B02A778, prev 0/5B02A738, desc: INSERT_LEAF off 169, blkref #0: rel 1663/17060/2704 blk 2
+rmgr: Heap        len (rec/tot):     82/    82, tx:       1019, lsn: 0/5B02A7C0, prev 0/5B02A778, desc: UPDATE off 1 xmax 1019 flags 0x60 KEYS_UPDATED ; new off 7 xmax 0, blkref #0: rel 1663/17060/1247 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1019, lsn: 0/5B02A818, prev 0/5B02A7C0, desc: INSERT_LEAF off 239, blkref #0: rel 1663/17060/2703 blk 2
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1019, lsn: 0/5B02A858, prev 0/5B02A818, desc: INSERT_LEAF off 66, blkref #0: rel 1663/17060/2704 blk 4
+rmgr: Transaction len (rec/tot):    210/   210, tx:       1019, lsn: 0/5B02A8A0, prev 0/5B02A858, desc: COMMIT 2024-09-19 13:38:59.432403 MST; inval msgs: catcache 51 catcache 50 catcache 50 catcache 76 catcache 75 catcache 75 catcache 76 catcache 75 catcache 75 relcache 17062
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B02A978, prev 0/5B02A8A0, desc: RUNNING_XACTS nextXid 1020 latestCompletedXid 1019 oldestRunningXid 1020
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "alter table ventas_new add column new_column int; select * from ventas_new; "
+ALTER TABLE
+ id | fecha | cliente_id | producto_id | cantidad | precio | new_column
+----+-------+------------+-------------+----------+--------+------------
+(0 rows)
+
+
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1020, lsn: 0/5B02A9B0, prev 0/5B02A978, desc: LOCK xid 1020 db 17060 rel 17062
+rmgr: Heap2       len (rec/tot):    180/   180, tx:       1020, lsn: 0/5B02A9E0, prev 0/5B02A9B0, desc: MULTI_INSERT 1 tuples flags 0x02, blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Btree       len (rec/tot):     72/    72, tx:       1020, lsn: 0/5B02AA98, prev 0/5B02A9E0, desc: INSERT_LEAF off 125, blkref #0: rel 1663/17060/2658 blk 14
+rmgr: Btree       len (rec/tot):     64/    64, tx:       1020, lsn: 0/5B02AAE0, prev 0/5B02AA98, desc: INSERT_LEAF off 38, blkref #0: rel 1663/17060/2659 blk 10
+rmgr: Heap        len (rec/tot):     79/    79, tx:       1020, lsn: 0/5B02AB20, prev 0/5B02AAE0, desc: HOT_UPDATE off 14 xmax 1020 flags 0x60 ; new off 15 xmax 0, blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Transaction len (rec/tot):    130/   130, tx:       1020, lsn: 0/5B02AB70, prev 0/5B02AB20, desc: COMMIT 2024-09-19 13:40:16.390701 MST; inval msgs: catcache 7 catcache 6 catcache 51 catcache 50 relcache 17062
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B02ABF8, prev 0/5B02AB70, desc: RUNNING_XACTS nextXid 1021 latestCompletedXid 1020 oldestRunningXid 1021
+
+
+
+[postgres@SERVER_TEST pg_log]$  psql -X -p 5414 -d test_checkpoint -c "drop table ventas_new;   "
+DROP TABLE
+
+
+
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1021, lsn: 0/5B02AC30, prev 0/5B02ABF8, desc: LOCK xid 1021 db 17060 rel 17062
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1021, lsn: 0/5B02AC60, prev 0/5B02AC30, desc: LOCK xid 1021 db 17060 rel 17066
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1021, lsn: 0/5B02AC90, prev 0/5B02AC60, desc: LOCK xid 1021 db 17060 rel 17061
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1021, lsn: 0/5B02ACC0, prev 0/5B02AC90, desc: LOCK xid 1021 db 17060 rel 17068
+rmgr: Standby     len (rec/tot):     42/    42, tx:       1021, lsn: 0/5B02ACF0, prev 0/5B02ACC0, desc: LOCK xid 1021 db 17060 rel 17067
+rmgr: Heap2       len (rec/tot):     56/    56, tx:       1021, lsn: 0/5B02AD20, prev 0/5B02ACF0, desc: PRUNE latestRemovedXid 1019 nredirected 0 ndead 1, blkref #0: rel 1663/17060/1247 blk 13
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AD58, prev 0/5B02AD20, desc: DELETE off 41 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2610 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AD90, prev 0/5B02AD58, desc: DELETE off 38 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02ADC8, prev 0/5B02AD90, desc: DELETE off 10 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AE00, prev 0/5B02ADC8, desc: DELETE off 123 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AE38, prev 0/5B02AE00, desc: DELETE off 12 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2606 blk 2
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AE70, prev 0/5B02AE38, desc: DELETE off 122 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AEA8, prev 0/5B02AE70, desc: DELETE off 35 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2610 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AEE0, prev 0/5B02AEA8, desc: DELETE off 36 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AF18, prev 0/5B02AEE0, desc: DELETE off 37 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AF50, prev 0/5B02AF18, desc: DELETE off 11 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AF88, prev 0/5B02AF50, desc: DELETE off 119 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AFC0, prev 0/5B02AF88, desc: DELETE off 120 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02AFF8, prev 0/5B02AFC0, desc: DELETE off 35 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B030, prev 0/5B02AFF8, desc: DELETE off 34 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B068, prev 0/5B02B030, desc: DELETE off 33 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B0A0, prev 0/5B02B068, desc: DELETE off 32 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B0D8, prev 0/5B02B0A0, desc: DELETE off 31 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B110, prev 0/5B02B0D8, desc: DELETE off 30 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B148, prev 0/5B02B110, desc: DELETE off 27 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B180, prev 0/5B02B148, desc: DELETE off 28 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B1B8, prev 0/5B02B180, desc: DELETE off 29 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B1F0, prev 0/5B02B1B8, desc: DELETE off 9 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B228, prev 0/5B02B1F0, desc: DELETE off 121 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B260, prev 0/5B02B228, desc: DELETE off 1 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2604 blk 0
+rmgr: Heap        len (rec/tot):     79/    79, tx:       1021, lsn: 0/5B02B298, prev 0/5B02B260, desc: HOT_UPDATE off 26 xmax 1021 flags 0x60 ; new off 40 xmax 0, blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B2E8, prev 0/5B02B298, desc: DELETE off 117 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B320, prev 0/5B02B2E8, desc: DELETE off 118 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B358, prev 0/5B02B320, desc: DELETE off 7 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1247 blk 14
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B390, prev 0/5B02B358, desc: DELETE off 115 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B3C8, prev 0/5B02B390, desc: DELETE off 6 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1247 blk 14
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B400, prev 0/5B02B3C8, desc: DELETE off 114 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B438, prev 0/5B02B400, desc: DELETE off 46 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B470, prev 0/5B02B438, desc: DELETE off 45 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B4A8, prev 0/5B02B470, desc: DELETE off 43 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B4E0, prev 0/5B02B4A8, desc: DELETE off 42 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B518, prev 0/5B02B4E0, desc: DELETE off 41 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B550, prev 0/5B02B518, desc: DELETE off 40 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B588, prev 0/5B02B550, desc: DELETE off 37 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B5C0, prev 0/5B02B588, desc: DELETE off 38 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B5F8, prev 0/5B02B5C0, desc: DELETE off 39 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 16
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B630, prev 0/5B02B5F8, desc: DELETE off 2 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B668, prev 0/5B02B630, desc: DELETE off 2 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2224 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B6A0, prev 0/5B02B668, desc: DELETE off 89 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B6D8, prev 0/5B02B6A0, desc: DELETE off 124 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B710, prev 0/5B02B6D8, desc: DELETE off 25 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B748, prev 0/5B02B710, desc: DELETE off 24 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B780, prev 0/5B02B748, desc: DELETE off 23 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B7B8, prev 0/5B02B780, desc: DELETE off 22 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B7F0, prev 0/5B02B7B8, desc: DELETE off 21 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B828, prev 0/5B02B7F0, desc: DELETE off 20 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B860, prev 0/5B02B828, desc: DELETE off 40 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B898, prev 0/5B02B860, desc: DELETE off 15 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B8D0, prev 0/5B02B898, desc: DELETE off 16 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B908, prev 0/5B02B8D0, desc: DELETE off 17 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B940, prev 0/5B02B908, desc: DELETE off 18 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B978, prev 0/5B02B940, desc: DELETE off 19 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B9B0, prev 0/5B02B978, desc: DELETE off 39 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1249 blk 54
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02B9E8, prev 0/5B02B9B0, desc: DELETE off 15 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/1259 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:       1021, lsn: 0/5B02BA20, prev 0/5B02B9E8, desc: DELETE off 116 flags 0x00 KEYS_UPDATED , blkref #0: rel 1663/17060/2608 blk 64
+rmgr: Transaction len (rec/tot):   1797/  1797, tx:       1021, lsn: 0/5B02BA58, prev 0/5B02BA20, desc: COMMIT 2024-09-19 13:41:48.437736 MST; rels: base/17060/17070 base/17060/17061 base/17060/17071 base/17060/17073 base/17060/17072; inval msgs: catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 51 catcache 50 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 51 catcache 50 catcache 55 catcache 76 catcache 75 catcache 76 catcache 75 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 7 catcache 6 catcache 51 catcache 50 catcache 32 catcache 7 catcache 6 catcache 7 catcache 6 catcache 51 catcache 50 catcache 19 catcache 32 catcache 7 catcache 6 catcache 51 catcache 50 relcache 17062 snapshot 2608 relcache 17061 snapshot 2608 snapshot 2608 snapshot 2608 relcache 17062 snapshot 2608 relcache 17066 snapshot 2608 relcache 17067 relcache 17066 snapshot 2608 snapshot 2608 relcache 17068 relcache 17062 snapshot 2608
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B02C178, prev 0/5B02BA58, desc: RUNNING_XACTS nextXid 1022 latestCompletedXid 1021 oldestRunningXid 1022
+
+
+
+ 
+
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ $PGBIN14/pg_controldata -D $PGDATA14
+pg_controldata: error: could not open file "/sysx/data/global/pg_control" for reading: No such file or directory
+[postgres@SERVER_TEST pg_log]$ pg_controldata -D /sysx/data14
+pg_control version number:            1300
+Catalog version number:               202107181
+Database system identifier:           7381508807802424143
+Database cluster state:               in production
+pg_control last modified:             Thu 19 Sep 2024 01:28:13 PM MST
+Latest checkpoint location:           0/5B0018F0
+Latest checkpoint's REDO location:    0/5B0018B8
+Latest checkpoint's REDO WAL file:    00000001000000000000005B
+Latest checkpoint's TimeLineID:       1
+Latest checkpoint's PrevTimeLineID:   1
+Latest checkpoint's full_page_writes: on
+Latest checkpoint's NextXID:          0:1012
+Latest checkpoint's NextOID:          25252
+Latest checkpoint's NextMultiXactId:  1
+Latest checkpoint's NextMultiOffset:  0
+Latest checkpoint's oldestXID:        726
+Latest checkpoint's oldestXID's DB:   1
+Latest checkpoint's oldestActiveXID:  1011
+Latest checkpoint's oldestMultiXid:   1
+Latest checkpoint's oldestMulti's DB: 1
+Latest checkpoint's oldestCommitTsXid:0
+Latest checkpoint's newestCommitTsXid:0
+Time of latest checkpoint:            Thu 19 Sep 2024 01:28:13 PM MST
+Fake LSN counter for unlogged rels:   0/3E8
+Minimum recovery ending location:     0/0
+Min recovery ending loc's timeline:   0
+Backup start location:                0/0
+Backup end location:                  0/0
+End-of-backup record required:        no
+wal_level setting:                    replica
+wal_log_hints setting:                off
+max_connections setting:              100
+max_worker_processes setting:         8
+max_wal_senders setting:              10
+max_prepared_xacts setting:           0
+max_locks_per_xact setting:           64
+track_commit_timestamp setting:       off
+Maximum data alignment:               8
+Database block size:                  8192
+Blocks per segment of large relation: 131072
+WAL block size:                       8192
+Bytes per WAL segment:                16777216
+Maximum length of identifiers:        64
+Maximum columns in an index:          32
+Maximum size of a TOAST chunk:        1996
+Size of a large-object chunk:         2048
+Date/time type storage:               64-bit integers
+Float8 argument passing:              by value
+Data page checksum version:           0
+Mock authentication nonce:            93f8792f52798067b0cee85475ba6ed9ee6cc3d6aa17d8d7c1eacdf535ced484
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "CHECKPOINT;"
+CHECKPOINT
+
+
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B02C1B0, prev 0/5B02C178, desc: RUNNING_XACTS nextXid 1022 latestCompletedXid 1021 oldestRunningXid 1022
+rmgr: XLOG        len (rec/tot):    114/   114, tx:          0, lsn: 0/5B02C1E8, prev 0/5B02C1B0, desc: CHECKPOINT_ONLINE redo 0/5B02C1B0; tli 1; prev tli 1; fpw true; xid 0:1022; oid 25252; multi 1; offset 0; oldest xid 726 in DB 1; oldest multi 1 in DB 1; oldest/newest commit timestamp xid: 0/0; oldest running xid 1022; online
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/5B02C260, prev 0/5B02C1E8, desc: RUNNING_XACTS nextXid 1022 latestCompletedXid 1021 oldestRunningXid 1022
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ $PGBIN14/pg_controldata -D $PGDATA14
+pg_control version number:            1300
+Catalog version number:               202107181
+Database system identifier:           7381508807802424143
+Database cluster state:               in production
+pg_control last modified:             Thu 19 Sep 2024 01:45:48 PM MST
+Latest checkpoint location:           0/5B02C1E8
+Latest checkpoint's REDO location:    0/5B02C1B0
+Latest checkpoint's REDO WAL file:    00000001000000000000005B   <---- Este es el archivo donde se hizo el checkpoint 
+Latest checkpoint's TimeLineID:       1
+Latest checkpoint's PrevTimeLineID:   1
+Latest checkpoint's full_page_writes: on
+Latest checkpoint's NextXID:          0:1022
+Latest checkpoint's NextOID:          25252
+Latest checkpoint's NextMultiXactId:  1
+Latest checkpoint's NextMultiOffset:  0
+Latest checkpoint's oldestXID:        726
+Latest checkpoint's oldestXID's DB:   1
+Latest checkpoint's oldestActiveXID:  1022
+Latest checkpoint's oldestMultiXid:   1
+Latest checkpoint's oldestMulti's DB: 1
+Latest checkpoint's oldestCommitTsXid:0
+Latest checkpoint's newestCommitTsXid:0
+Time of latest checkpoint:            Thu 19 Sep 2024 01:45:48 PM MST
+Fake LSN counter for unlogged rels:   0/3E8
+Minimum recovery ending location:     0/0
+Min recovery ending loc's timeline:   0
+Backup start location:                0/0
+Backup end location:                  0/0
+End-of-backup record required:        no
+wal_level setting:                    replica
+wal_log_hints setting:                off
+max_connections setting:              100
+max_worker_processes setting:         8
+max_wal_senders setting:              10
+max_prepared_xacts setting:           0
+max_locks_per_xact setting:           64
+track_commit_timestamp setting:       off
+Maximum data alignment:               8
+Database block size:                  8192
+Blocks per segment of large relation: 131072
+WAL block size:                       8192
+Bytes per WAL segment:                16777216
+Maximum length of identifiers:        64
+Maximum columns in an index:          32
+Maximum size of a TOAST chunk:        1996
+Size of a large-object chunk:         2048
+Date/time type storage:               64-bit integers
+Float8 argument passing:              by value
+Data page checksum version:           0
+Mock authentication nonce:            93f8792f52798067b0cee85475ba6ed9ee6cc3d6aa17d8d7c1eacdf535ced484
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "CREATE TABLE ventas (
+     id SERIAL PRIMARY KEY ,
+     fecha DATE,
+     cliente_id INTEGER,
+     producto_id INTEGER,
+     cantidad INTEGER,
+     precio NUMERIC
+ );
+
+ INSERT INTO ventas ( fecha, cliente_id, producto_id, cantidad, precio)
+ SELECT
+       NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int,
+       (RANDOM() * 1000)::int,
+       (RANDOM() * 100)::int,
+       (RANDOM() * 10)::int,
+       (RANDOM() * 100)::numeric
+   FROM generate_series(1, 190000);"
+CREATE TABLE
+INSERT 0 190000
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 32M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 13:55 00000001000000000000005B
+-rw-------. 1 postgres postgres 16M Sep 19 13:55 00000001000000000000005C
+
+  
+
+[postgres@SERVER_TEST pg_wal]$ pg_archivecleanup -n  /sysx/data14/pg_wal 00000001000000000000005B
+[postgres@SERVER_TEST pg_wal]$ pg_archivecleanup -n  /sysx/data14/pg_wal 00000001000000000000005C
+/sysx/data14/pg_wal/00000001000000000000005B
+[postgres@SERVER_TEST pg_wal]$
+
+
+
+[postgres@SERVER_TEST pg_wal]$  psql -X -p 5414 -d test_checkpoint -c "CHECKPOINT;"
+CHECKPOINT
+[postgres@SERVER_TEST pg_wal]$
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_controldata -D $PGDATA14
+pg_control version number:            1300
+Catalog version number:               202107181
+Database system identifier:           7381508807802424143
+Database cluster state:               in production
+pg_control last modified:             Thu 19 Sep 2024 01:59:21 PM MST
+Latest checkpoint location:           0/5C2776B8
+Latest checkpoint's REDO location:    0/5C277680
+Latest checkpoint's REDO WAL file:    00000001000000000000005C <---- ahora esta en este archivo 
+Latest checkpoint's TimeLineID:       1
+Latest checkpoint's PrevTimeLineID:   1
+Latest checkpoint's full_page_writes: on
+Latest checkpoint's NextXID:          0:1027
+Latest checkpoint's NextOID:          25252
+Latest checkpoint's NextMultiXactId:  1
+Latest checkpoint's NextMultiOffset:  0
+Latest checkpoint's oldestXID:        726
+Latest checkpoint's oldestXID's DB:   1
+Latest checkpoint's oldestActiveXID:  1027
+Latest checkpoint's oldestMultiXid:   1
+Latest checkpoint's oldestMulti's DB: 1
+Latest checkpoint's oldestCommitTsXid:0
+Latest checkpoint's newestCommitTsXid:0
+Time of latest checkpoint:            Thu 19 Sep 2024 01:59:21 PM MST
+Fake LSN counter for unlogged rels:   0/3E8
+Minimum recovery ending location:     0/0
+Min recovery ending loc's timeline:   0
+Backup start location:                0/0
+Backup end location:                  0/0
+End-of-backup record required:        no
+wal_level setting:                    replica
+wal_log_hints setting:                off
+max_connections setting:              100
+max_worker_processes setting:         8
+max_wal_senders setting:              10
+max_prepared_xacts setting:           0
+max_locks_per_xact setting:           64
+track_commit_timestamp setting:       off
+Maximum data alignment:               8
+Database block size:                  8192
+Blocks per segment of large relation: 131072
+WAL block size:                       8192
+Bytes per WAL segment:                16777216
+Maximum length of identifiers:        64
+Maximum columns in an index:          32
+Maximum size of a TOAST chunk:        1996
+Size of a large-object chunk:         2048
+Date/time type storage:               64-bit integers
+Float8 argument passing:              by value
+Data page checksum version:           0
+Mock authentication nonce:            93f8792f52798067b0cee85475ba6ed9ee6cc3d6aa17d8d7c1eacdf535ced484
+[postgres@SERVER_TEST pg_wal]$
+
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 32M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 13:55 00000001000000000000005D
+-rw-------. 1 postgres postgres 16M Sep 19 13:59 00000001000000000000005C
+
+
+
+[postgres@SERVER_TEST pg_wal]$  pg_archivecleanup -n  /sysx/data14/pg_wal 00000001000000000000005C
+[postgres@SERVER_TEST pg_wal]$  pg_archivecleanup -n  /sysx/data14/pg_wal 00000001000000000000005D
+/sysx/data14/pg_wal/00000001000000000000005C
+
+
+[postgres@SERVER_TEST pg_wal]$ pg_archivecleanup -d  /sysx/data14/pg_wal 00000001000000000000005D
+pg_archivecleanup: keeping WAL file "/sysx/data14/pg_wal/00000001000000000000005D" and later
+pg_archivecleanup: removing file "/sysx/data14/pg_wal/00000001000000000000005C"
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_ctl stop -D $PGDATA14
+waiting for server to shut down.... done
+server stopped
+[postgres@SERVER_TEST pg_wal]$
+
+
+----- CORROMPI LOS WALS 
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-19 14:05:00 MST     1683505 66ec91fc.19b031 >LOG:  redirecting log output to logging collector process
+<2024-09-19 14:05:00 MST     1683505 66ec91fc.19b031 >HINT:  Future log output will appear in directory "pg_log".
+. stopped waiting
+pg_ctl: could not start server
+Examine the log output.
+
+
+
+[postgres@SERVER_TEST pg_log]$ cat postgresql-240919.log | tail  -n 10
+<2024-09-19 15:00:59 MST     1686893 66ec9f1b.19bd6d >LOG:  listening on IPv4 address "0.0.0.0", port 5414
+<2024-09-19 15:00:59 MST     1686893 66ec9f1b.19bd6d >LOG:  listening on IPv6 address "::", port 5414
+<2024-09-19 15:00:59 MST     1686893 66ec9f1b.19bd6d >LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5414"
+<2024-09-19 15:00:59 MST     1686893 66ec9f1b.19bd6d >LOG:  listening on Unix socket "/tmp/.s.PGSQL.5414"
+<2024-09-19 15:00:59 MST     1686895 66ec9f1b.19bd6f >LOG:  database system was shut down at 2024-09-19 14:04:51 MST
+<2024-09-19 15:00:59 MST     1686895 66ec9f1b.19bd6f >LOG:  invalid primary checkpoint record
+<2024-09-19 15:00:59 MST     1686895 66ec9f1b.19bd6f >PANIC:  could not locate a valid checkpoint record           
+<2024-09-19 15:01:00 MST     1686893 66ec9f1b.19bd6d >LOG:  startup process (PID 1686895) was terminated by signal 6: Aborted
+<2024-09-19 15:01:00 MST     1686893 66ec9f1b.19bd6d >LOG:  aborting startup due to startup process failure
+<2024-09-19 15:01:00 MST     1686893 66ec9f1b.19bd6d >LOG:  database system is shut down
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl stop -D $PGDATA14
+waiting for server to shut down.... done
+server stopped
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_resetwal -f -D $PGDATA14
+Write-ahead log reset
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-19 15:29:10 MST     1689854 66eca5b6.19c8fe >LOG:  redirecting log output to logging collector process
+<2024-09-19 15:29:10 MST     1689854 66eca5b6.19c8fe >HINT:  Future log output will appear in directory "pg_log".
+ done
+server started
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 16M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:29 000000010000000000000091
+
+ 
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "DROP TABLE ventas; CREATE TABLE ventas (
+     id SERIAL PRIMARY KEY ,
+     fecha DATE,
+     cliente_id INTEGER,
+     producto_id INTEGER,
+     cantidad INTEGER,
+     precio NUMERIC
+ );
+
+ INSERT INTO ventas ( fecha, cliente_id, producto_id, cantidad, precio)
+ SELECT
+       NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int,
+       (RANDOM() * 1000)::int,
+       (RANDOM() * 100)::int,
+       (RANDOM() * 10)::int,
+       (RANDOM() * 100)::numeric
+   FROM generate_series(1, 190000);"
+DROP TABLE
+CREATE TABLE
+INSERT 0 190000
+
+ 
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 32M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:29 000000010000000000000091
+-rw-------. 1 postgres postgres 16M Sep 19 15:29 000000010000000000000092
+
+
+
+[postgres@SERVER_TEST pg_wal]$
+[postgres@SERVER_TEST pg_wal]$
+[postgres@SERVER_TEST pg_wal]$  psql -X -p 5414 -d test_checkpoint -c "CHECKPOINT;"
+CHECKPOINT
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 32M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:29 000000010000000000000093
+-rw-------. 1 postgres postgres 16M Sep 19 15:29 000000010000000000000092
+
+ 
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_waldump -f  000000010000000000000093 | wc -l
+pg_waldump: fatal: could not find a valid record after 0/93000000
+0
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_waldump  000000010000000000000092 | wc -l
+pg_waldump: fatal: error in WAL record at 0/92CBE1F8: invalid record length at 0/92CBE230: wanted 24, got 0
+172188
+
+
+[postgres@SERVER_TEST pg_wal]$  psql -X -p 5414 -d test_checkpoint -c "CHECKPOINT;"
+CHECKPOINT
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 32M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:29 000000010000000000000093
+-rw-------. 1 postgres postgres 16M Sep 19 15:34 000000010000000000000092
+
+
+
+[postgres@SERVER_TEST pg_wal]$ pg_archivecleanup -n  /sysx/data14/pg_wal 000000010000000000000092
+[postgres@SERVER_TEST pg_wal]$
+[postgres@SERVER_TEST pg_wal]$ pg_archivecleanup -n  /sysx/data14/pg_wal 000000010000000000000093
+/sysx/data14/pg_wal/000000010000000000000092
+
+
+[postgres@SERVER_TEST pg_wal]$ pg_archivecleanup -d  /sysx/data14/pg_wal 000000010000000000000093
+pg_archivecleanup: keeping WAL file "/sysx/data14/pg_wal/000000010000000000000093" and later
+pg_archivecleanup: removing file "/sysx/data14/pg_wal/000000010000000000000092"
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 16M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:29 000000010000000000000093
+
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_ctl restart -D $PGDATA14
+waiting for server to shut down.... done
+server stopped
+waiting for server to start....<2024-09-19 15:35:52 MST     1690515 66eca748.19cb93 >LOG:  redirecting log output to logging collector process
+<2024-09-19 15:35:52 MST     1690515 66eca748.19cb93 >HINT:  Future log output will appear in directory "pg_log".
+. stopped waiting
+pg_ctl: could not start server
+Examine the log output.
+
+
+
+
+ 
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_resetwal -f -D $PGDATA14
+Write-ahead log reset
+
+
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_ctl start -D $PGDATA14
+waiting for server to start....<2024-09-19 15:36:09 MST     1690616 66eca759.19cbf8 >LOG:  redirecting log output to logging collector process
+<2024-09-19 15:36:09 MST     1690616 66eca759.19cbf8 >HINT:  Future log output will appear in directory "pg_log".
+
+ done
+server started
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 16M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:36 000000010000000000000094
+
+
+
+
+[postgres@SERVER_TEST pg_log]$ psql -X -p 5414 -d test_checkpoint -c "DROP TABLE ventas; CREATE TABLE ventas (
+     id SERIAL PRIMARY KEY ,
+     fecha DATE,
+     cliente_id INTEGER,
+     producto_id INTEGER,
+     cantidad INTEGER,
+     precio NUMERIC
+ );
+
+ INSERT INTO ventas ( fecha, cliente_id, producto_id, cantidad, precio)
+ SELECT
+       NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int,
+       (RANDOM() * 1000)::int,
+       (RANDOM() * 100)::int,
+       (RANDOM() * 10)::int,
+       (RANDOM() * 100)::numeric
+   FROM generate_series(1, 190000);"
+DROP TABLE
+CREATE TABLE
+INSERT 0 190000
+
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 32M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:36 000000010000000000000094
+-rw-------. 1 postgres postgres 16M Sep 19 15:36 000000010000000000000095
+
+
+
+
+[postgres@SERVER_TEST pg_wal]$  psql -X -p 5414 -d test_checkpoint -c "CHECKPOINT;"
+CHECKPOINT
+[postgres@SERVER_TEST pg_wal]$
+ 
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 32M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:36 000000010000000000000096
+-rw-------. 1 postgres postgres 16M Sep 19 15:39 000000010000000000000095
+
+
+
+[postgres@SERVER_TEST pg_wal]$ psql -X -p 5414 -d test_checkpoint -c "
+ INSERT INTO ventas ( fecha, cliente_id, producto_id, cantidad, precio)
+ SELECT
+       NOW() - INTERVAL '1 day' * (RANDOM() * 1000)::int,
+       (RANDOM() * 1000)::int,
+       (RANDOM() * 100)::int,
+       (RANDOM() * 10)::int,
+       (RANDOM() * 100)::numeric
+   FROM generate_series(1, 1900000);"
+INSERT 0 10
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 48M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:41 000000010000000000000095
+-rw-------. 1 postgres postgres 16M Sep 19 15:41 000000010000000000000096
+-rw-------. 1 postgres postgres 16M Sep 19 15:41 000000010000000000000097
+
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_waldump  000000010000000000000095 | wc -l
+215954
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_waldump  000000010000000000000096 | wc -l
+216271
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_waldump  000000010000000000000097 | wc -l
+pg_waldump: fatal: error in WAL record at 0/9799C8C8: invalid record length at 0/9799C900: wanted 24, got 0
+129918
+
+
+[postgres@SERVER_TEST pg_wal]$ psql -X -p 5414 -d test_checkpoint -c "CHECKPOINT;"
+CHECKPOINT
+
+
+[postgres@SERVER_TEST pg_wal]$ ls -lhtr
+total 48M
+drwx------. 2 postgres postgres   6 Jun 17 09:24 archive_status
+-rw-------. 1 postgres postgres 16M Sep 19 15:41 000000010000000000000098
+-rw-------. 1 postgres postgres 16M Sep 19 15:41 000000010000000000000099
+-rw-------. 1 postgres postgres 16M Sep 19 15:43 000000010000000000000097
+
+
+pg_waldump: fatal: error in WAL record at 0/979BB790: invalid record length at 0/979BB7C8: wanted 24, got 0
+131512
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_waldump  000000010000000000000098 | wc -l
+pg_waldump: fatal: could not find a valid record after 0/98000000
+0
+[postgres@SERVER_TEST pg_wal]$  $PGBIN14/pg_waldump  000000010000000000000099 | wc -l
+pg_waldump: fatal: could not find a valid record after 0/99000000
+0
+
+
+
+[postgres@SERVER_TEST pg_wal]$  pg_archivecleanup -n  /sysx/data14/pg_wal 000000010000000000000097
+[postgres@SERVER_TEST pg_wal]$
+[postgres@SERVER_TEST pg_wal]$ $PGBIN14/pg_controldata -D $PGDATA14
+pg_control version number:            1300
+Catalog version number:               202107181
+Database system identifier:           7381508807802424143
+Database cluster state:               in production
+pg_control last modified:             Thu 19 Sep 2024 03:43:35 PM MST
+Latest checkpoint location:           0/9799C938
+Latest checkpoint's REDO location:    0/9799C900
+Latest checkpoint's REDO WAL file:    000000010000000000000097
+Latest checkpoint's TimeLineID:       1
+Latest checkpoint's PrevTimeLineID:   1
+Latest checkpoint's full_page_writes: on
+Latest checkpoint's NextXID:          0:1052
+Latest checkpoint's NextOID:          25367
+Latest checkpoint's NextMultiXactId:  1
+Latest checkpoint's NextMultiOffset:  0
+Latest checkpoint's oldestXID:        726
+Latest checkpoint's oldestXID's DB:   1
+Latest checkpoint's oldestActiveXID:  1052
+Latest checkpoint's oldestMultiXid:   1
+Latest checkpoint's oldestMulti's DB: 1
+Latest checkpoint's oldestCommitTsXid:0
+Latest checkpoint's newestCommitTsXid:0
+Time of latest checkpoint:            Thu 19 Sep 2024 03:43:35 PM MST
+Fake LSN counter for unlogged rels:   0/3E8
+Minimum recovery ending location:     0/0
+Min recovery ending loc's timeline:   0
+Backup start location:                0/0
+Backup end location:                  0/0
+End-of-backup record required:        no
+wal_level setting:                    replica
+wal_log_hints setting:                off
+max_connections setting:              100
+max_worker_processes setting:         8
+max_wal_senders setting:              10
+max_prepared_xacts setting:           0
+max_locks_per_xact setting:           64
+track_commit_timestamp setting:       off
+Maximum data alignment:               8
+Database block size:                  8192
+Blocks per segment of large relation: 131072
+WAL block size:                       8192
+Bytes per WAL segment:                16777216
+Maximum length of identifiers:        64
+Maximum columns in an index:          32
+Maximum size of a TOAST chunk:        1996
+Size of a large-object chunk:         2048
+Date/time type storage:               64-bit integers
+Float8 argument passing:              by value
+Data page checksum version:           0
+Mock authentication nonce:            93f8792f52798067b0cee85475ba6ed9ee6cc3d6aa17d8d7c1eacdf535ced484
 
 
 
