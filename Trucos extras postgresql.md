@@ -612,7 +612,7 @@ select substring('arwdDxt' FROM 1 FOR length('arwdDxt') - 1); -- >  arwdDx
  SELECT SUBSTRING('Hola Mundo' FROM 6);  --- Extraer una subcadena desde una posición específica:  Mundo
  SELECT SUBSTRING('Hola Mundo' FROM 1 FOR 4);  ---> Extraer una subcadena con una longitud específica:  Hola
  SELECT SUBSTRING('abc123def'  FROM '[0-9]+'); ---> Usar con expresiones regulares : 123
-
+ select substring('select * from colaboradores order by 1;'FROM 'from .*');
 
 SUBSTRING(cadena [FROM posición_inicial] [FOR longitud])
  
