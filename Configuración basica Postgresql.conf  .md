@@ -15,7 +15,7 @@ Doc Man:
 -- Cambiar el nivel de mensajes del cliente a 'log' para la sesión actual
 SET client_min_messages TO 'log';
 
--- Cambiar el nivel de mensajes del cliente a 'log' solo para la transacción actual
+--  Cambiar el nivel de mensajes del cliente a 'log'y Al colocar "LOCAL" solo es para la transacción actual
 BEGIN;
 SET LOCAL client_min_messages TO 'log';
 -- Aquí irían tus operaciones SQL
