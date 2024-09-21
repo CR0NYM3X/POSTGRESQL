@@ -5,8 +5,6 @@
 POR SEGURIDAD CUANDO UN USUARIO SE CONECTA TIENE ACCESO A MUCHAS TABLAS Y ESQUEMAS DEL SISTEMAS QUE TE PERMITEN VER EL INVENTARIO DE LA BASE DE DATOS
 ```sql
 
-REVOKE usage ON SCHEMA pg_catalog FROM PUBLIC;
-REVOKE usage ON SCHEMA information_schema FROM PUBLIC;
 
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON DATABASE postgres FROM PUBLIC;
@@ -18,7 +16,10 @@ REVOKE all privileges on table pg_proc   from PUBLIC;
 
 select table_schema,table_name from information_schema.table_privileges where  grantee = 'PUBLIC' order by  table_schema,table_name  ;
 
- 
+
+--- Estos no se recomienda usar ya que tendrias que darle permiso a cada usuario para que pueda usar el esquema 
+REVOKE usage ON SCHEMA pg_catalog FROM PUBLIC;
+REVOKE usage ON SCHEMA information_schema FROM PUBLIC;
 
 
 
