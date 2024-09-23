@@ -161,6 +161,22 @@ END;
 $$;
 
 
+DO $$
+DECLARE
+    contador INT := 0;
+BEGIN
+    LOOP
+        -- Aquí va el código que deseas ejecutar en cada iteración
+        RAISE NOTICE 'Contador: %', contador;
+
+        -- Incrementa el contador
+        contador := contador + 1;
+
+        -- Condición de salida
+        EXIT WHEN contador >= 10;
+    END LOOP;
+END $$;
+
 
 ########## BUCLES FOR ########## 
 
