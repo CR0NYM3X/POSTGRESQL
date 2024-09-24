@@ -80,7 +80,9 @@ select * from pg_extension;
 
 ************ MONITOREO DE LOGS ************
 - **pgBadger:** Una herramienta externa que analiza los logs de PostgreSQL para generar informes detallados de rendimiento. Es especialmente útil para entender cómo las consultas y la actividad del sistema afectan el rendimiento a lo largo del tiempo.
-
+pganalyze: Herramienta especializada en el análisis y monitoreo de PostgreSQL
+PgDash: Proporciona paneles de control y alertas para el monitoreo de PostgreSQL
+SIEM 
 
 ************ MONITOREO EN CONSULTAS ************
 - **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
@@ -134,13 +136,14 @@ select * from pg_extension;
 - **wal-g:** Herramienta de backup y recuperación que soporta múltiples métodos de almacenamiento en la nube Ofrece soporte para backups completos y diferenciales, y está diseñada para trabajar en entornos con replicación.
 
 
-************ REPLICA ************
+************ REPLICA failover ************
 - **repmgr:** Una herramienta para la gestión de replicación y failover en PostgreSQL Facilita la configuración de replicación, supervisa los servidores y realiza failover automático en caso de fallo del maestro.
 
 - **pglogical:** Proporciona replicación lógica para PostgreSQL, permitiendo replicar cambios entre diferentes bases de datos y transformarlos en el proceso.
  
 ************ BALANCEO DE CARGA EN REPLICAS ************
 - **pgpool-II:** Middleware que proporciona balanceo de carga y failover automático para PostgreSQL Permite la replicación en modo maestro-esclavo y distribuye las consultas entre las réplicas para mejorar el rendimiento.
+Slony-I: Un sistema de replicación maestro-esclavo para PostgreSQL que permite replicar datos entre múltiples servidores.
 
 ************ TRANSFORMACION DE WAL EN JSON ************
 - **wal2json:** Genera datos en formato JSON a partir de los registros de WAL (Write-Ahead Logging), útil para replicación lógica y para aplicaciones que necesitan consumir los cambios en un formato legible.
