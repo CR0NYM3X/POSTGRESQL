@@ -194,6 +194,23 @@ select * from from pg_hba_file_rules;
 Select * from  pg_stat_activity    ;
 
 
+```
+
+
+### Evita Inyeccion SQL 
+Esto es útil para evitar problemas de inyección SQL y para manejar valores de manera segura y eficiente.
+Si no usáramos USING, tendríamos que concatenar los valores directamente en la cadena SQL, lo cual es menos seguro y más propenso a errores
+```
+CREATE OR REPLACE FUNCTION insertar_empleado(nom VARCHAR, sal NUMERIC)
+RETURNS void AS $$
+DECLARE
+    sql_query text;
+BEGIN
+    sql_query := 'INSERT INTO empleados (nombre, salario) VALUES ($1, $2)';
+    EXECUTE sql_query USING nom, sal;
+END;
+$$ LANGUAGE plpgsql;
+
 
 ```
 
@@ -204,3 +221,6 @@ https://paper.bobylive.com/Security/CIS/CIS_PostgreSQL_14_Benchmark_v1_0_0.pdf
 
 bibliografía  :
 https://book.hacktricks.xyz/network-services-pentesting/pentesting-postgresql
+
+
+
