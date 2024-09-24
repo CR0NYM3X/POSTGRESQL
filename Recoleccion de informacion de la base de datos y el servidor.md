@@ -12,7 +12,14 @@ Es recopilar información del servidor y la base de datos en caso de requerirse,
  select * from inet_server_addr(),inet_server_port(),inet_client_addr(),inet_client_port();
 ```
 
+### En caso de no tener top o htop
+```sh
+-- Este comando muestra una lista de procesos ordenados por el uso de CPU. 
+ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | head
 
+Este comando muestra estadísticas del sistema, incluyendo el uso de CPU, cada segundo.
+vmstat 1
+```
 
 ### recopilar información de archivos 
 ```SQL
