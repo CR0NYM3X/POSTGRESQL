@@ -14,7 +14,14 @@ select * from pg_extension;
 ```
 
 ```SQL
+# Graficas :
+Power By
+Grafana 
+
+
 ### Herramientas de Seguridad para PostgreSQL
+
+Prometheus es una herramienta de monitoreo y alerta de código abierto que se utiliza ampliamente para recopilar y analizar métricas de sistemas y aplicaciones. Para monitorear PostgreSQL con Prometheus, se utiliza un componente llamado Postgres Exporter.
 
 2. **PostgreSQL TDE (Transparent Data Encryption)**:
    - **Descripción**: TDE proporciona cifrado de datos en reposo para PostgreSQL, asegurando que los datos almacenados en disco estén protegidos.
