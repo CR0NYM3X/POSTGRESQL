@@ -456,7 +456,7 @@ Los CONSTRAINTS (restricciones) son reglas que se aplican a las columnas de una 
    
    CREATE TABLE detalles_orden (
        detalle_id SERIAL PRIMARY KEY,
-       orden_id INT,
+       orden_id INT, ---- tambien se puede hacer asi : orden_id INT REFERENCES customers(orden_id)
        producto_id INT,
        CONSTRAINT fk_orden
            FOREIGN KEY(orden_id) 
