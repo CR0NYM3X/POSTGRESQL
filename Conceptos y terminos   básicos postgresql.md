@@ -539,8 +539,14 @@ Los snapshots en PostgreSQL son esenciales para mantener la consistencia y el ai
  
 
 
+### Capacidad de escalar horizontalmente
+Escalar horizontalmente significa que puedes añadir más servidores (nodos) para manejar más datos y más tráfico. En lugar de depender de un solo servidor potente, puedes distribuir la carga entre varios servidores. Esto es especialmente útil para aplicaciones que necesitan manejar grandes volúmenes de datos y usuarios.
 
- 
+### Resiliencia incorporada
+La resiliencia se refiere a la capacidad de la base de datos para seguir funcionando incluso si algunos de sus componentes fallan. diseñada para ser altamente disponible y resistente a fallos, lo que significa que puede seguir operando sin interrupciones incluso si uno o más nodos dejan de funcionar. 
+
+
+
 
 
 
