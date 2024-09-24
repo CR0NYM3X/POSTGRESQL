@@ -14,6 +14,25 @@ select * from pg_extension;
 ```
 
 ```SQL
+### Herramientas de Seguridad para PostgreSQL
+
+2. **PostgreSQL TDE (Transparent Data Encryption)**:
+   - **Descripción**: TDE proporciona cifrado de datos en reposo para PostgreSQL, asegurando que los datos almacenados en disco estén protegidos.
+   - **Características**: Cifrado de tablas y columnas, gestión de claves de cifrado, integración con módulos de seguridad de hardware (HSM).
+
+3. **pgauditlog**:
+   - **Descripción**: Herramienta de auditoría que permite registrar y analizar eventos de seguridad en PostgreSQL.
+   - **Características**: Registro de eventos de seguridad, análisis de logs, generación de informes de auditoría.
+
+ 
+5. **Data Masking**:
+   - **Descripción**: Herramienta que permite enmascarar datos sensibles en PostgreSQL para proteger la privacidad y cumplir con regulaciones de protección de datos.
+   - **Características**: Enmascaramiento dinámico y estático, soporte para múltiples tipos de datos, configuración flexible.
+
+6. **PostgreSQL Security Extensions**:
+   - **Descripción**: Conjunto de extensiones que mejoran la seguridad de PostgreSQL, incluyendo autenticación avanzada y control de acceso.
+   - **Características**: Autenticación basada en certificados, control de acceso granular, integración con sistemas de gestión de identidades.
+ 
 
 ### **5. Seguridad:**
 
