@@ -279,7 +279,12 @@ BEGIN
 END;
 $$;
 
+/*
+FOUND  : Se utiliza para verificar si una operación afectó alguna fila o si una consulta devolvió algún resultado.
+FOUND = TRUE: La operación encontró o afectó al menos una fila.
+FOUND = FALSE: La operación no encontró ni afectó ninguna fila.
 
+*/
 
 
 -----------
