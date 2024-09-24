@@ -54,7 +54,7 @@ PostgreSQL soporta varios tipos de particionamiento:
    PARTITION BY LIST (region);
    ```
 
-3. **Particionamiento por Hash**: Divide los datos en base a un valor hash de una columna. Útil para distribuir datos de manera uniforme.
+3. **Particionamiento por hash sharding**: Divide los datos en base a un valor hash de una columna. Útil para distribuir datos de manera uniforme.
    ```sql
    PARTITION BY HASH (id);
    ```
