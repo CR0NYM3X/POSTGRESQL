@@ -404,6 +404,10 @@ select EXTRACT(DAY FROM now()::date)
 select EXTRACT(MONTH FROM now()::date) 
 select EXTRACT(YEAR  FROM now()::date) 
 select EXTRACT(HOURS  FROM now())
+
+select extract(hour  from  timestamp'2009-12-31 12:25:50');
+select extract(minute from  timestamp'2009-12-31 12:25:50');
+select extract(second from  timestamp'2009-12-31 12:25:50');
  
 
 select age(timestamp '2011-10-01 ', timestamp '2011-11-01') --- saber los días que pasan 
@@ -413,9 +417,6 @@ select to_char( timestamp'2009-12-31 11:25:50' , 'HH12:MI:SS') >  '12:26:52'
 
 
 
-select extract(hour  from  timestamp'2009-12-31 12:25:50');
-select extract(minute from  timestamp'2009-12-31 12:25:50');
-select extract(second from  timestamp'2009-12-31 12:25:50');
 
 
 
