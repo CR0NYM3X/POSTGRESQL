@@ -408,7 +408,14 @@ select EXTRACT(HOURS  FROM now())
 select extract(hour  from  timestamp'2009-12-31 12:25:50');
 select extract(minute from  timestamp'2009-12-31 12:25:50');
 select extract(second from  timestamp'2009-12-31 12:25:50');
- 
+select EXTRACT(MILLISECOND FROM ( var_clock_end  - var_clock_start ) )::NUMERIC(50,4)
+
+
+SELECT 
+    EXTRACT(epoch FROM TIMESTAMP '2024-01-01 12:01:00') - 
+    EXTRACT(epoch FROM TIMESTAMP '2024-01-01 12:00:00') AS segundos_entre_fechas; --- 60.000000 
+	
+select round(1000 * EXTRACT(epoch FROM '2024-01-01 12:01:00'::TIMESTAMP - '2024-01-01 12:00:00'::TIMESTAMP), 3); ---- 60000.000 
 
 select age(timestamp '2011-10-01 ', timestamp '2011-11-01') --- saber los días que pasan 
 select ('2011-11-01'::date -  '2011-12-028'::date)--- saber los días que pasan  
