@@ -34,7 +34,6 @@ PERFORM pg_catalog.set_config('client_min_messages', 'log', true);
 -- Aquí irían tus operaciones SQL
 COMMIT;
  
- 
 ```
 
 ## archivos   conf
@@ -54,6 +53,8 @@ select * from pg_settings;
 select * from pg_config
 
 show config_file;
+
+select current_setting('search_path');
 ``` 
 
 
