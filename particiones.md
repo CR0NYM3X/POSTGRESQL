@@ -681,3 +681,232 @@ postgres@postgres# ALTER TABLE public.ventas DETACH PARTITION prttb.ventas_2022;
 ALTER TABLE
 
 ```
+
+
+
+
+
+---
+---
+
+El **hash sharding** en PostgreSQL es una técnica de particionamiento que distribuye los datos entre múltiples nodos o particiones utilizando una función hash.  
+
+### ¿Qué es el hash sharding?
+El hash sharding implica dividir una tabla en varias subtablas (shards) basándose en el valor hash de una o más columnas clave. Cada fila se asigna a una partición específica según el resultado de la función hash aplicada a su clave de partición.
+
+### ¿Cómo funciona?
+1. **Definición de la clave de partición**: Se elige una columna o combinación de columnas como clave de partición.
+2. **Aplicación de la función hash**: Se aplica una función hash a la clave de partición para determinar en qué shard se almacenará cada fila.
+3. **Distribución de datos**: Los datos se distribuyen uniformemente entre los shards, lo que ayuda a balancear la carga y mejorar el rendimiento.
+
+
+### Cuándo usar hash sharding
+- **Grandes volúmenes de datos**: Cuando necesitas manejar grandes cantidades de datos y tráfico.
+- **Balanceo de carga**: Cuando es crucial distribuir la carga de trabajo de manera uniforme entre varios nodos.
+- **Escalabilidad**: Cuando necesitas una solución que pueda escalar fácilmente añadiendo más nodos.
+
+### Cuándo no usar hash sharding
+- **Consultas complejas**: Si tus consultas requieren unir datos de múltiples shards frecuentemente, el rendimiento puede verse afectado.
+- **Datos pequeños**: Si el volumen de datos es pequeño, el overhead de gestionar múltiples shards puede no justificar los beneficios.
+
+
+### Ventajas del hash sharding
+- **Balanceo de carga**: Distribuye los datos de manera uniforme, evitando que un solo nodo se sobrecargue.
+- **Escalabilidad**: Permite añadir más nodos fácilmente para manejar mayores volúmenes de datos y tráfico.
+- **Rendimiento**: Mejora el rendimiento de las consultas al reducir la cantidad de datos que cada nodo necesita procesar.
+
+ 
+
+### Desventajas de usar hash sharding
+
+1. **Complejidad en la configuración y administración**:
+   - **Configuración inicial**: Implementar hash sharding puede ser complejo y requiere una planificación cuidadosa para definir las claves de partición y la distribución de los datos.
+   - **Mantenimiento**: Administrar una base de datos shardada puede ser más complicado que una base de datos monolítica, especialmente cuando se trata de balancear la carga y manejar fallos.
+
+2. **Consultas complejas**:
+   - **Uniones entre shards**: Las consultas que requieren unir datos de múltiples shards pueden ser lentas y consumir muchos recursos, ya que el sistema necesita acceder a varias particiones para obtener los datos necesarios.
+   - **Consultas globales**: Realizar consultas que abarcan todos los shards, como agregaciones globales, puede ser ineficiente y lento.
+
+3. **Rebalanceo de datos**:
+   - **Escalabilidad dinámica**: Añadir o remover shards puede requerir un rebalanceo de datos, lo cual puede ser un proceso costoso y disruptivo.
+   - **Redistribución**: Cambiar la distribución de los datos entre shards puede ser complicado y puede afectar el rendimiento durante el proceso.
+
+4. **Consistencia y transacciones**:
+   - **Transacciones distribuidas**: Mantener la consistencia de las transacciones a través de múltiples shards puede ser difícil y puede requerir mecanismos adicionales como coordinadores de transacciones distribuidas.
+   - **Latencia**: Las transacciones que abarcan múltiples shards pueden introducir latencia adicional debido a la necesidad de coordinar entre diferentes nodos.
+
+5. **Sobrecarga de almacenamiento**:
+   - **Metadatos adicionales**: Cada shard puede requerir almacenamiento adicional para metadatos y estructuras de índice, lo que puede aumentar el uso total de almacenamiento.
+
+6. **Dependencia de la función hash**:
+   - **Colisiones de hash**: Aunque las funciones hash están diseñadas para distribuir los datos uniformemente, pueden ocurrir colisiones que resulten en una distribución desigual de los datos.
+   - **Rigidez**: Cambiar la función hash o la clave de partición puede ser complicado y puede requerir una reestructuración significativa de la base de datos.
+
+
+
+### Desafíos de unir datos de múltiples shards
+
+1. **Rendimiento**: Las uniones entre tablas particionadas pueden ser más lentas porque el sistema necesita acceder a múltiples shards para obtener los datos necesarios.
+2. **Complejidad**: La lógica de la consulta puede volverse más compleja, especialmente si las particiones están distribuidas en diferentes nodos físicos.
+3. **Consistencia**: Asegurar la consistencia de los datos puede ser más difícil en un entorno distribuido.
+
+### Cuándo es problemático
+
+- **Consultas frecuentes**: Si tus aplicaciones realizan muchas consultas que requieren unir datos de múltiples shards, el rendimiento puede verse afectado.
+- **Grandes volúmenes de datos**: Cuanto más grandes sean los datos y más shards estén involucrados, más tiempo y recursos se necesitarán para completar la consulta.
+
+
+
+### Propósito del MODULUS
+
+1. **Distribución de datos**: El MODULUS define el número total de particiones en las que se dividirán los datos. Por ejemplo, si el MODULUS es 4, los datos se distribuirán en 4 particiones.
+2. **Cálculo del resto**: Cuando se inserta un dato, PostgreSQL calcula el valor hash de la clave de partición y luego aplica la operación de módulo (resto) para determinar en qué partición almacenar el dato. El resto de esta operación debe coincidir con el REMAINDER especificado en la partición.
+ 
+### ¿Se puede cambiar el MODULUS?
+
+El MODULUS se define al crear las particiones y no se puede cambiar directamente una vez que las particiones están creadas. Si necesitas cambiar el número de particiones (MODULUS), tendrías que rediseñar la partición de la tabla
+
+
+### Ejemplo de ajuste
+
+Si decides que necesitas más particiones, podrías hacer algo como esto:
+
+```sql
+-- Crear nuevas particiones con un MODULUS de 8
+CREATE TABLE users_part_5 PARTITION OF users FOR VALUES WITH (MODULUS 8, REMAINDER 4);
+CREATE TABLE users_part_6 PARTITION OF users FOR VALUES WITH (MODULUS 8, REMAINDER 5);
+CREATE TABLE users_part_7 PARTITION OF users FOR VALUES WITH (MODULUS 8, REMAINDER 6);
+CREATE TABLE users_part_8 PARTITION OF users FOR VALUES WITH (MODULUS 8, REMAINDER 7);
+```
+ 
+# Como postgresql decide en que particion insertar la fila 
+1. **Generación del `user_id`**:
+   - PostgreSQL genera un `user_id` para el nuevo registro, por ejemplo, `user_id = 1`.
+
+2. **Aplicación de la función hash**:
+   - PostgreSQL aplica una función hash al valor `1`. Supongamos que el valor hash resultante es `12345`.
+
+3. **Cálculo del módulo**:
+   - PostgreSQL calcula `12345 % 4`, lo que da un resto de `1`.
+
+4. **Determinación de la partición**:
+   - El resto `1` indica que el registro se almacenará en la partición `users_part_2` (que tiene `REMAINDER 1`).
+
+ 
+ 
+
+### Paso 1: Crear la tabla principal y las particiones
+En este ejemplo, la tabla `users` se particiona en cuatro shards basados en el valor hash de la columna `id`.
+
+Primero, creamos una tabla principal que se particionará por hash y luego definimos las particiones.
+
+```sql
+-- Crear la tabla principal con particionamiento por hash
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username TEXT NOT NULL,
+    email TEXT NOT NULL
+) PARTITION BY HASH (user_id);
+
+-- Crear las particiones
+CREATE TABLE users_part_1 PARTITION OF users FOR VALUES WITH (MODULUS 4, REMAINDER 0);
+CREATE TABLE users_part_2 PARTITION OF users FOR VALUES WITH (MODULUS 4, REMAINDER 1);
+CREATE TABLE users_part_3 PARTITION OF users FOR VALUES WITH (MODULUS 4, REMAINDER 2);
+CREATE TABLE users_part_4 PARTITION OF users FOR VALUES WITH (MODULUS 4, REMAINDER 3);
+```
+
+
+
+
+### Paso 2: Insertar datos en la tabla
+
+Ahora, insertamos algunos datos en la tabla `users`. PostgreSQL automáticamente distribuirá los datos entre las particiones basándose en el valor hash de `user_id`.
+
+```sql
+-- Insertar datos
+INSERT INTO users (username, email) VALUES
+('alice', 'alice@example.com'),
+('bob', 'bob@example.com'),
+('carol', 'carol@example.com'),
+('dave', 'dave@example.com'),
+('eve', 'eve@example.com'),
+('frank', 'frank@example.com');
+```
+
+
+### Paso 3: Consultar datos
+
+Podemos realizar consultas en la tabla `users` como si fuera una tabla única. PostgreSQL se encargará de acceder a las particiones correspondientes.
+
+```sql
+-- Consultar todos los usuarios
+SELECT * FROM users;
+
+-- Consultar un usuario específico
+SELECT * FROM users WHERE user_id = 3;
+
+-- Contar el número de usuarios
+SELECT COUNT(*) FROM users;
+```
+
+### Paso 4: Verificar la distribución de datos
+
+Podemos verificar cómo se han distribuido los datos entre las particiones.
+
+```sql
+-- Contar el número de registros en cada partición
+SELECT COUNT(*) FROM users_part_1;
+SELECT COUNT(*) FROM users_part_2;
+SELECT COUNT(*) FROM users_part_3;
+SELECT COUNT(*) FROM users_part_4;
+
+
+
+
+SELECT 
+    user_id, 
+    username, 
+    email, 
+     abs(hashtext(user_id::text)) AS hash_value, 
+    abs(hashtext(user_id::text)) % 4 AS partition
+FROM 
+    users;
++---------+----------+-------------------+------------+-----------+
+| user_id | username |       email       | hash_value | partition |
++---------+----------+-------------------+------------+-----------+
+|       1 | alice    | alice@example.com |  631133447 |         3 |
+|       3 | carol    | carol@example.com | 1895345704 |         0 |
+|       5 | eve      | eve@example.com   | 1343054358 |         2 |
+|       2 | bob      | bob@example.com   |   95190526 |         2 |
+|       4 | dave     | dave@example.com  |  238146292 |         0 |
+|       6 | frank    | frank@example.com |    9041812 |         0 |
++---------+----------+-------------------+------------+-----------+
+(6 rows)
+	
+
+	
+postgres@postgres# explain analyze select * from users;
++------------------------------------------------------------------------------------------------------------------------+
+|                                                       QUERY PLAN                                                       |
++------------------------------------------------------------------------------------------------------------------------+
+| Append  (cost=0.00..91.00 rows=3400 width=68) (actual time=0.011..0.024 rows=6 loops=1)                                |
+|   ->  Seq Scan on users_part_1 users_1  (cost=0.00..18.50 rows=850 width=68) (actual time=0.011..0.011 rows=1 loops=1) |
+|   ->  Seq Scan on users_part_2 users_2  (cost=0.00..18.50 rows=850 width=68) (actual time=0.004..0.004 rows=2 loops=1) |
+|   ->  Seq Scan on users_part_3 users_3  (cost=0.00..18.50 rows=850 width=68) (actual time=0.002..0.003 rows=1 loops=1) |
+|   ->  Seq Scan on users_part_4 users_4  (cost=0.00..18.50 rows=850 width=68) (actual time=0.003..0.003 rows=2 loops=1) |
+| Planning Time: 0.127 ms                                                                                                |
+| Execution Time: 0.053 ms                                                                                               |
++------------------------------------------------------------------------------------------------------------------------+
+(7 rows)
+
+
+```
+
+### Explicación
+
+1. **Tabla principal y particiones**: La tabla `users` se particiona en cuatro subtablas (`users_part_1`, `users_part_2`, `users_part_3`, `users_part_4`) utilizando el valor hash de `user_id`.
+2. **Inserción de datos**: Los datos se insertan en la tabla principal y PostgreSQL los distribuye automáticamente entre las particiones.
+3. **Consultas**: Las consultas se realizan en la tabla principal y PostgreSQL maneja la distribución de datos internamente.
+4. **Verificación**: Podemos verificar la distribución de datos contando los registros en cada partición.
+
+ 
