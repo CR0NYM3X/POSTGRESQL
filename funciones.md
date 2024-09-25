@@ -302,8 +302,15 @@ END $$;
 
 --- EXCEPCIÓN QUE SE PUEDEN USAR 
  
-no_data_found
 
+
+ PostgreSQL Error Codes --- https://www.postgresql.org/docs/current/errcodes-appendix.html
+
+
+ WHEN  WHEN query_canceled THEN THEN
+	  RAISE NOTICE 'sin datos';
+ WHEN query_canceled THEN
+ 	RAISE NOTICE 'La consulta fue cancelada porque excedió el tiempo límite de 5 segundos';
  WHEN unique_violation THEN
     RAISE NOTICE 'Violación de unicidad: El producto con ID 1 ya existe.';
   WHEN foreign_key_violation THEN
