@@ -694,6 +694,10 @@ select REPLACE('Hola mundo', ' ', '');   --->  Elimina espacios :  Holamundo
 select replace(replace(replace(trim(' hola            mundo       grande'),' ','<>'),'><',''),'<>',' '); -- en caso de tener mas 1 un espacio lo replaza por 1 espacio : "hola mundo grande"
  SELECT regexp_replace('Hola 123 mu,ndo', '[a-zA-Z0-9\s]', '', 'g') --- quitar letras y números 
 
+SELECT regexp_replace('maria ,     ,    \nABC', '(?i)(maria\s*),\s*,\s*([a-zA-Z]+)', '\1 \2', 'g'); --- 
+
+
+
 --- si el parametro 1 es igual al parametro 2 retorna null en caso de no, retorna el param1
 select nullif('aaa','aaa')  --- Null
 
