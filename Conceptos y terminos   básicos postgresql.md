@@ -597,7 +597,7 @@ En el contexto de bases de datos, **retail** generalmente se refiere a aplicacio
  
 
 
-
+# Cuadrante Mágico de Gartner 
 El **Cuadrante Mágico de Gartner** es una herramienta de análisis desarrollada por la firma de investigación y consultoría Gartner. Se utiliza para proporcionar una representación gráfica de la posición relativa de los proveedores de tecnología en un mercado específico¹².
 
 ### ¿Cómo funciona?
