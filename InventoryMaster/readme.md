@@ -43,6 +43,9 @@ GRANT USAGE ON SCHEMA public TO systest;
 
 
 --------------- MSQL  --------------
+USE [master]
+GO
+
 GRANT VIEW ANY ERROR LOG  TO [systest]
 GRANT VIEW SERVER SECURITY AUDIT  TO [systest]
 GRANT VIEW ANY DATABASE  TO [systest]
@@ -52,8 +55,12 @@ GRANT VIEW ANY DEFINITION  TO [systest]
 GRANT VIEW SERVER SECURITY STATE  TO [systest]
 GRANT VIEW SERVER PERFORMANCE STATE  TO [systest]
 GRANT VIEW SERVER STATE  TO [systest]
+
 GRANT execute on [dbo].[sp_help_revlogin]   to [systest]
 
+CREATE LOGIN [systest] WITH PASSWORD=N'123123', DEFAULT_DATABASE=[master], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF
+
+execute SYS.sp_MSforeachdb 'use [?];  CREATE USER [systest] FOR LOGIN [systest]'
 ```
 
 
