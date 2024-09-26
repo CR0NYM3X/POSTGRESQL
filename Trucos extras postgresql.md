@@ -579,6 +579,14 @@ select array_replace( '{server=10.10.10.12,version=1.1}'::text[], 'version=1.1',
 
 ```SQL
 
+
+---  devuelve todas las coincidencias de una expresión regular en una cadena de texto
+SELECT regexp_matches('Learning #PostgreSQL #REGEXP_MATCHES', '#([A-Za-z0-9_]+)', 'g'); --- {PostgreSQL}   {REGEXP_MATCHES} 
+
+--- solo devuelve la primera coincidencia encontrada
+SELECT regexp_match('Learning #PostgreSQL #REGEXP_MATCHES', '#([A-Za-z0-9_]+)'); --- {PostgreSQL}
+
+
 ###  Prefijos en texto 
 --- Los escapes como la E  permiten incluir caracteres especiales en las cadenas de texto: 
 SELECT E'Esta es una línea \n y esta es otra línea \t hola  \' ';
