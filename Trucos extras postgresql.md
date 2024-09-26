@@ -69,19 +69,23 @@ select cast(52.55 as decimal(18,2) ) -- le permite dejar 2 decimales y el 18 es 
 ########## CONDICIONEALES IF ########## 
 
 DO $$
-DECLARE
-    a INT := 5;
-    resultado VARCHAR;
 BEGIN
-    IF a > 0 THEN
-        resultado := 'El número es positivo.';
-    ELSE
-        resultado := 'El número es negativo o cero.';
-    END IF;
-
-    RAISE NOTICE '%', resultado;
-END;
-$$;
+    -- Declarar una variable
+    DECLARE
+        valor INTEGER := 10;
+    BEGIN
+        -- Usar IF para verificar una condición
+        IF valor = 10 THEN
+            RAISE NOTICE 'El valor es 10';
+        -- Usar ELSIF para otra condición
+        ELSIF valor = 20 THEN
+            RAISE NOTICE 'El valor es 20';
+        -- Usar ELSE para cualquier otra condición
+        ELSE
+            RAISE NOTICE 'El valor no es ni 10 ni 20';
+        END IF;
+    END;
+END $$;
 
 ########## CONDICIONEALES CASE WHEN ##########
 
