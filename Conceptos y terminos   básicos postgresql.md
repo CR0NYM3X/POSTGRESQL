@@ -538,18 +538,44 @@ Los snapshots en PostgreSQL son esenciales para mantener la consistencia y el ai
 
  
 
+# Escalamientos 
 
-### Capacidad de escalar horizontalmente
-Escalar horizontalmente significa que puedes añadir más servidores (nodos) para manejar más datos y más tráfico. En lugar de depender de un solo servidor potente, puedes distribuir la carga entre varios servidores. Esto es especialmente útil para aplicaciones que necesitan manejar grandes volúmenes de datos y usuarios.
+### Escalado Horizontal
+El **escalado horizontal** (también conocido como "scale-out") implica añadir más máquinas o nodos al sistema para distribuir la carga de trabajo. Cada nodo adicional maneja una parte de las transacciones o datos. En lugar de depender de un solo servidor potente, puedes distribuir la carga entre varios servidores. Esto es especialmente útil para aplicaciones que necesitan manejar grandes volúmenes de datos y usuarios.
+
+- **Distribución de datos**: Los datos se dividen en fragmentos y se almacenan en diferentes nodos¹.
+- **Redundancia y tolerancia a fallos**: Si un nodo falla, otros nodos pueden asumir su carga.
+- **Escalabilidad**: Es más fácil añadir capacidad incrementalmente².
+
+### Escalado Vertical
+El **escalado vertical** (también conocido como "scale-up") implica aumentar la capacidad de una sola máquina añadiendo más recursos, como CPU, RAM o almacenamiento. Este enfoque es común en bases de datos relacionales tradicionales. Algunas características incluyen:
+
+- **Aumento de recursos**: Se mejora el hardware de una sola máquina para manejar más carga².
+- **Simplicidad**: No requiere cambios significativos en la arquitectura del sistema.
+- **Límites físicos**: Hay un límite en cuanto a cuánto se puede mejorar una sola máquina².
+
+### Comparación
+- **Escalado Horizontal**: Ideal para aplicaciones que pueden distribuir su carga de trabajo y requieren alta disponibilidad y tolerancia a fallos.
+- **Escalado Vertical**: Adecuado para aplicaciones que necesitan más potencia de procesamiento en una sola máquina y donde la simplicidad es una prioridad¹².
+ 
 
 ### Resiliencia incorporada
 La resiliencia se refiere a la capacidad de la base de datos para seguir funcionando incluso si algunos de sus componentes fallan. diseñada para ser altamente disponible y resistente a fallos, lo que significa que puede seguir operando sin interrupciones incluso si uno o más nodos dejan de funcionar. 
 
 
-
+# DB  colocada y no colocada
 1. **Base de datos colocada**: Una base de datos colocada (también conocida como "on-premises") es aquella que se encuentra físicamente en las instalaciones de la organización. Esto significa que la organización es responsable de la gestión, mantenimiento y seguridad del hardware y software de la base de datos. Las ventajas incluyen un mayor control sobre los datos y la infraestructura, pero también implica mayores costos y responsabilidades de mantenimiento.
 
 2. **Base de datos no colocada**: Una base de datos no colocada (o "en la nube") es aquella que se aloja en servidores de terceros, generalmente proveedores de servicios en la nube como AWS, Azure o Google Cloud. En este caso, el proveedor de servicios se encarga de la gestión, mantenimiento y seguridad de la infraestructura. Las ventajas incluyen escalabilidad, reducción de costos de infraestructura y facilidad de acceso desde cualquier lugar, aunque puede haber preocupaciones sobre la seguridad y el control de los datos.
+
+# OLTP
+Una **base de datos OLTP (Online Transaction Processing)** es un tipo de base de datos diseñada para gestionar transacciones en tiempo real. Estas bases de datos son utilizadas en aplicaciones que requieren un procesamiento rápido y preciso de un gran número de transacciones, como cajeros automáticos, banca en línea, comercio electrónico y sistemas de reservas¹. Las características principales de los sistemas OLTP incluyen:
+
+- **Procesamiento rápido**: Las transacciones se completan en milisegundos.
+- **Acceso multiusuario**: Permiten que múltiples usuarios accedan y modifiquen los datos simultáneamente.
+- **Integridad de datos**: Utilizan algoritmos de concurrencia para asegurar que las transacciones se realicen en el orden correcto y sin conflictos.
+- **Disponibilidad continua**: Están diseñadas para estar disponibles 24/7, minimizando el tiempo de inactividad¹².
+
  
 
 
