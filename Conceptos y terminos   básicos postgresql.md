@@ -595,3 +595,23 @@ En el contexto de bases de datos, **retail** generalmente se refiere a aplicacio
 - **Procesamiento de transacciones**: Manejo de ventas, devoluciones y pagos.
 - **Análisis de datos**: Recopilación y análisis de datos de ventas para mejorar la toma de decisiones².
  
+
+
+
+El **Cuadrante Mágico de Gartner** es una herramienta de análisis desarrollada por la firma de investigación y consultoría Gartner. Se utiliza para proporcionar una representación gráfica de la posición relativa de los proveedores de tecnología en un mercado específico¹².
+
+### ¿Cómo funciona?
+El Cuadrante Mágico se basa en dos ejes:
+- **Eje X (horizontal)**: Representa la **integridad de la visión** del proveedor, es decir, su capacidad para entender las tendencias del mercado y planificar a largo plazo.
+- **Eje Y (vertical)**: Representa la **capacidad de ejecución**, que mide la habilidad del proveedor para llevar a cabo su visión y cumplir con sus promesas¹².
+
+### Los Cuatro Cuadrantes
+El gráfico se divide en cuatro cuadrantes, cada uno representando un tipo de proveedor:
+1. **Líderes**: Proveedores que tienen una visión completa y una alta capacidad de ejecución.
+2. **Visionarios**: Proveedores con una visión innovadora pero que aún no han demostrado una alta capacidad de ejecución.
+3. **Jugadores de nicho**: Proveedores que se especializan en un segmento específico del mercado.
+4. **Retadores**: Proveedores que tienen una alta capacidad de ejecución pero una visión menos completa¹².
+
+### Aplicaciones
+El Cuadrante Mágico es utilizado por empresas para evaluar y comparar diferentes proveedores de tecnología, ayudándoles a tomar decisiones informadas sobre inversiones y adquisiciones de tecnología¹².
+ 
