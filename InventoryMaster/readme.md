@@ -31,15 +31,51 @@ select extname,extversion from pg_extension ;
 
 # PRIVILEGIOS NECESARIOS
 ```
+
 --------------- PSQL  --------------
-grant pg_monitor to systest;
-grant pg_stat_scan_tables to systest;
-grant pg_read_all_stats to systest;
-grant pg_read_all_settings to systest;
-grant pg_read_server_files to systest;
-grant pg_execute_server_program to systest;
-GRANT CONNECT ON DATABASE tu_base_de_datos TO systest
-GRANT USAGE ON SCHEMA public TO systest;
+---> Crea un archivo tmp/script_fun.txt    y guarda el sql  
+ 
+DO $$
+BEGIN
+    -- Verificar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'tetete') THEN
+        -- Crear el usuario
+        create user tetete with password '123123' ;
+    END IF;
+	
+	IF    current_database()  = 'postgres' THEN
+        -- Crear el usuario
+        grant pg_monitor to systest;
+        grant pg_stat_scan_tables to systest;
+        grant pg_read_all_stats to systest;
+        grant pg_read_all_settings to systest;
+        grant pg_read_server_files to systest;
+        grant pg_execute_server_program to systest;
+        grant pg_execute_server_program to systest;  --  must be superuser or a member of the pg_execute_server_program role to COPY to or from an external program
+
+    END IF;
+
+    GRANT CONNECT ON DATABASE tu_base_de_datos TO systest
+    GRANT USAGE ON SCHEMA public TO systest;
+    grant execute on all functions  in schema pg_catalog   to   systest; ---- permission denied for function pg_stat_file 
+    grant select on all tables in schema pg_catalog   to   systest; --- permission denied for view pg_hba_file_rules
+ 
+END $$;
+
+
+
+ 
+# Guarda todas las base de datos en la variable result
+result=$(psql -p5416  -tAX -c "select datname  from pg_database where not datname in('template1','template0');" )
+
+# Recorre la lista de base de datos 
+for base in $result
+do
+    # Instala la funcion
+    echo   $(psql -p 5416 -tAX -f /tmp/script_fun.txt -d $base) " - Base de datos: " $base 
+done
+
+
 
 
 --------------- MSQL  --------------
