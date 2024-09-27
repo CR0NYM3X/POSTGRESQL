@@ -52,6 +52,7 @@ https://ongres.com/blog/
 https://www.tutorialdba.com/ <br>
 https://www.todopostgresql.com/
 https://it-inzhener.com/en/articles/category/name=postgresql
+https://docs.percona.com/percona-for-postgresql
 
 https://pgpedia.info/s/shared_preload_libraries.html
 https://www.sqlservercentral.com/articles/rules-in-postgresql
