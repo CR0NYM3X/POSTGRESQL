@@ -33,14 +33,14 @@ select extname,extversion from pg_extension ;
 ```
 
 --------------- PSQL  --------------
----> Crea un archivo tmp/script_fun.txt    y guarda el sql  
+---> Crea un archivo /tmp/script.sql    y guarda el sql  
  
 DO $$
 BEGIN
     -- Verificar si el usuario existe
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'tetete') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'systest') THEN
         -- Crear el usuario
-        create user tetete with password '123123' ;
+        create user systest with password '123123' ;
     END IF;
 	
 	IF    current_database()  = 'postgres' THEN
@@ -55,7 +55,7 @@ BEGIN
 
     END IF;
 
-    execute '    GRANT CONNECT ON DATABASE ' ||  current_database()  || 'TO systest';
+    execute '    GRANT CONNECT ON DATABASE ' ||  current_database()  || ' TO systest';
     GRANT USAGE ON SCHEMA public TO systest;
     grant execute on all functions  in schema pg_catalog   to   systest; ---- permission denied for function pg_stat_file 
     grant select on all tables in schema pg_catalog   to   systest; --- permission denied for view pg_hba_file_rules
@@ -66,14 +66,15 @@ END $$;
 
  
 # Guarda todas las base de datos en la variable result
-result=$(psql -p5416  -tAX -c "select datname  from pg_database where not datname in('template1','template0');" )
+result=$(psql -p 5415  -tAX -c "select datname  from pg_database where not datname in('template1','template0');" )
 
 # Recorre la lista de base de datos 
 for base in $result
 do
     # Instala la funcion
-    echo   $(psql -p 5416 -tAX -f /tmp/script_fun.txt -d $base) " - Base de datos: " $base 
+    echo   $(psql -p 5415 -tAX -f /tmp/script.sql -d $base) " - Base de datos: " $base 
 done
+
 
 
 
