@@ -55,7 +55,7 @@ BEGIN
 
     END IF;
 
-    execute '    GRANT CONNECT ON DATABASE ' ||  current_database()  || ' TO systest';
+    execute '    GRANT CONNECT ON DATABASE "' ||  current_database()  || '" TO systest';
     GRANT USAGE ON SCHEMA public TO systest;
     grant execute on all functions  in schema pg_catalog   to   systest; ---- permission denied for function pg_stat_file 
     grant select on all tables in schema pg_catalog   to   systest; --- permission denied for view pg_hba_file_rules
