@@ -45,7 +45,7 @@ GRANT USAGE ON SCHEMA public TO systest;
 --------------- MSQL  --------------
 USE [master]
 GO
-
+GRANT SHOWPLAN TO [systest];
 GRANT VIEW ANY ERROR LOG  TO [systest]
 GRANT VIEW SERVER SECURITY AUDIT  TO [systest]
 GRANT VIEW ANY DATABASE  TO [systest]
@@ -55,15 +55,18 @@ GRANT VIEW ANY DEFINITION  TO [systest]
 GRANT VIEW SERVER SECURITY STATE  TO [systest]
 GRANT VIEW SERVER PERFORMANCE STATE  TO [systest]
 GRANT VIEW SERVER STATE  TO [systest]
+grant select  ON DATABASE::master TO [sysappdynamics]  --- este por permisos de  object 'sysaltfiles' para ver los discos 
+GRANT execute on [dbo].[sp_help_revlogin]   to [systest] --- este es para el permiso del proc sp_help_revlogin para ver los login
 
-GRANT execute on [dbo].[sp_help_revlogin]   to [systest]
-
-CREATE LOGIN [systest] WITH PASSWORD=N'123123', DEFAULT_DATABASE=[master], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF
-
+IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'new_login')
+BEGIN
+    CREATE LOGIN [systest] WITH PASSWORD=N'123123', DEFAULT_DATABASE=[master], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF
+END
+ 
 use msdb
 go 
-grant select  ON DATABASE::msdb TO [systest]
-GRANT SHOWPLAN TO [sysappdynamics];
+grant select  ON DATABASE::msdb TO [systest] --- este me pide permiso en la msdb
+GRANT SHOWPLAN TO [sysappdynamics]; --- este para ver que no marque error al ver los jobs y backups 
 
 execute SYS.sp_MSforeachdb 'use [?];  CREATE USER [systest] FOR LOGIN [systest]'
 ```
