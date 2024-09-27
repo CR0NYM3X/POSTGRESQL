@@ -60,6 +60,11 @@ GRANT execute on [dbo].[sp_help_revlogin]   to [systest]
 
 CREATE LOGIN [systest] WITH PASSWORD=N'123123', DEFAULT_DATABASE=[master], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF
 
+use msdb
+go 
+grant select  ON DATABASE::msdb TO [systest]
+GRANT SHOWPLAN TO [sysappdynamics];
+
 execute SYS.sp_MSforeachdb 'use [?];  CREATE USER [systest] FOR LOGIN [systest]'
 ```
 
