@@ -96,5 +96,19 @@ execute SYS.sp_MSforeachdb 'use [?];  CREATE USER [systest] FOR LOGIN [systest]'
   
 
 
-
-
+### Configuraciones de la herramienta
+```SQL
+postgres@auditoria# select name,setting,unit from  fdw_conf.project_settings;
++-------------------+-----------------+------+
+|       name        |     setting     | unit |
++-------------------+-----------------+------+
+| version           | 1.0             | NULL |
+| statement_timeout | 1200000         | ms   |
+| lock_timeout      | 1200000         | ms   |
+| row_limit         | 50000           | NULL |
+| dbms_supported    | PSQL            | NULL |
+| dbms_supported    | MSSQL           | NULL |
+| proyect_name      | SQLMeta Tracker | NULL |
++-------------------+-----------------+------+
+(7 rows)
+```
