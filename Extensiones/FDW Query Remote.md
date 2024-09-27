@@ -476,7 +476,18 @@ vim /etc/freetds.conf
 	INTO PUBLIC /* Esquema de postgresql */
 	OPTIONS (import_default 'true');
 	 
-	 
+
+	ALTER SERVER nombre_del_servidor OPTIONS (SET port 'new_port');
+	ALTER SERVER nombre_del_servidor OPTIONS (SET user 'new_user');
+	ALTER SERVER nombre_del_servidor OPTIONS (SET password 'new_password');
+	ALTER SERVER nombre_del_servidor OPTIONS (ADD host 'new_host', ADD dbname 'new_dbname');
+
+
+	ALTER SERVER nombre_del_servidor OPTIONS (ADD msg_handler 'notice');
+	ALTER SERVER nombre_del_servidor OPTIONS (DROP msg_handler);
+	ALTER FOREIGN TABLE nombre_de_la_tabla OPTIONS (SET row_estimate_method 'execute');
+
+
  	https://www.sobyte.net/post/2022-03/postgresql-foreign-data-wrappers/
 	 https://vishalsinghji.medium.com/how-to-get-mssql-data-in-postgresql-using-foreign-data-wrapper-tds-fdw-30b3ae71b66a
 	 https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/use-the-tds-fdw-extension-to-query-data-of-sql-server-instances
