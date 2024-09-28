@@ -414,8 +414,6 @@ select extract(minute from  timestamp'2009-12-31 12:25:50');
 select extract(second from  timestamp'2009-12-31 12:25:50');
 select EXTRACT(MILLISECOND FROM ( var_clock_end  - var_clock_start ) )::NUMERIC(50,4)
 
---- se utiliza para truncar una fecha o un valor de tipo timestamp a una precisión específica.
-SELECT DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month - 1 day' AS ultimo_dia_me
 
 SELECT 
     EXTRACT(epoch FROM TIMESTAMP '2024-01-01 12:01:00') - 
@@ -429,11 +427,33 @@ select ('2011-11-01'::date -  '2011-12-028'::date)--- saber los días que pasan
 select to_char( timestamp'2009-12-31 11:25:50' , 'HH12:MI:SS') >  '12:26:52'
 
 
+--- se utiliza para truncar una fecha o un valor de tipo timestamp a una precisión específica.
+SELECT DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month - 1 day' AS ultimo_dia_me
 
+### Ejemplo 1: Truncar a la hora
+Supongamos que tienes un `timestamp` y quieres truncarlo a la hora más cercana:
+SELECT DATE_TRUNC('hour', TIMESTAMP '2024-09-24 16:34:59') AS truncado_a_la_hora; --- 2024-09-24 16:00:00
 
+### Ejemplo 2: Truncar al día
+Si quieres truncar un `timestamp` al inicio del día:
+SELECT DATE_TRUNC('day', TIMESTAMP '2024-09-24 16:34:59') AS truncado_al_dia; --- 2024-09-24 00:00:00
 
+### Ejemplo 3: Truncar al mes
+Para truncar un `timestamp` al inicio del mes:
+SELECT DATE_TRUNC('month', TIMESTAMP '2024-09-24 16:34:59') AS truncado_al_mes; --- 2024-09-01 00:00:00
 
+### Ejemplo 4: Truncar al año
+Si necesitas truncar un `timestamp` al inicio del año:
+SELECT DATE_TRUNC('year', TIMESTAMP '2024-09-24 16:34:59') AS truncado_al_ano; ---2024-01-01 00:00:00
 
+### Ejemplo 5: Truncar a la semana
+Para truncar un `timestamp` al inicio de la semana (considerando que la semana empieza el lunes):
+SELECT DATE_TRUNC('week', TIMESTAMP '2024-09-24 16:34:59') AS truncado_a_la_semana; --- 2024-09-23 00:00:00
+
+### Ejemplo 6: Truncar al trimestre
+Para truncar un `timestamp` al inicio del trimestre:
+SELECT DATE_TRUNC('quarter', TIMESTAMP '2024-09-24 16:34:59') AS truncado_al_trimestre; --- 2024-07-01 00:00:00
+ 
 ```
 
  
