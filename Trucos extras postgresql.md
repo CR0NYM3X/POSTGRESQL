@@ -414,6 +414,8 @@ select extract(minute from  timestamp'2009-12-31 12:25:50');
 select extract(second from  timestamp'2009-12-31 12:25:50');
 select EXTRACT(MILLISECOND FROM ( var_clock_end  - var_clock_start ) )::NUMERIC(50,4)
 
+--- se utiliza para truncar una fecha o un valor de tipo timestamp a una precisión específica.
+SELECT DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month - 1 day' AS ultimo_dia_me
 
 SELECT 
     EXTRACT(epoch FROM TIMESTAMP '2024-01-01 12:01:00') - 
