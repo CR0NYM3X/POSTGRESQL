@@ -115,13 +115,27 @@ execute SYS.sp_MSforeachdb 'use [?];  CREATE USER [systest] FOR LOGIN [systest]'
   - Hacer una funcion que genere reportes de objetos
   - Hacer una funcion que valide cambios en la cantidad de objetos
   - Hacer una funcion que valide los servidores que no se han escaneado por completo ya se son nuevos
-  - Hacer un trigger para la tabla ctl_querys , cuando ingresen un servidor realice un test
   - Crear diagrama de flujo
   - Crear diagrama de entidad relación
   - Crear manuales
   - Backup automaticos
   - Validación para cuando ejecuta gather_server_data de manera manual sin antes ejecutar la funcion fun_test_connection 
-  - Agregar más query de monitoreo
+  - Agregar más query stats de monitoreo
+
+
+----- 27/09/2024 ------
+  - agregar en la funcion fdw_conf.gather_server_data que elimine los datos del id_exec  actual para que no se repitan los datos 
+  - ver la opcion de mejorar la forma de crear las tablas con la extension fdw_tds ver si es mejor crearlas cadas vez que se conecta y ver el tema de la contraseña 
+  - modificar la fun exec_query_server para que la db lo inserte de manera automatica sin necesidad de consultar en la query, ver si es opcional 
+  - En la funcion fdw_conf.exec_query_server ver la posibilidad de modificar la la columna db en las consultas ejecutadas en los servidores remotos y lo inserte de manera automatica
+  - modificar la funcion exec_query_server para que permita consular tablas super pesadas con millones de registros activando el conteo de filas y ir consultando en partes las filas  
+  - Hacer un trigger , cuando inserten  en la tabla ctl_querys , este realizara  la tabla particionada   fdw_conf.ctl_querys  
+  - Agregarle la columna table_name en la tabla fdw_conf.ctl_querys 
+  
+ 
+
+
+
     ```sql
     --- Agregar la recetas 
     --- Estadísticas de Tablas y base de datos y index 
