@@ -212,6 +212,44 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+  
+# La función `FORMAT` hace que las consultas dinámicas sean más legibles y fáciles de mantener. En lugar de concatenar múltiples cadenas y variables, puedes usar una plantilla clara y concisa. 
+ 
+  - reduces la posibilidad de errores tipográficos y problemas de concatenación 
+  - ayuda a prevenir inyecciones SQL al manejar correctamente los identificadores (`%I`) y literales (`%L`). Esto es crucial para evitar vulnerabilidades de seguridad.
+  
+  
+ ### `%I` - Identificadores SQL
+El formato `%I` se utiliza para formatear identificadores SQL, como nombres de tablas, columnas, esquemas, etc. PostgreSQL se encarga de escaparlos correctamente para evitar problemas de sintaxis y posibles inyecciones SQL. PostgreSQL los escapa automáticamente para que sean seguros y válidos en una consulta SQL.
+
+  
+### `%L` - Literales SQL
+El formato `%L` se utiliza para formatear literales SQL, como cadenas de texto, números, etc. PostgreSQL se encarga de escaparlos adecuadamente para que sean seguros y correctos en el contexto de una consulta SQL. PostgreSQL los escapa adecuadamente para evitar inyecciones SQL y asegurar que sean interpretados correctamente.
+ 
+  
+ 
+  
+SELECT FORMAT('Hola, %s', 'PostgreSQL'); --- Hola, PostgreSQL 
+SELECT FORMAT('El número es: %s', 12345);---- El número es: 12345 
+SELECT FORMAT('Nombre: %s, Edad: %s', 'Juan', 30); --- Nombre: Juan, Edad: 30
+SELECT FORMAT('El progreso es del %s%%', 75); --- El progreso es del 75%
+SELECT FORMAT('SELECT * FROM %I WHERE nombre = %L', 'mi_tabla', 'Juan'); --- SELECT * FROM mi_tabla WHERE nombre = 'Juan'
+ 
+ 
+DO $$
+DECLARE
+    tabla TEXT := 'usuarios';
+    columna TEXT := 'nombre';
+    valor TEXT := 'Maria';
+    consulta TEXT;
+BEGIN
+    consulta := FORMAT('SELECT * FROM %I WHERE %I = %L', tabla, columna, valor);
+    RAISE NOTICE '%', consulta;
+END $$;
+ 
+
+
+
 ```
 
 ## Computadora 
