@@ -248,6 +248,7 @@ BEGIN
 END $$;
  
 
+ “escapa automáticamente” los identificadores y literales, nos referimos a que PostgreSQL se encarga de añadir las comillas necesarias y manejar caracteres especiales para asegurar que los valores sean interpretados correctamente y de manera segura en una consulta SQL
 
 
 ```
