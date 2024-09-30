@@ -41,10 +41,27 @@ COMMIT;
 ALTER DATABASE test_query SET maintenance_work_mem = '256MB';
 
 
+SELECT
+    d.datname AS database_name,
+    r.rolname AS role_name,
+    s.setconfig AS settings
+FROM
+    pg_db_role_setting s
+LEFT  JOIN
+    pg_database d ON s.setdatabase = d.oid
+LEFT JOIN
+    pg_roles r ON s.setrole = r.oid ;
+
+ 
+
 ALTER TABLE ventas SET (
     autovacuum_enabled = true,
     autovacuum_vacuum_threshold = 50,
 );
+
+------- VER LAS TABLAS  QUE TIENEN PARÁMETROS 
+SELECT c.relname AS table_name,o.option_name,o.option_value FROM pg_class c JOIN  pg_namespace n ON n.oid = c.relnamespace JOIN pg_options_to_table(c.reloptions) o ON true;
+
 
 
 CREATE OR REPLACE FUNCTION mi_funcion()
@@ -56,6 +73,13 @@ $$ LANGUAGE plpgsql
 SET work_mem = '64MB'
 SET statement_timeout = '5min';
 
+
+------- VER LAS FUNCIONES QUE TIENEN PARÁMETROS 
+SELECT nspname, proname, proargtypes, prosecdef as "SECURITY DEFINER", p.proleakproof as "LEAKPROOF" , rolname as "OWNER", proconfig AS "PARAMETERS SETTING" FROM pg_proc p 
+JOIN pg_namespace n ON p.pronamespace = n.oid 
+JOIN pg_authid a ON a.oid = p.proowner 
+WHERE    proconfig IS NOT NULL  ;
+ 
 
 ```
 
