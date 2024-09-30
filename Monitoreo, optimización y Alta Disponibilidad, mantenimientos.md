@@ -813,3 +813,26 @@ Evita depender de HOT en los siguientes casos:
 - **Páginas llenas**: Si las páginas de tus tablas están constantemente llenas, HOT no podrá ser utilizado de manera efectiva.
 - **Requerimientos de rendimiento específicos**: En algunos casos, la complejidad añadida de gestionar HOT puede no justificar los beneficios, especialmente si las actualizaciones son poco frecuentes.
  
+
+
+
+
+
+
+ 
+# **Stats target**
+El parámetro **Stats target** define el número de muestras que PostgreSQL toma para generar estadísticas sobre una columna. Estas estadísticas son cruciales para que el optimizador de consultas elija el plan de ejecución más eficiente. Puedes ajustar este parámetro para mejorar el rendimiento de las consultas:
+
+- **Valor por defecto**: 100
+- **Rango**: 0 a 10,000¹
+ 
+```sql
+ ALTER TABLE ventas ALTER COLUMN precio SET STATISTICS 500;
+```
+ 
+ 
+ 
+ 
+ 
+ 
+   
