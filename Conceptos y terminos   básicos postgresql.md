@@ -246,7 +246,7 @@ ALTER SYSTEM SET password_encryption = 'md5';
 **`pg_toast:`** Este esquema se usa para almacenar datos de tablas que son demasiado grandes para caber en una sola fila. PostgreSQL automáticamente mueve estos datos a tablas TOAST (The Oversized-Attribute Storage Technique) para manejar eficientemente grandes cantidades de datos
 
 ### ¿Cómo funciona TOAST?
-PostgreSQL utiliza automáticamente la compresión para datos grandes almacenados en columnas de tipo `TEXT`, `BYTEA` y `VARCHAR` mediante el mecanismo TOAST (The Oversized-Attribute Storage Technique). Este mecanismo utiliza el algoritmo de compresión LZ4 para comprimir datos que exceden un cierto tamaño⁴.
+PostgreSQL utiliza automáticamente la compresión para datos grandes almacenados en columnas de tipo `TEXT`, `BYTEA` y `VARCHAR` mediante el mecanismo TOAST (The Oversized-Attribute Storage Technique). Este mecanismo utiliza el algoritmo de compresión pglz para comprimir datos que exceden un cierto tamaño⁴.
  
 1. **Compresión**: Los valores grandes se comprimen para reducir su tamaño.
 2. **Almacenamiento fuera de línea**: Si la compresión no es suficiente, los valores se dividen en múltiples filas físicas y se almacenan en una tabla TOAST asociada.
@@ -256,14 +256,72 @@ PostgreSQL utiliza automáticamente la compresión para datos grandes almacenado
 
 - **Tamaño de página fijo**: PostgreSQL utiliza un tamaño de página fijo (normalmente 8 kB), y no permite que las tuplas abarquen múltiples páginas.
 - **Representación varlena**: Los tipos de datos que soportan TOAST deben tener una representación de longitud variable (varlena), donde la primera palabra de cuatro bytes de cualquier valor almacenado contiene la longitud total del valor en bytes¹².
+
+
+
+
+### 2. **Compression**
+El parámetro **Compression** especifica el método de compresión utilizado para los datos de una columna. PostgreSQL permite diferentes métodos de compresión, como:
+
+
+### Tipos de Compresión en PostgreSQL
+
+1. **Compresión PGLZ**
+   - **Nivel**: Columna
+   - **Ventajas**:
+     - Es el método de compresión predeterminado en PostgreSQL.
+     - Reduce significativamente el tamaño de los datos almacenados.
+   - **Desventajas**:
+     - Puede ser más lento en comparación con otros métodos de compresión más modernos.
+     - No es tan eficiente para datos que ya están parcialmente comprimidos.
+   - **Cuándo usarlo**:
+     - Cuando se necesita una compresión básica y no se requiere un rendimiento extremadamente alto.
+     - Ideal para datos de texto y otros tipos de datos de longitud variable.
+
+2. **Compresión LZ4**
+   - **Nivel**: Columna
+   - **Ventajas**:
+     - Más rápida que PGLZ.
+     - Ofrece una buena relación entre velocidad y tasa de compresión.
+   - **Desventajas**:
+     - Puede no comprimir tan eficientemente como otros algoritmos en ciertos tipos de datos.
+   - **Cuándo usarlo**:
+     - Cuando se necesita una compresión rápida y se puede sacrificar algo de eficiencia en la tasa de compresión.
+     - Útil para aplicaciones donde la velocidad de acceso a los datos es crítica¹¹.
+ 
+  
+- **Compresión PGLZ**: Podrías usar PGLZ para comprimir las descripciones de productos, ya que estas pueden ser bastante largas y la compresión ayudará a reducir el espacio en disco utilizado.
+- **Compresión LZ4**: Para las reseñas de clientes, donde la velocidad de acceso es más importante debido a la frecuencia con la que se consultan, podrías optar por LZ4 para obtener una compresión rápida y eficiente.
+ 
+
+
+más reciente y eficiente, como puedo ver si esta habilitado el lz4
+ 
+- **lz4**: Un método de compresión más reciente y eficiente que puede ser utilizado si está habilitado en tu instalación de PostgreSQL².
+
+```sql
+CREATE TABLE productos (
+    id SERIAL PRIMARY KEY,
+    descripcion TEXT COMPRESSION pglz,
+    reseñas TEXT COMPRESSION lz4
+);
+
+ALTER TABLE clientes ALTER COLUMN nombre SET COMPRESSION lz4;
+ALTER TABLE clientes ALTER COLUMN nombre SET COMPRESSION zstd;
+ALTER TABLE clientes ALTER COLUMN nombre SET COMPRESSION pglz;
+```
+
+
+
+
+
+--- 
  
 
 ### ¿Qué es el método de acceso heap?
 
-El método de acceso **heap** es el método de almacenamiento de datos por defecto en PostgreSQL. Organiza los datos en páginas de tamaño fijo (normalmente 8 KB), donde cada página puede contener varias filas (tuplas). Este método es muy versátil y adecuado para una amplia variedad de aplicaciones.
+El método de acceso **heap**  es el método de almacenamiento por defecto en PostgreSQL para las tablas. En este método, los datos se almacenan en páginas de 8 KB en el disco. Cada fila se almacena en una página y las páginas se agrupan en bloques. Este método es flexible y adecuado para la mayoría de los casos de uso, permitiendo actualizaciones y eliminaciones eficientes.
 
-### ¿Para qué sirve el método heap?
-El método heap sirve para almacenar y gestionar los datos de las tablas en PostgreSQL. Es el método más común y se utiliza en la mayoría de las bases de datos debido a su simplicidad y eficiencia.
 
 ### ¿Qué función tiene?
 
@@ -311,6 +369,27 @@ Además del método heap, PostgreSQL permite definir otros métodos de acceso a 
  
 ### métodos de acceso
     SELECT *  FROM pg_am;
+
+### 1. **Storage**
+El parámetro **Storage**  métodos de almacenamiento se aplican a nivel de columna y determinan cómo se almacenan los datos dentro de las tablas que utilizan heap storage. Las opciones disponibles son:
+
+- **PLAIN**: Almacena los datos sin compresión ni almacenamiento externo. Es la opción por defecto para tipos de datos pequeños.
+- **MAIN**: Intenta almacenar los datos en la tabla principal, pero puede moverlos a almacenamiento externo si son demasiado grandes.
+- **EXTERNAL**: Almacena los datos fuera de la tabla principal, sin compresión.
+- **EXTENDED**: Almacena los datos fuera de la tabla principal y los comprime. Esta es la opción por defecto para tipos de datos grandes como `TEXT` y `BYTEA`².
+
+
+```sql
+CREATE TABLE medios (
+    id SERIAL PRIMARY KEY,
+    articulo TEXT STORAGE EXTENDED,
+    comentario TEXT STORAGE MAIN
+);
+
+ALTER TABLE mi_tabla ALTER COLUMN mi_columna SET STORAGE EXTENDED;
+```
+
+
 
  
 ### ¿Qué es una página en PostgreSQL?
