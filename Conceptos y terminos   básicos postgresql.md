@@ -247,6 +247,16 @@ ALTER SYSTEM SET password_encryption = 'md5';
 
 ### ¿Cómo funciona TOAST?
 PostgreSQL utiliza automáticamente la compresión para datos grandes almacenados en columnas de tipo `TEXT`, `BYTEA` y `VARCHAR` mediante el mecanismo TOAST (The Oversized-Attribute Storage Technique). Este mecanismo utiliza el algoritmo de compresión pglz para comprimir datos que exceden un cierto tamaño⁴.
+```
+show default_toast_compression;
++---------------------------+
+| default_toast_compression |
++---------------------------+
+| pglz                      |
++---------------------------+
+
+```
+
  
 1. **Compresión**: Los valores grandes se comprimen para reducir su tamaño.
 2. **Almacenamiento fuera de línea**: Si la compresión no es suficiente, los valores se dividen en múltiples filas físicas y se almacenan en una tabla TOAST asociada.
@@ -683,3 +693,26 @@ El gráfico se divide en cuatro cuadrantes, cada uno representando un tipo de pr
 ### Aplicaciones
 El Cuadrante Mágico es utilizado por empresas para evaluar y comparar diferentes proveedores de tecnología, ayudándoles a tomar decisiones informadas sobre inversiones y adquisiciones de tecnología¹².
  
+
+
+
+
+```sql
+SELECT a.attname,
+          pg_catalog.format_type(a.atttypid, a.atttypmod),
+          (SELECT pg_catalog.pg_get_expr(d.adbin, d.adrelid, true)
+           FROM pg_catalog.pg_attrdef d
+           WHERE d.adrelid = a.attrelid AND d.adnum = a.attnum AND a.atthasdef),
+          a.attnotnull,
+          (SELECT c.collname FROM pg_catalog.pg_collation c, pg_catalog.pg_type t
+           WHERE c.oid = a.attcollation AND t.oid = a.atttypid AND a.attcollation <> t.typcollation) AS attcollation,
+          a.attidentity,
+          a.attgenerated,
+          a.attstorage,
+          a.attcompression AS attcompression,
+          CASE WHEN a.attstattarget=-1 THEN NULL ELSE a.attstattarget END AS attstattarget,
+          pg_catalog.col_description(a.attrelid, a.attnum)
+        FROM pg_catalog.pg_attribute a
+        WHERE     a.attnum > 0 AND NOT a.attisdropped
+        ORDER BY a.attnum;
+```
