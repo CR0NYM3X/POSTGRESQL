@@ -36,6 +36,29 @@ COMMIT;
  
 ```
 
+### Configuraciones de parametros en objetos 
+```
+ALTER DATABASE test_query SET maintenance_work_mem = '256MB';
+
+
+ALTER TABLE ventas SET (
+    autovacuum_enabled = true,
+    autovacuum_vacuum_threshold = 50,
+);
+
+
+CREATE OR REPLACE FUNCTION mi_funcion()
+RETURNS void AS $$
+BEGIN
+    -- Lógica de la función
+END;
+$$ LANGUAGE plpgsql
+SET work_mem = '64MB'
+SET statement_timeout = '5min';
+
+
+```
+
 ## archivos   conf
 ```sql
 postgresql.conf
