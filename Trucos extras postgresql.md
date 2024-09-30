@@ -453,6 +453,14 @@ SELECT DATE_TRUNC('week', TIMESTAMP '2024-09-24 16:34:59') AS truncado_a_la_sema
 ### Ejemplo 6: Truncar al trimestre
 Para truncar un `timestamp` al inicio del trimestre:
 SELECT DATE_TRUNC('quarter', TIMESTAMP '2024-09-24 16:34:59') AS truncado_al_trimestre; --- 2024-07-01 00:00:00
+
+
+
+SELECT DATE_ADD('2018-12-31 23:59:59'::timestamp, INTERVAL '1 day'); -- Resultado: 2019-01-01 23:59:59
+SELECT DATE_PART('month', TIMESTAMP '2017-09-30'); -- Resultado: 9
+SELECT DATE_PART('year', TIMESTAMP '2017-01-01'); -- Resultado: 2017
+SELECT DATE_PART('century', TIMESTAMP '2017-01-01'); -- Resultado: 21
+
  
 ```
 
