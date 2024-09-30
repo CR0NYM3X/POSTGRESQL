@@ -256,7 +256,8 @@ END $$;
  
 ### Validar las funciones que tienen SECURITY DEFINER, LEAKPROOF , PROCONFIG: 
 ```SQL
-SELECT nspname, proname, proargtypes, prosecdef, p.proleakproof as LEAKPROOF , rolname, proconfig FROM pg_proc p 
+
+SELECT nspname, proname, proargtypes, prosecdef as "SECURITY DEFINER", p.proleakproof as "LEAKPROOF" , rolname as "OWNER", proconfig AS "PARAMETERS SETTING" FROM pg_proc p 
 JOIN pg_namespace n ON p.pronamespace = n.oid 
 JOIN pg_authid a ON a.oid = p.proowner WHERE NOT  nspname IN ('information_schema', 'pg_catalog') and proname NOT LIKE 'pgaudit%' AND (prosecdef OR NOT proconfig IS NULL OR proleakproof = true);
 
