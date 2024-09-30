@@ -253,6 +253,16 @@ END $$;
 
 ```
 
+ 
+### Validar las funciones que tienen SECURITY DEFINER, LEAKPROOF , PROCONFIG: 
+```SQL
+SELECT nspname, proname, proargtypes, prosecdef, p.proleakproof as LEAKPROOF , rolname, proconfig FROM pg_proc p 
+JOIN pg_namespace n ON p.pronamespace = n.oid 
+JOIN pg_authid a ON a.oid = p.proowner WHERE NOT  nspname IN ('information_schema', 'pg_catalog') and proname NOT LIKE 'pgaudit%' AND (prosecdef OR NOT proconfig IS NULL OR proleakproof = true);
+
+```
+
+
 ## Computadora 
 .pgpass --->  El archivo .pgpass en PostgreSQL es un archivo de configuración que se utiliza para almacenar de manera segura las credenciales de acceso a las bases de datos. En lugar de tener que ingresar manualmente las contraseñas cada vez que te conectas a una base de datos PostgreSQL, puedes utilizar el archivo .pgpass para que las credenciales se almacenen y se recuperen automáticamente cuando sea necesario.
 
