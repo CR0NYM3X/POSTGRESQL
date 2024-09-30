@@ -220,11 +220,11 @@ $$ LANGUAGE plpgsql;
   
   
  ### `%I` - Identificadores SQL
-El formato `%I` se utiliza para formatear identificadores SQL, como nombres de tablas, columnas, esquemas, etc. PostgreSQL se encarga de escaparlos correctamente para evitar problemas de sintaxis y posibles inyecciones SQL. PostgreSQL los escapa automáticamente para que sean seguros y válidos en una consulta SQL.
+El formato `%I` se utiliza para formatear identificadores SQL y coloca comillas dobles a los valores , como nombres de tablas, columnas, esquemas, etc. PostgreSQL se encarga de escaparlos correctamente para evitar problemas de sintaxis y posibles inyecciones SQL. PostgreSQL los escapa automáticamente para que sean seguros y válidos en una consulta SQL.
 
   
 ### `%L` - Literales SQL
-El formato `%L` se utiliza para formatear literales SQL, como cadenas de texto, números, etc. PostgreSQL se encarga de escaparlos adecuadamente para que sean seguros y correctos en el contexto de una consulta SQL. PostgreSQL los escapa adecuadamente para evitar inyecciones SQL y asegurar que sean interpretados correctamente.
+El formato `%L` se utiliza para formatear literales SQL y coloca comillas simples a los valores  , como cadenas de texto, números, etc. PostgreSQL se encarga de escaparlos adecuadamente para que sean seguros y correctos en el contexto de una consulta SQL. PostgreSQL los escapa adecuadamente para evitar inyecciones SQL y asegurar que sean interpretados correctamente.
  
   
  
