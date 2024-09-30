@@ -124,6 +124,23 @@ SUPPORT: Especifica una función de soporte para optimizaciones
 COST 100: El parámetro COST establece un costo estimado para la función, que el planificador de consultas de PostgreSQL
  usa para decidir el plan de ejecución más eficiente. El valor por defecto es 100, pero puedes ajustarlo para reflejar
 mejor el costo relativo de la función en comparación con otras operaciones
+
+SET statement_timeout = '5min'; --- nos permite configurar parametros en la funcion 
+```
+
+
+### Configurarle parametros en las funciones
+```
+
+CREATE OR REPLACE FUNCTION mi_funcion()
+RETURNS void AS $$
+BEGIN
+    -- Lógica de la función
+END;
+$$ LANGUAGE plpgsql
+SET work_mem = '64MB'
+SET search_path = 'mi_esquema'
+SET statement_timeout = '5min';
 ```
 
 
@@ -511,7 +528,6 @@ $$ LANGUAGE plpgsql;
 
 SELECT * FROM ejecutar_consulta_dinamica('select schemaname::varchar,tablename::varchar,tableowner::varchar from pg_tables limit 10')  AS t(schemaname varchar,tablename varchar, tableowner varchar);
 ```
-
 
 
 
