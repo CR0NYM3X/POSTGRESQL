@@ -257,13 +257,7 @@ PostgreSQL utiliza automáticamente la compresión para datos grandes almacenado
 - **Tamaño de página fijo**: PostgreSQL utiliza un tamaño de página fijo (normalmente 8 kB), y no permite que las tuplas abarquen múltiples páginas.
 - **Representación varlena**: Los tipos de datos que soportan TOAST deben tener una representación de longitud variable (varlena), donde la primera palabra de cuatro bytes de cualquier valor almacenado contiene la longitud total del valor en bytes¹².
 
-
-
-
-### 2. **Compression**
-El parámetro **Compression** especifica el método de compresión utilizado para los datos de una columna. PostgreSQL permite diferentes métodos de compresión, como:
-
-
+ 
 ### Tipos de Compresión en PostgreSQL
 
 1. **Compresión PGLZ**
@@ -293,9 +287,6 @@ El parámetro **Compression** especifica el método de compresión utilizado par
 - **Compresión PGLZ**: Podrías usar PGLZ para comprimir las descripciones de productos, ya que estas pueden ser bastante largas y la compresión ayudará a reducir el espacio en disco utilizado.
 - **Compresión LZ4**: Para las reseñas de clientes, donde la velocidad de acceso es más importante debido a la frecuencia con la que se consultan, podrías optar por LZ4 para obtener una compresión rápida y eficiente.
  
-
-
-más reciente y eficiente, como puedo ver si esta habilitado el lz4
  
 - **lz4**: Un método de compresión más reciente y eficiente que puede ser utilizado si está habilitado en tu instalación de PostgreSQL².
 
@@ -310,8 +301,6 @@ ALTER TABLE clientes ALTER COLUMN nombre SET COMPRESSION lz4;
 ALTER TABLE clientes ALTER COLUMN nombre SET COMPRESSION zstd;
 ALTER TABLE clientes ALTER COLUMN nombre SET COMPRESSION pglz;
 ```
-
-
 
 
 
