@@ -756,7 +756,7 @@ en análisis de datos en tiempo real, la compilación JIT puede ser muy benefici
 
 ### ¿Qué es HOT?
 
-HOT es una técnica que permite realizar actualizaciones en las filas de una tabla sin necesidad de modificar los índices asociados a esas filas. Esto es posible cuando:
+HOT (Heap-Only Tuple) es una técnica que permite realizar actualizaciones en las filas de una tabla sin necesidad de modificar los índices asociados a esas filas. Esto es posible cuando:
 
 1. **No se modifican las columnas indexadas**: La actualización no afecta a ninguna columna que esté referenciada por un índice.
 2. **Espacio libre en la página**: Hay suficiente espacio libre en la página que contiene la fila original para almacenar la nueva versión de la fila⁴.
@@ -783,6 +783,9 @@ CREATE TABLE ejemplo (
     nombre TEXT,
     descripcion TEXT
 ) WITH (fillfactor = 70);
+
+ALTER TABLE mi_tabla SET (fillfactor = 70);
+
 ```
  
 
