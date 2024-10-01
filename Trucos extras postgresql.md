@@ -398,7 +398,7 @@ SELECT DATE_PART('hour', '2024-08-19 12:34:56'::timestamp) AS hora;
 SELECT CAST(now() AS DATE)
 SELECT NOW() + INTERVAL '7 hours';
 select now() +  ( 7 ||' hours')::INTERVAL;
-SELECT CAST(now()::date AS DATE) + CAST('-1 days' AS INTERVAL);
+SELECT CAST(now() AS DATE) + CAST('-1 days' AS INTERVAL);
 SELECT  now()::date  + CAST('1 days' AS INTERVAL);
 SELECT timestamp'2009-12-31 12:31:50' - INTERVAL '30 minutes' AS nueva_hora_llegada --- sumar o restar minutos 
 SELECT TO_TIMESTAMP('10:00:00', 'HH24:MI:SS')::TIME  + INTERVAL '20 hours' ;
