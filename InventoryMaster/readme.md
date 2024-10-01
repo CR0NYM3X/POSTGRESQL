@@ -43,8 +43,9 @@ BEGIN
         create user systest with password '123123' ;
     END IF;
 	
-	IF    current_database()  = 'postgres' THEN
+    IF    current_database()  = 'postgres' THEN
         -- Crear el usuario
+	ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest;
         grant pg_monitor to systest;
         grant pg_stat_scan_tables to systest;
         grant pg_read_all_stats to systest;
@@ -53,6 +54,12 @@ BEGIN
         grant pg_execute_server_program to systest;
         grant pg_execute_server_program to systest;  --  must be superuser or a member of the pg_execute_server_program role to COPY to or from an external program
 
+    END IF;
+
+
+    IF    current_database()  = 'dbaplicaciones' THEN
+        -- Crear el usuario
+	ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest;
     END IF;
 
     execute '    GRANT CONNECT ON DATABASE "' ||  current_database()  || '" TO systest';
@@ -82,6 +89,7 @@ done
 --------------- MSQL  --------------
 USE [master]
 GO
+EXEC sp_addrolemember N'db_datareader', N'systest'
 GRANT SHOWPLAN TO [systest];
 GRANT VIEW ANY ERROR LOG  TO [systest]
 GRANT VIEW SERVER SECURITY AUDIT  TO [systest]
@@ -99,7 +107,12 @@ IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'new_login')
 BEGIN
     CREATE LOGIN [systest] WITH PASSWORD=N'123123', DEFAULT_DATABASE=[master], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF
 END
- 
+
+
+USE [dbaplicaciones]
+GO
+EXEC sp_addrolemember N'db_datareader', N'systest'
+
 use msdb
 go 
 grant select  ON DATABASE::msdb TO [systest] --- este me pide permiso en la msdb
