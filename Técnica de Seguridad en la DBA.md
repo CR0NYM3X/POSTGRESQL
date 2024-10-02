@@ -201,15 +201,21 @@ Select * from  pg_stat_activity    ;
 Esto es útil para evitar problemas de inyección SQL y para manejar valores de manera segura y eficiente.
 Si no usáramos USING, tendríamos que concatenar los valores directamente en la cadena SQL, lo cual es menos seguro y más propenso a errores
 ```
-CREATE OR REPLACE FUNCTION insertar_empleado(nom VARCHAR, sal NUMERIC)
-RETURNS void AS $$
+
+DO $$
 DECLARE
     sql_query text;
-BEGIN
-    sql_query := 'INSERT INTO empleados (nombre, salario) VALUES ($1, $2)';
-    EXECUTE sql_query USING nom, sal;
-END;
-$$ LANGUAGE plpgsql;
+	nom text := 'jose';
+	sal int := 1000;
+	msg text;
+BEGIN 
+
+  	sql_query := 'select $1 ||  $2::text';
+    EXECUTE sql_query USING nom, sal into msg;
+ 
+    -- Más código después del bloque try-catch
+    RAISE NOTICE  '-----------> %' , msg ;
+END $$;
 
 
   
