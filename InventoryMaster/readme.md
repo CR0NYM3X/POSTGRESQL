@@ -156,15 +156,15 @@ execute SYS.sp_MSforeachdb 'use [?];  CREATE USER [systest] FOR LOGIN [systest]'
 
 
 ----- 27/09/2024 ------
-  - agregar en la funcion fdw_conf.gather_server_data que elimine los datos del id_exec  actual para que no se repitan los datos 
   - ver la opcion de mejorar la forma de crear las tablas con la extension fdw_tds ver si es mejor crearlas cadas vez que se conecta y ver el tema de la contraseña 
   - modificar la fun exec_query_server para que la db lo inserte de manera automatica sin necesidad de consultar en la query, ver si es opcional 
   - En la funcion fdw_conf.exec_query_server ver la posibilidad de modificar la la columna db en las consultas ejecutadas en los servidores remotos y lo inserte de manera automatica
   - modificar la funcion exec_query_server para que permita consular tablas super pesadas con millones de registros activando el conteo de filas y ir consultando en partes las filas  
-  - Hacer un trigger , cuando inserten  en la tabla ctl_querys , este realizara  la tabla particionada   fdw_conf.ctl_querys  
-  - Agregarle la columna table_name en la tabla fdw_conf.ctl_querys 
+  - Hacer un trigger , cuando inserten  en la tabla ctl_querys , este realizara  la tabla particionada   fdw_conf.ctl_querys
+
   
- 
+ ----- 02/10/2024 ------
+ Agregarle parametros a las funciones para que no generen logs  y configurar correctamente los  mantenimientos a las tablas 
 
 
 
