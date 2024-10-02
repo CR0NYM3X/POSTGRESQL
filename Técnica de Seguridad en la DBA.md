@@ -274,3 +274,28 @@ https://book.hacktricks.xyz/network-services-pentesting/pentesting-postgresql
 
 
 
+
+
+## CSIRT
+```
+**Tanium** es una plataforma de gestión y seguridad de endpoints que proporciona visibilidad y control en tiempo real sobre todos los dispositivos conectados a una red. Se utiliza para detectar y responder a amenazas, gestionar activos y garantizar el cumplimiento de políticas de seguridad³. Algunas de sus ventajas incluyen:
+
+- **Visibilidad en tiempo real**: Permite a las organizaciones ver y controlar todos los endpoints en tiempo real.
+- **Escalabilidad**: Puede gestionar millones de endpoints sin perder rendimiento.
+- **Automatización**: Facilita la automatización de tareas de seguridad y gestión, reduciendo la carga de trabajo manual⁴.
+
+**CSIRT** (Computer Security Incident Response Team) es un equipo especializado en la gestión y respuesta a incidentes de seguridad informática. Su objetivo es minimizar el impacto de los incidentes de seguridad y restaurar las operaciones normales lo más rápido posible². Los beneficios de contar con un CSIRT incluyen:
+
+- **Respuesta rápida a incidentes**: Permite una reacción rápida y eficiente ante incidentes de seguridad.
+- **Mitigación de daños**: Ayuda a minimizar los daños y a preservar la evidencia de los incidentes.
+- **Prevención de futuros incidentes**: Implementa medidas para evitar que incidentes similares ocurran en el futuro².
+
+### Competidores de Tanium
+Algunos de los competidores de Tanium en el mercado de gestión y seguridad de endpoints incluyen:
+
+- **CrowdStrike**: Conocido por su plataforma de protección de endpoints basada en la nube.
+- **Carbon Black**: Ofrece soluciones de seguridad de endpoints y análisis de comportamiento.
+- **McAfee**: Proporciona una amplia gama de soluciones de seguridad, incluyendo la gestión de endpoints.
+- **Symantec**: Ofrece soluciones integrales de seguridad de endpoints y protección contra amenazas.
+```
+ 
