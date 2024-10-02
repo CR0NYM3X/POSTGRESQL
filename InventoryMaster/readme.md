@@ -34,55 +34,74 @@ select extname,extversion from pg_extension ;
 
 --------------- PSQL  --------------
 ---> Crea un archivo /tmp/script.sql    y guarda el sql  
- 
+
+
 DO $$
+DECLARE 
+
+	var_password_encryption varchar;
+	var_current_database varchar := lower(current_database());
+	
 BEGIN
+
     -- Verificar si el usuario existe
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'systest') THEN
-        -- Crear el usuario
-        create user systest with password '123123' ;
+		
+		-- Valida el tipo de encriptacion de contraseñas 
+		select lower(setting) into var_password_encryption from pg_settings where name = 'password_encryption';
+	
+	
+		IF var_password_encryption = 'md5' then
+			create user systest with encrypted password 'md5610d44993ca51594bbb62cc9d40006f4' ;
+		ELSIF var_password_encryption = 'scram-sha-256'  then
+			create user systest with encrypted password 'SCRAM-SHA-256$4096:J/wWQZFOK+eB51txzopc9g==$vrT8cnB1s ifshOGreU=:XiF92uZ7PFpE0AbMLHnuma04FD4KABccTcxiw9E3b+s=' ;
+		END IF;
+		
+		
     END IF;
 	
-    IF    current_database()  = 'postgres' THEN
+    IF    var_current_database  = 'postgres' THEN
         -- Crear el usuario
-	ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest;
-        grant pg_monitor to systest;
-        grant pg_stat_scan_tables to systest;
-        grant pg_read_all_stats to systest;
-        grant pg_read_all_settings to systest;
-        grant pg_read_server_files to systest;
-        grant pg_execute_server_program to systest;
-        grant pg_execute_server_program to systest;  --  must be superuser or a member of the pg_execute_server_program role to COPY to or from an external program
-
+		ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras
+		GRANT select on all tables in schema public   to   systest; 
+        GRANT pg_monitor to systest;
+        GRANT pg_stat_scan_tables to systest;
+        GRANT pg_read_all_stats to systest;
+        GRANT pg_read_all_settings to systest;
+        GRANT pg_read_server_files to systest;
+        GRANT pg_EXECUTE_server_program to systest;
+        GRANT pg_EXECUTE_server_program to systest;  --  must be superuser or a member of the pg_EXECUTE_server_program role to COPY to or from an external program
+		
+	ELSIF var_current_database  = 'dbaplicaciones' THEN
+		ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest;
+		GRANT select on all tables in schema public   to   systest;
     END IF;
 
+ 
 
-    IF    current_database()  = 'dbaplicaciones' THEN
-        -- Crear el usuario
-	ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest;
-    END IF;
-
-    execute '    GRANT CONNECT ON DATABASE "' ||  current_database()  || '" TO systest';
+    EXECUTE '    GRANT CONNECT ON DATABASE "' ||  var_current_database  || '" TO systest';
+	
     GRANT USAGE ON SCHEMA public TO systest;
-    grant execute on all functions  in schema pg_catalog   to   systest; ---- permission denied for function pg_stat_file 
-    grant select on all tables in schema pg_catalog   to   systest; --- permission denied for view pg_hba_file_rules
- 
+    GRANT EXECUTE on all functions  in schema pg_catalog   to   systest; ---- permission denied for function pg_stat_file 
+    GRANT select on all tables in schema pg_catalog   to   systest; --- permission denied for view pg_hba_file_rules
+    GRANT select on all tables in schema public   to   systest; 
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras 
+	 
 END $$;
-
-
-
  
-# Guarda todas las base de datos en la variable result
-result=$(psql -p 5415  -tAX -c "select datname  from pg_database where not datname in('template1','template0');" )
+ 
+ 
+ # Guarda todas las base de datos en la variable result
+result=$(psql -p 5411  -tAX -c "select datname  from pg_database where not datname in('template1','template0');" )
 
 # Recorre la lista de base de datos 
 for base in $result
 do
     # Instala la funcion
-    echo   $(psql -p 5415 -tAX -f /tmp/script.sql -d $base) " - Base de datos: " $base 
+    echo   $(psql -p 5411 -tAX -f /tmp/script.sql  -d $base) " - Base de datos: " $base 
 done
-
-
+  
+  
 
 
 
