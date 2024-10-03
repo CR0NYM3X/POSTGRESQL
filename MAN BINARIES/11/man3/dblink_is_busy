@@ -1,0 +1,23 @@
+DBLINK_IS_BUSY(3)                                       PostgreSQL 11.22 Documentation                                       DBLINK_IS_BUSY(3)
+
+NAME
+       dblink_is_busy - checks if connection is busy with an async query
+
+SYNOPSIS
+       dblink_is_busy(text connname) returns int
+
+DESCRIPTION
+       dblink_is_busy tests whether an async query is in progress.
+
+ARGUMENTS
+       connname
+           Name of the connection to check.
+
+RETURN VALUE
+       Returns 1 if connection is busy, 0 if it is not busy. If this function returns 0, it is guaranteed that dblink_get_result will not
+       block.
+
+EXAMPLES
+           SELECT dblink_is_busy('dtest1');
+
+PostgreSQL 11.22                                                     2023                                                    DBLINK_IS_BUSY(3)

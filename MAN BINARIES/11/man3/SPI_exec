@@ -1,0 +1,22 @@
+SPI_EXEC(3)                                             PostgreSQL 11.22 Documentation                                             SPI_EXEC(3)
+
+NAME
+       SPI_exec - execute a read/write command
+
+SYNOPSIS
+       int SPI_exec(const char * command, long count)
+
+DESCRIPTION
+       SPI_exec is the same as SPI_execute, with the latter's read_only parameter always taken as false.
+
+ARGUMENTS
+       const char * command
+           string containing command to execute
+
+       long count
+           maximum number of rows to return, or 0 for no limit
+
+RETURN VALUE
+       See SPI_execute.
+
+PostgreSQL 11.22                                                     2023                                                          SPI_EXEC(3)

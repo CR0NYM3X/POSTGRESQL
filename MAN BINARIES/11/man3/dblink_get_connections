@@ -1,0 +1,18 @@
+DBLINK_GET_CONNECTIONS(3)                               PostgreSQL 11.22 Documentation                               DBLINK_GET_CONNECTIONS(3)
+
+NAME
+       dblink_get_connections - returns the names of all open named dblink connections
+
+SYNOPSIS
+       dblink_get_connections() returns text[]
+
+DESCRIPTION
+       dblink_get_connections returns an array of the names of all open named dblink connections.
+
+RETURN VALUE
+       Returns a text array of connection names, or NULL if none.
+
+EXAMPLES
+           SELECT dblink_get_connections();
+
+PostgreSQL 11.22                                                     2023                                            DBLINK_GET_CONNECTIONS(3)

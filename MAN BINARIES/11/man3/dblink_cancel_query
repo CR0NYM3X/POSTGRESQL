@@ -1,0 +1,24 @@
+DBLINK_CANCEL_QUERY(3)                                  PostgreSQL 11.22 Documentation                                  DBLINK_CANCEL_QUERY(3)
+
+NAME
+       dblink_cancel_query - cancels any active query on the named connection
+
+SYNOPSIS
+       dblink_cancel_query(text connname) returns text
+
+DESCRIPTION
+       dblink_cancel_query attempts to cancel any query that is in progress on the named connection. Note that this is not certain to succeed
+       (since, for example, the remote query might already have finished). A cancel request simply improves the odds that the query will fail
+       soon. You must still complete the normal query protocol, for example by calling dblink_get_result.
+
+ARGUMENTS
+       connname
+           Name of the connection to use.
+
+RETURN VALUE
+       Returns OK if the cancel request has been sent, or the text of an error message on failure.
+
+EXAMPLES
+           SELECT dblink_cancel_query('dtest1');
+
+PostgreSQL 11.22                                                     2023                                               DBLINK_CANCEL_QUERY(3)
