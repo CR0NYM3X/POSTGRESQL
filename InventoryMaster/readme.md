@@ -33,111 +33,116 @@ select extname,extversion from pg_extension ;
 ```
 
 --------------- PSQL  --------------
----> Crea un archivo /tmp/script.sql    y guarda el sql  
 
-
-DO $$
+echo "DO \$\$
 DECLARE 
 
-	var_password_encryption varchar;
-	var_current_database varchar := lower(current_database());
-	
+        var_password_encryption varchar;
+        var_current_database varchar := lower(current_database());
+        
 BEGIN
 
-    -- Verificar si el usuario existe
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'systest') THEN
-		
-		-- Valida el tipo de encriptacion de contraseñas 
-		select lower(setting) into var_password_encryption from pg_settings where name = 'password_encryption';
-	
-	
-		IF var_password_encryption = 'md5' then
-			create user systest with encrypted password 'md5610d44993ca51594bbb62cc9d40006f4' ;
-		ELSIF var_password_encryption = 'scram-sha-256'  then
-			create user systest with encrypted password 'SCRAM-SHA-256$4096:J/wWQZFOK+eB51txzopc9g==$vrT8cnB1s ifshOGreU=:XiF92uZ7PFpE0AbMLHnuma04FD4KABccTcxiw9E3b+s=' ;
-		END IF;
-		
-		
-    END IF;
-	
-    IF    var_current_database  = 'postgres' THEN
+    IF    var_current_database::varchar   = 'postgres'::varchar THEN
         -- Crear el usuario
-		ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras
-		GRANT select on all tables in schema public   to   systest; 
-        GRANT pg_monitor to systest;
+                ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras
+                GRANT select on all tables in schema public   to   systest; 
+         GRANT pg_monitor to systest;
         GRANT pg_stat_scan_tables to systest;
         GRANT pg_read_all_stats to systest;
         GRANT pg_read_all_settings to systest;
         GRANT pg_read_server_files to systest;
-        GRANT pg_EXECUTE_server_program to systest;
         GRANT pg_EXECUTE_server_program to systest;  --  must be superuser or a member of the pg_EXECUTE_server_program role to COPY to or from an external program
+         
 		
-	ELSIF var_current_database  = 'dbaplicaciones' THEN
-		ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest;
-		GRANT select on all tables in schema public   to   systest;
+    ELSIF var_current_database  = 'dbaplicaciones'::varchar THEN
+                ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras 
+				GRANT select on all tables in schema public   to   systest; 
     END IF;
 
  
 
-    EXECUTE '    GRANT CONNECT ON DATABASE "' ||  var_current_database  || '" TO systest';
-	
+    EXECUTE '    GRANT CONNECT ON DATABASE \"' ||  current_database() || '\" TO systest';
+        
     GRANT USAGE ON SCHEMA public TO systest;
     GRANT EXECUTE on all functions  in schema pg_catalog   to   systest; ---- permission denied for function pg_stat_file 
     GRANT select on all tables in schema pg_catalog   to   systest; --- permission denied for view pg_hba_file_rules
-    GRANT select on all tables in schema public   to   systest; 
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras 
-	 
-END $$;
- 
- 
+         
+END \$\$;"  > /tmp/script_02.sql 
+
  
  # Guarda todas las base de datos en la variable result
-result=$(psql -p 5411  -tAX -c "select datname  from pg_database where not datname in('template1','template0');" )
+result=$(psql -p 5432 -tAX -c "select datname  from pg_database where not datname in('template1','template0') /*and not datname = 'tiendasMueblesTX.30085_ant'*/;" )
 
 # Recorre la lista de base de datos 
 for base in $result
 do
     # Instala la funcion
-    echo   $(psql -p 5411 -tAX -f /tmp/script.sql  -d $base) " - Base de datos: " $base 
+    echo   $(psql -p 5432 -tAX -f /tmp/script_02.sql -d $base) " - Base de datos: " $base 
 done
-  
+
+# Borra el script
+rm  /tmp/script_02.sql
+
+# Ver la version 
+psql -V
+ 
   
 
 
 
 --------------- MSQL  --------------
+execute SYS.sp_MSforeachdb 'use [?];  CREATE USER [systest] FOR LOGIN [systest]'
+
 USE [master]
 GO
-EXEC sp_addrolemember N'db_datareader', N'systest'
+EXEC sp_addrolemember N'db_datareader', N'systest';
+GO
 GRANT SHOWPLAN TO [systest];
-GRANT VIEW ANY ERROR LOG  TO [systest]
-GRANT VIEW SERVER SECURITY AUDIT  TO [systest]
-GRANT VIEW ANY DATABASE  TO [systest]
-GRANT VIEW ANY SECURITY DEFINITION  TO [systest]
-GRANT VIEW ANY PERFORMANCE DEFINITION  TO [systest]
-GRANT VIEW ANY DEFINITION  TO [systest]
-GRANT VIEW SERVER SECURITY STATE  TO [systest]
-GRANT VIEW SERVER PERFORMANCE STATE  TO [systest]
-GRANT VIEW SERVER STATE  TO [systest]
-grant select  ON DATABASE::master TO [sysappdynamics]  --- este por permisos de  object 'sysaltfiles' para ver los discos 
-GRANT execute on [dbo].[sp_help_revlogin]   to [systest] --- este es para el permiso del proc sp_help_revlogin para ver los login
-
-IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'new_login')
-BEGIN
-    CREATE LOGIN [systest] WITH PASSWORD=N'123123', DEFAULT_DATABASE=[master], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF
-END
+GO
+GRANT VIEW ANY ERROR LOG  TO [systest];
+GO
+GRANT VIEW SERVER SECURITY AUDIT  TO [systest];
+GO
+GRANT VIEW ANY DATABASE  TO [systest];
+GO
+GRANT VIEW ANY SECURITY DEFINITION  TO [systest];
+GO
+GRANT VIEW ANY PERFORMANCE DEFINITION  TO [systest];
+GO
+GRANT VIEW ANY DEFINITION  TO [systest];
+GO
+GRANT VIEW SERVER SECURITY STATE  TO [systest];
+GO
+GRANT VIEW SERVER PERFORMANCE STATE  TO [systest];
+GO
+GRANT VIEW SERVER STATE  TO [systest];
+GO
+grant select  ON DATABASE::master TO [systest];  --- este por permisos de  object 'sysaltfiles' para ver los discos 
+GO
+GRANT execute on [dbo].[sp_help_revlogin]   to [systest]; --- este es para el permiso del proc sp_help_revlogin para ver los login
+GO
 
 
 USE [dbaplicaciones]
 GO
 EXEC sp_addrolemember N'db_datareader', N'systest'
+GO
 
 use msdb
 go 
 grant select  ON DATABASE::msdb TO [systest] --- este me pide permiso en la msdb
-GRANT SHOWPLAN TO [sysappdynamics]; --- este para ver que no marque error al ver los jobs y backups 
+GO
+GRANT SHOWPLAN TO [systest]; --- este para ver que no marque error al ver los jobs y backups 
+GO
 
-execute SYS.sp_MSforeachdb 'use [?];  CREATE USER [systest] FOR LOGIN [systest]'
+
+--- Ver si tiene permisos 
+select * from sys.server_permissions where  grantee_principal_id in(select principal_id from sys.server_principals  where name = 'systest')
+go
+
+--- veri si existe el usuario 
+  select * from sys.syslogins where name = 'systest' 
+ 
 ```
 
 
