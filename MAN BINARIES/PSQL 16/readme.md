@@ -1,4 +1,5 @@
  
+```sh 
 
 
 mkdir -p /tmp/man_bin_psql/11/man1
@@ -36,3 +37,5 @@ clear
 clear
 cat /tmp/otro.txt  
 
+ 
+```
