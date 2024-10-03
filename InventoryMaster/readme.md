@@ -87,6 +87,23 @@ rm  /tmp/script_02.sql
 psql -V
  
   
+************* <= 8 *******
+ 
+ # Guarda todas las base de datos en la variable result
+result=$(psql -p 5432 -tAX -c "select datname  from pg_database where not datname in('template1','template0')  ;" )
+
+# Recorre la lista de base de datos 
+for base in $result
+do
+    # Instala la funcion
+    psql -d $base -t   -c "select  'grant select on table ' || table_name || ' to ' || CHR(34) || 'systest' || CHR(34) || ';' from information_schema.tables where table_schema in('pg_catalog','information_schema') ;" | psql -d $base 
+	
+	psql -d $base -t   -c "SELECT 'GRANT EXECUTE ON FUNCTION '|| proname || '(' || pg_catalog.oidvectortypes(proargtypes) || ')' || ' to ' || CHR(34) || 'systest' || CHR(34) || ';' as qweads FROM pg_proc where proname in(SELECT routine_name FROM information_schema.routines WHERE routine_type = 'FUNCTION' AND specific_schema = 'pg_catalog') ;" | psql -d $base 
+	
+done
+
+
+
 
 
 
