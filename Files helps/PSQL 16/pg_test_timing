@@ -1,6 +1,0 @@
-[postgres@server_test bin]$ pg_test_timing --help
-Usage: pg_test_timing [-d DURATION]
- 
-[postgres@server_test bin]$ pg_test_timing -help
-pg_test_timing: invalid option -- 'h'
-Try "pg_test_timing --help" for more information.
