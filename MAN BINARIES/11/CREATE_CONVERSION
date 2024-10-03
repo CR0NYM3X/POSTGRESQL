@@ -1,0 +1,63 @@
+CREATE CONVERSION(7)                                    PostgreSQL 11.22 Documentation                                    CREATE CONVERSION(7)
+
+NAME
+       CREATE_CONVERSION - define a new encoding conversion
+
+SYNOPSIS
+       CREATE [ DEFAULT ] CONVERSION name
+           FOR source_encoding TO dest_encoding FROM function_name
+
+DESCRIPTION
+       CREATE CONVERSION defines a new conversion between character set encodings. Also, conversions that are marked DEFAULT can be used for
+       automatic encoding conversion between client and server. For this purpose, two conversions, from encoding A to B and from encoding B to
+       A, must be defined.
+
+       To be able to create a conversion, you must have EXECUTE privilege on the function and CREATE privilege on the destination schema.
+
+PARAMETERS
+       DEFAULT
+           The DEFAULT clause indicates that this conversion is the default for this particular source to destination encoding. There should
+           be only one default encoding in a schema for the encoding pair.
+
+       name
+           The name of the conversion. The conversion name can be schema-qualified. If it is not, the conversion is defined in the current
+           schema. The conversion name must be unique within a schema.
+
+       source_encoding
+           The source encoding name.
+
+       dest_encoding
+           The destination encoding name.
+
+       function_name
+           The function used to perform the conversion. The function name can be schema-qualified. If it is not, the function will be looked
+           up in the path.
+
+           The function must have the following signature:
+
+               conv_proc(
+                   integer,  -- source encoding ID
+                   integer,  -- destination encoding ID
+                   cstring,  -- source string (null terminated C string)
+                   internal, -- destination (fill with a null terminated C string)
+                   integer   -- source string length
+               ) RETURNS void;
+
+NOTES
+       Use DROP CONVERSION to remove user-defined conversions.
+
+       The privileges required to create a conversion might be changed in a future release.
+
+EXAMPLES
+       To create a conversion from encoding UTF8 to LATIN1 using myfunc:
+
+           CREATE CONVERSION myconv FOR 'UTF8' TO 'LATIN1' FROM myfunc;
+
+COMPATIBILITY
+       CREATE CONVERSION is a PostgreSQL extension. There is no CREATE CONVERSION statement in the SQL standard, but a CREATE TRANSLATION
+       statement that is very similar in purpose and syntax.
+
+SEE ALSO
+       ALTER CONVERSION (ALTER_CONVERSION(7)), CREATE FUNCTION (CREATE_FUNCTION(7)), DROP CONVERSION (DROP_CONVERSION(7))
+
+PostgreSQL 11.22                                                     2023                                                 CREATE CONVERSION(7)

@@ -1,0 +1,81 @@
+CREATE STATISTICS(7)                                    PostgreSQL 11.22 Documentation                                    CREATE STATISTICS(7)
+
+NAME
+       CREATE_STATISTICS - define extended statistics
+
+SYNOPSIS
+       CREATE STATISTICS [ IF NOT EXISTS ] statistics_name
+           [ ( statistics_kind [, ... ] ) ]
+           ON column_name, column_name [, ...]
+           FROM table_name
+
+DESCRIPTION
+       CREATE STATISTICS will create a new extended statistics object tracking data about the specified table, foreign table or materialized
+       view. The statistics object will be created in the current database and will be owned by the user issuing the command.
+
+       If a schema name is given (for example, CREATE STATISTICS myschema.mystat ...) then the statistics object is created in the specified
+       schema. Otherwise it is created in the current schema. The name of the statistics object must be distinct from the name of any other
+       statistics object in the same schema.
+
+PARAMETERS
+       IF NOT EXISTS
+           Do not throw an error if a statistics object with the same name already exists. A notice is issued in this case. Note that only the
+           name of the statistics object is considered here, not the details of its definition.
+
+       statistics_name
+           The name (optionally schema-qualified) of the statistics object to be created.
+
+       statistics_kind
+           A statistics kind to be computed in this statistics object. Currently supported kinds are ndistinct, which enables n-distinct
+           statistics, and dependencies, which enables functional dependency statistics. If this clause is omitted, all supported statistics
+           kinds are included in the statistics object. For more information, see Section 14.2.2 and Section 71.2.
+
+       column_name
+           The name of a table column to be covered by the computed statistics. At least two column names must be given.
+
+       table_name
+           The name (optionally schema-qualified) of the table containing the column(s) the statistics are computed on; see ANALYZE(7) for an
+           explanation of the handling of inheritance and partitions.
+
+NOTES
+       You must be the owner of a table to create a statistics object reading it. Once created, however, the ownership of the statistics
+       object is independent of the underlying table(s).
+
+       Extended statistics are not currently used by the planner for selectivity estimations made for table joins. This limitation will likely
+       be removed in a future version of PostgreSQL.
+
+EXAMPLES
+       Create table t1 with two functionally dependent columns, i.e., knowledge of a value in the first column is sufficient for determining
+       the value in the other column. Then functional dependency statistics are built on those columns:
+
+           CREATE TABLE t1 (
+               a   int,
+               b   int
+           );
+
+           INSERT INTO t1 SELECT i/100, i/500
+                            FROM generate_series(1,1000000) s(i);
+
+           ANALYZE t1;
+
+           -- the number of matching rows will be drastically underestimated:
+           EXPLAIN ANALYZE SELECT * FROM t1 WHERE (a = 1) AND (b = 0);
+
+           CREATE STATISTICS s1 (dependencies) ON a, b FROM t1;
+
+           ANALYZE t1;
+
+           -- now the row count estimate is more accurate:
+           EXPLAIN ANALYZE SELECT * FROM t1 WHERE (a = 1) AND (b = 0);
+
+       Without functional-dependency statistics, the planner would assume that the two WHERE conditions are independent, and would multiply
+       their selectivities together to arrive at a much-too-small row count estimate. With such statistics, the planner recognizes that the
+       WHERE conditions are redundant and does not underestimate the row count.
+
+COMPATIBILITY
+       There is no CREATE STATISTICS command in the SQL standard.
+
+SEE ALSO
+       ALTER STATISTICS (ALTER_STATISTICS(7)), DROP STATISTICS (DROP_STATISTICS(7))
+
+PostgreSQL 11.22                                                     2023                                                 CREATE STATISTICS(7)

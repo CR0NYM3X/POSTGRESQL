@@ -1,0 +1,32 @@
+ALTER TEXT SEARCH PARSER(7)                             PostgreSQL 11.22 Documentation                             ALTER TEXT SEARCH PARSER(7)
+
+NAME
+       ALTER_TEXT_SEARCH_PARSER - change the definition of a text search parser
+
+SYNOPSIS
+       ALTER TEXT SEARCH PARSER name RENAME TO new_name
+       ALTER TEXT SEARCH PARSER name SET SCHEMA new_schema
+
+DESCRIPTION
+       ALTER TEXT SEARCH PARSER changes the definition of a text search parser. Currently, the only supported functionality is to change the
+       parser's name.
+
+       You must be a superuser to use ALTER TEXT SEARCH PARSER.
+
+PARAMETERS
+       name
+           The name (optionally schema-qualified) of an existing text search parser.
+
+       new_name
+           The new name of the text search parser.
+
+       new_schema
+           The new schema for the text search parser.
+
+COMPATIBILITY
+       There is no ALTER TEXT SEARCH PARSER statement in the SQL standard.
+
+SEE ALSO
+       CREATE TEXT SEARCH PARSER (CREATE_TEXT_SEARCH_PARSER(7)), DROP TEXT SEARCH PARSER (DROP_TEXT_SEARCH_PARSER(7))
+
+PostgreSQL 11.22                                                     2023                                          ALTER TEXT SEARCH PARSER(7)

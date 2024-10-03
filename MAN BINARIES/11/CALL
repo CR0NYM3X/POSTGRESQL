@@ -1,0 +1,41 @@
+CALL(7)                                                 PostgreSQL 11.22 Documentation                                                 CALL(7)
+
+NAME
+       CALL - invoke a procedure
+
+SYNOPSIS
+       CALL name ( [ argument ] [, ...] )
+
+DESCRIPTION
+       CALL executes a procedure.
+
+       If the procedure has any output parameters, then a result row will be returned, containing the values of those parameters.
+
+PARAMETERS
+       name
+           The name (optionally schema-qualified) of the procedure.
+
+       argument
+           An input argument for the procedure call. See Section 4.3 for the full details on function and procedure call syntax, including use
+           of named parameters.
+
+NOTES
+       The user must have EXECUTE privilege on the procedure in order to be allowed to invoke it.
+
+       To call a function (not a procedure), use SELECT instead.
+
+       If CALL is executed in a transaction block, then the called procedure cannot execute transaction control statements. Transaction
+       control statements are only allowed if CALL is executed in its own transaction.
+
+       PL/pgSQL handles output parameters in CALL commands differently; see Section 43.6.3.
+
+EXAMPLES
+           CALL do_db_maintenance();
+
+COMPATIBILITY
+       CALL conforms to the SQL standard.
+
+SEE ALSO
+       CREATE PROCEDURE (CREATE_PROCEDURE(7))
+
+PostgreSQL 11.22                                                     2023                                                              CALL(7)

@@ -1,0 +1,58 @@
+CREATE MATERIALIZED VIEW(7)                             PostgreSQL 11.22 Documentation                             CREATE MATERIALIZED VIEW(7)
+
+NAME
+       CREATE_MATERIALIZED_VIEW - define a new materialized view
+
+SYNOPSIS
+       CREATE MATERIALIZED VIEW [ IF NOT EXISTS ] table_name
+           [ (column_name [, ...] ) ]
+           [ WITH ( storage_parameter [= value] [, ... ] ) ]
+           [ TABLESPACE tablespace_name ]
+           AS query
+           [ WITH [ NO ] DATA ]
+
+DESCRIPTION
+       CREATE MATERIALIZED VIEW defines a materialized view of a query. The query is executed and used to populate the view at the time the
+       command is issued (unless WITH NO DATA is used) and may be refreshed later using REFRESH MATERIALIZED VIEW.
+
+       CREATE MATERIALIZED VIEW is similar to CREATE TABLE AS, except that it also remembers the query used to initialize the view, so that it
+       can be refreshed later upon demand. A materialized view has many of the same properties as a table, but there is no support for
+       temporary materialized views or automatic generation of OIDs.
+
+PARAMETERS
+       IF NOT EXISTS
+           Do not throw an error if a materialized view with the same name already exists. A notice is issued in this case. Note that there is
+           no guarantee that the existing materialized view is anything like the one that would have been created.
+
+       table_name
+           The name (optionally schema-qualified) of the materialized view to be created.
+
+       column_name
+           The name of a column in the new materialized view. If column names are not provided, they are taken from the output column names of
+           the query.
+
+       WITH ( storage_parameter [= value] [, ... ] )
+           This clause specifies optional storage parameters for the new materialized view; see Storage Parameters for more information. All
+           parameters supported for CREATE TABLE are also supported for CREATE MATERIALIZED VIEW with the exception of OIDS. See CREATE TABLE
+           (CREATE_TABLE(7)) for more information.
+
+       TABLESPACE tablespace_name
+           The tablespace_name is the name of the tablespace in which the new materialized view is to be created. If not specified,
+           default_tablespace is consulted.
+
+       query
+           A SELECT(7), TABLE, or VALUES(7) command. This query will run within a security-restricted operation; in particular, calls to
+           functions that themselves create temporary tables will fail.
+
+       WITH [ NO ] DATA
+           This clause specifies whether or not the materialized view should be populated at creation time. If not, the materialized view will
+           be flagged as unscannable and cannot be queried until REFRESH MATERIALIZED VIEW is used.
+
+COMPATIBILITY
+       CREATE MATERIALIZED VIEW is a PostgreSQL extension.
+
+SEE ALSO
+       ALTER MATERIALIZED VIEW (ALTER_MATERIALIZED_VIEW(7)), CREATE TABLE AS (CREATE_TABLE_AS(7)), CREATE VIEW (CREATE_VIEW(7)), DROP
+       MATERIALIZED VIEW (DROP_MATERIALIZED_VIEW(7)), REFRESH MATERIALIZED VIEW (REFRESH_MATERIALIZED_VIEW(7))
+
+PostgreSQL 11.22                                                     2023                                          CREATE MATERIALIZED VIEW(7)
