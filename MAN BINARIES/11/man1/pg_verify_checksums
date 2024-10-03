@@ -1,0 +1,39 @@
+PG_VERIFY_CHECKSUMS(1)                                  PostgreSQL 11.22 Documentation                                  PG_VERIFY_CHECKSUMS(1)
+
+NAME
+       pg_verify_checksums - verify data checksums in a PostgreSQL database cluster
+
+SYNOPSIS
+       pg_verify_checksums [option...] [[-D | --pgdata] datadir]
+
+DESCRIPTION
+       pg_verify_checksums verifies data checksums in a PostgreSQL cluster. The server must be shut down cleanly before running
+       pg_verify_checksums. The exit status is zero if there are no checksum errors, otherwise nonzero.
+
+OPTIONS
+       The following command-line options are available:
+
+       -D directory
+       --pgdata=directory
+           Specifies the directory where the database cluster is stored.
+
+       -v
+       --verbose
+           Enable verbose output. Lists all checked files.
+
+       -r relfilenode
+           Only validate checksums in the relation with specified relfilenode.
+
+       -V
+       --version
+           Print the pg_verify_checksums version and exit.
+
+       -?
+       --help
+           Show help about pg_verify_checksums command line arguments, and exit.
+
+ENVIRONMENT
+       PGDATA
+           Specifies the directory where the database cluster is stored; can be overridden using the -D option.
+
+PostgreSQL 11.22                                                     2023                                               PG_VERIFY_CHECKSUMS(1)
