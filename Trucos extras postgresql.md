@@ -665,6 +665,10 @@ select char_length('Hola Mundo'); ---> 10
 --- Elimina los espacios de la izq y derecha
 select trim('  hola   '); ---> hola
 
+--- eliminar caracter al principio
+select  TRIM(LEADING ',' FROM ',holaaaaaa');
+
+
 ----- concatenar/juntar columnas 
 SELECT CONCAT(animal, ' ', comida, ' ', color) AS columna_concatenada FROM (select 'PERRO' as animal,'LECHE' as  comida, 'ROJO' as color) as b;
 SELECT  animal ||  ' ' ||  comida ||  ' ' ||  color  AS columna_concatenada FROM (select 'PERRO' as animal,'LECHE' as  comida, 'ROJO' as color) as b;
