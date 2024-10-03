@@ -1,0 +1,15 @@
+POSTMASTER(1)                                           PostgreSQL 14.13 Documentation                                           POSTMASTER(1)
+
+NAME
+       postmaster - PostgreSQL database server
+
+SYNOPSIS
+       postmaster [option...]
+
+DESCRIPTION
+       postmaster is a deprecated alias of postgres.
+
+SEE ALSO
+       postgres(1)
+
+PostgreSQL 14.13                                                     2024                                                        POSTMASTER(1)
