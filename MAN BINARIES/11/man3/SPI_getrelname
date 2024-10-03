@@ -1,0 +1,20 @@
+SPI_GETRELNAME(3)                                       PostgreSQL 11.22 Documentation                                       SPI_GETRELNAME(3)
+
+NAME
+       SPI_getrelname - return the name of the specified relation
+
+SYNOPSIS
+       char * SPI_getrelname(Relation rel)
+
+DESCRIPTION
+       SPI_getrelname returns a copy of the name of the specified relation. (You can use pfree to release the copy of the name when you don't
+       need it anymore.)
+
+ARGUMENTS
+       Relation rel
+           input relation
+
+RETURN VALUE
+       The name of the specified relation.
+
+PostgreSQL 11.22                                                     2023                                                    SPI_GETRELNAME(3)

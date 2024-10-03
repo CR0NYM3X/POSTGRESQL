@@ -1,0 +1,18 @@
+SPI_FREETUPLE(3)                                        PostgreSQL 11.22 Documentation                                        SPI_FREETUPLE(3)
+
+NAME
+       SPI_freetuple - free a row allocated in the upper executor context
+
+SYNOPSIS
+       void SPI_freetuple(HeapTuple row)
+
+DESCRIPTION
+       SPI_freetuple frees a row previously allocated in the upper executor context.
+
+       This function is no longer different from plain heap_freetuple. It's kept just for backward compatibility of existing code.
+
+ARGUMENTS
+       HeapTuple row
+           row to free
+
+PostgreSQL 11.22                                                     2023                                                     SPI_FREETUPLE(3)

@@ -1,0 +1,13 @@
+SPI_START_TRANSACTION(3)                                PostgreSQL 11.22 Documentation                                SPI_START_TRANSACTION(3)
+
+NAME
+       SPI_start_transaction - obsolete function
+
+SYNOPSIS
+       void SPI_start_transaction(void)
+
+DESCRIPTION
+       SPI_start_transaction does nothing, and exists only for code compatibility with earlier PostgreSQL releases. It used to be required
+       after calling SPI_commit or SPI_rollback, but now those functions start a new transaction automatically.
+
+PostgreSQL 11.22                                                     2023                                             SPI_START_TRANSACTION(3)
