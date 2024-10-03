@@ -463,9 +463,11 @@ Los CONSTRAINTS (restricciones) son reglas que se aplican a las columnas de una 
            REFERENCES ordenes(orden_id),
        CONSTRAINT fk_producto
            FOREIGN KEY(producto_id) 
-           REFERENCES productos(producto_id)
+           REFERENCES productos(producto_id)  MATCH SIMPLE
+	        ON UPDATE NO ACTION
+	        ON DELETE NO ACTION
    );
-   
+   ---- ON UPDATE NO ACTION: si intentas actualizar el valor  PostgreSQL no permitirá la actualización si hay filas , se generará un error y la actualización no se realizará.   Estas restricciones aseguran la integridad referencial, evitando que se queden referencias “rotas” en la tabla que contiene la clave foránea.
 
 5. **CHECK**: Verifica que los valores en una columna cumplan con una condición específica.
    
