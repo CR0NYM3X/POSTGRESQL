@@ -1413,10 +1413,14 @@ postgres@postgres# select proname  from pg_proc where proname ilike '%pg_get_%' 
  
 
 2. **Apagado Inmediato**:
-   ```sh
+ 
    kill -QUIT <PID>
-   ```
+ 
 ```
  
-
  
+# cargar el módulo
+El comando LOAD 'passwordcheck'; en PostgreSQL se utiliza para cargar el módulo passwordcheck
+```sql
+LOAD 'passwordcheck';
+```
