@@ -618,3 +618,35 @@ WHERE
 
 
 
+
+
+
+# Alter con using 
+
+ 
+Para cambiar una columna de tipo `boolean` a `integer` en PostgreSQL, necesitas especificar cómo se deben convertir los valores booleanos a enteros. Esto se hace utilizando la cláusula `USING`. Aquí tienes cómo puedes hacerlo:
+
+```sql
+"ERROR:  column "status" cannot be cast automatically to type integer
+HINT:  You might need to specify "USING status::integer". 
+
+ALTER TABLE fdw_conf.cat_dbs
+ALTER COLUMN status TYPE integer
+USING status::integer;
+ 
+
+En este caso, `status::integer` convierte los valores `true` y `false` a `1` y `0`, respectivamente¹(https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-change-column-type/)²(https://barcelonageeks.com/postgresql-cambiar-tipo-de-columna/).
+
+Si prefieres especificar manualmente la conversión, puedes usar una expresión más detallada en la cláusula `USING`. Por ejemplo:
+
+ 
+ALTER TABLE fdw_conf.cat_dbs
+ALTER COLUMN status TYPE integer
+USING CASE
+    WHEN status = true THEN 1
+    WHEN status = false THEN 0
+    ELSE NULL
+END;
+ 
+ 
+```
