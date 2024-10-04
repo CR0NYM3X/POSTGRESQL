@@ -208,11 +208,22 @@ WHERE tabla1.columna_id = tabla2.columna_id
 
 ## Actualizar la información de una tabla, haciendo la union de dos tabla  :
  ```sql
-UPDATE tabla1
-SET columna1 = valor_nuevo
-FROM tabla2
-INNER JOIN tabla3 ON tabla1.columna_id = tabla2.columna_id
-WHERE alguna_condicion;
+
+UPDATE employees
+SET salary = salary * 1.1
+FROM departments
+WHERE employees.department_id = departments.id
+AND departments.name = 'Sales';
+
+
+UPDATE employees
+SET salary = salary * 1.1
+FROM employees e
+JOIN departments d ON e.department_id = d.id
+WHERE d.name = 'Sales'
+AND employees.id = e.id;
+
+Se utiliza un JOIN explícito entre employees y departments en la condición ON e.department_id = d.id
 ```
 
 
