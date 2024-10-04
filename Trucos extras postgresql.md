@@ -620,6 +620,7 @@ SELECT regexp_matches('Learning #PostgreSQL #REGEXP_MATCHES', '#([A-Za-z0-9_]+)'
 --- solo devuelve la primera coincidencia encontrada
 SELECT regexp_match('Learning #PostgreSQL #REGEXP_MATCHES', '#([A-Za-z0-9_]+)'); --- {PostgreSQL}
 
+select array_to_string(regexp_match(replace(' asdasd asda asd czx10.59.64.255cas wasd as ',' ',''), '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'),',') as ip_original
 
 ###  Prefijos en texto 
 --- Los escapes como la E  permiten incluir caracteres especiales en las cadenas de texto: 
