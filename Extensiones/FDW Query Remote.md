@@ -476,11 +476,8 @@ vim /etc/freetds.conf
 	INTO PUBLIC /* Esquema de postgresql */
 	OPTIONS (import_default 'true');
 	 
-
-	ALTER SERVER nombre_del_servidor OPTIONS (SET port 'new_port');
-	ALTER SERVER nombre_del_servidor OPTIONS (SET user 'new_user');
-	ALTER SERVER nombre_del_servidor OPTIONS (SET password 'new_password');
-	ALTER SERVER nombre_del_servidor OPTIONS (ADD host 'new_host', ADD dbname 'new_dbname');
+	--- Opciones:  servername, language, character_set, port, database, dbuse, sqlserver_ansi_mode, tds_version, msg_handler, row_estimate_method, use_remote_estimate, fdw_startup_cost, fdw_tuple_cost
+	ALTER SERVER nombre_del_servidor OPTIONS (SET port '555');
 
 
 	ALTER SERVER nombre_del_servidor OPTIONS (ADD msg_handler 'notice');
