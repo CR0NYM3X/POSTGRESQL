@@ -199,10 +199,12 @@ select * from (select
 ```
 
 ### CAMBIAR LA CONTRASEÑA EN CASO DE ASI REQUERIRLO 
-```sql 
+```sql
+select * from pg_user_mapping where umserver in(select oid from  pg_foreign_server where srvname = 'test_server');
+
  --- DOS FORMAS DE CAMBIAR LA PASSWORD 
- UPDATE pg_user_mapping SET umoptions= '{username=USER_TEXT,password=Mi_contra_123}'::text[]  where oid=336735;
- UPDATE pg_user_mapping SET umoptions= array['username=USER_TEXT','password=Mi_contra_123']  where oid=336735;
+ UPDATE pg_user_mapping SET umoptions= '{username=USER_TEXT,password=Mi_contra_123}'::text[]  where umserver in(select oid from  pg_foreign_server where srvname = 'test_server');
+ UPDATE pg_user_mapping SET umoptions= array['username=USER_TEXT','password=Mi_contra_123']  where umserver in(select oid from  pg_foreign_server where srvname = 'test_server');
 ```
 
 ### Paso 5 - Creamos el usuario local 
