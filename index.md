@@ -7,7 +7,7 @@ Un índice es una estructura de datos que almacena una referencia a los datos en
 
 ### Impacto de los Índices en `INSERT`
 
-1. **Rendimiento de `INSERT`**: Cada vez que insertas una nueva fila en una tabla con índices, PostgreSQL también debe actualizar esos índices. Esto significa que cuantos más índices tenga una tabla, más tiempo tomará cada operación de inserción³⁴.
+1. **Rendimiento de `INSERT`, `UPDATE` y `DELETE`**: Cada vez que insertas una nueva fila en una tabla con índices, PostgreSQL también debe actualizar esos índices. Esto significa que cuantos más índices tenga una tabla, más tiempo tomará cada operación de inserción³⁴.
 2. **Espacio en Disco**: Los índices ocupan espacio adicional en disco. Si tienes muchos índices, el tamaño total de la base de datos puede aumentar significativamente².
 3. **Balance**: Es importante encontrar un equilibrio entre tener suficientes índices para mejorar el rendimiento de las consultas `SELECT` y no tener tantos que ralenticen las operaciones de inserción y actualización³.
 
