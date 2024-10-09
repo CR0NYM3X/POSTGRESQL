@@ -36,6 +36,18 @@ COMMIT;
  
 ```
 
+# En el contexto del versionado  
+```
+1. **Versión mayor (Major)**: El primer número (X) indica cambios importantes que pueden no ser compatibles con versiones anteriores. Ejemplo: 1.0.0, 2.0.0.
+
+2. **Versión menor (Minor)**: El segundo número (Y) indica la adición de nuevas funcionalidades que son compatibles con versiones anteriores. Ejemplo: 1.1.0, 1.2.0.
+
+3. **Revisión o parche (Patch)**: El tercer número (Z) indica correcciones de errores y mejoras menores que no afectan la compatibilidad. Ejemplo: 1.1.1,  
+
+En tu ejemplo de versión '10.20', el '10' sería la versión mayor y el '20' sería la versión menor. Si hubiera un tercer número, como en '10.20.1', ese sería el parche.
+ ```
+
+
 ### Configuraciones de parametros en objetos 
 ```
 ALTER DATABASE test_query SET maintenance_work_mem = '256MB';
