@@ -252,6 +252,11 @@ rendimiento general de la base de datos.
 - **cube:** Introduce un tipo de datos multidimensional que facilita el manejo y análisis de datos en múltiples dimensiones.
 
 
+### Extensiones y Herramientas
+- **pg_prewarm**: Esta extensión permite precargar tablas o índices en el buffer cache, lo que puede mejorar el rendimiento al reducir la necesidad de lecturas desde el disco³(https://www.youtube.com/watch?v=prbF4O0d-7M).
+- **pg_buffercache**: Permite monitorear el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia³(https://www.youtube.com/watch?v=prbF4O0d-7M).
+
+
 ### **9. Otros:**
 - **dblink:** Ejecuta consultas en bases de datos remotas desde PostgreSQL.
 -**tds_fdw ** Conecta y consulta otras bases SQL server de manera remota.
