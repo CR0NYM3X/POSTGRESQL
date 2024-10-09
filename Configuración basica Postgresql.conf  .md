@@ -694,6 +694,25 @@ shared_preload_libraries = 'pg_stat_statements'		# (change requires restart)
  # LOCK MANAGEMENT
 ```
 #deadlock_timeout = 1s
+
+max_locks_per_transaction = 128  # controla el número promedio de bloqueos de objetos (como tablas) que se pueden asignar por cada transacción
+
+Ventajas:
+	Mayor capacidad de bloqueos: Permite manejar transacciones más complejas que requieren múltiples bloqueos simultáneamente2
+	Mejor rendimiento en cargas de trabajo intensivas: En entornos con muchas transacciones concurrentes, aumentar este valor puede mejorar el rendimiento al reducir la contención de bloqueos3
+
+Desventajas:
+	Uso de memoria: Aumentar este valor también incrementa el uso de memoria compartida, lo que puede llevar a problemas de memoria si no se configura adecuadamente4
+	Riesgo de fragmentación: Un valor demasiado alto puede llevar a una fragmentación de la tabla de bloqueos, afectando el rendimiento5
+
+
+Escenarios reales:
+	Entorno de alta concurrencia: En un sistema con muchas transacciones concurrentes, como un sistema de reservas de vuelos, aumentar max_locks_per_transaction puede ayudar a manejar mejor la carga.
+	Transacciones complejas: En aplicaciones que realizan transacciones complejas que involucran múltiples tablas y operaciones, un valor más alto puede prevenir errores de bloqueo.
+	Crecimiento del sistema: A medida que tu base de datos crece y la cantidad de transacciones aumenta, puede ser necesario ajustar este valor para mantener el rendimiento.
+
+
+
 ```
 
 # extras conf
