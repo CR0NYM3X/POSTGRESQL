@@ -6,6 +6,29 @@
 ********** CUANDO SALE EL ERROR **********
 Al intentar iniciar el servicio postgres con el comando "pg_Ctl start -D /sysd/data -o -i" salia el error "not create shared memory"
 
+El error que estás viendo en PostgreSQL se debe a que la solicitud de un segmento de memoria compartida excede el parámetro SHMMAX del kernel de tu sistema operativo. 
+
+### Causa del Error
+El mensaje de error indica que PostgreSQL no pudo crear un segmento de memoria compartida porque la solicitud excedió el límite configurado en el parámetro SHMMAX del kernel. Este parámetro define el tamaño máximo de un segmento de memoria compartida que el sistema operativo permite.
+
+### Solución
+Tienes dos opciones principales para resolver este problema:
+
+1. **Reducir el tamaño de la solicitud de memoria compartida**:
+   - **shared_buffers**: Este parámetro controla la cantidad de memoria que PostgreSQL utiliza para el almacenamiento en caché de datos. Reducir este valor disminuirá la cantidad de memoria compartida que PostgreSQL solicita.
+   - **max_connections**: Este parámetro define el número máximo de conexiones simultáneas que PostgreSQL permite. Reducir este valor también puede ayudar a disminuir la solicitud de memoria compartida.
+
+2. **Aumentar el valor de SHMMAX en el kernel**:
+   - Para aumentar el valor de SHMMAX, necesitas modificar la configuración del kernel. Esto generalmente se hace editando el archivo `/etc/sysctl.conf` y añadiendo o modificando la línea:
+     kernel.shmmax = <nuevo_valor>
+
+   - Después de hacer este cambio, aplica la nueva configuración ejecutando:
+     sudo sysctl -p
+
+### Objetivo del Parámetro SHMMAX
+El parámetro SHMMAX está diseñado para limitar el tamaño de los segmentos de memoria compartida que pueden ser creados por cualquier proceso en el sistema. Esto ayuda a prevenir que un solo proceso consuma toda la memoria compartida disponible, lo cual podría afectar negativamente a otros procesos en el sistema 
+ 
+
 ********** ERROR ***************
 <2024-01-02 11:41:35 CST    6547 65944acf.1993 >FATAL:  could not create shared memory segment: Invalid argument
 <2024-01-02 11:41:35 CST    6547 65944acf.1993 >DETAIL:  Failed system call was shmget(key=5432001, size=4412637184, 03600).
