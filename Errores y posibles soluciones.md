@@ -122,6 +122,37 @@ select * from mytabla_test where nom_rol !~ '^[[:ascii:]]*$' ;
 #3.- Encontrar las filas que presentan el detalle para al final modifcarlas con un update
 SELECT * FROM tu_tabla WHERE convert_from(convert_to(tu_columna, 'UTF8'), 'UTF8') IS NULL;
 
+
+
+4).- Detectar el id que genera el error
+
+DO $$
+DECLARE
+    rec RECORD;
+    row_number INTEGER := 0;
+    error_lines TEXT := '';
+BEGIN
+    FOR rec IN SELECT * FROM psql.tables_columns LOOP
+        row_number := row_number + 1;
+        BEGIN
+            -- Aquí puedes poner la lógica que podría causar un error
+            -- Por ejemplo, una conversión de codificación
+            PERFORM pg_catalog.convert_from(rec.column_name::bytea, 'UTF8');
+        EXCEPTION
+            WHEN OTHERS THEN
+				RAISE NOTICE 'Error en el ID : %  |  fila % | ErrorMSG  --> %',   rec.id , row_number ,  SQLERRM;
+                error_lines := error_lines || 'Error en la fila ' || row_number || E'\n';
+        END;
+    END LOOP;
+
+    IF error_lines = '' THEN
+        RAISE NOTICE E'\n\nNo se encontraron errores';
+    ELSE
+        RAISE NOTICE E'\n\nErrores encontrados:%', error_lines;
+    END IF;
+END $$;
+
+
 ```
 
 # Errores en el  archivo s.pgsql.5432.lock
