@@ -152,7 +152,7 @@ BEGIN
     END IF;
 END $$;
 
-
+--- >  update psql.tables_columns set column_name = 'des_flag' where id = 8816307; 
 ```
 
 # Errores en el  archivo s.pgsql.5432.lock
