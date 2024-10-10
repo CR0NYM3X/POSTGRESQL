@@ -6,6 +6,26 @@
    - **Shared Buffers:** PostgreSQL tiene su propia memoria de caché interna llamada "shared buffers". Cuando ejecutas una consulta, PostgreSQL almacena en esta caché las páginas de datos y los índices que ha utilizado. En las ejecuciones posteriores de la consulta, si los datos ya están en `shared buffers`, se pueden acceder directamente desde la memoria, sin necesidad de realizar costosas operaciones de lectura de disco.
    - **Cache de planificación:** PostgreSQL también puede almacenar en caché ciertos planes de ejecución para consultas preparadas o consultas parametrizadas. Si una consulta idéntica se ejecuta nuevamente, PostgreSQL puede reutilizar el plan de ejecución almacenado en caché, evitando la necesidad de recompilarlo, lo cual ahorra tiempo.
 
+```SQL
+### Usos de la Memoria Compartida en PostgreSQL
+
+1. **Buffers Compartidos (shared_buffers)**:
+   - **Objetivo**: Almacenar en caché los datos más frecuentemente accedidos para reducir el número de lecturas y escrituras en disco.
+   - **Beneficio**: Mejora el rendimiento al disminuir la latencia de acceso a los datos.
+
+2. **Memoria para Locks (lock tables)**:
+   - **Objetivo**: Gestionar los bloqueos de las tablas y filas para asegurar la consistencia y la integridad de los datos durante las transacciones concurrentes.
+   - **Beneficio**: Permite que múltiples transacciones se ejecuten de manera segura sin interferencias.
+
+3. **Estructuras de Control de Procesos (process control structures)**:
+   - **Objetivo**: Mantener información sobre los procesos y las conexiones activas.
+   - **Beneficio**: Facilita la coordinación y la comunicación entre los diferentes procesos del servidor PostgreSQL.
+
+4. **Memoria para el Sistema de Registro de Transacciones (WAL buffers)**:
+   - **Objetivo**: Almacenar temporalmente los registros de transacciones antes de escribirlos en el disco.
+   - **Beneficio**: Aumenta la eficiencia de las operaciones de escritura y mejora la recuperación en caso de fallos.
+ ```
+
 ### 3. **Warmup de Índices**
    - **Acceso a índices:** La primera vez que se consulta una tabla, PostgreSQL puede necesitar cargar los índices correspondientes en memoria para utilizarlos en la consulta. Una vez que los índices están cargados en la caché, las futuras consultas que requieran esos índices se beneficiarán del acceso más rápido.
 
