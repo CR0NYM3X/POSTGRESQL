@@ -393,12 +393,14 @@ SELECT * FROM postgres_fdw_get_connections() ORDER BY 1;
 
 
 ----- puedes ver los servidores , ips , puerto, db , usermapping, user_remote,
-select a.srvname , servername , port ,  database, usename , replace(replace(umoptions[1], 'username=',''), 'user=','') as user, replace(umoptions[2], 'password=','') as password
-from (select  oid,
-		srvname
-		,replace(replace(srvoptions[1], 'servername=',''), 'host=','') as servername 
-		,replace(srvoptions[2], 'port=','') as port 
-		,replace(replace(srvoptions[3], 'database=',''), 'dbname=','') as database  
+
+select a.srvname , host , port ,  database, usename ,regexp_replace(regexp_replace(umoptions::text,  '.*username=([^,}]+).*', '\1' )  ,  '.*user=([^,}]+).*', '\1' ) as user , regexp_replace(umoptions::text,    '.*password=([^,}]+).*', '\1') as password 
+from ( 	 select  
+		oid
+		,srvname
+		,regexp_replace(regexp_replace(srvoptions::text, '.*host=([^,]+),.*', '\1')  , '.*servername=([^,]+),.*', '\1') as host 
+		,regexp_replace(srvoptions::text,    '.*port=([^,}]+).*', '\1') as port 
+		,regexp_replace(regexp_replace(srvoptions::text,  '.*database=([^,}]+).*', '\1' )  ,  '.*dbname=([^,}]+).*', '\1' ) as database 
 	FROM pg_foreign_server ) as a
 	left join pg_user_mapping as b on  b.umserver = a.oid 
 	left join pg_user as c on c.usesysid= b.umuser;
