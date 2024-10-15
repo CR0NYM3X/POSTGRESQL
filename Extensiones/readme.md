@@ -21,6 +21,18 @@ Grafana
 
 ### Herramientas de Seguridad para PostgreSQL
 
+
+**adminpack :**
+proporciona una serie de funciones de soporte que herramientas de administración y gestión, como pgAdmin, pueden utilizar para ofrecer funcionalidades adicionales1
+. Algunas de las funcionalidades incluyen la gestión remota de archivos de registro del servidor,  Debes usarlo cuando necesitas acceso remoto a ciertos archivos del sistema operativo desde tu base de datos, sin necesidad de acceso SSH
+
+Gestión de Archivos de Registro:
+	pg_file_write: Escribir contenido en un archivo.
+	pg_file_rename: Renombrar archivos.
+	pg_file_unlink: Eliminar archivos.
+ 
+
+
 Prometheus es una herramienta de monitoreo y alerta de código abierto que se utiliza ampliamente para recopilar y analizar métricas de sistemas y aplicaciones. Para monitorear PostgreSQL con Prometheus, se utiliza un componente llamado Postgres Exporter.
 
 2. **PostgreSQL TDE (Transparent Data Encryption)**:
