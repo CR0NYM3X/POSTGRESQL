@@ -1420,6 +1420,18 @@ ORDER BY
 
 ```
 
+# amcheck 
+La extensión amcheck en PostgreSQL es una herramienta poderosa para verificar la integridad de las estructuras de índice en tu base de datos. Esencialmente, está diseñada para detectar corrupción en las páginas de índice, lo cual es crucial para mantener la integridad de tus datos.
+
+```
+-- Verificar un índice B-Tree para problemas estructurales
+SELECT bt_index_check('mi_indice');
+
+-- Verificar un índice B-Tree y sus relaciones padre-hijo
+SELECT bt_index_parent_check('mi_indice');
+
+```
+
 ### Renombrar index
 	ALTER INDEX fdw_conf.fdw_confunique_ctl_dbms RENAME TO idx_unique_ctl_dbms;
 
@@ -1427,3 +1439,5 @@ ORDER BY
 https://dbasinapuros.com/tipos-de-indices-en-postgresql/
 
 https://dbalifeeasy.com/2020/10/04/how-to-identify-fragmentation-in-postgresql-rds/ 
+
+
