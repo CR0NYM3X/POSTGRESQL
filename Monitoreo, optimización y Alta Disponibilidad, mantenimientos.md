@@ -457,6 +457,10 @@ REINDEX TABLE table_name;
 REINDEX DATABASE database_name;
 ```
 
+**REINDEX un index **
+``` sh
+REINDEX INDEX public.idx_psql_tables_columns_4;
+```
 
 ## Vacum [documentación Oficial](https://www.postgresql.org/docs/current/sql-vacuum.html)
 
