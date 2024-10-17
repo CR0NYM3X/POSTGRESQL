@@ -1441,3 +1441,159 @@ https://dbasinapuros.com/tipos-de-indices-en-postgresql/
 https://dbalifeeasy.com/2020/10/04/how-to-identify-fragmentation-in-postgresql-rds/ 
 
 
+
+
+
+# Problemas
+
+
+## 1  Tengo una tabla que tiene millones de registros y cuando realizo una consulta con filtro no usa el index 
+
+```SQL
+postgres@auditoria#  select name,setting from pg_settings where name in('server_version','enable_seqscan','random_page_cost','seq_page_cost','cpu_tuple_cost','cpu_index_tuple_cost','effective_cache_size','work_mem','default_statistics_target','max_parallel_workers_per_gather');
++---------------------------------+---------+
+|              name               | setting |
++---------------------------------+---------+
+| cpu_index_tuple_cost            | 0.005   |
+| cpu_tuple_cost                  | 0.01    |
+| default_statistics_target       | 1000    |
+| effective_cache_size            | 1048576 |
+| enable_seqscan                  | on      |
+| max_parallel_workers_per_gather | 8       |
+| random_page_cost                | 4       |
+| seq_page_cost                   | 1       |
+| server_version                  | 16.4    |
+| work_mem                        | 262144  |
++---------------------------------+---------+
+(10 rows)
+
+
+postgres@postgres# SELECT count(*) FROM psql.tables_columns WHERE id_exec = 75;
++----------+
+|  count   |
++----------+
+| 11746156 |
++----------+
+(1 row)
+
+  
+postgres@auditoria# EXPLAIN (ANALYZE) SELECT * FROM psql.tables_columns WHERE id_exec = 75;
++--------------------------------------------------------------------------------------------------------------------------------+
+|                                                           QUERY PLAN                                                           |
++--------------------------------------------------------------------------------------------------------------------------------+
+| Seq Scan on tables_columns  (cost=0.00..409646.25 rows=11746420 width=175) (actual time=0.021..2346.802 rows=11746156 loops=1) |
+|   Filter: (id_exec = 75)                                                                                                       |
+|   Rows Removed by Filter: 264                                                                                                  |
+| Planning Time: 0.097 ms                                                                                                        |
+| Execution Time: 2752.621 ms                                                                                                    |
++--------------------------------------------------------------------------------------------------------------------------------+
+(5 rows)
+
+Time: 2753.226 ms (00:02.753)
+
+ 
+
+
+postgres@auditoria# set enable_seqscan = off;
+SET
+Time: 0.724 ms
+postgres@auditoria#   explain analyze  select * from psql.tables_columns   where  id_exec = 75;
++-------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                            QUERY PLAN
++-------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+| Index Scan using idx_psql_tables_columns_10 on tables_columns  (cost=0.43..508137.79 rows=11746420 width=175) (actual time=0.024..2102.699 rows=
+11746156 loops=1) |
+|   Index Cond: (id_exec = 75)
+                  |
+| Planning Time: 0.116 ms
+                  |
+| Execution Time: 2521.252 ms
+                  |
++-------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+(4 rows)
+
+Time: 2522.325 ms (00:02.522)
+
+
+
+
+
+
+####### Parametros que quiero ajustar pero no funciona 
+
+SET seq_page_cost = 1.0;
+SET random_page_cost = 1.0
+SET cpu_tuple_cost = 0.01;
+SET cpu_index_tuple_cost = 0.005;
+SET effective_cache_size = '4GB';
+SET work_mem = '256MB';
+SET default_statistics_target = 1000;
+SET max_parallel_workers_per_gather = 4;
+
+
+
+
+-- index y sus  validar tamaños 
+postgres@auditoria#  select pg_size_pretty(pg_relation_size(schemaname || '.' || indexname )),* from pg_indexes where tablename = 'tables_columns' and schemaname = 'psql' order by   pg_relation_size(schemaname || '.' || indexname ) desc;
+
++-[ RECORD 1 ]---+--------------------------------------------------------------------------------------------------------------------------------
+-----------------+
+| pg_size_pretty | 1156 MB
+                 |
+| schemaname     | psql
+                 |
+| tablename      | tables_columns
+                 |
+| indexname      | idx_psql_tables_columns_3
+                 |
+| tablespace     | NULL
+                 |
+| indexdef       | CREATE INDEX idx_psql_tables_columns_3 ON psql.tables_columns USING btree (id_exec, ip_server, port, db, table_name, column_nam
+e)               |
++-[ RECORD 2 ]---+--------------------------------------------------------------------------------------------------------------------------------
+-----------------+
+| pg_size_pretty | 1156 MB
+                 |
+| schemaname     | psql
+                 |
+| tablename      | tables_columns
+                 |
+| indexname      | idx_psql_tables_columns_4
+                 |
+| tablespace     | NULL
+                 |
+| indexdef       | CREATE INDEX idx_psql_tables_columns_4 ON psql.tables_columns USING btree (((date_insert)::date), ip_server, port, db, table_na
+me, column_name) |
++-[ RECORD 3 ]---+--------------------------------------------------------------------------------------------------------------------------------
+-----------------+
+| pg_size_pretty | 252 MB
+                 |
+| schemaname     | psql
+                 |
+| tablename      | tables_columns
+                 |
+| indexname      | table_columns_pkey
+                 |
+| tablespace     | NULL
+                 |
+| indexdef       | CREATE UNIQUE INDEX table_columns_pkey ON psql.tables_columns USING btree (id)
+                 |
++-[ RECORD 4 ]---+--------------------------------------------------------------------------------------------------------------------------------
+-----------------+
+| pg_size_pretty | 78 MB
+                 |
+| schemaname     | psql
+                 |
+| tablename      | tables_columns
+                 |
+| indexname      | idx_psql_tables_columns_10
+                 |
+| tablespace     | NULL
+                 |
+| indexdef       | CREATE INDEX idx_psql_tables_columns_10 ON psql.tables_columns USING btree (id_exec)
+                 |
++----------------+----
+
+```
