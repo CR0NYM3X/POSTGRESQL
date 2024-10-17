@@ -445,7 +445,7 @@ vim /etc/freetds.conf
 ```
 
 ```sql 
-
+ tsql -S MYSERVER
 	CREATE EXTENSION IF NOT EXISTS tds_fdw;
 
 	 
