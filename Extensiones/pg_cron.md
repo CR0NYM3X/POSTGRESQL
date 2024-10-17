@@ -17,7 +17,7 @@ select * from pg_available_extensions where name ilike '%cron%';
 shared_preload_libraries = 'pg_cron,pg_stat_statements'
 cron.database_name = 'postgres'
 cron.host = '/tmp' # Connect via a unix domain socket:
-cron.timezone = 'GMT' -# Este es un estandar asi que debes de saber que hora es en el estandar 
+cron.timezone = 'MST' -# Este es un estandar asi que debes de saber que hora es en el estandar 
 
 
 ----- Crear la Extension
