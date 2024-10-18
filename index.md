@@ -21,6 +21,22 @@ Un índice es una estructura de datos que almacena una referencia a los datos en
  
 # Tipos de índices en PostgreSQL:
 ```SQL
+
+SELECT clm1, clm2, clm3
+FROM tb1
+WHERE col4 = 'comida'
+AND col5 != 'rojo'
+ORDER BY clm3;
+
+CREATE INDEX idx_tb1_col4_col5_clm3
+ON tb1 (col4, col5)
+INCLUDE (clm1, clm2, clm3);
+
+		 
+col4 y col5 son las claves del índice (columnas principales para la búsqueda).
+clm1, clm2 y clm3 están en INCLUDE, para que el índice pueda cubrir la consulta completamente sin necesidad de ir a la tabla base.
+Ventaja: Mejora el rendimiento al evitar el acceso a la tabla principal, ya que todos los datos necesarios están en el índice.
+
 ## Índice B-Tree
 
 ### Descripción
