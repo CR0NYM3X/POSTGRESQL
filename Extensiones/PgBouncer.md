@@ -54,8 +54,13 @@ pool_mode = transaction
 
 pgbouncer -d -T /path/to/pgbouncer.ini
 
+
  
- 
+ ```
+
+#  pg_hba.conf
+ ```
+ host    all             all                     127.0.0.1/32                    trust
  ```
 
 #  sudo -l
