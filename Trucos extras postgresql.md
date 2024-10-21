@@ -1054,6 +1054,50 @@ Time: 18101.188 ms (00:18.101)
 
 ```sql
 
+enable_nestloop  :  Nest loops (bucles anidados) son útiles cuando una de las tablas es pequeña o cuando hay un buen índice en la tabla más grande
+enable_hashjoin : Los hash joins son eficientes para grandes conjuntos de datos cuando las columnas de unión no están indexadas.
+enable_mergejoin : Los merge joins son útiles cuando ambas tablas están ordenadas o tienen índices en las columnas de unión
+join_collapse_limit  : Controla el límite hasta el cual PostgreSQL optimizará el orden de las uniones en una consulta compleja.
+hash_mem_multiplier  :  Controla cuánta memoria adicional puede usar PostgreSQL para hash joins, optimizando el rendimiento cuando se necesita más memoria. 
+
+
+
+ explain analyze select b.dbms,b.ip_server,pais, is_scanned,connection_telnet,connection_sql,comentario,servicio,area_de_negocio from cat_server as b
+left join  fdw_conf.details_connection as a  on a.ip_server = b.ip_server and date_insert::date =  current_date 
+where b.dbms = 'MSSQL' and is_scanned = 1  order by connection_sql desc,pais desc; 
++-------------------------------------------------------------------------------------------------------------------------------------------------
+| Sort  (cost=24.96..25.02 rows=23 width=121) (actual time=6.513..6.519 rows=102 loops=1)
+                  |
+|   Sort Key: a.connection_sql DESC, b.pais DESC
+                  |
+|   Sort Method: quicksort  Memory: 34kB
+                  |
+|   ->  Nested Loop Left Join  (cost=0.57..24.44 rows=23 width=121) (actual time=0.432..6.434 rows=102 loops=1)
+                  |
+|         Join Filter: ((a.ip_server)::text = (b.ip_server)::text)
+                  |
+|         Rows Removed by Join Filter: 40086
+                  |
+|         ->  Index Scan using idx_cat_server1 on cat_server b  (cost=0.28..15.79 rows=23 width=113) (actual time=0.013..0.103 rows=102 loops=1)
+                  |
+|               Index Cond: ((dbms)::text = 'MSSQL'::text)
+                  |
+|               Filter: (is_scanned = 1)
+                  |
+|               Rows Removed by Filter: 28
+                  |
+|         ->  Materialize  (cost=0.29..8.31 rows=1 width=21) (actual time=0.000..0.024 rows=394 loops=102)
+                  |
+|               ->  Index Scan using idx_details_connection8 on details_connection a  (cost=0.29..8.31 rows=1 width=21) (actual time=0.012..0.489
+rows=394 loops=1) |
+|                     Index Cond: ((date_insert)::date = CURRENT_DATE)
+                  |
+| Planning Time: 1.384 ms
+| Execution Time: 6.555 ms
++-------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+
+
 ### Tablas de Ejemplo
 
 Vamos a crear dos tablas: `clientes` y `pedidos`.
