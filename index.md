@@ -1535,8 +1535,6 @@ Time: 2522.325 ms (00:02.522)
 
 
 
-
-
 ####### Parametros que quiero ajustar pero no funciona 
 
 SET seq_page_cost = 1.0;
@@ -1548,6 +1546,10 @@ SET work_mem = '256MB';
 SET default_statistics_target = 1000;
 SET max_parallel_workers_per_gather = 4;
 
+
+
+ALTER TABLE foo_history ALTER foo_id SET STATISTICS 1000;
+default_statistics_target = 100    # range 1-10000
 
 
 
