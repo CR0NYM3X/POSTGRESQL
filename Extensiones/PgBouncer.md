@@ -1,66 +1,57 @@
 
-
+https://docs.vmware.com/en/VMware-Greenplum/7/greenplum-database/admin_guide-access_db-topics-pgbouncer.html
+https://docs.vmware.com/en/VMware-Greenplum/7/greenplum-database/utility_guide-ref-pgbouncer-ini.html
+https://www.cybertec-postgresql.com/en/pgbouncer-authentication-made-easy/
+https://www.percona.com/blog/configuring-pgbouncer-for-multi-port-access/
 
 https://dev.to/dm8ry/using-pgbouncer-to-improve-performance-and-reduce-the-load-on-postgresql-47k8
-
-
 https://www.pgbouncer.org/config.html#generic-settings
-
-
 https://www.pgbouncer.org/
-
-
-
 https://access.crunchydata.com/documentation/pgbouncer/latest/pdf/pgbouncer.pdf
 https://get.enterprisedb.com/docs/Tutorial_All_PPSS_pgBouncer.pdf
+https://devcenter.heroku.com/articles/best-practices-pgbouncer-configuration
+
+
+
+
+# Restart , start 
+ ```
+/usr/bin/pgbouncer -v   -d /etc/pgbouncer/pgbouncer.ini ## iniciar el servicio en segundo plano
+/usr/bin/pgbouncer -v  -R -d /etc/pgbouncer/pgbouncer.ini ## hacer reload
+/usr/bin/pgbouncer -u angel  /etc/pgbouncer/pgbouncer.ini ## ver si esta un usuario
 
 
 tail -f /var/log/pgbouncer/pgbouncer.log
 /usr/bin/pgbouncer -q /etc/pgbouncer/pgbouncer.ini
 
+ ```
 
- ```sql
-;; [databases]: Define las bases de datos que PgBouncer gestionará. Proporcionas la información de conexión aquí.
-[databases]
-mydatabase = host=localhost port=5432 dbname=mydatabase user=myuser password=mypassword
+# Version
+ ```
+[postgres@server_test pgbouncer]$ /usr/bin/pgbouncer  -V
+PgBouncer 1.23.1
+libevent 2.1.8-stable
+adns: c-ares 1.13.0
+tls: OpenSSL 1.1.1k  FIPS 25 Mar 2021
+systemd: yes
+ ```
+ 
 
-[pgbouncer]
-;;logfile: Ruta al archivo donde se guardarán los registros de PgBouncer.
-logfile = /var/log/pgbouncer.log
-
-;;pidfile: Ruta al archivo donde se guardará el PID del proceso de PgBouncer.
-pidfile = /var/run/pgbouncer.pid
-
-;;listen_addr: Dirección en la que PgBouncer escuchará las conexiones entrantes. * significa todas las interfaces
-listen_addr = *
-
-;;listen_port: Puerto en el que PgBouncer escuchará las conexiones entrantes.
-listen_port = 6432
-
-;;max_client_conn: Número máximo de conexiones de cliente que PgBouncer permitirá.
-max_client_conn = 100
-
-;;default_pool_size: Número de conexiones de servidor que mantendrá en el grupo de conexiones por defecto.
-default_pool_size = 20
-
-;;min_pool_size: Número mínimo de conexiones de servidor que PgBouncer intentará mantener disponibles.
-min_pool_size = 2
-
-server_reset_query: Consulta SQL que se ejecutará para restablecer las conexiones del servidor antes de devolverlas al grupo.
-server_reset_query = 'DISCARD ALL'
-
-pool_mode = transaction
-
-
-pgbouncer -d -T /path/to/pgbouncer.ini
 
 
  
- ```
+ 
 
 #  pg_hba.conf
  ```
  host    all             all                     127.0.0.1/32                    trust
+
+
+
+chmod 777 /tmp/data16-cyberark/pg_hba.conf
+sudo chown pgbouncer:pgbouncer /tmp/data16-cyberark/pg_hba.conf
+
+
  ```
 
 #  sudo -l
@@ -95,11 +86,25 @@ Environment=BOUNCERCONF=/etc/pgbouncer/pgbouncer.ini
 ExecStart=/usr/bin/pgbouncer -q ${BOUNCERCONF}
 ExecReload=/usr/bin/pgbouncer -R -q ${BOUNCERCONF}
 
+
+
 # Give a reasonable amount of time for the server to start up/shut down
 TimeoutSec=300
 
 [Install]
 WantedBy=multi-user.target
+ ```
+
+# funcion 
+ ```
+\c postgres
+
+CREATE FUNCTION public.lookup (
+   INOUT p_user     name,
+   OUT   p_password text
+) RETURNS record
+   LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog AS
+$$SELECT usename, passwd FROM pg_shadow WHERE usename = p_user$$;
  ```
 
 # pgbouncer --help 
@@ -125,7 +130,11 @@ PgBouncer home page: <https://www.pgbouncer.org/>
 
 
 
-
+# userlist.txt 
+ ```
+"angel" "md5edd007a589341ce2ecc0de654a7abe97"
+ 
+ ```
 
 
 # archivo pgbouncer.ini
@@ -479,6 +488,55 @@ idle_transaction_timeout = 1200
 
 ;; Read additional config from other file
 ;%include /etc/pgbouncer/pgbouncer-other.ini
+
+
+ ```
+
+
+
+# Extras 
+
+ ```
+
+-------------------------- pool_mode = transaction --------------------------
+session
+Qué es: Mantiene la conexión durante toda la sesión del cliente.
+
+Cuándo usarlo: Ideal cuando necesitas una conexión persistente, como en aplicaciones que mantienen el estado de la sesión.
+
+Cuándo no usarlo: No es eficiente si tienes muchas conexiones cortas, ya que mantiene las conexiones abiertas, consumiendo recursos.
+
+transaction
+Qué es: Mantiene la conexión solo durante una transacción.
+
+Cuándo usarlo: Útil para aplicaciones con muchas transacciones cortas. Libera conexiones rápidamente, optimizando recursos.
+
+Cuándo no usarlo: Evita usarlo si necesitas mantener el estado más allá de una transacción.
+
+statement
+Qué es: Mantiene la conexión solo durante la ejecución de una declaración individual.
+
+Cuándo usarlo: Ideal para aplicaciones que emiten declaraciones únicas y frecuentes.
+
+Cuándo no usarlo: No es adecuado para transacciones complejas o aplicaciones que dependen de mantener el estado.
+
+
+--------------------------------------------------------------------------------------------------------
+
+auth_query = 'SELECT usename, passwd FROM pg_shadow WHERE usename = $1'
+
+
+;;max_client_conn: Número máximo de conexiones de cliente que PgBouncer permitirá.
+max_client_conn = 100
+
+;;default_pool_size: Número de conexiones de servidor que mantendrá en el grupo de conexiones por defecto.
+default_pool_size = 20
+
+;;min_pool_size: Número mínimo de conexiones de servidor que PgBouncer intentará mantener disponibles.
+min_pool_size = 2
+
+server_reset_query: Consulta SQL que se ejecutará para restablecer las conexiones del servidor antes de devolverlas al grupo.
+server_reset_query = 'DISCARD ALL'
 
 
  ```
