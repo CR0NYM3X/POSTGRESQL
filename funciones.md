@@ -17,6 +17,10 @@ Las funciones devuelven un valor, ya sea un valor escalar o una tabla, y pueden 
 
 # Tipos de funciones  
 ```sql
+IN: Solo entra.
+OUT: Solo sale.
+INOUT: Entra y sale.
+
 
 **Funciones SQL**: Estas funciones están escritas en el lenguaje SQL y son ideales para operaciones simples y directas.
 /*no necesitas el bloque BEGIN...END porque sql es un lenguaje de consulta directa.  */ 
