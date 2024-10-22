@@ -16,13 +16,57 @@ https://devcenter.heroku.com/articles/best-practices-pgbouncer-configuration
 
 # Restart , start 
  ```
+/usr/bin/pgbouncer  /etc/pgbouncer/pgbouncer.ini
 /usr/bin/pgbouncer -v   -d /etc/pgbouncer/pgbouncer.ini ## iniciar el servicio en segundo plano
 /usr/bin/pgbouncer -v  -R -d /etc/pgbouncer/pgbouncer.ini ## hacer reload
 /usr/bin/pgbouncer -u angel  /etc/pgbouncer/pgbouncer.ini ## ver si esta un usuario
 
-
 tail -f /var/log/pgbouncer/pgbouncer.log
-/usr/bin/pgbouncer -q /etc/pgbouncer/pgbouncer.ini
+
+ 
+psql -p 5411 -U postgres -d pgbouncer -h 127.0.0.1
+ 
+ postgres@pgbouncer# SHOW HELP;
+NOTICE:  Console usage
+DETAIL:
+        SHOW HELP|CONFIG|DATABASES|POOLS|CLIENTS|SERVERS|USERS|VERSION
+        SHOW PEERS|PEER_POOLS
+        SHOW FDS|SOCKETS|ACTIVE_SOCKETS|LISTS|MEM|STATE
+        SHOW DNS_HOSTS|DNS_ZONES
+        SHOW STATS|STATS_TOTALS|STATS_AVERAGES|TOTALS
+        SET key = arg
+        RELOAD
+        PAUSE [<db>]
+        RESUME [<db>]
+        DISABLE <db>
+        ENABLE <db>
+        RECONNECT [<db>]
+        KILL <db>
+        SUSPEND
+        SHUTDOWN
+        SHUTDOWN WAIT_FOR_SERVERS|WAIT_FOR_CLIENTS
+        WAIT_CLOSE [<db>]
+SHOW
+Time: 0.313 ms
+
+
+
+Comandos Básicos
+show pools: Muestra las conexiones agrupadas por base de datos y usuario.
+show clients: Lista las conexiones de cliente actuales.
+show servers: Lista las conexiones de servidor actuales.
+show databases: Muestra las bases de datos configuradas en PgBouncer.
+show config: Muestra la configuración actual de PgBouncer.
+show stats: Muestra estadísticas generales de PgBouncer.
+show help: Muestra todos los comandos disponibles.
+
+Comandos Administrativos
+reload: Recarga la configuración de PgBouncer sin reiniciar el servicio.
+pause: Pausa todas las nuevas conexiones entrantes.
+resume: Reanuda las conexiones después de pausar.
+shutdown: Detiene PgBouncer.
+reconnect: Reconecta todas las conexiones abiertas a los servidores de base de datos.
+
 
  ```
 
