@@ -597,8 +597,7 @@ https://get.enterprisedb.com/docs/Tutorial_All_PPSS_pgBouncer.pdf
 https://devcenter.heroku.com/articles/best-practices-pgbouncer-configuration
 https://www.enterprisedb.com/postgres-tutorials/pgbouncer-authquery-and-authuser-pro-tips
 https://www.enterprisedb.com/blog/pgbouncer-tutorial-installing-configuring-and-testing-persistent-postgresql-connection-pooling
-
-https://engineering.adjust.com/post/pgbouncer_authentication_layer/
+ 
 
 https://www.scaleway.com/en/docs/tutorials/install-pgbouncer/
 
