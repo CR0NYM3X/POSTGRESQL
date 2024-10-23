@@ -185,6 +185,9 @@ SIEM
 - **pgpool-II:** Middleware que proporciona balanceo de carga y failover automático para PostgreSQL Permite la replicación en modo maestro-esclavo y distribuye las consultas entre las réplicas para mejorar el rendimiento.
 Slony-I: Un sistema de replicación maestro-esclavo para PostgreSQL que permite replicar datos entre múltiples servidores.
 
+************ BALANCEO DE CARGA EN REPLICAS ************
+HAProxy --> es un balanceador de carga y proxy inverso de código abierto. Se utiliza para distribuir el tráfico de red entre múltiples servidores, mejorando la disponibilidad y el rendimiento de los servicios web
+
 ************ TRANSFORMACION DE WAL EN JSON ************
 - **wal2json:** Genera datos en formato JSON a partir de los registros de WAL (Write-Ahead Logging), útil para replicación lógica y para aplicaciones que necesitan consumir los cambios en un formato legible.
  
