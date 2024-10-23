@@ -1,17 +1,4 @@
 
-https://docs.vmware.com/en/VMware-Greenplum/7/greenplum-database/admin_guide-access_db-topics-pgbouncer.html
-https://docs.vmware.com/en/VMware-Greenplum/7/greenplum-database/utility_guide-ref-pgbouncer-ini.html
-https://www.cybertec-postgresql.com/en/pgbouncer-authentication-made-easy/
-https://www.percona.com/blog/configuring-pgbouncer-for-multi-port-access/
-
-https://dev.to/dm8ry/using-pgbouncer-to-improve-performance-and-reduce-the-load-on-postgresql-47k8
-https://www.pgbouncer.org/config.html#generic-settings
-https://www.pgbouncer.org/
-https://access.crunchydata.com/documentation/pgbouncer/latest/pdf/pgbouncer.pdf
-https://get.enterprisedb.com/docs/Tutorial_All_PPSS_pgBouncer.pdf
-https://devcenter.heroku.com/articles/best-practices-pgbouncer-configuration
-
-
 
 
 # Restart , start 
@@ -196,7 +183,7 @@ PgBouncer home page: <https://www.pgbouncer.org/>
 ;;   pool_size= reserve_pool= max_db_connections=
 ;;   pool_mode= connect_query= application_name=
 [databases]
-* = host=127.0.0.1 port=6432 client_encoding=SQL_ASCII datestyle=ISO
+* = host=127.0.0.1 port=5416 client_encoding=UTF8 datestyle=ISO dbname=postgres auth_user=postgres
 
 ;; foodb over Unix socket
 ;foodb =
@@ -567,7 +554,7 @@ Cuándo no usarlo: No es adecuado para transacciones complejas o aplicaciones qu
 
 --------------------------------------------------------------------------------------------------------
 
-auth_query = 'SELECT usename, passwd FROM pg_shadow WHERE usename = $1'
+auth_query = SELECT usename, passwd FROM pg_shadow WHERE usename = $1
 
 
 ;;max_client_conn: Número máximo de conexiones de cliente que PgBouncer permitirá.
@@ -584,3 +571,36 @@ server_reset_query = 'DISCARD ALL'
 
 
  ```
+
+
+
+
+# Bibliografías 
+
+ ```
+https://engineering.adjust.com/post/pgbouncer_authentication_layer/
+https://medium.com/swlh/pgbouncer-installation-configuration-and-use-cases-for-better-performance-1806316f3a22
+https://postgrespro.com/docs/postgrespro/12/pgbouncer
+
+
+https://docs.vmware.com/en/VMware-Greenplum/7/greenplum-database/admin_guide-access_db-topics-pgbouncer.html
+https://docs.vmware.com/en/VMware-Greenplum/7/greenplum-database/utility_guide-ref-pgbouncer-ini.html
+https://www.cybertec-postgresql.com/en/pgbouncer-authentication-made-easy/
+https://www.percona.com/blog/configuring-pgbouncer-for-multi-port-access/
+
+
+https://dev.to/dm8ry/using-pgbouncer-to-improve-performance-and-reduce-the-load-on-postgresql-47k8
+https://www.pgbouncer.org/config.html#generic-settings
+https://www.pgbouncer.org/
+https://access.crunchydata.com/documentation/pgbouncer/latest/pdf/pgbouncer.pdf
+https://get.enterprisedb.com/docs/Tutorial_All_PPSS_pgBouncer.pdf
+https://devcenter.heroku.com/articles/best-practices-pgbouncer-configuration
+https://www.enterprisedb.com/postgres-tutorials/pgbouncer-authquery-and-authuser-pro-tips
+https://www.enterprisedb.com/blog/pgbouncer-tutorial-installing-configuring-and-testing-persistent-postgresql-connection-pooling
+
+https://engineering.adjust.com/post/pgbouncer_authentication_layer/
+
+https://www.scaleway.com/en/docs/tutorials/install-pgbouncer/
+
+
+```
