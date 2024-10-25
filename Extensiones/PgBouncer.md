@@ -3,6 +3,9 @@
 
 # Restart , start 
  ```
+grep -Ei "process up|process up" pgbouncer.log
+
+
 /usr/bin/pgbouncer  /etc/pgbouncer/pgbouncer.ini
 /usr/bin/pgbouncer -v   -d /etc/pgbouncer/pgbouncer.ini ## iniciar el servicio en segundo plano
 /usr/bin/pgbouncer -v  -R -d /etc/pgbouncer/pgbouncer.ini ## hacer reload
