@@ -902,6 +902,29 @@ postgres@postgres# explain analyze select * from users;
 
 ```
 
+
+### Saber el rango de fechas de cada particion
+```
+SELECT
+	b.nspname as parent_schema ,
+    p.relname AS parent_table,
+    pg_get_expr(c.relpartbound, c.oid) AS partition_range 
+FROM
+    pg_class c
+inner JOIN
+    pg_inherits i ON c.oid = i.inhrelid
+JOIN
+    pg_class p ON i.inhparent = p.oid
+INNER JOIN 
+	pg_namespace as b ON c.relnamespace = b.oid
+
+WHERE
+    c.relpartbound is not null;
+
+```
+
+
+
 ### Explicación
 
 1. **Tabla principal y particiones**: La tabla `users` se particiona en cuatro subtablas (`users_part_1`, `users_part_2`, `users_part_3`, `users_part_4`) utilizando el valor hash de `user_id`.
@@ -910,3 +933,6 @@ postgres@postgres# explain analyze select * from users;
 4. **Verificación**: Podemos verificar la distribución de datos contando los registros en cada partición.
 
  
+
+
+
