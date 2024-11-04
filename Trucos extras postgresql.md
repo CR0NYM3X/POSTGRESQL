@@ -383,7 +383,7 @@ https://www.depesz.com/
 
 ### Fechas 
 ```sql
---- saber la fecha
+--- saber la fecha pero actual , este te permite validar la fecha actual aunque estes dentro de una transaccion 
 select CLOCK_TIMESTAMP()   -- 2022-11-30 16:36:18 hora
 
 --- colocar formato a la fecha
