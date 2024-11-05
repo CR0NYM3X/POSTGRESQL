@@ -61,7 +61,7 @@ BEGIN
 		GRANT pg_EXECUTE_server_program to systest;  --  must be superuser or a member of the pg_EXECUTE_server_program role to COPY to or from an external program
 	END IF;
 		
-    ELSIF var_current_database  = 'dbaplicaciones'::varchar THEN
+    ELSIF var_current_database  ilike  '%plicacione%'::varchar THEN
                 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras 
 				GRANT select on all tables in schema public   to   systest; 
     END IF;
