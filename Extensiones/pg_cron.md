@@ -1,6 +1,8 @@
 # PG_CRON
  Es una extensión para PostgreSQL que permite programar y ejecutar tareas periódicas directamente desde la base de datos, similar a cómo funciona cron en sistemas Unix12.
 
+> **Desventaja:** Solo permite la ejecución de código sql dentro de la base de datos, por lo que no puedes ejecutar script a nivel servidor, como  bash 
+
 ### Ejemplos de uso 
 
 > [!IMPORTANT]
