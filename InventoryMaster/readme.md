@@ -43,16 +43,23 @@ DECLARE
 BEGIN
 
     IF    var_current_database::varchar   = 'postgres'::varchar THEN
-        -- Crear el usuario
-                ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras
-                GRANT select on all tables in schema public   to   systest; 
-         GRANT pg_monitor to systest;
-        GRANT pg_stat_scan_tables to systest;
-        GRANT pg_read_all_stats to systest;
-        GRANT pg_read_all_settings to systest;
-        GRANT pg_read_server_files to systest;
-        GRANT pg_EXECUTE_server_program to systest;  --  must be superuser or a member of the pg_EXECUTE_server_program role to COPY to or from an external program
-         
+        
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras
+        GRANT select on all tables in schema public   to   systest; 
+				
+	IF  (select 1 from pg_roles where rolname = 'pg_monitor') THEN		
+		GRANT pg_monitor to systest;
+        ELSEIF (select 1 from pg_roles where rolname = 'pg_stat_scan_tables')  THEN 
+		GRANT pg_stat_scan_tables to systest;
+        ELSEIF (select 1 from pg_roles where rolname = 'pg_read_all_stats')  THEN 
+		GRANT pg_read_all_stats to systest;
+	ELSEIF (select 1 from pg_roles where rolname = 'pg_read_all_settings')  THEN 
+		GRANT pg_read_all_settings to systest;
+	ELSEIF (select 1 from pg_roles where rolname = 'pg_read_server_files')  THEN 
+		GRANT pg_read_server_files to systest;
+	ELSEIF (select 1 from pg_roles where rolname = 'pg_execute_server_program')  THEN 
+		GRANT pg_EXECUTE_server_program to systest;  --  must be superuser or a member of the pg_EXECUTE_server_program role to COPY to or from an external program
+	END IF;
 		
     ELSIF var_current_database  = 'dbaplicaciones'::varchar THEN
                 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO systest; --- permission para tablas futuras 
