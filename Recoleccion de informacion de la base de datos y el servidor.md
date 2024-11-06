@@ -110,8 +110,10 @@ sudo dmidecode -s baseboard-manufacturer
 ```
 
 ## Obtener el hostname del servidor:
-    hostname 
-
+```sh
+    hostname
+    cat /proc/sys/kernel/hostname
+```
 
 ### versión de la base de datos 
 ```sh
