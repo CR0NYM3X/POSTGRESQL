@@ -16,6 +16,10 @@ Es recopilar información del servidor y la base de datos en caso de requerirse,
 ```sh
 -- Este comando muestra una lista de procesos ordenados por el uso de CPU. 
 ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | head
+ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%mem | head
+ps aux --sort=-%cpu | head
+ps -p <PID> -o %cpu,%mem,cmd
+
 
 Este comando muestra estadísticas del sistema, incluyendo el uso de CPU, cada segundo.
 vmstat 1
