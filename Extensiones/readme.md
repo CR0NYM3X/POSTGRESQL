@@ -21,6 +21,11 @@ Grafana
 
 ### Herramientas de Seguridad para PostgreSQL
 
+### **5. Ejecucion de tareas programadas :**
+- **  pgAgent:** Ejecucion de tareas programadas , Propia de postgresq, y puedes administrarla desde pgAdmin
+- **  pg_cron:** Ejecucion de tareas programadas , Planifica y ejecuta tareas dentro de PostgreSQL, como vacuums o análisis, en horarios programados, lo que ayuda a mantener el rendimiento de la base de datos de forma automática y sin intervención manual.
+
+
 
 **adminpack :**
 proporciona una serie de funciones de soporte que herramientas de administración y gestión, como pgAdmin, pueden utilizar para ofrecer funcionalidades adicionales1
@@ -168,6 +173,10 @@ SIEM
 ************ MANTENIMIENTOS ************
 - **pg_repack:** Reorganiza tablas e índices sin bloquear operaciones.
 
+- ** pg_squeeze:** Automatiza la compactación de tablas y sus índices para eliminar bloat sin necesidad de bloquear las tablas, mejorando el rendimiento en entornos de alta concurrencia.
+
+- ** pg_ivm :**  permite actualizar vistas materializadas de manera incremental, lo que significa que solo se actualizan las partes que han cambiado
+
 ************ BACKUP ************
 - **barman:** Herramienta de gestión de backups y recuperación para PostgreSQL Soporta la replicación en caliente y la recuperación ante desastres, ofreciendo una solución completa para la protección de datos.
 
@@ -195,17 +204,13 @@ HAProxy --> es un balanceador de carga y proxy inverso de código abierto. Se ut
  
 ### **7. Rendimiento y Optimización:**  
 
-- **  pg_cron:** Planifica y ejecuta tareas dentro de PostgreSQL, como vacuums o análisis, en horarios programados, lo que ayuda a mantener el rendimiento de la base de datos de forma automática y sin intervención manual.
-
 - ** pg_partman:** Gestiona la partición de tablas de forma automática, lo cual es fundamental para mejorar el rendimiento en bases de datos con grandes volúmenes de datos, especialmente en tablas de series temporales.
 
 
 - **pg_timetable:** Herramienta para la planificación y ejecución de tareas cron en la base de datos.
 
 - ** pg_prewarm:** Pre-carga tablas o índices en la memoria compartida de PostgreSQL al inicio del servidor, mejorando el rendimiento de las consultas que acceden frecuentemente a estos datos.
-
-- ** pg_repack:** Reorganiza y compacta tablas e índices sin bloquear las escrituras, lo que ayuda a reducir el bloat y mejorar el rendimiento sin afectar la disponibilidad del sistema.
-
+ 
 - ** pg_hint_plan:** Permite a los administradores influir directamente en el planificador de consultas sugiriendo (hinting) cómo ejecutar consultas SQL, lo cual es útil para optimizar casos específicos donde el planificador no elige el mejor plan por defecto.
 
 - ** auto_explain:** Genera automáticamente los planes de ejecución de las consultas que exceden un umbral de tiempo de ejecución, lo que facilita la identificación de consultas mal optimizadas.
@@ -213,8 +218,6 @@ HAProxy --> es un balanceador de carga y proxy inverso de código abierto. Se ut
 - ** hypopg:** Permite simular la creación de índices sin necesidad de materializarlos físicamente, ayudando a evaluar el impacto de nuevos índices en el rendimiento antes de su creación.
 
 - ** plpgsql_check:** Extiende el lenguaje PL/pgSQL con herramientas de validación y optimización, detectando posibles problemas de rendimiento en funciones y procedimientos almacenados.
-
-- ** pg_squeeze:** Automatiza la compactación de tablas y sus índices para eliminar bloat sin necesidad de bloquear las tablas, mejorando el rendimiento en entornos de alta concurrencia.
 
 - ** pgfincore:** Permite analizar qué partes de las tablas y los índices están en caché en la memoria del sistema operativo, ayudando a optimizar el uso de la caché.
 
