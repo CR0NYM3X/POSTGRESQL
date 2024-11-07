@@ -58,6 +58,11 @@ GROUP BY p.nombre
 ORDER BY cantidad_vendida DESC;
 ```
 
+## Cambiar nombre a View
+```sql
+ALTER VIEW nombre_viejo RENAME TO nombre_nuevo;
+```
+
 **Así se consulta una view**
 ```
 SELECT * FROM productos_mas_vendidos;
