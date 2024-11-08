@@ -1,0 +1,343 @@
+
+########################### AMBIENTAR SERVIDOR #####################
+
+CREATE DATABASE "migracion_encript" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'C' LC_CTYPE = 'en_US';
+\c migracion_encript
+
+
+
+
+
+
+/********* CRAR EXTENSION *********/
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+ 
+ 
+
+CREATE TABLE passwd_md5 (
+	server VARCHAR(50),
+    user_ VARCHAR(50),
+    password_md5 VARCHAR(255),
+	password_encrypt bytea,
+    fecha_md5 TIMESTAMP ,
+	fecha_encrypt TIMESTAMP ,
+	status bit,
+	num_intentos int default 30
+);
+
+-- drop table passwd_md5; 
+-- truncate table passwd_md5;
+-- select * from passwd_md5;
+--- update passwd_md5 set status = 0::bit;
+
+
+
+CREATE TABLE log_function (
+	id SERIAL PRIMARY KEY,
+	server VARCHAR(50),
+    user_ VARCHAR(50),
+	password_intento_encrypt bytea,
+	num_intentos int default 30,
+	user_cliente VARCHAR(255),
+	ip_cliente VARCHAR(50),
+	mensaje_function VARCHAR(255),
+	fecha_intento timestamp without time zone DEFAULT to_char(now(), 'YYYY-MM-DD HH24:MI:SS')::timestamp  
+);
+
+
+
+-- drop table log_function; 
+-- truncate table log_function;
+-- select * from log_function;
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION fun_cambio_paswd(p_server VARCHAR,p_usuario VARCHAR, p_contrasena VARCHAR, p_useractual VARCHAR) 
+RETURNS TEXT
+SECURITY DEFINER 
+AS $$
+DECLARE
+    v_tmp_usuario VARCHAR(50);
+    v_mensajes TEXT := ''; -- Variable para almacenar los mensajes
+	v_concacto varchar(50) :=  ' Jose Jorge Bibriesca Bustamante';
+	v_centro varchar(50) := '231793';
+	v_intentos int;
+	v_ip_address VARCHAR(50);
+
+
+BEGIN
+
+	-- Obtener la IP del cliente
+    v_ip_address := inet_client_addr()::VARCHAR;
+		
+		IF EXISTS (SELECT 1 FROM passwd_md5 WHERE server = trim(p_server)  ) THEN
+		
+			-- Validar si el usuario y servidor exista en passwd_md5
+			IF EXISTS (SELECT 1 FROM passwd_md5 WHERE user_ = p_usuario and server =  trim(p_server)  ) THEN
+			
+				-- valida que en la tabla passwd_md5 que exista el usuario, servidor y que tenga status 0 
+				IF EXISTS (SELECT 1 FROM passwd_md5 WHERE user_ = p_usuario and status= 0::bit  and server = trim(p_server)) THEN
+					
+					--- VALIDA los num_intentos 
+					IF EXISTS (SELECT 1 FROM passwd_md5 WHERE  user_ = p_usuario and status= 0::bit  and server = trim(p_server) and num_intentos > 0 ) THEN
+
+						-- Si existe el usuario lo elimina y crea uno nuevo 
+						IF NOT EXISTS (SELECT 1 FROM pg_shadow WHERE usename = p_usuario) THEN
+						
+							-- Crear el usuario temporal
+							EXECUTE format('CREATE USER %I WITH PASSWORD %L;', p_usuario, p_contrasena);
+						ELSE
+							
+							--- Borra el usuario si ya existe y lo crea de nuevo
+							EXECUTE format('drop USER %I ;', p_usuario);
+							EXECUTE format('CREATE USER %I WITH PASSWORD %L;', p_usuario, p_contrasena);
+						END IF;
+						
+						IF EXISTS (SELECT 1 FROM pg_shadow WHERE usename = p_usuario) THEN
+							-- Validar la contraseña original con la contraseña del usuario temporal
+							IF EXISTS (SELECT 1 FROM passwd_md5 WHERE user_ = p_usuario and server =  trim(p_server) 
+							AND password_md5 IN (SELECT passwd FROM pg_shadow WHERE usename = p_usuario )) THEN
+								-- modifica en la tabla passwd_md5
+								
+								 update passwd_md5 set password_encrypt = pgp_sym_encrypt(p_contrasena, pg_read_file('/tmp/key_secret.txt') ), fecha_encrypt = now(), status=1::bit where user_ = p_usuario  and server = trim(p_server);
+								v_mensajes := v_mensajes || 'Se guardo exitosamente el usuario ' || p_usuario || '! ';
+								
+								insert into log_function(server,user_,password_intento_encrypt,num_intentos,user_cliente,ip_cliente,mensaje_function) select p_server,p_usuario,pgp_sym_encrypt(p_contrasena, pg_read_file('/tmp/key_secret.txt') ), v_intentos, p_useractual , v_ip_address, v_mensajes ;
+							ELSE
+								-- Notificar al usuario que las contraseñas no coinciden
+								v_mensajes := v_mensajes || 'La password proporcionada para el usuario ' || p_usuario || '   no coincide con la del usuario original. ';
+								update passwd_md5 set  num_intentos = (num_intentos -1 ) where  user_ = trim(p_usuario) and server = trim(p_server);
+								select num_intentos into v_intentos from passwd_md5 where  user_ = trim(p_usuario) and server = trim(p_server);
+								
+								insert into log_function(server,user_,password_intento_encrypt,num_intentos,user_cliente,ip_cliente,mensaje_function) select p_server,p_usuario,pgp_sym_encrypt(p_contrasena, pg_read_file('/tmp/key_secret.txt') ), v_intentos, p_useractual , v_ip_address, v_mensajes ;
+	
+							END IF;
+						ELSE
+							-- Notificar al usuario que el usuario temporal no se creó
+							v_mensajes := v_mensajes || 'hubo un error, intente de nuevo por favor';
+							
+							insert into log_function(server,user_,password_intento_encrypt,num_intentos,user_cliente,ip_cliente,mensaje_function) select p_server,p_usuario,pgp_sym_encrypt(p_contrasena, pg_read_file('/tmp/key_secret.txt') ), v_intentos, p_useractual , v_ip_address, 'El usuario '||p_usuario||' temporal no se creo' ;
+							
+						END IF;
+						-- Eliminar el usuario temporal
+						 EXECUTE format('DROP USER IF EXISTS %I', p_usuario);
+					
+					ELSE
+						v_mensajes := v_mensajes || 'Excede el limite de num_intentos permitidos para el usuario ' ||  p_usuario  || ' y servidor ' || p_server || ' En caso de conciderar esto un error favor de comunicarse con :' || v_concacto || ' del centro : ' || v_centro ;
+						
+						insert into log_function(server,user_,password_intento_encrypt,num_intentos,user_cliente,ip_cliente,mensaje_function) select p_server,p_usuario,pgp_sym_encrypt(p_contrasena, pg_read_file('/tmp/key_secret.txt') ), v_intentos, p_useractual , v_ip_address, v_mensajes ;
+						
+					END IF;
+					
+				ELSE
+					v_mensajes := v_mensajes || 'El usuario ya guardo su password no es necesario intentar de nuevo';
+					
+					insert into log_function(server,user_,password_intento_encrypt,num_intentos,user_cliente,ip_cliente,mensaje_function) select p_server,p_usuario,pgp_sym_encrypt(p_contrasena, pg_read_file('/tmp/key_secret.txt') ), v_intentos, p_useractual , v_ip_address, v_mensajes ;
+				
+				END IF;
+					 
+			ELSE
+				-- Notificar al usuario que el usuario no existe
+				v_mensajes := v_mensajes || 'El usuario ' || p_usuario || ' no existe en el servidor ' ||  p_server  || ' En caso de conciderar esto un error favor de comunicarse con :' || v_concacto || ' del centro : ' || v_centro ;
+				
+				insert into log_function(server,user_,password_intento_encrypt,num_intentos,user_cliente,ip_cliente,mensaje_function) select p_server,p_usuario,pgp_sym_encrypt(p_contrasena, pg_read_file('/tmp/key_secret.txt') ), v_intentos, p_useractual , v_ip_address, v_mensajes ;
+				
+			END IF;
+		ELSE
+			v_mensajes := v_mensajes || 'El servidor ' ||  p_server  || ' no existe, En caso de conciderar esto un error favor de comunicarse con :' || v_concacto || ' del centro : ' || v_centro ;
+			
+			insert into log_function(server,user_,password_intento_encrypt,num_intentos,user_cliente,ip_cliente,mensaje_function) select p_server,p_usuario,pgp_sym_encrypt(p_contrasena, pg_read_file('/tmp/key_secret.txt') ), v_intentos, p_useractual , v_ip_address, v_mensajes ;
+			
+		END IF;
+	
+	
+    RETURN v_mensajes; -- Retorna los mensajes al final de la función
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
+------------------------
+
+
+CREATE OR REPLACE FUNCTION cambiar(p_server VARCHAR,p_usuario VARCHAR, p_contrasena VARCHAR) 
+RETURNS TEXT
+
+AS $$
+DECLARE
+	usuario_actual VARCHAR(100);
+    user_cliente VARCHAR(100);
+	
+BEGIN
+ 
+    -- Obtener el nombre de usuario actual
+    user_cliente := current_user;
+	
+    RETURN fun_cambio_paswd(p_server ,p_usuario , p_contrasena ,user_cliente ) ;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
+--- drop FUNCTION fun_cambio_paswd();
+--- drop FUNCTION cambiar();
+
+-----------------
+
+
+CREATE OR REPLACE FUNCTION cambiar_v3(p_ruta VARCHAR) 
+ RETURNS TABLE(
+	id int,
+	server VARCHAR(50),
+    user_ VARCHAR(50),
+	mensaje_function VARCHAR(255),
+	fecha_intento timestamp  
+)
+AS $$
+DECLARE
+	texto_retornado TEXT;
+	usuario_row RECORD;
+	v_id int;
+BEGIN
+
+	select log_function.id into v_id from log_function order by id desc limit 1;
+ 
+    CREATE TABLE tmp_passwd_md5 (
+	server VARCHAR(50),
+    user_ VARCHAR(50),
+    password VARCHAR(255)
+	);
+	
+	EXECUTE format('COPY tmp_passwd_md5(server,user_,password) FROM  %L WITH (FORMAT CSV);', p_ruta);
+	
+	FOR usuario_row IN SELECT * FROM tmp_passwd_md5 LOOP
+     
+		 texto_retornado :=  fun_cambio_paswd(usuario_row.server , usuario_row.user_ , usuario_row.password, 'cambiar_v3') ;
+
+	 -- INSERT INTO temp_usuarios (nombre, edad) VALUES (usuario_row.nombre, usuario_row.edad);
+    END LOOP;
+	
+	
+
+						
+	IF (v_id IS NULL) THEN
+			RETURN QUERY  select log_function.id 
+						,log_function.server 
+						,log_function.user_ 
+						,log_function.mensaje_function
+						,log_function.fecha_intento	
+						from log_function  where log_function.server in(select tmp_passwd_md5.server from tmp_passwd_md5) 
+						and log_function.user_ in(select tmp_passwd_md5.user_ from tmp_passwd_md5) ;
+	ELSE
+				RETURN QUERY  select log_function.id 
+						,log_function.server 
+						,log_function.user_ 
+						,log_function.mensaje_function
+						,log_function.fecha_intento	
+						from log_function where log_function.id   > v_id and 
+						log_function.server in(select tmp_passwd_md5.server from tmp_passwd_md5) and log_function.user_ in(select tmp_passwd_md5.user_ from tmp_passwd_md5);
+	END IF;						
+						
+	drop TABLE tmp_passwd_md5 ;
+	
+
+	
+END;
+$$ LANGUAGE plpgsql;
+
+
+select cambiar_v3('/tmp/user_test.txt');
+select * from log_function;
+truncate table log_function; 
+
+
+########################### configurar el  SERVIDOR #####################
+
+
+---  vim /sysx/data/postgresql.conf
+log_statement = 'mod'  --- REATE, ALTER, DROP, etc. 
+
+
+
+create user centro_141415 with password '123456';
+
+  GRANT EXECUTE ON FUNCTION public.cambiar(p_server VARCHAR,p_usuario VARCHAR, p_contrasena VARCHAR)  TO "centro_250827";
+  GRANT EXECUTE ON FUNCTION public.fun_cambio_paswd(p_server VARCHAR,p_usuario VARCHAR, p_contrasena VARCHAR, p_useractua VARCHAR) TO "centro_250827";
+
+
+modificar el  vim /sysx/data/pg_hba.conf para que todos tengan acceso usuando un usuario y a una base de datos y a solo permiso para usar la funcion
+host     migracion_encript  all  0.0.0.0  0.0.0.0    md5 
+
+
+-- reiniciarlo servicio
+ /usr/pgsql-14/bin/pg_ctl reload -D /sysx/data
+
+
+
+
+COPY ( select '192.168.1.100',usename,passwd,null,now(),null,0,30 from pg_shadow where passwd ilike 'md5%' ) TO '/tmp/usuarios_.csv' WITH (FORMAT CSV);
+COPY passwd_md5 FROM '/tmp/usuarios_.csv' WITH (FORMAT CSV);
+ select * from passwd_md5 limit 10;
+
+
+ create user ruperta with password '1234567';
+ create user cristal   with password '1234567';
+ create user test_fun with password '1234567';  
+
+ drop user ruperta  ;
+ drop user cristal  ;  
+ drop user test_fun ;
+ 
+ 
+ select fun_cambio_paswd('test_fun','123456');
+
+ select * from passwd_md5 where user_ ilike '%cristal%';
+ 
+
+ select * from pg_shadow where usename ilike '%fun%';
+
+
+
+  select 'alter USER ' ||  user_ || ' WITH PASSWORD '''  ||   pgp_sym_decrypt(password_encrypt, pg_read_file('/tmp/key_secret.txt') )  || ''';' as usuarios
+   from passwd_md5 where status= 1::bit  ;
+ 
+  
+ 
+ /*
+ Estas pruebas ya se realizaron desde un postgresql 8 a un postgresql 15 y siguen siendo los mismo 
+ 
+ Algo que debemos de saber es que postgresql cuando guarda su contraseña, para encriptarla en md5 
+ toma como referencia el nombre y la contraseña, esto quiere decir que si tienes 10 usuarios diferentes con la misma contraseña,
+ si validamos los md5 van a ser diferentes
+ 
+ 
+ 
+
+
+-------------------------- 	cambios y mejoras a realizar --------------------------
+
+*1.- agregar columna 30 intentos  y modificar funcion para que se vaya disminuyendo los intentos, evitar ataque fuerza bruta
+*2.- mejorar la funcion para que borre un usuario en caso de que encuentre que ya existe,  error intenta de nuevo
+*3.-  tabla  de log_funcion num_intento, mensaje, ip, usuario , fechas , la contraseña que intento pero encriptada 
+*4.- hacer usuario por centro para mejorar
+*5. Hacer para que si encuentra un usuario que ya existe, no lo borre solo haga un alter a la password, per guarde la que tenia
+antes para que al final del codigo la vuelva a colocar 
+
+---- hacer segundo opcion : 
+*6.- Hacer otra funcion para que valide txt usuarios y contraseñas , lea el documento haciendo una tabla temporal
+
+---- 
+7.-  hacer una pagina para que en vez que se conecten al servidor con un script lo validen desde una pagina
+ 
+ */
+ 
+ 
+ 
+ 
+ 
