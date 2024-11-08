@@ -711,6 +711,18 @@ SUBSTRING(cadena [FROM posición_inicial] [FOR longitud])
    SELECT convert_from(decode('486f6c61206d756e646f', 'hex'), 'UTF8');
    SELECT convert_from('\\xe4', 'LATIN1'); 
 
+
+-- convertir una cadena entre diferentes codificaciones. (La cadena que deseas convertir, La codificación de origen ,  La codificación de destino )
+convert(bytea, name, name) 
+SELECT convert('Hola, Mundo!', 'LATIN1', 'UTF8');
+
+convert_from( bytea, name)
+SELECT convert_from('\x486f6c612c204d756e646f21'::bytea, 'UTF8');
+
+convert_to( text, name)
+SELECT convert_to('Hola, Mundo!', 'UTF8');
+
+
 # String Functions and Operators 
 https://www.postgresql.org/docs/8.2/functions-string.html
 
