@@ -840,3 +840,21 @@ El parámetro **Stats target** define el número de muestras que PostgreSQL toma
  
  
    
+
+# Monitoreo de Write and Reads 
+proporcionar información detallada sobre las operaciones de entrada/salida (E/S) que realiza la base de datos. operaciones de lectura y escritura en el disco. 
+```
+ 
+SELECT
+    backend_type,
+    object,
+    context,
+    reads,
+    read_time,
+    writes,
+    write_time,
+    hits,
+    evictions
+FROM pg_stat_io;
+```
+ 
