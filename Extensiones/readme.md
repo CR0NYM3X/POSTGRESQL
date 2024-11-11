@@ -77,17 +77,13 @@ Prometheus es una herramienta de monitoreo y alerta de código abierto que se ut
 
 - ** pam_auth:** Permite la autenticación de usuarios de PostgreSQL a través de PAM (Pluggable Authentication Modules), integrando la autenticación con los mecanismos de seguridad del sistema operativo.
 
-************ SEGURIDAD EN CONTRASEÑAS ************
+************ SEGURIDAD EN CONTRASEÑAS, aplica politicas  ************
+credcheck       https://github.com/MigOpsRepos/credcheck/tree/master
+
+passwordpolicy  https://github.com/eendroroy/passwordpolicy/tree/master
+
 - ** passwordcheck ** password basica
 
-- ** pg_password** Gestiona y valida contraseñas de usuario en PostgreSQL, con soporte para políticas de seguridad.
-   **Uso:** Implementa validaciones de contraseñas y gestiona la seguridad de contraseñas de usuario.
-
-- ** pg_password_policy** Implementa políticas de contraseñas, como expiración y complejidad, en PostgreSQL.
-   **Uso:** Configura políticas para gestionar la expiración de contraseñas y asegurarte de que cumplan con los estándares de seguridad.
-
-- ** check_password** Implementa políticas de seguridad para validar contraseñas, asegurando que cumplan con los requisitos establecidos.
-   **Uso:** Configura políticas de contraseñas como longitud mínima y complejidad para mejorar la seguridad de las contraseñas de usuario.
 
 
 ************ SEGURIDAD EN PRIVILEGIOS ************
