@@ -120,6 +120,9 @@ passwordpolicy  https://github.com/eendroroy/passwordpolicy/tree/master
 
 
 ************ MONITOREO DE LOGS ************
+
+pg_proctab ---> https://github.com/markwkm/pg_proctab/tree/main
+
 - **pgBadger:** Una herramienta externa que analiza los logs de PostgreSQL para generar informes detallados de rendimiento. Es especialmente útil para entender cómo las consultas y la actividad del sistema afectan el rendimiento a lo largo del tiempo.
 pganalyze: Herramienta especializada en el análisis y monitoreo de PostgreSQL
 PgDash: Proporciona paneles de control y alertas para el monitoreo de PostgreSQL
