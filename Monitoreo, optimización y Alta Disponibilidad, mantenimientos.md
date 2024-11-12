@@ -858,3 +858,4 @@ SELECT
 FROM pg_stat_io;
 ```
  
+https://postgresconf.org/system/events/document/000/002/232/Troubleshoot_PG_Perf-04172024.pdf
