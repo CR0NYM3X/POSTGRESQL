@@ -1480,3 +1480,39 @@ El comando LOAD 'passwordcheck'; en PostgreSQL se utiliza para cargar el módulo
 ```sql
 LOAD 'passwordcheck';
 ```
+
+
+
+## Utilizando prepare 
+```sql
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    fecha_registro TIMESTAMP
+);
+
+
+INSERT INTO clientes (nombre, apellido, fecha_registro) VALUES
+('Juan', 'Perez', '2024-01-15 10:30:00'),
+('Maria', 'Gomez', '2024-02-20 14:45:00'),
+('Carlos', 'Lopez', '2024-03-25 08:20:00');
+
+
+PREPARE consulta_clientes (timestamp, timestamp) AS
+SELECT nombre, apellido, fecha_registro
+FROM clientes
+WHERE fecha_registro BETWEEN $1 AND $2;
+
+EXECUTE consulta_clientes ('2024-01-01', '2024-03-01');
+
+postgres@postgres# EXECUTE consulta_clientes ('2024-01-01', '2024-03-01');
++--------+----------+---------------------+
+| nombre | apellido |   fecha_registro    |
++--------+----------+---------------------+
+| Juan   | Perez    | 2024-01-15 10:30:00 |
+| Maria  | Gomez    | 2024-02-20 14:45:00 |
++--------+----------+---------------------+
+(2 rows)
+
+```
