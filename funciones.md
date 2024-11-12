@@ -565,3 +565,4 @@ RETURNS VOID
 ```
 
 
+https://postgresconf.org/system/events/document/000/001/086/plpgsql.pdf
