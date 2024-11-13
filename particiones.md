@@ -904,7 +904,7 @@ postgres@postgres# explain analyze select * from users;
 
 
 ### Saber el rango de fechas de cada particion
-```
+```sql
 SELECT
 	b.nspname as parent_schema ,
     p.relname AS parent_table,
@@ -924,6 +924,23 @@ WHERE
 ```
 
 
+### Saber el rango de fechas de cada particion
+```sql
+
+SELECT 
+	current_database() as db_name,
+	npar.nspname AS parent_schema,
+	cpar.relname AS parent_table,
+	nrel.nspname AS child_schema,
+	crel.relname AS child_table  
+FROM pg_inherits i
+	INNER JOIN pg_class cpar ON i.inhparent = cpar.oid    and cpar.relkind = 'p'
+	INNER JOIN pg_namespace npar ON cpar.relnamespace = npar.oid
+	INNER JOIN pg_class crel ON i.inhrelid = crel.oid   and  crel.relkind = 'r'
+	INNER JOIN pg_namespace nrel ON crel.relnamespace = nrel.oid 
+ORDER BY npar.nspname   ;
+
+```
 
 ### Explicación
 
@@ -933,6 +950,9 @@ WHERE
 4. **Verificación**: Podemos verificar la distribución de datos contando los registros en cada partición.
 
  
+
+
+
 
 
 
