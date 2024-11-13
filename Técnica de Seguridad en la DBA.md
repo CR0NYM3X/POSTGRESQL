@@ -239,7 +239,7 @@ SELECT FORMAT('Hola, %s', 'PostgreSQL'); --- Hola, PostgreSQL
 SELECT FORMAT('El número es: %s', 12345);---- El número es: 12345 
 SELECT FORMAT('Nombre: %s, Edad: %s', 'Juan', 30); --- Nombre: Juan, Edad: 30
 SELECT FORMAT('El progreso es del %s%%', 75); --- El progreso es del 75%
-SELECT FORMAT('SELECT * FROM %I WHERE nombre = %L', 'mi_tabla', 'Juan'); --- SELECT * FROM mi_tabla WHERE nombre = 'Juan'
+SELECT FORMAT('SELECT * FROM %I WHERE nombre = %L', 'mi_tablaGRANDE', 'Juan'); ---  SELECT * FROM "mi_tablaGRANDE" WHERE nombre = 'Juan' 
  
  
 DO $$
