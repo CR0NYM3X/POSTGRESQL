@@ -46,7 +46,7 @@ https://hexacluster.ai/blog/
 https://www.crunchydata.com/postgres-tips
 https://www.crunchydata.com/developers/tutorials
 https://access.crunchydata.com/documentation/
-
+https://dbasinapuros.com/
 https://ongres.com/blog/
 
 ---- página recomendada para aprender cosas avanzadas de postgresql  
