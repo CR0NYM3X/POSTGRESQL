@@ -571,7 +571,7 @@ select array_replace( '{server=10.10.10.12,version=1.1}'::text[], 'version=1.1',
  SELECT ARRAY[1, 2] <@ ARRAY[1, 2, 3]; -- Resultado: true
  
 
- **&&**: Verifica si dos arrays tienen elementos en común.
+ **&&**: Verifica si dos arrays tienen elementos en común., es quivalente al in()
  SELECT ARRAY[1, 2, 3] && ARRAY[2, 4]; -- Resultado: true
  
 
