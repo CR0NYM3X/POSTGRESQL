@@ -26,38 +26,95 @@
 -rwxr-xr-x. 1 root root     399K Nov 18  2022 pgagent_15
 -rwxr-xr-x. 1 root root     399K Sep 13  2023 pgagent_16
 
+
+-- /****** CREAR EL USUARIO PGAGENT Y CREAMOS LA EXTENSION pgagent  ******\
+[postgres@TEST_SERVER ~]$ psql -p 5416 -d postgres -U postgres -h 127.0.0.1
+Password for user postgres:
+
+ 🐘 Current Host Server Date Time : Wed Nov 13 18:27:43 MST 2024
+
+psql (16.4)
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
+Type "help" for help.
+
+
+postgres@postgres# CREATE EXTENSION pgagent;
+CREATE EXTENSION
+Time: 46.130 ms
+
+postgres@postgres# create user pgagent with password '8PjXd5gmux5U7XdTtOahsblrNAwHE0!#';
+CREATE ROLE
+Time: 10.869 ms
+postgres@postgres# grant connect on database postgres to pgagent;
+GRANT
+Time: 1.580 ms
+postgres@postgres# grant all privileges on all tables in schema  pg_catalog to pgagent;
+GRANT
+Time: 9.463 ms
+postgres@postgres# grant all privileges on all tables in schema  information_schema to pgagent;
+GRANT
+Time: 4.770 ms
+postgres@postgres# GRANT USAGE ON SCHEMA pgagent TO pgagent;
+GRANT
+Time: 1.219 ms
+postgres@postgres# GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA pgagent TO pgagent;
+GRANT
+Time: 1.029 ms
+postgres@postgres# GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA pgagent TO pgagent;
+GRANT
+Time: 0.739 ms
+postgres@postgres# GRANT  TEMPORARY ON DATABASE postgres TO pgagent;
+GRANT
+Time: 0.810 ms
+postgres@postgres# grant pg_execute_server_program to  pgagent;
+GRANT ROLE
+Time: 1.604 ms
+
+
+
 -- /****** MODIFICAMOS DE AUTENTICACIÓN A PEER  EN ARCHIVO PG_HBA.CONF ******\
 [postgres@TEST_SERVER ]$ vim /sysx/data16/pg_hba.conf
 
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
-local   all             all                                     peer # "local" is for Unix domain socket connections only
-host    all             all             127.0.0.1/32            peer # IPv4 local connections:
+#local   all             all                                     peer # "local" is for Unix domain socket connections only
+host    all             all             127.0.0.1/32            scram-sha-256
+
+
+-- /****** MODIFICAMOS PGPASS PARA QUE PUEDA AUTENTICARSE SIN CONTRASEÑA ******\
+touch /home/postgres/.pgpass
+chmod 0600 /home/postgres/.pgpass
+
+[postgres@TEST_SERVER ~]$ echo "127.0.0.1:5416:postgres:pgagent:YkLPv4NWNT+5QsE.s/+3t*NPwCBc1d" >> /home/postgres/.pgpass
+[postgres@TEST_SERVER ~]$ cat /home/postgres/.pgpass
+127.0.0.1:5416:postgres:pgagent:YkLPv4NWNT+5QsE.s/+3t*NPwCBc1d
+
 
 
 -- /****** INICIAR EL SERVICIO DE PGAGENT ******\ 
-[postgres@TEST_SERVER ]$ pgagent_16 hostaddr=127.0.0.1 port=5416 dbname=postgres user=postgres  -s /sysx/data16/pg_log/pgagent_16.log
+[postgres@TEST_SERVER ~]$ pgagent_16   hostaddr=127.0.0.1 port=5416 dbname=postgres user=pgagent -l 2 -s /sysx/data16/pg_log/pgagent_16.log
+[postgres@TEST_SERVER ~]$ cat /sysx/data16/pg_log/pgagent_16.log
+Wed Nov 13 18:24:57 2024 DEBUG: Creating primary connection
+Wed Nov 13 18:24:57 2024 DEBUG: Parsing connection information...
+Wed Nov 13 18:24:57 2024 DEBUG: Creating DB connection: user=pgagent dbname=postgres hostaddr=127.0.0.1 port=5416 dbname=postgres
+Wed Nov 13 18:24:57 2024 DEBUG: Database sanity check
+Wed Nov 13 18:24:57 2024 DEBUG: Clearing zombies
+Wed Nov 13 18:24:57 2024 DEBUG: Checking for jobs to run
+Wed Nov 13 18:24:57 2024 DEBUG: Sleeping...
 
-
-pgagent_16 service=pgagent -s /sysx/data16/pg_log/pgagent_16.log
 
 -- /****** VALIDAMOS SE HAYA INICIADO EL SERVICIO  ******\
--- [NOTA] : En caso de requerir contraseña puedes usar el parametro password=
-[postgres@TEST_SERVER ]$ ps -fea | grep pga
-postgres 1560617       1  0 11:47 pts/4    00:00:00 pgagent_16 hostaddr=127.0.0.1 port=5416 dbname=postgres user=postgres -s /sysx/data16/pg_log/pgagent_16.log
+-- [NOTA] : En caso de requerir contraseña puedes usar el parametro password= pero por seguridad no se coloca 
+[postgres@TEST_SERVER ~]$ ps -fea | grep pga
+postgres 2415142       1  0 18:24 pts/7    00:00:00 pgagent_16 hostaddr=127.0.0.1 port=5416 dbname=postgres user=pgagent -l 2 -s /sysx/data16/pg_log/pgagent_16.log
+postgres 2415144 2222739  0 18:24 ?        00:00:00 postgres: pgagent postgres 127.0.0.1(38764) idle
+postgres 2415209 2406452  0 18:25 pts/7    00:00:00 grep --color=auto pga
 
 
 -- /****** VALIDAMOS QUE NO HAYA MARCADO ERROR  ******\ 
-[postgres@TEST_SERVER ]$ cat /sysx/data16/pg_log/pgagent_16.log  | wc -l
-0
+tail -f /sysx/data16/pg_log/pgagent_16.log # Valida el log de pgagent
+tail -f postgresql-241113.log # Valida el log de postgres
 
-
--- /****** NOS CONECTAMOS A LA DB POSTGRES  ******\ 
-[postgres@TEST_SERVER ]$ psql -h 127.0.0.1 -p 5416 -d postgres -U postgres
-
--- /****** CREAMOS LA EXTENSION  ******\ 
-postgres@postgres# CREATE EXTENSION pgagent;
-CREATE EXTENSION
-Time: 46.130 ms
+ 
 
 
 ```
@@ -247,6 +304,20 @@ options:
 
 ```
 
+
+## Info extra
+```
+
+----- quitar los permisos ----------
+revoke connect on database postgres from pgagent;
+revoke all privileges on all tables in schema  pg_catalog from pgagent;
+revoke all privileges on all tables in schema  information_schema from pgagent;
+revoke USAGE ON SCHEMA pgagent from pgagent;
+revoke ALL PRIVILEGES ON ALL TABLES IN SCHEMA pgagent from pgagent;
+revoke ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA pgagent from pgagent;
+revoke TEMPORARY ON DATABASE postgres from pgagent;
+revoke pg_execute_server_program from  pgagent;
+```
 
   # Bibliografía:
 
