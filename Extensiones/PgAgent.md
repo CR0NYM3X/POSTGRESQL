@@ -37,6 +37,9 @@ host    all             all             127.0.0.1/32            peer # IPv4 loca
 -- /****** INICIAR EL SERVICIO DE PGAGENT ******\ 
 [postgres@TEST_SERVER ]$ pgagent_16 hostaddr=127.0.0.1 port=5416 dbname=postgres user=postgres  -s /sysx/data16/pg_log/pgagent_16.log
 
+
+pgagent_16 service=pgagent -s /sysx/data16/pg_log/pgagent_16.log
+
 -- /****** VALIDAMOS SE HAYA INICIADO EL SERVICIO  ******\
 -- [NOTA] : En caso de requerir contraseña puedes usar el parametro password=
 [postgres@TEST_SERVER ]$ ps -fea | grep pga
@@ -251,4 +254,8 @@ options:
 ```
 https://www.tencentcloud.com/document/product/409/41792
 https://github.com/pgadmin-org/pgagent/tree/master
+
+https://stackoverflow.com/questions/76300566/how-configure-pgagent-in-ubuntu22-04
+
+
 ```
