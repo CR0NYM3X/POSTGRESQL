@@ -109,7 +109,7 @@ passwordpolicy  https://github.com/eendroroy/passwordpolicy/tree/master
 
 ************ SEGURIDAD EN S.O ************
 - ** sepgsql:** Integra PostgreSQL con SELinux para aplicar políticas de seguridad a nivel de sistema operativo. Esto añade una capa adicional de control de acceso basada en roles de seguridad de SELinux.
-
+SE-PostgreSQL: Implementa políticas de seguridad obligatoria (MAC) basadas en SELinux
 
 
 
@@ -126,7 +126,7 @@ pg_proctab ---> https://github.com/markwkm/pg_proctab/tree/main
 - **pgBadger:** Una herramienta externa que analiza los logs de PostgreSQL para generar informes detallados de rendimiento. Es especialmente útil para entender cómo las consultas y la actividad del sistema afectan el rendimiento a lo largo del tiempo.
 pganalyze: Herramienta especializada en el análisis y monitoreo de PostgreSQL
 PgDash: Proporciona paneles de control y alertas para el monitoreo de PostgreSQL
-SIEM 
+SIEM  detección de amenazas
 
 ************ MONITOREO EN CONSULTAS ************
 - **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
