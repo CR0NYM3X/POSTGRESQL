@@ -1516,3 +1516,17 @@ postgres@postgres# EXECUTE consulta_clientes ('2024-01-01', '2024-03-01');
 (2 rows)
 
 ```
+
+
+
+## Utilizando LISTEN 
+recibir notificaciones en tiempo real. 
+```sql
+-- SE crea y te Suscribes a un canal 
+LISTEN mi_canal_escucha;
+
+--- se  utilizada para enviar notificaciones a los clientes suscritos a un canal específico
+SELECT pg_notify('mi_canal_escucha', '¡Hola desde PostgreSQL!');
+NOTIFY mi_canal_escucha, 'Este es un mensaje de notificación';
+
+```
