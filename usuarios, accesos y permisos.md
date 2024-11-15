@@ -67,10 +67,28 @@ SELECT session_user;
 SELECT current_user;
 
 /* Sirve para cambiar de usuario */
+--- después de ejecutar este comando, todos los comandos en esa sesión se ejecutarán con los permisos y privilegios del rol, Ideal para cambiar temporalmente a un rol con permisos específicos necesarios para ejecutar ciertas tareas.
  SET ROLE test_user;
 
--- volver al rol original
-RESET ROLE ;
+-- regresarme al rol original; 
+RESET ROLE; 
+
+/* Cambiar de session  */
+--> espués de ejecutar este comando, todos los comandos ejecutados en esa sesión se realizarán con los permisos y privilegios del rol
+SET SESSION AUTHORIZATION user_local; 
+
+--- Regresar al usuario original (solo superusuario puede hacerlo)
+RESET SESSION AUTHORIZATION ; 
+
+
+----- conclusion ----
+SET ROLE:
+	Cambia el rol activo y los permisos, pero no la identidad de la sesión.
+	Usado para cambiar temporalmente los permisos dentro de una sesión.
+
+SET SESSION AUTHORIZATION:
+	Cambia tanto la identidad como los permisos de la sesión.
+	Requiere ser superusuario o el usuario original para cambiar de vuelta
 ```
 
 
