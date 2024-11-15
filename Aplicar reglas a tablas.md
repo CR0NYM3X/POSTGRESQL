@@ -306,6 +306,20 @@ SELECT * FROM pg_policies;
 
 ```sql
 
+-- -- Los Security Labels en PostgreSQL se usan principalmente para:
+-- de los datos y controlar el acceso basado en niveles de autorización
+-- 1. Clasificación de datos según niveles de sensibilidad
+-- 2. Integración con sistemas de control de acceso externos
+-- 3. Cumplimiento normativo y auditoría
+
+-- Formato de las etiquetas de seguridad SELinux:
+-- system_u:object_r:tipo_t:nivel
+-- Donde:
+-- - system_u: Usuario SELinux (system_user)
+-- - object_r: Rol SELinux (object_role)
+-- - tipo_t: Tipo de objeto
+-- - nivel: Nivel de sensibilidad (s0, s1, etc.) y categorías (c0, c1, etc.)
+
 
 https://www.joeconway.com/presentations/mls-postgres-scale14x-2016.pdf
 https://www.postgresql.org/docs/current/sepgsql.html
