@@ -856,6 +856,38 @@ SELECT
     hits,
     evictions
 FROM pg_stat_io;
+
+
+
+
+```
+
+
+
+# (single-user mode) Modo usuario unico 
+
+El modo de usuario único en PostgreSQL (single-user mode) es una configuración especial que te permite ejecutar el servidor de base de datos como un único proceso y conectar solo una sesión a la vez.
+
+**Objetivo :**
+El principal objetivo del modo de usuario único es realizar tareas de mantenimiento, recuperación o depuración de la base de datos en un entorno controlado. Este modo es útil cuando necesitas realizar cambios críticos en la base de datos y no quieres que otras conexiones interfieran.
+
+```
+# Ejemplo para ejecutar un script 
+ /usr/pgsql-15/bin/postgres  --single  -D /sysx/data -F -c exit_on_error=true postgres < /path/to/recovery_script.sql 
+
+# conectarte y ejceutar comandos 
+[postgres@TEST_SERVER data15]$  /usr/pgsql-15/bin/postgres  --single  -D /sysx/data  -F -c exit_on_error=true postgres
+
+PostgreSQL stand-alone backend 15.8
+backend> select version();
+<2024-11-15 13:11:09 MST     2724619 6737aad9.29930b >LOG:  statement: select version();
+
+         1: version     (typeid = 25, len = -1, typmod = -1, byval = f)
+        ----
+         1: version = "PostgreSQL 15.8 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-22), 64-bit" (typeid = 25, len = -1, typmod = -1, byval = f)
+        ----
+<2024-11-15 13:11:09 MST     2724619 6737aad9.29930b >LOG:  duration: 1.493 ms
+backend>
 ```
  
 https://postgresconf.org/system/events/document/000/002/232/Troubleshoot_PG_Perf-04172024.pdf
