@@ -40,7 +40,7 @@ create user angel ;
 alter user angel SET work_mem = '4MB'; 
 alter user angel SET statement_timeout = '5s';
 select usename,useconfig from pg_shadow where usename = 'angel';
-
+ALTER ROLE angel RESET work_mem;-- quitarlo 
 
 
 ```
