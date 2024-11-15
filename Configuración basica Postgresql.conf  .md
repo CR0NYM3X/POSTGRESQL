@@ -9,9 +9,64 @@ Doc Man:
 /usr/pgsql-15/bin/initdb -E SQL_ASCII -D /sysx/data
 ``` 
 
+
+## VER LAS CONFIGURACIONES DESDE LA DB
+```sql
+select * from pg_settings; --- ver valores de los parametros 
+select * from pg_config --- Ver rutas de binarios 
+select current_setting('search_path'); --- ver configuraciones 
+show statement_timeout; --- ver parametros  individual
+SHOW ALL-- Ver todos los  parametros
+select name,setting from pg_settings where name = 'statement_timeout'; -- ver todos los parametros pero aqui estoy filtrando 
+``` 
+
+
+
+
 # Formas de cambiar parametros 
 ```sql
+ 
+############ Asignar parámetros a una Base de datos  ############
+\c postgres
 
+-- Establecer statement_timeout a 10 segundos
+ALTER DATABASE postgres SET statement_timeout = '10s';
+
+-- Validar configuraciones
+ SELECT d.datname, r.rolname, s.setconfig FROM pg_db_role_setting s LEFT JOIN pg_database d ON s.setdatabase = d.oid LEFT  JOIN pg_roles r ON s.setrole = r.oid;
+
+--- Quitar parámetro 
+ALTER DATABASE postgres RESET statement_timeout;
+
+
+
+############ Asignar parámetros a una Base de datos y especificando el usuario ############
+-- Establecer statement_timeout a 10 segundos
+ ALTER ROLE angel IN DATABASE postgres SET statement_timeout = '5s';
+
+-- Validar configuraciones
+ SELECT d.datname, r.rolname, s.setconfig FROM pg_db_role_setting s LEFT JOIN pg_database d ON s.setdatabase = d.oid LEFT  JOIN pg_roles r ON s.setrole = r.oid;
+
+--- Quitar parámetro 
+ ALTER ROLE angel IN DATABASE postgres RESET statement_timeout ;
+ 
+ 
+ 
+ 
+############  Asignar parámetros a nivel Usuario, Roles o Grupos  ############
+-- Asignando un limite de work_mem  al usuario angel 
+alter user angel SET work_mem = '4MB'; 
+
+-- Validar las configuraciones 
+select usename,useconfig from pg_shadow where usename = 'angel';
+
+-- Quitar el parámetro
+ALTER ROLE angel RESET work_mem;-- quitarlo 
+
+
+
+
+############  Asignar parámetros a nivel Sesion/Transaccion ############ 
 -- Cambiar el nivel de mensajes del cliente a 'log' para la sesión actual
 SET client_min_messages TO 'log';
 
@@ -23,8 +78,6 @@ COMMIT;
  
 
 ### Usando `pg_catalog.set_config`
-
- 
 -- Cambiar el nivel de mensajes del cliente a 'log' para la sesión actual
 SELECT pg_catalog.set_config('client_min_messages', 'log', false);
 
@@ -35,13 +88,42 @@ PERFORM pg_catalog.set_config('client_min_messages', 'log', true);
 COMMIT;
 
 
-## Asignar parametros a nivel Usuario
-create user angel ; 
-alter user angel SET work_mem = '4MB'; 
-alter user angel SET statement_timeout = '5s';
-select usename,useconfig from pg_shadow where usename = 'angel';
-ALTER ROLE angel RESET work_mem;-- quitarlo 
 
+############  Asignar parámetros una tabla  ############
+-- Asignarle parametros de vacum para el ejemplo 
+ALTER TABLE tabla_ejemplo_autovacuum SET (
+    autovacuum_vacuum_insert_scale_factor = 0.05,
+    autovacuum_vacuum_insert_threshold = 200
+);
+
+-- Validar las configuraciones 
+SELECT c.relname AS table_name,o.option_name,o.option_value FROM pg_class c JOIN  pg_namespace n ON n.oid = c.relnamespace JOIN pg_options_to_table(c.reloptions) o ON true WHERE
+c.relname = 'tabla_ejemplo_autovacuum';
+
+-- Quitar el parámetro
+ALTER TABLE tabla_ejemplo_autovacuum RESET (
+    autovacuum_vacuum_insert_scale_factor ,
+    autovacuum_vacuum_insert_threshold 
+);
+
+############  Asignar parámetros una Funcion  ############
+ -- Asignarle parametros al crear la funcion  
+CREATE OR REPLACE FUNCTION mi_funcion()
+RETURNS void AS $$
+BEGIN
+    -- Lógica de la función
+END;
+$$ LANGUAGE plpgsql
+SET work_mem = '64MB'; 
+
+-- tambien puede agregarle  parametros una vez creada la func
+alter FUNCTION mi_funcion() SET work_mem = '64MB';
+
+-- Validar las configuraciones 
+select proname,proconfig from pg_proc where proname = 'mi_funcion';
+
+-- Quitar el parámetro
+alter FUNCTION mi_funcion() RESET work_mem;
 
 ```
 
@@ -113,17 +195,6 @@ postgresql.auto.conf
 
 > [!IMPORTANT]
 > lOS PARAMETROS QUE ESTAN COMENTADOS CON '#' EL VALOR QUE TIENEN ES EL QUE SE CARGA POR DEFAULT, SI QUIERES QUE TENGA OTRO VALOR DIFERENTE AL DAFAUL SOLO DESCOMENTA Y COLOCA EL NUEVO VALOR
-
-
-## VER LAS CONFIGURACIONES DESDE LA DB
-```sql
-select * from pg_settings;
-select * from pg_config
-
-show config_file;
-
-select current_setting('search_path');
-``` 
 
 
  
