@@ -302,12 +302,12 @@ SELECT * FROM pg_policies;
 
 
 
-#### SECURITY LABEL con SELinux
+#### SECURITY LABEL con sepgsql — SELinux
 
 ```sql
 
 
-
+https://www.joeconway.com/presentations/mls-postgres-scale14x-2016.pdf
 https://www.postgresql.org/docs/current/sepgsql.html
 
 
