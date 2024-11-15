@@ -21,6 +21,43 @@ Grafana
 
 ### Herramientas de Seguridad para PostgreSQL
 
+
+1. Auditoría y Monitorización
+
+	pgAudit: Registra operaciones sensibles como DDL y DML.
+	pgBadger: Genera reportes visuales de logs y detecta intentos fallidos.
+	Zabbix: Monitorea conexiones y recursos en tiempo real.
+	Prometheus + Grafana: Visualiza métricas y genera alertas configurables.
+
+
+2. Protección Contra Ataques
+
+	Fail2Ban: Bloquea IPs tras varios intentos fallidos.
+	
+
+
+
+	Crowdsec: Plataforma colaborativa contra ataques de fuerza bruta.
+
+
+3. Hardening y Gestión de Conexiones
+
+	PgBouncer: Proxy ligero para limitar conexiones y prevenir abusos.
+	OPM: Monitoreo especializado para PostgreSQL con alertas avanzadas.
+
+
+4. Cifrado y Protección de Datos
+
+	Vault: Gestión dinámica de secretos y claves de cifrado.
+	Let's Encrypt: Certificados SSL/TLS gratuitos para asegurar conexiones.
+
+
+5. Análisis de Logs y Vulnerabilidades
+
+	ELK Stack: Visualización y análisis avanzado de logs.
+	OSSEC: Detección de intrusiones y monitoreo de cambios no autorizados.
+
+
 ### **5. Ejecucion de tareas programadas :**
 - **  pgAgent:** Ejecucion de tareas programadas , Propia de postgresq, y puedes administrarla desde pgAdmin
 - **  pg_cron:** Ejecucion de tareas programadas , Planifica y ejecuta tareas dentro de PostgreSQL, como vacuums o análisis, en horarios programados, lo que ayuda a mantener el rendimiento de la base de datos de forma automática y sin intervención manual.
