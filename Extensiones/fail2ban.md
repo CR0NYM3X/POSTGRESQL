@@ -37,6 +37,10 @@
 
 
 
+
+FATAL:  password authentication failed for user "postgres"
+DETAIL:  Connection matched file "/sysx/data16/pg_hba.conf" line 119: "host    all             all             127.0.0.1/32            scram-sha-256"
+
  /usr/bin/python3.6 -s /usr/bin/fail2ban-server -xf start
  
  ----  vim /lib/systemd/system/fail2ban.service  ----
@@ -64,3 +68,31 @@ RestartPreventExitStatus=0 255
 WantedBy=multi-user.target
 ~
 
+--------------- 
+
+ 
+ Bibliografías:
+ 
+ https://github.com/rc9000/postgres-fail2ban-lockout
+ https://blog.unixpad.com/2023/05/26/bloquear-accesos-no-autorizados-en-postgres-usando-fail2ban/
+ https://warlord0blog.wordpress.com/2022/09/14/fail2ban-postgresql/
+ https://jpcarmona.github.io/web/blog/fail2ban/
+ 
+ https://docs.iredmail.org/fail2ban.sql.html
+ https://www.saas-secure.com/online-services/read-fail2ban-ip-from-database-and-lock.html
+ https://confluence.atlassian.com/conf89/using-fail2ban-to-limit-login-attempts-1387596371.html
+ https://serverfault.com/questions/627169/how-to-secure-an-open-postgresql-port
+ 
+ 
+ https://serverfault.com/questions/1032015/fail2ban-postgresql-filter-not-working
+ https://github.com/fail2ban/fail2ban/discussions/3660
+ https://www.reddit.com/r/sysadmin/comments/16dklqn/fail2ban_regex_filter_for_postgresql/?rdt=61321
+ 
+ 
+ 
+ https://talk.plesk.com/threads/howto-secure-a-standard-postgres-port-with-fail2ban.355984/
+ 
+ 
+
+
+ 
