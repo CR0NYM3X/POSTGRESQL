@@ -37,7 +37,7 @@
 
 
 
-
+ /usr/bin/python3.6 -s /usr/bin/fail2ban-server -xf start
  
  ----  vim /lib/systemd/system/fail2ban.service  ----
 
