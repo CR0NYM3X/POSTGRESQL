@@ -71,11 +71,19 @@ WantedBy=multi-user.target
 --------------- 
 
 
-
+ ```sql
 
 /var/log/fail2ban.log
-
 /etc/fail2ban/jail.d/postgresql.conf ---  port = 5432
+
+
+--> sudo nano /etc/fail2ban/action.d/postgres-action.conf
+[Definition]
+actionban = /usr/local/bin/postgres_set_role_nologin
+actionunban = /usr/local/bin/postgres_set_role_login
+
+ ```
+
  
  
  Bibliografías:
