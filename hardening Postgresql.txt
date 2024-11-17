@@ -87,7 +87,7 @@ Versión de PostgreSQL	Valores Posibles para ssl_min_protocol_version
   0.- VALIDAR VERSION DE POSTGRESQL
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # SE VALIDA YA QUE EL PARAMETRO 
-   psql -c "select version()"
+   psql -X  -c "select version()"
  
  
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -96,8 +96,9 @@ Versión de PostgreSQL	Valores Posibles para ssl_min_protocol_version
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # DECLARACION DE VARIABLES 
-fecha=$(date +%Y%m%d)
-vardata=/sysx/data16 
+fecha=$(date +%y%m%d)
+vardata=/sysx/data11
+varport=5411
 dictory_backup=$vardata/respaldos_conf
 
 
@@ -106,9 +107,9 @@ dictory_backup=$vardata/respaldos_conf
 mkdir $dictory_backup
 
 # BACKUP DE ARCHIVOS CONF
-psql -p 5416       -c "COPY (select name ||' = ''' ||setting|| '''' from pg_settings ) TO '$dictory_backup/pg_settings-$fecha.csv'"
-cp  /sysx/data16/postgresql.conf  $dictory_backup/postgresql.conf-RESP-$fecha
-cp /sysx/data16/postgresql.auto.conf $dictory_backup/postgresql.auto.conf-RESP-$fecha
+psql -X  -p $varport       -c "COPY (select name ||' = ''' ||setting|| '''' from pg_settings ) TO '$dictory_backup/pg_settings-$fecha.csv'"
+cp  $vardata/postgresql.conf  $dictory_backup/postgresql.conf-RESP-$fecha
+cp $vardata/postgresql.auto.conf $dictory_backup/postgresql.auto.conf-RESP-$fecha
 ls -lhtra  $dictory_backup
 
 
@@ -122,13 +123,13 @@ cd $vardata
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Valida que el postgresql.conf no tenga errores 
-psql -p 5416     -c "select * from pg_catalog.pg_file_settings where error is not null; "
+psql -X  -p $varport     -c "select * from pg_catalog.pg_file_settings where error is not null; "
 
 # Valida que el pg_hba.conf no tenga errores  
-psql -p 5416     -c "select * from pg_hba_file_rules where error is not null; "
+psql -X  -p $varport     -c "select * from pg_hba_file_rules where error is not null; "
 
 # Valida si posgresql soporta scram-sha , en la columna enumvals  = {md5,scram-sha-256}, de igual forma ya sabemos que scram-sha-256 se implementeo en la version 10 en adelante
-psql -p 5416     -xc "select *  from pg_settings where name = 'password_encryption'"
+psql -X  -p $varport     -xc "select *  from pg_settings where name = 'password_encryption'"
 
 
 
@@ -137,9 +138,9 @@ psql -p 5416     -xc "select *  from pg_settings where name = 'password_encrypti
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  
 # ESTA QUERY TE MUESTRA LOS PARAMETROS QUE SE TIENEN QUE CONFIGURAR, TE INIDICA EL VALOR ACTUAL Y COMO DEBE DE ESTAR , TAMBIEN TE OTORGA EL SED DE LINUX PARA QUE REALICES LA MODIFICACION DE MANERA SEGURA 
- echo -e '\n\n' && psql -Xx -p 5412      -c " SELECT a.name as name_setting,setting as current_setting_incorrect, replace(coalesce(b.correct_setting,c.correct_setting),'/','\/') as correct_setting ,  short_desc,
+ echo -e '\n\n' && psql   -Xx -p $varport      -c " SELECT a.name as name_setting,setting as current_setting_incorrect, coalesce(b.correct_setting,c.correct_setting) as correct_setting ,  short_desc,
   
- case when a.name != 'server_version' then  format('sed -i %s/%s[[:space:]]*=/ s/.*/%s = %s%s%s  #&/%s postgresql.conf ',chr(34) , a.name  , a.name , chr(39) ,replace(coalesce(b.correct_setting,c.correct_setting),'/','\/'),chr(39),chr(34) ) end as command_modify FROM pg_settings  as a 
+ case when a.name != 'server_version' then  format('sed -i %s/%s[[:space:]]*=/ s/.*/%s = %s%s%s  #&/%s %s/postgresql.conf ',chr(34) , a.name  , a.name , chr(39) ,replace(coalesce(b.correct_setting,c.correct_setting),'/','\/'),chr(39),chr(34),  current_setting('data_directory')   ) end as command_modify FROM pg_settings  as a 
   
  left join (select * from (VALUES 
  ('data_directory', '/sysx/data')
@@ -228,7 +229,7 @@ Al ejecutar a query del paso #3 te mostrara la columna "command_modify"  el cual
 4.- HACEMOS ENLACES SIMBOLICOS HACIA EL DISCO EN CASO DE MODIFICAR EL PARAMETRO log_directory
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	ln -s /pg_log/ /sysx/data16/pg_log 
+	ln -s /pg_log/ $vardata/pg_log 
 
 
 
@@ -244,7 +245,7 @@ pg_ctl reload -D $vardata
 
 
 # Validamos que el log haya cambiado de nombre 
-psql -p 5416     -c "select pg_current_logfile();"
+psql -X  -p $varport     -c "select pg_current_logfile();"
 
 
 # Validamos si genero algun error el log 
@@ -261,8 +262,7 @@ head -n 30  $vardata/pg_log/postgresql-$fecha.log |  grep -A 14 -Ei "error|fatal
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Valida que el postgresql.conf no tenga errores 
-psql -p 5416     -c "select * from pg_catalog.pg_file_settings where error is not null; "
- 
+psql -X  -p $varport     -c "select * from pg_catalog.pg_file_settings where error is not null; "
  
  
 
@@ -274,10 +274,9 @@ psql -p 5416     -c "select * from pg_catalog.pg_file_settings where error is no
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
-
-
-
+ 
 
  
 
+
+ 
