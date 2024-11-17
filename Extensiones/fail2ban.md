@@ -70,10 +70,18 @@ WantedBy=multi-user.target
 
 --------------- 
 
+
+
+
+/var/log/fail2ban.log
+
+/etc/fail2ban/jail.d/postgresql.conf ---  port = 5432
+ 
  
  Bibliografías:
- 
- https://github.com/rc9000/postgres-fail2ban-lockout
+ ```sql
+https://gist.github.com/rc9000/fd1be13b5c8820f63d982d0bf8154db1
+ https://github.com/rc9000/postgres-fail2ban-lockout  
  https://blog.unixpad.com/2023/05/26/bloquear-accesos-no-autorizados-en-postgres-usando-fail2ban/
  https://warlord0blog.wordpress.com/2022/09/14/fail2ban-postgresql/
  https://jpcarmona.github.io/web/blog/fail2ban/
@@ -92,7 +100,7 @@ WantedBy=multi-user.target
  
  https://talk.plesk.com/threads/howto-secure-a-standard-postgres-port-with-fail2ban.355984/
  
- 
+ ```
 
 
  
