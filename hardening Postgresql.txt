@@ -265,6 +265,7 @@ head -n 30  $vardata/pg_log/postgresql-$fecha.log |  grep -A 14 -Ei "error|fatal
 psql -X  -p $varport     -c "select * from pg_catalog.pg_file_settings where error is not null; "
  
  
+ 
 
 
 
@@ -274,9 +275,3 @@ psql -X  -p $varport     -c "select * from pg_catalog.pg_file_settings where err
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
- 
-
- 
-
-
- 
