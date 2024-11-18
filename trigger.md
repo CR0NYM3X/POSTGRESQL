@@ -33,6 +33,14 @@ los datos en las tablas subyacentes que conforman la vista.
 **`EVENT TRIGGER:`** A diferencia de los triggers que responden a operaciones en las tablas (INSERT, UPDATE, DELETE), los EVENT TRIGGERS se activan por eventos a nivel del sistema de la base de datos, como la creación de una tabla, un cambio en la configuración del servidor,
 entre otros. Permiten reaccionar a eventos de base de datos que no están relacionados directamente con las operaciones CRUD en las tablas.
 
+```
+Evento	Momento de Activación	Uso Principal
+ddl_command_start:	Antes de la ejecución de un comando DDL	 , Validaciones y auditorías previas
+ddl_command_end:	Después de la ejecución de un comando DDL	, Registro y cambios posteriores
+sql_drop:	Al ejecutar un comando DROP	,Registro de eliminaciones
+table_rewrite:	Al reescribir una tabla por cambios estructurales importantes	, Monitoreo de cambios de gran impacto
+```
+
 --- 
 
 ### las variables TG_ son variables especiales disponibles dentro de las funciones de trigger.
