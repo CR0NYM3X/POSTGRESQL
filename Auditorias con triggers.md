@@ -312,6 +312,206 @@ Se utiliza en triggers BEFORE UPDATE, AFTER UPDATE, BEFORE DELETE y AFTER DELETE
 
 
 
+# AUDITORIA CON EVENT TRIGGER
+```SQL
+----------- AUDITORIA CAPTURA TODO -----------
+
+-- drop table auditoria_ddl ; 
+-- truncate table auditoria_ddl RESTART IDENTITY ;
+
+CREATE TABLE auditoria_ddl (
+	id SERIAL PRIMARY KEY,
+	ip_server varchar(50),
+	port int,
+	app_name varchar(255),
+	db_name varchar(100),
+	evento varchar(100),
+	usuario varchar(100),
+	ip_cliente varchar(100),
+	query text,
+	fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+ 
+
+CREATE OR REPLACE FUNCTION registrar_evento_ddl()
+RETURNS EVENT_TRIGGER AS $$
+BEGIN
+
+	INSERT INTO auditoria_ddl(  ip_server, port, app_name , db_name ,   evento,   usuario, ip_cliente, query , fecha )
+			VALUES (
+						coalesce(inet_server_addr()::text,'unix_socket') ,
+						current_setting('port')::int,
+						current_setting('application_name'),
+						current_database(),
+						TG_TAG, 
+						session_user, 
+						coalesce(inet_client_addr()::text,'unix_socket'), 
+						current_query(),
+						CLOCK_TIMESTAMP()
+					
+					);
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE EVENT TRIGGER capturar_ddl ON ddl_command_end EXECUTE FUNCTION registrar_evento_ddl();
+ 
+
+
+---------------------------------- Test: ----------------------------------
+
+postgres@postgres# create table test_tb(id int);
+CREATE TABLE
+Time: 2.951 ms
+
+
+postgres@postgres# grant select on   test_tb    to postgres;
+GRANT
+Time: 1.837 ms
+
+postgres@postgres# alter table test_tb add column phone_number text;
+ALTER TABLE
+Time: 4.708 ms
+
+
+postgres@postgres# drop table test_tb;
+DROP TABLE
+Time: 15.967 ms
+
+postgres@postgres# select * from auditoria_ddl ;
++-[ RECORD 1 ]---------------------------------------------------+
+| id         | 1                                                 |
+| ip_server  | unix_socket                                       |
+| port       | 5415                                              |
+| app_name   | psql                                              |
+| db_name    | postgres                                          |
+| evento     | CREATE TABLE                                      |
+| usuario    | postgres                                          |
+| ip_cliente | unix_socket                                       |
+| query      | create table test_tb(id int);                     |
+| fecha      | 2024-11-17 18:05:54.713603                        |
++-[ RECORD 2 ]---------------------------------------------------+
+| id         | 2                                                 |
+| ip_server  | unix_socket                                       |
+| port       | 5415                                              |
+| app_name   | psql                                              |
+| db_name    | postgres                                          |
+| evento     | GRANT                                             |
+| usuario    | postgres                                          |
+| ip_cliente | unix_socket                                       |
+| query      | grant select on   test_tb    to postgres;         |
+| fecha      | 2024-11-17 18:05:57.687673                        |
++-[ RECORD 3 ]---------------------------------------------------+
+| id         | 3                                                 |
+| ip_server  | unix_socket                                       |
+| port       | 5415                                              |
+| app_name   | psql                                              |
+| db_name    | postgres                                          |
+| evento     | ALTER TABLE                                       |
+| usuario    | postgres                                          |
+| ip_cliente | unix_socket                                       |
+| query      | alter table test_tb add column phone_number text; |
+| fecha      | 2024-11-17 18:06:01.035536                        |
++-[ RECORD 4 ]---------------------------------------------------+
+| id         | 4                                                 |
+| ip_server  | unix_socket                                       |
+| port       | 5415                                              |
+| app_name   | psql                                              |
+| db_name    | postgres                                          |
+| evento     | DROP TABLE                                        |
+| usuario    | postgres                                          |
+| ip_cliente | unix_socket                                       |
+| query      | drop table test_tb;                               |
+| fecha      | 2024-11-17 18:06:04.040934                        |
++------------+---------------------------------------------------+
+
+Time: 0.809 ms
+
+```
+
+
+
+
+# PARAMETROS PARA AUDITORIA 
+
+
+```SQL
+# Parametros para auditorias 
+track_commit_timestamp = on --- Para auditar cuándo exactamente se confirmó una transacción específica, a nivel fila . 
+track_activities = 'on' --->  Permite ver qué consultas están en ejecución en la tabla  pg_stat_activity
+track_activity_query_size = '2048'   ---> Define el tamaño máximo del texto de una consulta que se guarda en pg_stat_activity
+track_counts = on ---> para usar  pg_stat_database 
+track_io_timing = on ----> Cuando activas track_io_timing, puedes validar los datos en las vistas estadísticas : pg_statio_user_tables 
+track_functions = all ---> Cuando activas track_functions, puedes validar los datos en la vista pg_stat_user_functions
+log_temp_files = 0 --> registrar archivos temporales mayores a un tamaño específico (por ejemplo, 0 bytes para registrar todos los archivos temporales) 
+
+
+
+
+
+# Ejemplos 
+-- Creamos una tabla 
+postgres@postgres# create table students (id int, name text);
+CREATE TABLE
+Time: 18.540 ms
+
+
+postgres@postgres# select pg_xact_commit_timestamp(xmin), oid, relname from pg_class where relname = 'students';
++-------------------------------+-------+----------+
+|   pg_xact_commit_timestamp    |  oid  | relname  |
++-------------------------------+-------+----------+
+| 2024-11-17 17:15:18.480489-07 | 17838 | students |
++-------------------------------+-------+----------+
+
+
+
+postgres@postgres# alter table students add column phone_number text;
+ALTER TABLE
+Time: 1.694 ms
+
+
+postgres@postgres# select pg_xact_commit_timestamp(xmin), oid, relname from pg_class where relname = 'students';
++-------------------------------+-------+----------+
+|   pg_xact_commit_timestamp    |  oid  | relname  |
++-------------------------------+-------+----------+
+| 2024-11-17 17:29:13.298759-07 | 17838 | students |
++-------------------------------+-------+----------+
+(1 row)
+
+ 
+ 
+postgres@postgres# insert into students select 1, 'Maria';
+INSERT 0 1
+Time: 1.277 ms
+
+postgres@postgres#  select pg_xact_commit_timestamp(xmin), oid, relname from pg_class where relname = 'students';
++-------------------------------+-------+----------+
+|   pg_xact_commit_timestamp    |  oid  | relname  |
++-------------------------------+-------+----------+
+| 2024-11-17 17:29:13.298759-07 | 17838 | students |
++-------------------------------+-------+----------+
+(1 row)
+
+
+postgres@postgres# insert into students select 1, 'Roberto';
+INSERT 0 1
+Time: 1.636 ms
+
+
+postgres@postgres# select pg_xact_commit_timestamp(xmin),* from students;
++-------------------------------+----+---------+--------------+
+|   pg_xact_commit_timestamp    | id |  name   | phone_number |
++-------------------------------+----+---------+--------------+
+| 2024-11-17 17:32:35.317099-07 |  1 | Maria   | NULL         |
+| 2024-11-17 17:33:20.637004-07 |  1 | Roberto | NULL         |
++-------------------------------+----+---------+--------------+
+(2 rows)
+
+```
+
 
 ### Bibliografía
 ```sql
