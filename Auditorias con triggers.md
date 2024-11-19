@@ -510,6 +510,42 @@ postgres@postgres# select pg_xact_commit_timestamp(xmin),* from students;
 +-------------------------------+----+---------+--------------+
 (2 rows)
 
+
+
+postgres@postgres# create user test_audit with valid until '2024-11-22';
+CREATE ROLE
+Time: 1.279 ms
+
+
+
+postgres@postgres# select pg_xact_commit_timestamp(xmin),rolname from pg_authid where rolname = 'test_audit';
++-------------------------------+------------+
+|   pg_xact_commit_timestamp    |  rolname   |
++-------------------------------+------------+
+| 2024-11-19 14:37:06.720295-07 | test_audit |
++-------------------------------+------------+
+(1 row)
+
+
+postgres@postgres# alter user test_audit with PASSWORD 'fduXVx}S3b5f7IDWJHXjpVNol6<3X<';
+ALTER ROLE
+Time: 11.610 ms
+
+
+
+postgres@postgres# select pg_xact_commit_timestamp(xmin),rolname from pg_authid where rolname = 'test_audit';
++-------------------------------+------------+
+|   pg_xact_commit_timestamp    |  rolname   |
++-------------------------------+------------+
+| 2024-11-19 14:40:48.569775-07 | test_audit |
++-------------------------------+------------+
+(1 row)
+
+
+
+
+
+
 ```
 
 
