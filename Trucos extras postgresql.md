@@ -1535,7 +1535,7 @@ NOTIFY mi_canal_escucha, 'Este es un mensaje de notificación';
 
 ## Restablecer el template1
 En caso de que se instalaran objetos que no querias en el template1 y son muchas cosas que tienes que modificar para eliminarlo de manera manual y no quieres que al hacer una nueva Base de datos se instalen automaticamente esos objetos, en este caso puedes restablecer el template1 
-```
+```sql
 
 --- Si intenta eliminarlo de primero no podras 
 postgres@postgres# drop database template1;
