@@ -8,6 +8,91 @@ https://gist.github.com/ceving/4eae4437d793ae4752b8582253872067
 
 ```
 
+# Leer el log desde la base de datos 
+```sql
+
+
+log_destination = 'stderr'
+log_filename = 'postgresql.log'
+log_truncate_on_rotation = off
+log_line_prefix = '%t@%r@%a@%d@%u@%p@%c@%i'
+
+
+pg_ctl reload -D $PGDATA15
+
+
+
+
+
+\c postgres 
+CREATE EXTENSION file_fdw;
+
+CREATE SERVER log_postgres
+FOREIGN DATA WRAPPER file_fdw;
+
+
+
+CREATE FOREIGN TABLE fdw_log_postgres (
+   log_time TEXT,
+   remote_host_and_port TEXT,
+   application_name TEXT,
+   database_name TEXT,
+   user_name TEXT,
+   process_id TEXT,
+   session_id TEXT,
+   command_tag TEXT
+)
+SERVER log_postgres
+OPTIONS (filename '/sysx/data15/pg_log/postgresql.log', format 'csv', delimiter '@', header 'false');
+
+
+\det 
+
+ -- drop foreign table fdw_log_postgres;
+
+postgres@postgres# select  * from fdw_log_postgres order by log_time desc limit 10 ; ;
++-[ RECORD 1 ]---------+----------------------------------------------------------------------------------------+
+| log_time             | 2024-11-19 12:55:13 MST                                                                |
+| remote_host_and_port | [local]                                                                                |
+| application_name     | psql                                                                                   |
+| database_name        | postgres                                                                               |
+| user_name            | postgres                                                                               |
+| process_id           | 3262927                                                                                |
+| session_id           | 673cec90.31c9cf                                                                        |
+| command_tag          | idleLOG:  statement: select  * from fdw_log_postgres order by log_time desc limit 10 ; |
++-[ RECORD 2 ]---------+----------------------------------------------------------------------------------------+
+| log_time             | 2024-11-19 12:55:10 MST                                                                |
+| remote_host_and_port | [local]                                                                                |
+| application_name     | psql                                                                                   |
+| database_name        | postgres                                                                               |
+| user_name            | postgres                                                                               |
+| process_id           | 3262927                                                                                |
+| session_id           | 673cec90.31c9cf                                                                        |
+| command_tag          | idleLOG:  duration: 0.067 ms                                                           |
++-[ RECORD 3 ]---------+----------------------------------------------------------------------------------------+
+| log_time             | 2024-11-19 12:55:10 MST                                                                |
+| remote_host_and_port | [local]                                                                                |
+| application_name     | [unknown]                                                                              |
+| database_name        | [unknown]                                                                              |
+| user_name            | [unknown]                                                                              |
+| process_id           | 3263456                                                                                |
+| session_id           | 673ced1e.31cbe0                                                                        |
+| command_tag          | LOG:  connection received: host=[local]                                                |
++-[ RECORD 4 ]---------+----------------------------------------------------------------------------------------+
+| log_time             | 2024-11-19 12:55:10 MST                                                                |
+| remote_host_and_port | [local]                                                                                |
+| application_name     | psql                                                                                   |
+| database_name        | postgres                                                                               |
+| user_name            | postgres                                                                               |
+| process_id           | 3262927                                                                                |
+| session_id           | 673cec90.31c9cf                                                                        |
+| command_tag          | idleLOG:  statement: ;                                                                 |
++-[ RECORD 5 ]---------+----------------------------------------------------------------------------------------+
+
+
+
+```
+
 # Habilita el recolector de logs.
 logging_collector = on
 
@@ -43,3 +128,7 @@ Auditorias:
  https://github.com/pgaudit/pgaudit/tree/master
  https://www.crunchydata.com/blog/pgaudit-auditing-database-operations-part-1
  https://severalnines.com/blog/how-to-audit-postgresql-database/
+
+
+
+
