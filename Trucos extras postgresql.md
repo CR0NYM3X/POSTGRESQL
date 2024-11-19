@@ -1530,3 +1530,41 @@ SELECT pg_notify('mi_canal_escucha', '¡Hola desde PostgreSQL!');
 NOTIFY mi_canal_escucha, 'Este es un mensaje de notificación';
 
 ```
+
+
+
+## Restablecer el template1
+En caso de que se instalaran objetos que no querias en el template1 y son muchas cosas que tienes que modificar para eliminarlo de manera manual y no quieres que al hacer una nueva Base de datos se instalen automaticamente esos objetos, en este caso puedes restablecer el template1 
+```
+
+--- Si intenta eliminarlo de primero no podras 
+postgres@postgres# drop database template1;
+ERROR:  cannot drop a template database
+Time: 0.496 ms
+
+---- Las DB template tienen un parámetro que les permite indicar si son template y estas no les permite ser eliminadas 
+select datistemplate,* from pg_database where datname  ilike 'template%';
+ 
+---- Modificarmos el parámetro a false 
+UPDATE pg_database SET datistemplate = FALSE WHERE datname = 'template1';
+
+---- Eliminamos la DB template1 
+drop database template1 ;
+
+---- Creamos la nueva DB template0 basandonos del template0
+CREATE DATABASE template1 TEMPLATE template0;
+
+---- Indicamos que la DB es un template 
+UPDATE pg_database SET datistemplate = TRUE WHERE datname = 'template1';
+ 
+ --- Validamos si la podemos eliminar 
+postgres@postgres# drop database template1;
+ERROR:  cannot drop a template database
+Time: 0.496 ms
+
+--- Hacemos un test de conexion y todo quedo bien
+postgres@postgres# \c template1
+You are now connected to database "template1" as user "postgres".
+
+
+```
