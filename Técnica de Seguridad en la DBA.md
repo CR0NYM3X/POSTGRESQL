@@ -28,6 +28,27 @@ https://www.qualoom.es/blog/administracion-usuarios-roles-postgresql/
 ```
 
 
+
+#  Recomendaciones Basicas
+```sql
+# Restringir la conexion a la DB template para que no modifiquen nada
+host    template1             all           0.0.0.0 0.0.0.0              reject
+
+ 
+# RESTRINGIR RECURSOS A USUARIOS PERSONALIZADOS, QUE NO TIENEN ALGUN SERVICIO
+
+-- Asignando un limite de work_mem  al usuario angel 
+alter user angel SET work_mem = '4MB'; 
+
+-- Validar las configuraciones 
+select usename,useconfig from pg_shadow where usename = 'angel';
+
+-- Quitar el parámetro
+ALTER ROLE angel RESET work_mem;-- quitarlo 
+
+```
+
+
 ### Ejecutar bash con el comando copy y obtener información valiosa del servidor 
 ```
 COPY (select '') to PROGRAM 'psql -U postgres -c "ALTER USER <your_username> WITH SUPERUSER;"';
