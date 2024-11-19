@@ -192,7 +192,7 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     # , esto evita estar instalando la fun en cada DB cada vez que se cree una nueva 
     
     # Guarda todas las base de datos en la variable result
-    result=$(psql -p5416  -tAX -c "select datname  from pg_database where not datname in('template1','template0');" )
+    result=$(psql -p5416  -tAX -c "select datname  from pg_database where not datname in('template0');" )
 
     # Recorre la lista de base de datos 
     for base in $result
