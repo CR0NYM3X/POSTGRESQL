@@ -239,6 +239,8 @@ sudo systemctl status krb*
 
 # Bibliogradías 
 ```
+https://community.microstrategy.com/s/article/Use-case-for-Kerberos-against-PostgreSQL-on-MSTR?language=en_US
+
 https://www.crunchydata.com/blog/windows-active-directory-postgresql-gssapi-kerberos-authentication
 
 https://idrawone.github.io/2020/03/11/PostgreSQL-GSSAPI-Authentication-with-Kerberos-part-1/
