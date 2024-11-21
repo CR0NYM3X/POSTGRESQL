@@ -418,7 +418,8 @@ CASE WHEN rolreplication='t' THEN 1 ELSE 0 END as rolreplication_
 > **DROP OWNED BY myusertest;**  Este elimina todos objetos al que el usuario era owner 
 
 > [!IMPORTANT]
-> Cuando un usuario/role crea un objeto, automáticamente se coloca ese usuario como owner en el objeto, almenos que lo cambie 
+> Cuando un usuario/role crea un objeto, automáticamente se coloca ese usuario como owner en el objeto, almenos que lo cambie
+> Al ser owner de un objeto esto te da la libertar de hacer lo que quieras con ese objeto incluso borrarlo
 
 ```sql
 --- Este elimina los objetos del usuario 
