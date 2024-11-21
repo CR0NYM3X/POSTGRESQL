@@ -254,4 +254,22 @@ https://docs.redhat.com/en/documentation/red_hat_directory_server/11/html/admini
 https://docs.redhat.com/en/documentation/red_hat_amq/2020.q4/html/using_amq_streams_on_rhel/assembly-kerberos_str#kerberos-setting-up_str
 https://docs.redhat.com/es/documentation/red_hat_data_grid/6.6/html/security_guide/active_directory_authentication_using_kerberos_gssapi#Active_Directory_Authentication_Using_Kerberos_GSSAPI
 
+
+https://github.com/SamerBenMim/kerberos-postgres-auth-gssapi
+https://www.enterprisedb.com/blog/how-set-kerberos-authentication-using-active-directory-postgresql-database
+https://www.percona.com/blog/postgresql-database-security-external-server-based-authentication/
+https://docs.vmware.com/en/VMware-Greenplum/7/greenplum-database/admin_guide-kerberos.html
+https://www.cockroachlabs.com/docs/stable/gssapi_authentication
+https://stackoverflow.com/questions/63469679/log-connection-failed-during-start-up-processing-user-database-fatal-gssapi
+
+
+https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.initmax.cz/wp-content/uploads/2024/06/enterprise-solution-in-postgresql_efficient-and-flexible-access-management.pdf&ved=2ahUKEwjgv7LW0c6JAxU44ckDHV0AMB04FBAWegQIDhAB&usg=AOvVaw2iinqg22Cj0OtAul2x5asI
+
+https://www.google.com/urlsa=t&source=web&rct=j&opi=89978449&url=https://h50146.www5.hpe.com/products/software/oe/linux/mainstream/support/lcc/pdf/PostgreSQL16Beta1_New_Features_en_20230528_1.pdf&ved=2ahUKEwjgv7LW0c6JAxU44ckDHV0AMB04FBAWegQIEBAB&usg=AOvVaw2uE9LdDvwbLsVjo3oLjyiw
+https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://postgresconf.org/system/events/document/000/000/183/pgconf_us_v4.pdf&ved=2ahUKEwjrx-Pxyc6JAxUa_8kDHRBNAZgQFnoECBAQAQ&usg=AOvVaw3vBedmi7_ltyjwuVVAgYt-
+
+
+
+
+
 ```
