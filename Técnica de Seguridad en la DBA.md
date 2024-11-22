@@ -218,7 +218,7 @@ Select * from  pg_stat_activity    ;
 ```
 
 
-### Evita Inyeccion SQL 
+### Evita Inyeccion SQL  #1
 Esto es útil para evitar problemas de inyección SQL y para manejar valores de manera segura y eficiente.
 Si no usáramos USING, tendríamos que concatenar los valores directamente en la cadena SQL, lo cual es menos seguro y más propenso a errores
 ```
@@ -279,7 +279,17 @@ END $$;
 
 
 ```
+### Evita Inyeccion SQL  #2
+```sql
 
+quote_literal: Asegura que el valor se encierre en comillas , incluso si el texto tiene comillas, modifica el texto para que no genere error
+select quote_literal(E'holaaa \' Mundo'); ---> 'holaaa '' Mundo' 
+ 
+quote_ident: Se usa para asegurarse de que el valor que agregaras se use para el nombre de un objeto por ejemplo el nombre de una tabla
+select quote_ident(E'holaaa \' Mundo'); ---> "holaaa ' Mundo"  
+
+
+```
  
 ### Validar las funciones que tienen SECURITY DEFINER, LEAKPROOF , PROCONFIG: 
 ```SQL
