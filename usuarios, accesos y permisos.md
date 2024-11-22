@@ -175,6 +175,7 @@ y solo esta tomando los permisos del rol padre
 
 
 ```sql
+
 CREATE USER "testuserdba"; -- crear un user
 CREATE role "testuserdba";  -- crear un role  
 CREATE USER "testuserdba" login VALID UNTIL  '2023-11-15'; --- fecha de expiracion  
@@ -725,6 +726,13 @@ select	'\\c ' || datname || ';' || CHR(10) || 'grant select on all tables in sch
 # Grupos  lógicos  en postgresql: 
 son conjuntos lógicos de roles de usuarios que se utilizan para simplificar la administración de permisos y la gestión de roles en una base de datos. Los grupos permiten asignar permisos a un conjunto de usuarios de una manera más eficiente, en lugar de otorgar permisos individuales a cada usuario.
 
+
+# Crear un usuario y asignarlo a un grupo 
+ ```sql
+ CREATE USER nuevo_usuario4 WITH PASSWORD 'tu_contraseña' USER admin_role, read_only;
+ CREATE USER nuevo_usuario5 WITH PASSWORD 'tu_password' IN GROUP  admin_role, read_only;
+ CREATE USER nuevo_usuario9 WITH PASSWORD 'tu_password' IN ROLE admin_role, read_only;
+```
 
 ### Ver los grupos existentes:
 ```sql
