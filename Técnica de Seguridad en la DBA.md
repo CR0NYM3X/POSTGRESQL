@@ -338,3 +338,138 @@ Algunos de los competidores de Tanium en el mercado de gestión y seguridad de e
 - **Symantec**: Ofrece soluciones integrales de seguridad de endpoints y protección contra amenazas.
 ```
  
+
+
+
+# Ejemplo de permisos del ROL PUBLIC
+
+
+```sql
+
+--------------------- POSTGRES  --------------------- 
+create user gerente VALID UNTIL '2024-11-25' ;  --  drop user gerente;
+create user cliente VALID UNTIL '2024-11-25' ;  --  drop user cliente;
+ 
+
+postgres@postgres# create database test_funs;
+CREATE DATABASE
+Time: 311.576 ms
+
+
+postgres@postgres# \c test_funs
+psql (16.4, server 15.8)
+You are now connected to database "test_funs" as user "postgres".
+postgres@test_funs#
+
+
+
+-- drop  FUNCTION public.fun_cleeantable;
+ 
+CREATE OR REPLACE FUNCTION public.fun_cleeantable(
+    CHARACTER(50),
+    INTEGER)
+RETURNS void
+LANGUAGE 'plpgsql'
+COST 100
+VOLATILE  PARALLEL UNSAFE
+set client_min_messages = notice
+ --SECURITY DEFINER
+AS $BODY$
+DECLARE
+    iTabla ALIAS FOR $1;
+    iOpc ALIAS FOR $2;
+BEGIN
+    CASE
+        WHEN iOpc = 0 THEN EXECUTE format('TRUNCATE TABLE %I', iTabla);
+        WHEN iOpc = 1 THEN EXECUTE format('DROP TABLE %I', iTabla);
+		WHEN iOpc = 2 THEN  RAISE NOTICE  'SE ejectuoooooooooooo';
+    END CASE;
+END;
+$BODY$;
+
+CREATE FUNCTION
+Time: 6.962 ms
+
+
+
+--- Aqui esta peligroso ya que cualquier usuario puede ejecutar cualquier funcion 
+SELECT  a.routine_schema ,grantee, a.routine_name , b.routine_type, privilege_type FROM information_schema.routine_privileges as a
+	left join information_schema.routines  as b on a.routine_name=b.routine_name
+	 where  not a.routine_schema in('pg_catalog','information_schema')  and a.routine_name = 'fun_cleeantable'  --not a.grantee in('PUBLIC','postgres') and grantee in('MY_USER') 
+	ORDER BY grantee ;
+
+
++----------------+----------+-----------------+--------------+----------------+
+| routine_schema | grantee  |  routine_name   | routine_type | privilege_type |
++----------------+----------+-----------------+--------------+----------------+
+| public         | PUBLIC   | fun_cleeantable | FUNCTION     | EXECUTE        |
+| public         | postgres | fun_cleeantable | FUNCTION     | EXECUTE        |
++----------------+----------+-----------------+--------------+----------------+
+(2 rows)
+
+
+
+
+--- HACIENDO OWNER AL GERENTE DE LA FUNCION 
+ALTER FUNCTION  public.fun_cleeantable OWNER TO gerente;
+
+
+ALTER table  empleados OWNER TO gerente;
+
+ 
+ 
+---- CREAR LA TABLA  -- drop table empleados;
+create table empleados(nombre varchar);
+ 
+--- INSERTAR DATO EN TABLA 
+insert into empleados select 'jose';
+
+
+--- DAR PERMISO EXECUTE A CLIENTES 
+grant execute on function fun_cleeantable to cliente;
+
+ 
+ 
+SET SESSION AUTHORIZATION cliente; 
+set role cliente; 
+
+SET SESSION AUTHORIZATION postgres; 
+
+
+ 
+ 
+
+--------------------- CLIENTE  --------------------- 
+
+
+
+cliente@postgres> truncate table empleados;
+ERROR:  permission denied for table empleados
+Time: 2.361 ms
+
+cliente@postgres> drop table empleados;
+ERROR:  must be owner of table empleados
+Time: 1.344 ms
+
+ 
+ 
+
+cliente@postgres> select public.fun_cleeantable('empleados',1);
+ERROR:  must be owner of table empleados
+CONTEXT:  SQL statement "DROP TABLE empleados"
+PL/pgSQL function fun_cleeantable(character,integer) line 8 at EXECUTE
+Time: 1.600 ms
+
+
+cliente@postgres> select public.fun_cleeantable('empleados',0);
+ERROR:  permission denied for table empleados
+CONTEXT:  SQL statement "TRUNCATE TABLE empleados"
+PL/pgSQL function fun_cleeantable(character,integer) line 7 at EXECUTE
+Time: 1.117 ms
+
+
+
+select public.fun_cleeantable('empleados',2);
+
+
+ ```
