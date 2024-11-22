@@ -724,8 +724,16 @@ select	'\\c ' || datname || ';' || CHR(10) || 'grant select on all tables in sch
 
 
 # Grupos  lógicos  en postgresql: 
-son conjuntos lógicos de roles de usuarios que se utilizan para simplificar la administración de permisos y la gestión de roles en una base de datos. Los grupos permiten asignar permisos a un conjunto de usuarios de una manera más eficiente, en lugar de otorgar permisos individuales a cada usuario.
+son conjuntos lógicos de roles de usuarios que se utilizan para simplificar la administración de permisos y la gestión de roles en una base de datos. <br> Los grupos permiten asignar permisos a un conjunto de usuarios de una manera más eficiente, en lugar de otorgar permisos individuales a cada usuario.
 
+**Permisos que No Puedes Heredar**
+```
+Privilegios Superuser:
+	No puedes heredar el permiso de superusuario (SUPERUSER). Esto debe ser asignado explícitamente por un administrador y confiere permisos completos sobre la base de datos, lo cual puede ser riesgoso.
+
+Roles Inherentes de Administrador:
+	Privilegios específicos del sistema como CREATEROLE (permiso para crear nuevos roles) y CREATEDB (permiso para crear nuevas bases de datos) no se heredan automáticamente y deben ser concedidos explícitamente
+```
 
 # Crear un usuario y asignarlo a un grupo 
  ```sql
