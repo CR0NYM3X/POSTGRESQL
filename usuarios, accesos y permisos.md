@@ -1271,6 +1271,73 @@ ejemplo:<br>
  select * from pg_shadow where valuntil::date >= CURRENT_DATE - INTERVAL '6 months' and valuntil::date < now()::date order by valuntil;
 ```
 
+
+# para que sirven los depend 
+
+**pg_depend:** se utiliza para rastrear las dependencias entre objetos dentro de una base de datos específica.<br>
+**pg_shdepend:** se utiliza para rastrear las dependencias entre objetos compartidos a nivel de clúster, como roles, bases de datos y tablas del sistema.
+
+```
+----------- EJEMPLO DE MENSAJE DE ERROR -----------
+postgres@test_fun# drop user gerente;
+ERROR:  role "gerente" cannot be dropped because some objects depend on it
+DETAIL:  owner of function fun_cleeantable(character,integer)
+Time: 0.539 ms
+
+ 
+
+SELECT 
+    b.datname,
+    a.classid,
+    n.nspname AS esquema,
+    d.name_obj,
+    a.objsubid,
+    a.refclassid,
+    c.rolname AS rol_dependiente,
+    CASE
+        WHEN a.refclassid = 'pg_class'::regclass THEN (SELECT relname FROM pg_class WHERE oid = a.refobjid)
+        WHEN a.refclassid = 'pg_proc'::regclass THEN (SELECT proname FROM pg_proc WHERE oid = a.refobjid)
+        ELSE 'Otro tipo de objeto'
+    END AS objeto_referenciado
+FROM 
+    pg_shdepend AS a
+LEFT JOIN 
+    pg_database AS b ON a.dbid = b.oid
+LEFT JOIN 
+    pg_roles AS c ON a.refobjid = c.oid
+LEFT JOIN 
+    (SELECT oid, relname AS name_obj, relnamespace AS namespace_oid FROM pg_class 
+     UNION ALL 
+     SELECT oid, proname AS name_obj, pronamespace AS namespace_oid FROM pg_proc) AS d 
+    ON a.objid = d.oid
+LEFT JOIN 
+    pg_namespace AS n ON d.namespace_oid = n.oid
+WHERE 
+    c.rolname = 'gerente';
+
+
++-------+---------+-------+----------+------------+----------+---------+
+| dbid  | classid | objid | objsubid | refclassid | refobjid | deptype |
++-------+---------+-------+----------+------------+----------+---------+
+| 18149 |    1255 | 18213 |        0 |       1260 |    18214 | o       |
++-------+---------+-------+----------+------------+----------+---------+
+
+
+
+
+ 
+postgres@test_fun# SELECT * FROM pg_depend   WHERE objid = 18215;
++---------+-------+----------+------------+----------+-------------+---------+
+| classid | objid | objsubid | refclassid | refobjid | refobjsubid | deptype |
++---------+-------+----------+------------+----------+-------------+---------+
+|    1255 | 18215 |        0 |       2615 |     2200 |           0 | n       |
+|    1255 | 18215 |        0 |       2612 |    13133 |           0 | n       |
++---------+-------+----------+------------+----------+-------------+---------+
+(2 rows)
+ 
+ ```
+
+
 ## Bibliografía:
 
 https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf
