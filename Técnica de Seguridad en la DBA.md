@@ -2,7 +2,9 @@
 
 
 ### Quitar permisos en eschema public por seguridad 
-POR SEGURIDAD CUANDO UN USUARIO SE CONECTA TIENE ACCESO A MUCHAS TABLAS Y ESQUEMAS DEL SISTEMAS QUE TE PERMITEN VER EL INVENTARIO DE LA BASE DE DATOS
+**PUBLIC** es un ROL que utiliza para agrupar permisos que se aplican a todos los usuarios, otorgar permisos por defecto a todos los usuarios
+Por ejemplo, si otorgas un permiso a PUBLIC, cualquier usuario, presente o futuro, tendrá ese permiso.
+
 ```sql
 
 
