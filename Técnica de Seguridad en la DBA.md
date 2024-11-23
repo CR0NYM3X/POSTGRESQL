@@ -1,7 +1,11 @@
 
 
 
-### Quitar permisos en eschema public por seguridad 
+# Tecnicas de Hardening 
+es el proceso de fortalecer la seguridad de una base de datos para protegerla contra amenazas y ataques cibernéticos. Este proceso implica aplicar una serie de medidas y prácticas para minimizar las vulnerabilidades y reducir la superficie de ataque
+
+
+# Quitar permisos en eschema public por seguridad 
 **PUBLIC** es un ROL que utiliza para agrupar permisos que se aplican a todos los usuarios, otorgar permisos por defecto a todos los usuarios
 Por ejemplo, si otorgas un permiso a PUBLIC, cualquier usuario, presente o futuro, tendrá ese permiso.
 
