@@ -138,6 +138,16 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     --- Crea el esquema nuevo para que la funcion no se mescle con la información del esquema public
     CREATE SCHEMA IF NOT EXISTS sec_dba AUTHORIZATION postgres;
     grant usage  on schema sec_dba to PUBLIC;
+    grant EXECUTE on function sec_dba.check_app to PUBLIC; ---- Esto para que todos los usuario puedan ejecutar la funcion
+
+    
+    ---- validar si ya tiene los permisos 
+    SELECT  a.routine_schema ,grantee, a.routine_name , b.routine_type, privilege_type FROM information_schema.routine_privileges as a
+    	left join information_schema.routines  as b on a.routine_name=b.routine_name
+    	 where  not a.routine_schema in('pg_catalog','information_schema')  and a.routine_name = 'check_app'  --not a.grantee in('PUBLIC','postgres') and grantee in('MY_USER') 
+    	ORDER BY grantee ;
+
+
 
     --- Creando la funcion 
     CREATE OR REPLACE FUNCTION sec_dba.check_app() RETURNS void AS $$
