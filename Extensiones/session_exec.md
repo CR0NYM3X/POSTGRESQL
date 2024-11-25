@@ -152,20 +152,27 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     grant EXECUTE on function sec_dba.check_app to PUBLIC; ---- Esto para que todos los usuario puedan ejecutar la funcion
 
     
-    ---- validar si ya tiene los permisos 
-    SELECT  a.routine_schema ,grantee, a.routine_name , b.routine_type, privilege_type FROM information_schema.routine_privileges as a
-    	left join information_schema.routines  as b on a.routine_name=b.routine_name
-    	 where  not a.routine_schema in('pg_catalog','information_schema')  and a.routine_name = 'check_app'  --not a.grantee in('PUBLIC','postgres') and grantee in('MY_USER') 
-    	ORDER BY grantee ;
-
-
-
     --- Creando la funcion 
     CREATE OR REPLACE FUNCTION sec_dba.check_app() RETURNS void AS $$
+    DECLARE 
+    	v_limit_time varchar(30) := '80 seconds';
+    	v_time_con TIMESTAMP;
+    	v_otro text;
+    
     BEGIN
+    
+    	-- Este valida si existe un PID en pg_stat_activity, en caso de que exista aborata la ejecucion de la funcion , esto evita que se llene el documento csv con registros falsos
+    	IF (select 1 from pg_stat_activity where pid = pg_backend_pid())  THEN
+    	 
+    		RAISE EXCEPTION E'\n ----->  No puedes utilizar esta funcion, solo esta diseñada para el inicio de sesión' ;
+    	
+    	END IF;
+    	
+    	
+    
          IF 
     		/*    USUARIOS QUE QUIERES QUE VALIDE  */ 
-    		  session_user in('ale','user_test','user_app')
+    		  session_user !~ '^[0-9]'
     		
     		and
     	 
@@ -173,34 +180,39 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     		(
     		(current_setting('application_name') ilike  '%pg%' and current_setting('application_name') ilike  '%admin%'  )  or  
     		(current_setting('application_name') ilike  '%DB%' and  current_setting('application_name') ilike  '%eaver%' )  or  
-    		(current_setting('application_name') ilike  '%psqlC%' )
+    		(current_setting('application_name') ilike  '%psql%' )
     		)
     	 
     		 THEN
-    	   
-    	    --- realiza el registro de los usuarios bloqueados en el archivo unauthorized_app_users.csv
-    	    COPY (select md5(now()::text),coalesce(inet_server_addr()::text,'unix_socket'),current_setting('port') , current_database() , session_user , coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'Se detecto el uso de una aplicación no autorizada') TO PROGRAM 'cat >> /tmp/unauthorized_app_users.csv' WITH (FORMAT CSV);
-    	   
-    	   
-    	   -- select pg_terminate_backend(pg_backend_pid()); -- Esta query cierra la session
-    	   
-    	   --- Este genera una EXCEPTION y le mostrara un mensaje en la aplicacion al cliente 
-    	      RAISE EXCEPTION E' \n\n El usuario: [%] esta realizando una conexión a la base de datos [%] desde la aplicación [%] no autorizada. Esta acción está en violación de nuestras políticas de seguridad y no corresponde al propósito para el cual se creó el usuario. Si crees que este mensaje es un error, por favor contacta al equipo de seguridad de DBA inmediatamente. \n\n ',    session_user , current_database(),  current_setting('application_name') ;
-    	
+    	  
+    		
+    			-- realiza el registro de los usuarios bloqueados en el archivo unauthorized_app_users.csv
+    			COPY (select md5(CLOCK_TIMESTAMP()::text),coalesce(inet_server_addr()::text,'unix_socket'),current_setting('port') , current_database() , session_user , coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'Se detecto el uso de una aplicación no autorizada') TO PROGRAM 'cat >> /tmp/unauthorized_app_users.csv' WITH (FORMAT CSV);
+    		   
+    		   
+    		   -- select pg_terminate_backend(pg_backend_pid()); -- Esta query  es mas invasivo ya que cierra la session, no la recomiendo
+    		   
+    		   -- Este solo genera una EXCEPTION y le mostrara un mensaje en la aplicacion al cliente, se recomienda mas 
+    			  RAISE EXCEPTION E' \n\n El usuario: [%] esta realizando una conexión a la base de datos [%] desde la aplicación [%] no autorizada. Esta acción está en violación de nuestras políticas de seguridad y no corresponde al propósito para el cual se creó el usuario. Si crees que este mensaje es un error, por favor contacta al equipo de seguridad de DBA inmediatamente. \n\n ',    session_user , current_database(),  current_setting('application_name') ;
+    		
+    
+    		
     	ELSE 
-
-            --- Si quieres que aparezca un mensaje cuando se conectan exitosamente en la terminal descomenta el RAISE NOTICE
-            --- RAISE NOTICE E'\n ****** Usuario % conectado con exito ****** ', session_user ;
-
-    		--- realiza el registro de los usuarios conectados en el archivo authorized_app_users.csv
-    	    COPY (select md5(now()::text),coalesce(inet_server_addr()::text,'unix_socket'), current_setting('port') , current_database() , session_user ,coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'usuario conectado') TO PROGRAM 'cat >> /tmp/authorized_app_users.csv' WITH (FORMAT CSV);
+    
+            -- Si quieres que aparezca un mensaje cuando se conectan exitosamente en la terminal descomenta el RAISE NOTICE
+              RAISE NOTICE E'\n ****** Usuario % conectado con exito ****** ', session_user ;
+    
+    		-- realiza el registro de los usuarios conectados en el archivo authorized_app_users.csv
+    	    COPY (select md5(CLOCK_TIMESTAMP()::text),coalesce(inet_server_addr()::text,'unix_socket'), current_setting('port') , current_database() , session_user ,coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'usuario conectado') TO PROGRAM 'cat >> /tmp/authorized_app_users.csv' WITH (FORMAT CSV);
     	   
     	
         END IF;
     
     END;
     $$ LANGUAGE plpgsql
-    SECURITY DEFINER ; --- Se agrega SECURITY DEFINER para que se ejecute la funcion con permisos del postgres ya que usa la funcion copy y requere de privilegios 
+    SECURITY DEFINER  --- Se agrega SECURITY DEFINER para que se ejecute la funcion con permisos del postgres ya que usa la funcion copy y requere de privilegios 
+    SET client_min_messages = notice
+    SET client_encoding = 'UTF-8';
 
     --- Asignamos como owner el rol pg_execute_server_program para que no quede como owner el postgres por seguridad 
     ALTER FUNCTION  sec_dba.check_app()  OWNER TO pg_execute_server_program;
