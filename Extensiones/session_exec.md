@@ -135,6 +135,9 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     Crear el archivo  "/tmp/script_fun.txt" y guarda el la query en el archivo, nota la funcion debe de estar en todas la base de datos donde quieres que se valide 
 
     ```sql
+        [NOTA] - DESVENTAJA ES QUE CUALQUIER USUARIO SI LA EJECTA ESTARA REALIZANDO REGISTROS A LO LOCO 
+
+    
     --- Crea el esquema nuevo para que la funcion no se mescle con la información del esquema public
     CREATE SCHEMA IF NOT EXISTS sec_dba AUTHORIZATION postgres;
     grant usage  on schema sec_dba to PUBLIC;
