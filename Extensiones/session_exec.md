@@ -4,10 +4,7 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
 
 # DEVENTAJAS 
 ```
-    1.- DESVENTAJA ES QUE CUALQUIER USUARIO SI LA EJECTA ESTARA REALIZANDO REGISTROS SIN CONTROL, SE PUEDE OPTAR POR HACER UNA VALIDACION CON EL TIEMPO QUE TIENE EJECUTANDOSE
-        select * from pg_stat_activity where pid = pg_backend_pid();
-
-    2.- Validar el tema de servidores con PGBOUNCER , hacer pruebas antes 
+    2.- No se ha validado en entornos con PgBouncer
 ```
 
 ### Ejemplo: Configuración para bloquear usuarios que usan pgadmin y DBeaver y Obteniendo un reporte de los usuarios
