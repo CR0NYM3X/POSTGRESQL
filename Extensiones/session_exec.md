@@ -171,7 +171,7 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     	
     
          IF 
-    		/*    USUARIOS QUE QUIERES QUE VALIDE  */ 
+    		/*    USUARIOS QUE QUIERES QUE VALIDE , VALIDARA LOS USUARIOS QUE NO EMPIEZAN CON UN NUMERO */ 
     		  session_user !~ '^[0-9]'
     		
     		and
