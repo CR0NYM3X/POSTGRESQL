@@ -210,7 +210,7 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     
     END;
     $$ LANGUAGE plpgsql
-    SECURITY DEFINER  --- Se agrega SECURITY DEFINER para que se ejecute la funcion con permisos del postgres ya que usa la funcion copy y requere de privilegios 
+    SECURITY DEFINER  
     SET client_min_messages = notice
     SET client_encoding = 'UTF-8';
 
