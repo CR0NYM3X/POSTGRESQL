@@ -2,6 +2,14 @@
 La extensión `session_exec` Te permite ejecutar una funcion al iniciar una session. Esto es útil para realizar tareas como auditorías, inicialización de variables de sesión, o cualquier otra lógica que necesites ejecutar al inicio de cada sesión.
 
 
+# DEVENTAJAS 
+```
+    1.- DESVENTAJA ES QUE CUALQUIER USUARIO SI LA EJECTA ESTARA REALIZANDO REGISTROS SIN CONTROL, SE PUEDE OPTAR POR HACER UNA VALIDACION CON EL TIEMPO QUE TIENE EJECUTANDOSE
+        select * from pg_stat_activity where pid = pg_backend_pid();
+
+    2.- Validar el tema de servidores con PGBOUNCER , hacer pruebas antes 
+```
+
 ### Ejemplo: Configuración para bloquear usuarios que usan pgadmin y DBeaver y Obteniendo un reporte de los usuarios
 
 1. **Requisitos y posibles errores que puedes presentar durante la instalación de la extension** :
@@ -135,7 +143,7 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     Crear el archivo  "/tmp/script_fun.txt" y guarda el la query en el archivo, nota la funcion debe de estar en todas la base de datos donde quieres que se valide 
 
     ```sql
-        [NOTA] - DESVENTAJA ES QUE CUALQUIER USUARIO SI LA EJECTA ESTARA REALIZANDO REGISTROS A LO LOCO 
+
 
     
     --- Crea el esquema nuevo para que la funcion no se mescle con la información del esquema public
