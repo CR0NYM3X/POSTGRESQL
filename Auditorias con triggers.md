@@ -393,51 +393,53 @@ DROP TABLE
 Time: 15.967 ms
 
 postgres@postgres# select * from auditoria_ddl ;
-+-[ RECORD 1 ]---------------------------------------------------+
-| id         | 1                                                 |
-| ip_server  | unix_socket                                       |
-| port       | 5415                                              |
-| app_name   | psql                                              |
-| db_name    | postgres                                          |
-| evento     | CREATE TABLE                                      |
-| usuario    | postgres                                          |
-| ip_cliente | unix_socket                                       |
-| query      | create table test_tb(id int);                     |
-| fecha      | 2024-11-17 18:05:54.713603                        |
-+-[ RECORD 2 ]---------------------------------------------------+
-| id         | 2                                                 |
-| ip_server  | unix_socket                                       |
-| port       | 5415                                              |
-| app_name   | psql                                              |
-| db_name    | postgres                                          |
-| evento     | GRANT                                             |
-| usuario    | postgres                                          |
-| ip_cliente | unix_socket                                       |
-| query      | grant select on   test_tb    to postgres;         |
-| fecha      | 2024-11-17 18:05:57.687673                        |
-+-[ RECORD 3 ]---------------------------------------------------+
-| id         | 3                                                 |
-| ip_server  | unix_socket                                       |
-| port       | 5415                                              |
-| app_name   | psql                                              |
-| db_name    | postgres                                          |
-| evento     | ALTER TABLE                                       |
-| usuario    | postgres                                          |
-| ip_cliente | unix_socket                                       |
-| query      | alter table test_tb add column phone_number text; |
-| fecha      | 2024-11-17 18:06:01.035536                        |
-+-[ RECORD 4 ]---------------------------------------------------+
-| id         | 4                                                 |
-| ip_server  | unix_socket                                       |
-| port       | 5415                                              |
-| app_name   | psql                                              |
-| db_name    | postgres                                          |
-| evento     | DROP TABLE                                        |
-| usuario    | postgres                                          |
-| ip_cliente | unix_socket                                       |
-| query      | drop table test_tb;                               |
-| fecha      | 2024-11-17 18:06:04.040934                        |
-+------------+---------------------------------------------------+
++-[ RECORD 1 ]+---------------------------------------------+
+| xmin        | 5060                                        |
+| id          | 1                                           |
+| ip_server   | unix_socket                                 |
+| port        | 5432                                        |
+| app_name    | psql                                        |
+| db_name     | test_audit                                  |
+| evento      | CREATE TABLE                                |
+| object_type | table                                       |
+| schema_name | public                                      |
+| objet_name  | public.test_tb                              |
+| usuario     | postgres                                    |
+| ip_cliente  | unix_socket                                 |
+| query       | create table test_tb(id int);               |
+| fecha       | 2024-11-25 17:12:25.602788                  |
++-[ RECORD 2 ]+---------------------------------------------+
+| xmin        | 5061                                        |
+| id          | 2                                           |
+| ip_server   | unix_socket                                 |
+| port        | 5432                                        |
+| app_name    | psql                                        |
+| db_name     | test_audit                                  |
+| evento      | GRANT                                       |
+| object_type | TABLE                                       |
+| schema_name | NULL                                        |
+| objet_name  | NULL                                        |
+| usuario     | postgres                                    |
+| ip_cliente  | unix_socket                                 |
+| query       | grant select on   test_tb    to postgres;   |
+| fecha       | 2024-11-25 17:12:29.522408                  |
++-[ RECORD 3 ]+---------------------------------------------+
+| xmin        | 5062                                        |
+| id          | 3                                           |
+| ip_server   | unix_socket                                 |
+| port        | 5432                                        |
+| app_name    | psql                                        |
+| db_name     | test_audit                                  |
+| evento      | REVOKE                                      |
+| object_type | TABLE                                       |
+| schema_name | NULL                                        |
+| objet_name  | NULL                                        |
+| usuario     | postgres                                    |
+| ip_cliente  | unix_socket                                 |
+| query       | revoke select on   test_tb  from  postgres; |
+| fecha       | 2024-11-25 17:12:36.579831                  |
++-------------+---------------------------------------------+
+
 
 Time: 0.809 ms
 
