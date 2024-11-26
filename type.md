@@ -181,9 +181,9 @@ ALTER TABLE nombre_de_la_tabla ALTER COLUMN columna_de_tipo_contacto TYPE tipo_c
 ### 1. Tipos Numéricos
 - **Integer (int, int2, int4, int8)**
   - **Límites**:
-    - `smallint`: -32,768 a 32,767
-    - `integer`: -2,147,483,648 a 2,147,483,647
-    - `bigint`: -9,223,372,036,854,775,808 a 9,223,372,036,854,775,807
+    - `int2 (Alias: Smallint)`: -32,768 a 32,767
+    - `int4 (Alias: int, Integer)`: -2,147,483,648 a 2,147,483,647
+    - `int8 (Alias: Bigint)`: -9,223,372,036,854,775,808 a 9,223,372,036,854,775,807
   - **Espacio en memoria**:
     - `smallint`: 2 bytes
     - `integer`: 4 bytes
