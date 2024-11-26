@@ -430,10 +430,20 @@ Time: 6.962 ms
 
 
 --- Aqui esta peligroso ya que cualquier usuario puede ejecutar cualquier funcion 
-SELECT  a.routine_schema ,grantee, a.routine_name , b.routine_type, privilege_type FROM information_schema.routine_privileges as a
-	left join information_schema.routines  as b on a.routine_name=b.routine_name
-	 where  not a.routine_schema in('pg_catalog','information_schema')  and a.routine_name = 'fun_cleeantable'  --not a.grantee in('PUBLIC','postgres') and grantee in('MY_USER') 
-	ORDER BY grantee ;
+SELECT  
+	DISTINCT
+	a.routine_schema 
+	,grantee AS user_name
+	,a.routine_name 
+	,b.routine_type
+	,privilege_type 
+FROM information_schema.routine_privileges as a
+LEFT JOIN 
+	information_schema.routines  as b on a.routine_name=b.routine_name
+where  
+	NOT a.routine_schema in('pg_catalog','information_schema')  --- Retira este filtro si quieres ver las funciones default de postgres 
+	AND a.grantee in('PUBLIC')  and a.routine_name = 'fun_cleeantable'
+ORDER BY a.routine_schema,a.routine_name ;
 
 
 +----------------+----------+-----------------+--------------+----------------+
