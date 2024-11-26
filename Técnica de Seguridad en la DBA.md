@@ -32,7 +32,7 @@ FROM information_schema.routine_privileges as a
 LEFT JOIN 
 	information_schema.routines  as b on a.routine_name=b.routine_name
 where  
-	NOT a.routine_schema in('pg_catalog','information_schema')   
+	NOT a.routine_schema in('pg_catalog','information_schema')  --- Retira este filtro si quieres ver las funciones default de postgres 
 	AND a.grantee in('PUBLIC') 
 ORDER BY a.routine_schema,a.routine_name ;
 
