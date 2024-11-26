@@ -12,7 +12,8 @@ Por ejemplo, si otorgas un nuevo permiso a PUBLIC, cualquier usuario, presente o
 - no se puede dejar de ser miembro del rol PUBLIC
 - no puedes renombrar el rol
 - no puedes eliminarlo
-<br>automaticamente los permisos se le asignan 
+
+- Al crear una funcion, postgres automaticamente le otorga el permiso de EXECUTE al rol PUBLIC por lo que hay que tener cuidado y siempre hacer el revoke
 
 ```sql
 
