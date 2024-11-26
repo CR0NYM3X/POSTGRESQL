@@ -509,4 +509,31 @@ Time: 1.117 ms
 select public.fun_cleeantable('empleados',2);
 
 
+
+------------ TRIGGER Y FUNCION DE SEGURIDAD PARA REVOKE AUTOMATICO AL PUBLIC ------------
+
+CREATE OR REPLACE FUNCTION audit_function_creation()
+RETURNS event_trigger AS $$
+DECLARE 
+	v_object_type text;
+	v_schema_name text;
+	v_object_identity text;
+	v_execute text;
+BEGIN
+		SELECT object_type,schema_name,object_identity  INTO v_object_type,v_schema_name,v_object_identity FROM pg_catalog.pg_event_trigger_ddl_commands();
+
+    v_execute := 'REVOKE EXECUTE ON FUNCTION ' ||  v_object_identity || ' FROM PUBLIC';
+	EXECUTE v_execute;
+	RAISE NOTICE E'\n\n /********** Por SEGURIDAD Se realizo el REVOKE automatico al ROLE PUBLIC **********\\  \n\tFUNCION: %\n\n ',v_object_identity;
+	
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE EVENT TRIGGER revoke_public_execute
+ON ddl_command_end
+WHEN TAG IN ('CREATE FUNCTION')
+EXECUTE FUNCTION  audit_function_creation();
+
+
  ```
