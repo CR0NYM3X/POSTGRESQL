@@ -6,12 +6,38 @@ es el proceso de fortalecer la seguridad de una base de datos para protegerla co
 
 
 # Quitar permisos en eschema public por seguridad 
-**PUBLIC** es un ROL que utiliza para agrupar permisos que se aplican a todos los usuarios, otorgar permisos por defecto a todos los usuarios
-Por ejemplo, si otorgas un permiso a PUBLIC, cualquier usuario, presente o futuro, tendrá ese permiso.
+**PUBLIC** es un ROL que se utiliza para otorgarle permisos  por defecto que se aplican a todos los usuarios y de manera automática, lo unico que puedes hacerle al ROL es  ROKOVE o GRANT
+Por ejemplo, si otorgas un nuevo permiso a PUBLIC, cualquier usuario, presente o futuro, tendrá ese permiso.
+
+- no se puede dejar de ser miembro del rol PUBLIC
+- no puedes renombrar el rol
+- no puedes eliminarlo
+<br>automaticamente los permisos se le asignan 
 
 ```sql
 
+-- /*************	Vr los permisos que tuene el ROL PUBLIC	*************\
 
+select table_schema,table_name from information_schema.table_privileges where  grantee = 'PUBLIC' order by  table_schema,table_name  ; --- PERMISOS DE TABLAS 
+
+---- Ver PERMISOS DE EXECUCUION EN FUNCIONES O PROCEDIMIENTOS 
+SELECT  
+	DISTINCT
+	a.routine_schema 
+	,grantee AS user_name
+	,a.routine_name 
+	,b.routine_type
+	,privilege_type 
+FROM information_schema.routine_privileges as a
+LEFT JOIN 
+	information_schema.routines  as b on a.routine_name=b.routine_name
+where  
+	NOT a.routine_schema in('pg_catalog','information_schema')   
+	AND a.grantee in('PUBLIC') 
+ORDER BY a.routine_schema,a.routine_name ;
+
+
+-- /************* Retirar permisos *************\
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON DATABASE postgres FROM PUBLIC;
 
@@ -19,8 +45,6 @@ REVOKE all privileges on all tables in schema  pg_catalog from PUBLIC;
 REVOKE all privileges on all tables in schema  information_schema from PUBLIC;
 
 REVOKE all privileges on table pg_proc   from PUBLIC;
-
-select table_schema,table_name from information_schema.table_privileges where  grantee = 'PUBLIC' order by  table_schema,table_name  ;
 
 
 --- Estos no se recomienda usar ya que tendrias que darle permiso a cada usuario para que pueda usar el esquema 
