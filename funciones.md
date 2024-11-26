@@ -561,7 +561,19 @@ RETURN ;
 RETURNS VOID
 
 --- Salir del bucle    
-   EXIT;   
+   EXIT;
+
+
+--- USAR FOUND
+FOUND es una variable especial que se utiliza para verificar el resultado de la última sentencia SQL ejecutada.
+	Es particularmente útil para saber si una consulta afectó a alguna fila o no
+
+¿Cuándo se Establece FOUND?
+FOUND se establece en TRUE si:
+	Una consulta SELECT INTO o PERFORM encuentra al menos una fila.
+	Una sentencia INSERT, UPDATE, DELETE o FETCH afecta al menos una fila.
+FOUND se establece en FALSE en caso contrario
+
 ```
 
 
