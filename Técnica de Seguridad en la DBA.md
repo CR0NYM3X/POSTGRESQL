@@ -40,6 +40,14 @@ https://www.qualoom.es/blog/administracion-usuarios-roles-postgresql/
 # Restringir la conexion a la DB template para que no modifiquen nada
 host    template1             all           0.0.0.0 0.0.0.0              reject
 
+--- Esto hace que no permitan conexiones la DB
+--- failed: FATAL:  database "template0" is not currently accepting connections
+UPDATE pg_database SET datallowconn = FALSE WHERE datname = 'template0';
+UPDATE pg_database SET datallowconn = FALSE WHERE datname = 'template1';
+
+
+select datname,datallowconn,datistemplate  from pg_database;
+
  
 # RESTRINGIR RECURSOS A USUARIOS PERSONALIZADOS, QUE NO TIENEN ALGUN SERVICIO
 
