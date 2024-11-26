@@ -312,12 +312,14 @@ Se utiliza en triggers BEFORE UPDATE, AFTER UPDATE, BEFORE DELETE y AFTER DELETE
 
 
 
-# AUDITORIA CON EVENT TRIGGER
+# AUDITORIA CON EVENT TRIGGER DDL
 ```SQL
 ----------- AUDITORIA CAPTURA TODO -----------
 
 -- drop table auditoria_ddl ; 
 -- truncate table auditoria_ddl RESTART IDENTITY ;
+
+
 
 CREATE TABLE auditoria_ddl (
 	id SERIAL PRIMARY KEY,
@@ -326,30 +328,40 @@ CREATE TABLE auditoria_ddl (
 	app_name varchar(255),
 	db_name varchar(100),
 	evento varchar(100),
+	object_type varchar(100),
+	schema_name varchar(100),
+	objet_name varchar(100),
 	usuario varchar(100),
 	ip_cliente varchar(100),
 	query text,
 	fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
-
  
-
 CREATE OR REPLACE FUNCTION registrar_evento_ddl()
 RETURNS EVENT_TRIGGER AS $$
+DECLARE 
+	v_object_type text;
+	v_schema_name text;
+	v_object_identity text;
+
 BEGIN
 
-	INSERT INTO auditoria_ddl(  ip_server, port, app_name , db_name ,   evento,   usuario, ip_cliente, query , fecha )
+	SELECT object_type,schema_name,object_identity  INTO v_object_type,v_schema_name,v_object_identity FROM pg_catalog.pg_event_trigger_ddl_commands();
+
+	INSERT INTO auditoria_ddl(  ip_server, port, app_name , db_name ,   evento, object_type, schema_name,  objet_name, usuario, ip_cliente, query , fecha )
 			VALUES (
 						coalesce(inet_server_addr()::text,'unix_socket') ,
 						current_setting('port')::int,
 						current_setting('application_name'),
 						current_database(),
 						TG_TAG, 
+						v_object_type,
+						v_schema_name,
+						v_object_identity,
 						session_user, 
 						coalesce(inet_client_addr()::text,'unix_socket'), 
-						current_query(),
+						current_query() ,
 						CLOCK_TIMESTAMP()
 					
 					);
@@ -358,7 +370,6 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE EVENT TRIGGER capturar_ddl ON ddl_command_end EXECUTE FUNCTION registrar_evento_ddl();
- 
 
 
 ---------------------------------- Test: ----------------------------------
