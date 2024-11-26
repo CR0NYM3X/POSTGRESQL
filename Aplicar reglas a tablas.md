@@ -420,11 +420,81 @@ FOR EACH ROW
 EXECUTE FUNCTION notify_trigger_function();
 
 
+--------------
 
 
+El LEAKPROOF de las funciones: Esto afecta la forma en que el sistema ejecuta consultas contra vistas creadas con la opción security_barrier o tablas con seguridad de nivel de fila habilitada.
 
-
-
+ 
 ```
 
+ 
 
+# security_barrier en vistas 
+se utiliza para crear vistas que aseguren que las condiciones(Where/ RLS) de seguridad que se encuentran dentro de la vista creadas por el Admin o desarrollados  se ejecuten antes que las condiciones(Where) agregada por el usuario que ejecuta o usa la vista . Esto es crucial para evitar que los usuarios obtengan acceso no autorizado a los datos a través de técnicas de inferencia
+ 
+```
+https://www.cybertec-postgresql.com/en/security-barriers-cheating-on-the-planner/
+ 
+
+CREATE FUNCTION slow_func(int4) RETURNS int4 AS $$
+BEGIN
+                EXECUTE 'SELECT pg_sleep(1)';
+                RAISE NOTICE 'slow_func: %', $1;
+                RETURN $1;
+END;
+$$ LANGUAGE 'plpgsql' 
+        IMMUTABLE
+        COST  10;
+		
+		
+		
+CREATE FUNCTION fast_func(int4) RETURNS int4 AS $$
+        BEGIN
+                RAISE NOTICE 'fast_func: %', $1;
+                RETURN $1;
+        END;
+$$ LANGUAGE 'plpgsql' 
+        IMMUTABLE
+        COST  100;
+		
+		
+		
+CREATE TABLE t_test (id int4);
+INSERT INTO t_test SELECT * FROM generate_series(1, 20);
+
+select * from t_test;
+
+ 
+CREATE VIEW v AS
+        SELECT  *
+        FROM    t_test
+        WHERE   id % 2 = 0
+                AND fast_func(id) = 0;
+				
+				
+				
+SELECT * FROM v WHERE slow_func(id) = 0;
+
+
+drop VIEW v ;  
+
+CREATE VIEW v WITH (security_barrier) AS  
+        SELECT  *
+        FROM    t_test
+        WHERE   id % 2 = 0
+                AND fast_func(id) = 0;
+				
+				
+				
+SELECT * FROM v WHERE slow_func(id) = 0;
+```
+
+# Temas  Importantes : 
+```
+Abusing SECURITY DEFINER functions in PostgreSQL : https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
+security_invoker Vistas  : https://www.cybertec-postgresql.com/en/view-permissions-and-row-level-security-in-postgresql/
+Abusing PostgreSQL as an SQL beautifier : https://www.cybertec-postgresql.com/en/abusing-postgresql-as-an-sql-beautifier/
+Tag: security: https://www.cybertec-postgresql.com/en/tag/security/
+
+```
