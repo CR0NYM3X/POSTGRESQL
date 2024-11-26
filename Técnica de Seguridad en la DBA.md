@@ -513,7 +513,9 @@ select public.fun_cleeantable('empleados',2);
 ------------ TRIGGER Y FUNCION DE SEGURIDAD PARA REVOKE AUTOMATICO AL PUBLIC ------------
 
 CREATE OR REPLACE FUNCTION audit_function_creation()
-RETURNS event_trigger AS $$
+RETURNS event_trigger
+SET client_min_messages='notice'
+AS $$
 DECLARE 
 	v_object_type text;
 	v_schema_name text;
@@ -524,7 +526,7 @@ BEGIN
 
     v_execute := 'REVOKE EXECUTE ON FUNCTION ' ||  v_object_identity || ' FROM PUBLIC';
 	EXECUTE v_execute;
-	RAISE NOTICE E'\n\n /********** Por SEGURIDAD Se realizo el REVOKE automatico al ROLE PUBLIC **********\\  \n\tFUNCION: %\n\n ',v_object_identity;
+	RAISE NOTICE E'\n\n /********** Por SEGURIDAD Se realizo el REVOKE EXECUTE al role PUBLIC **********\\  \n\tFUNCION: %\n\n ',v_object_identity;
 	
 END;
 $$ LANGUAGE plpgsql;
