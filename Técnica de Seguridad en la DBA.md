@@ -333,9 +333,30 @@ select quote_ident(E'holaaa \' Mundo'); ---> "holaaa ' Mundo"
 ### Validar las funciones que tienen SECURITY DEFINER, LEAKPROOF , PROCONFIG: 
 ```SQL
 
-SELECT nspname, proname, proargtypes, prosecdef as "SECURITY DEFINER", p.proleakproof as "LEAKPROOF" , rolname as "OWNER", proconfig AS "PARAMETERS SETTING" FROM pg_proc p 
-JOIN pg_namespace n ON p.pronamespace = n.oid 
-JOIN pg_authid a ON a.oid = p.proowner WHERE NOT  nspname IN ('information_schema', 'pg_catalog') and proname NOT LIKE 'pgaudit%' AND (prosecdef OR NOT proconfig IS NULL OR proleakproof = true);
+SELECT 
+	c.routine_type ,
+	nspname as schema_name, 
+	proname, 
+	pg_catalog.pg_get_function_arguments(p.oid) AS arguments,
+	prosecdef as "SECURITY DEFINER", 
+	p.proleakproof as "LEAKPROOF" , 
+	rolname as "OWNER", 
+	proconfig AS "PARAMETERS SETTING" ,
+	case when privilege_type is null then FALSE ELSE TRUE END as public_role_can_execute
+	
+FROM pg_proc p 
+	LEFT JOIN pg_namespace as n 
+		ON p.pronamespace = n.oid 
+	LEFT JOIN pg_authid as a 
+		ON a.oid = p.proowner 
+	LEFT JOIN information_schema.routines as c
+		ON  n.nspname = c.routine_schema and c.routine_name = p.proname
+	LEFT JOIN (select  routine_schema, routine_name, grantee, privilege_type from information_schema.routine_privileges  where grantee= 'PUBLIC') as z	
+		ON n.nspname = z.routine_schema and z.routine_name = p.proname
+		
+WHERE 	NOT  nspname IN ('information_schema', 'pg_catalog') 
+	AND (prosecdef OR NOT proconfig IS NULL OR proleakproof = true)
+	order by nspname,c.routine_type, proname ;
 
 ```
 
