@@ -502,7 +502,7 @@ string_agg(columnsname,',')
 ```sql
 
 
-SELECT * FROM unnest(ARRAY['a', 'b', 'c']) WITH ORDINALITY;
+SELECT * FROM unnest(ARRAY['a', 'b', 'c']) WITH ORDINALITY  AS value_ord(value, ordinality);
 +--------+------------+
 | unnest | ordinality |
 +--------+------------+
