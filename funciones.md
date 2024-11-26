@@ -578,3 +578,5 @@ FOUND se establece en FALSE en caso contrario
 
 
 https://postgresconf.org/system/events/document/000/001/086/plpgsql.pdf
+<br> https://www.postgresql.org/docs/current/sql-createfunction.html
+
