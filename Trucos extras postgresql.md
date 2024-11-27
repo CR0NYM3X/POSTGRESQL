@@ -1282,7 +1282,7 @@ postgres@postgres# select * from pedidos;
  
 
 7. **LATERAL JOIN**
-	- **Descripción**: Permite que una subconsulta en la cláusula FROM haga referencia a columnas de tablas anteriores en la misma cláusula FROM.
+	- **Descripción**: Permite que una subconsulta en la cláusula FROM haga referencia a columnas de tablas anteriores en la misma cláusula FROM. "Tambien se puede usar (LEFT JOIN LATERAL)"
 	- **Ejemplo**:
  
 	  SELECT c.nombre, p.producto
