@@ -260,6 +260,9 @@ FETCH 10000 FROM c1 --- cada vez que ejecutes este comando estara recorriendo 10
 COMMIT TRANSACTION
 
 
+--------------------------------------------
+
+
 DO $$
 DECLARE
     nombre_cur CURSOR FOR
@@ -290,8 +293,41 @@ FOUND = FALSE: La operación no encontró ni afectó ninguna fila.
 
 */
 
+--------------------------------------------
 
------------
+
+
+DO $$
+DECLARE
+    cursor_query TEXT;
+     ref_cursor REFCURSOR;  --- Los cursores deben declararse en la sección de declaración, que está antes de la cláusula BEGIN , por esta razon se usa el inmmediate 
+	
+ 
+    var1 TEXT;
+    var2 TEXT;
+BEGIN
+	 set client_min_messages = 'notice';
+	 
+    -- Define tu consulta en la variable
+    cursor_query := 'SELECT val1 AS columna1, val2 AS columna2 FROM (VALUES (''valor1_fila1'', ''valor2_fila1''), (''valor1_fila2'', ''valor2_fila2''), (''valor1_fila3'', ''valor2_fila3'')) AS simulated_table(val1, val2)';
+    
+    -- Abre el cursor dinámicamente con EXECUTE
+    OPEN ref_cursor FOR EXECUTE cursor_query;
+    
+    -- Procesa el cursor
+    LOOP
+        FETCH ref_cursor INTO var1, var2;
+        EXIT WHEN NOT FOUND;
+        RAISE NOTICE 'columna1: %, columna2: %', var1, var2;
+    END LOOP;
+    
+    -- Cierra el cursor
+    CLOSE ref_cursor;
+END $$;
+
+
+
+--------------------------------------------
 
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
