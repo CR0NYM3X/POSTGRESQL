@@ -252,7 +252,9 @@ END;
 $$;
 
 ########## BUCLES CURSORES  ########## 
+ NOTA --> PUEDES USAR LAS VARIABLES  RECORD para insertar tus datos 
 
+----------
 
 START TRANSACTION ISOLATION LEVEL REPEATABLE READ
 DECLARE c1 CURSOR FOR SELECT id, fecha, cliente_id, producto_id, cantidad, precio FROM public.ventas;
