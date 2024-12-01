@@ -541,9 +541,11 @@ select public.fun_cleeantable('empleados',2);
 
 
 
------------- TRIGGER Y FUNCION DE SEGURIDAD PARA REVOKE AUTOMATICO AL PUBLIC ------------
+------------ TRIGGER Y FUNCION DE SEGURIDAD PARA REVOKE AUTOMATICO AL PUBLIC EN FUNCIONES ------------
 
+https://www.postgresql.org/docs/current/sql-createfunction.html
 
+Another point to keep in mind is that by default, execute privilege is granted to PUBLIC for newly created functions (see Section 5.8 for more information). Frequently you will wish to restrict use of a security definer function to only some users. To do that, you must revoke the default PUBLIC privileges and then grant execute privilege selectively. 
  
 
 CREATE OR REPLACE FUNCTION audit_function_creation()
