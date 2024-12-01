@@ -100,3 +100,9 @@ Al instalar este archivo RPM, se configura tu sistema para acceder al repositori
 https://www.postgresql.org/support/security/
 https://www.cvedetails.com/vulnerability-list/vendor_id-336/product_id-575/Postgresql-Postgresql.html
 ```
+
+#  eXTRA 
+```
+https://git.postgresql.org/gitweb/
+https://www.postgresql.org/docs/devel/installation.html
+```
