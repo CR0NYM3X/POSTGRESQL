@@ -1606,3 +1606,333 @@ You are now connected to database "template1" as user "postgres".
 
 
 ```
+
+
+
+# Expresiones regulares 
+
+
+```SQL
+
+
+¿Cuándo usar cada uno?
+
+1. LIKE / ILIKE:
+	Para patrones simples con comodines (%, _).
+	Ejemplo: Búsquedas rápidas de texto con prefijos o sufijos.
+
+2. ~, ~*, !~, !~*:
+	Cuando necesitas expresiones regulares complejas.
+	Ejemplo: Validar formatos como correos o patrones específicos.
+
+
+
+3. SIMILAR TO:
+	Cuando necesitas algo más potente que LIKE, pero menos complejo que regex.
+
+4. = ANY, <> ALL:
+	Para comparar valores contra listas o arrays.
+
+
+
+------------------------------------------------------------------------------------------
+
+SELECT * 
+FROM mitabla 
+WHERE micolumn LIKE '%nada%' OR micolumn LIKE '%otro%';
+
+
+SELECT * 
+FROM mitabla 
+WHERE micolumn ~* 'nada|otro';
+
+SELECT 'jose' ~* '^jose$';
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+1. Operadores relacionados con expresiones regulares:
+
+~ (regex match, case-sensitive):
+	Busca coincidencias con una expresión regular respetando las mayúsculas y minúsculas.
+
+Ejemplo:
+SELECT 'PostgreSQL' ~ 'Post'; -- Devuelve true
+SELECT 'PostgreSQL' ~ 'post'; -- Devuelve false (es sensible a mayúsculas)
+
+
+!~ (regex no match, case-sensitive):
+Verifica que una cadena no coincida con una expresión regular (también distingue mayúsculas).
+
+Ejemplo:
+SELECT 'PostgreSQL' !~ 'Post'; -- Devuelve false
+SELECT 'PostgreSQL' !~ 'post'; -- Devuelve true
+
+
+!~* (regex no match, case-insensitive):
+Verifica que una cadena no coincida con una expresión regular, ignorando mayúsculas y minúsculas.
+
+Ejemplo:
+SELECT 'PostgreSQL' !~* 'post'; -- Devuelve false
+SELECT 'PostgreSQL' !~* 'oracle'; -- Devuelve true
+
+ 
+2. Operadores relacionados con LIKE:
+ILIKE (case-insensitive LIKE):
+Es similar a LIKE, pero no distingue entre mayúsculas y minúsculas.
+
+Ejemplo:
+SELECT 'PostgreSQL' ILIKE 'post%'; -- Devuelve true
+SELECT 'PostgreSQL' ILIKE 'POST%'; -- Devuelve true
+
+
+NOT LIKE y NOT ILIKE:
+Verifican que una cadena no coincida con un patrón.
+Sensible (NOT LIKE) o insensible a mayúsculas (NOT ILIKE).
+
+Ejemplo:
+SELECT 'PostgreSQL' NOT LIKE 'post%'; -- Devuelve true
+SELECT 'PostgreSQL' NOT ILIKE 'post%'; -- Devuelve false
+
+
+---
+
+3. Operadores relacionados con coincidencias avanzadas:
+
+SIMILAR TO:
+
+Es una mezcla entre LIKE y expresiones regulares, pero con una sintaxis más limitada.
+
+Usa el símbolo | como "OR".
+
+
+Ejemplo:
+
+SELECT 'PostgreSQL' SIMILAR TO 'Post|SQL'; -- Devuelve true
+SELECT 'PostgreSQL' SIMILAR TO '%(Post|Oracle)%'; -- Devuelve true
+
+NOT SIMILAR TO:
+
+Verifica que una cadena no coincida con el patrón.
+
+Ejemplo:
+
+SELECT 'PostgreSQL' NOT SIMILAR TO '%(Post|Oracle)%'; -- Devuelve false
+
+
+---
+
+4. Operadores con arrays o conjuntos:
+
+= ANY o = SOME:
+
+Verifica si un valor coincide con algún elemento en un conjunto.
+
+
+Ejemplo:
+
+SELECT 'PostgreSQL' = ANY (ARRAY['PostgreSQL', 'MySQL', 'Oracle']); -- Devuelve true
+<> ALL:
+
+Verifica que un valor no coincida con ningún elemento en un conjunto.
+
+Ejemplo:
+SELECT 'PostgreSQL' <> ALL (ARRAY['MySQL', 'Oracle']); -- Devuelve true
+
+ 
+
+---
+
+
+```
+
+
+#  Full Text Search (FTS)  
+El Full Text Search (FTS) en PostgreSQL es una funcionalidad diseñada para realizar búsquedas eficientes y avanzadas de texto, especialmente útil en escenarios donde necesitas buscar palabras o frases completas dentro de documentos o grandes cantidades de texto.
+
+
+```SQL
+
+
+Escenario Real Sencillo: Biblioteca Digital
+
+Imagina que estás diseñando una base de datos para una biblioteca digital. Tienes una tabla llamada libros donde guardas información sobre los libros y un resumen de su contenido:
+
+CREATE TABLE libros (
+    id SERIAL PRIMARY KEY,
+    titulo TEXT,
+    autor TEXT,
+    resumen TEXT
+);
+
+INSERT INTO libros (titulo, autor, resumen) VALUES 
+('Cien Años de Soledad', 'Gabriel García Márquez', 'Una épica historia de varias generaciones de la familia Buendía en el pueblo ficticio de Macondo.'),
+('Don Quijote de la Mancha', 'Miguel de Cervantes', 'Las aventuras del ingenioso hidalgo Don Quijote y su fiel escudero, Sancho Panza.'),
+('La Sombra del Viento', 'Carlos Ruiz Zafón', 'Un joven llamado Daniel descubre un misterioso libro en el Cementerio de los Libros Olvidados, cambiando su vida para siempre.'),
+('El Principito', 'Antoine de Saint-Exupéry', 'La historia de un joven príncipe que explora varios planetas y aprende valiosas lecciones sobre la vida.'),
+('1984', 'George Orwell', 'Una distopía sobre un futuro totalitario donde el Gran Hermano lo vigila todo.'),
+('El Alquimista', 'Paulo Coelho', 'Un joven pastor llamado Santiago emprende un viaje para encontrar un tesoro en las pirámides de Egipto.'),
+('Crónica de una Muerte Anunciada', 'Gabriel García Márquez', 'La historia de la muerte de Santiago Nasar, contada desde múltiples perspectivas.'),
+('Los Miserables', 'Victor Hugo', 'La redención de Jean Valjean, un exconvicto, en la Francia del siglo XIX.'),
+('La Metamorfosis', 'Franz Kafka', 'La historia de Gregor Samsa, un hombre que se despierta convertido en un insecto gigante.'),
+('Orgullo y Prejuicio', 'Jane Austen', 'La historia de Elizabeth Bennet y Mr. Darcy, y las complejidades de la sociedad inglesa del siglo XIX.');
+
+
+
+Ahora, quieres implementar una funcionalidad para buscar libros que contengan palabras específicas en el resumen.
+
+Ejemplo sin Full Text Search (FTS):
+
+SELECT * 
+FROM libros 
+WHERE resumen LIKE '%misterio%' 
+   OR resumen LIKE '%investigación%';
+
+Problema: Esta consulta es ineficiente porque no puede usar índices si hay comodines % al inicio, y las búsquedas serán lentas si la tabla crece.
+
+
+---
+
+Ejemplo con FTS:
+
+1. Crea una columna tsvector para los datos indexados:
+
+ALTER TABLE libros ADD COLUMN resumen_fts tsvector;
+UPDATE libros SET resumen_fts = to_tsvector('english', resumen);
+
+
+2. Crea un índice GIN sobre la columna:
+
+CREATE INDEX idx_resumen_fts ON libros USING gin(resumen_fts);
+
+
+3. Consulta optimizada con búsqueda FTS:
+
+SELECT * 
+FROM libros 
+WHERE resumen_fts @@ to_tsquery('misterio | investigación');
+
+
+
+> PostgreSQL ahora buscará eficientemente las palabras "misterio" o "investigación" dentro del texto.
+
+
+
+
+---
+
+Ventajas del Full Text Search
+
+	1. Búsqueda rápida y eficiente:
+	Usa índices GIN para búsquedas rápidas en textos largos.
+
+
+	2. Insensible a mayúsculas/minúsculas:
+	No importa si el texto contiene "Misterio" o "misterio".
+
+
+	3. Búsquedas avanzadas:
+	Permite combinaciones como:
+
+	Búsqueda de múltiples palabras ('misterio & investigación')
+
+	Excluir palabras ('misterio & !romance')
+
+	Frases específicas.
+
+
+
+	4. Ignora palabras irrelevantes (stop words):
+	Palabras comunes como "el", "y", "de" no afectan las búsquedas.
+
+
+	5. Compatibilidad con múltiples idiomas:
+	Soporta configuraciones específicas para diferentes lenguajes (english, spanish, etc.).
+
+
+
+
+---
+
+Desventajas del Full Text Search
+
+	1. Configuración inicial:
+	Requiere pasos adicionales como crear columnas tsvector y sus índices.
+
+
+	2. Espacio adicional:
+	Los índices GIN pueden ocupar más espacio en disco.
+
+
+	3. No soporta comodines:
+	No es ideal para búsquedas de patrones parciales como %invest%.
+
+
+	4. Limitado a palabras completas:
+	No puede buscar partes de palabras sin configuraciones especiales.
+
+
+	5. Mantenimiento de índices:
+	Si los datos cambian frecuentemente, debes actualizar el índice:
+
+	UPDATE libros SET resumen_fts = to_tsvector('english', resumen) WHERE id = ?;
+
+
+
+
+---
+
+¿Cuándo Usar Full Text Search?
+
+Casos ideales:
+
+	1. Búsqueda de palabras completas:
+	Necesitas encontrar documentos que contengan palabras específicas o frases en grandes volúmenes de texto.
+
+	Ejemplo: Buscar noticias que contengan "economía" o "mercados".
+
+
+
+	2. Contenido en múltiples idiomas:
+	Tienes datos en varios idiomas y necesitas manejar las reglas de cada uno.
+
+
+	3. Sistemas de documentación o bibliotecas:
+	Donde los usuarios suelen buscar contenido relevante entre cientos o miles de documentos.
+
+
+	4. Portales de e-commerce:
+	Para buscar productos por descripciones o especificaciones detalladas.
+
+
+
+
+---
+
+Cuándo No Usar FTS:
+
+	1. Búsquedas parciales o comodines:
+	Si necesitas buscar "parte" de una palabra (LIKE '%parte%'), un índice pg_trgm es más adecuado.
+
+
+	2. Búsquedas exactas:
+	Si siempre buscas valores específicos o prefijos (misterio%), un índice B-tree es suficiente.
+
+
+	3. Tablas pequeñas:
+	En tablas con pocos registros, las búsquedas secuenciales (seq scan) son igual de rápidas y más simples.
+
+
+	4. Alta frecuencia de actualizaciones:
+	Si los datos cambian constantemente, mantener los índices tsvector puede ser costoso.
+
+
+
+
+
+
+
+```
