@@ -1936,3 +1936,45 @@ Cuándo No Usar FTS:
 
 
 ```
+
+
+# Test de conexion 
+```
+
+----------- CMD -----------
+
+TELNET 127.0.0.1 5432
+
+
+
+----------- PowerShell -----------
+
+Test-NetConnection -ComputerName 127.0.0.1 -Port 5416
+
+
+tnc -ComputerName "127.0.0.1" -Port 5416
+
+
+$server = "127.0.0.1"
+$port = 5416
+$tcpClient = New-Object System.Net.Sockets.TcpClient
+try {
+    $tcpClient.Connect($server, $port)
+    if ($tcpClient.Connected) {
+        Write-Host "Connection successful"
+    }
+} catch {
+    Write-Host "Connection failed"
+} finally {
+    $tcpClient.Close()
+}
+
+
+Invoke-WebRequest -Uri "http://127.0.0.1:5416"
+
+
+echo "quit" | nc -v -w 1 127.0.0.1 5416
+
+
+```
+
