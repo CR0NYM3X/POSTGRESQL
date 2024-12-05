@@ -87,7 +87,7 @@ END \$\$;"  > /tmp/script_02.sql
 
  
  # Guarda todas las base de datos en la variable result
-result=$(psql -p 5432 -tAX -c "select datname  from pg_database where not datname in('template1','template0') /*and not datname = 'tiendasMueblesTX.30085_ant'*/;" )
+result=$(psql -p 5432 -tAX -c "select datname  from pg_database where not datname in('template0') /*and not datname = 'tiendasMueblesTX.30085_ant'*/;" )
 
 # Recorre la lista de base de datos 
 for base in $result
