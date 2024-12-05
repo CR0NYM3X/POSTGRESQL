@@ -1521,7 +1521,7 @@ LOAD 'passwordcheck';
 
 
 
-## Utilizando prepare 
+## CREAR CONSULTAS PREPARADAS 
 ```sql
 CREATE TABLE clientes (
     id SERIAL PRIMARY KEY,
@@ -1552,6 +1552,9 @@ postgres@postgres# EXECUTE consulta_clientes ('2024-01-01', '2024-03-01');
 | Maria  | Gomez    | 2024-02-20 14:45:00 |
 +--------+----------+---------------------+
 (2 rows)
+
+
+DEALLOCATE consulta_clientes;
 
 ```
 
