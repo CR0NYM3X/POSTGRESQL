@@ -500,8 +500,45 @@ Los CONSTRAINTS (restricciones) son reglas que se aplican a las columnas de una 
 	);
 ```
 
+# Restricción de Integridad Referencial (Foreign Key):
+```sql
 
 
+SET DEFAULT: Al eliminar un registro en la tabla de catálogo, se establecerá un valor por defecto en las columnas correspondientes en la tabla de órdenes.
+
+ALTER TABLE orders
+ADD CONSTRAINT fk_fruit_catalog
+FOREIGN KEY (fruit_id)
+REFERENCES fruit_catalog(id)
+ON DELETE SET DEFAULT;
+
+
+SET DEFAULT: Al eliminar un registro en la tabla de catálogo, se establecerá un valor por defecto en las columnas correspondientes en la tabla de órdenes.
+
+ALTER TABLE orders
+ADD CONSTRAINT fk_fruit_catalog
+FOREIGN KEY (fruit_id)
+REFERENCES fruit_catalog(id)
+ON DELETE SET NULL;
+
+CASCADE: Al eliminar un registro en la tabla de catálogo, todos los registros en la tabla de órdenes que lo referencian también serán eliminados.
+
+ALTER TABLE orders
+ADD CONSTRAINT fk_fruit_catalog
+FOREIGN KEY (fruit_id)
+REFERENCES fruit_catalog(id)
+ON DELETE CASCADE;
+
+RESTRICT (el valor por defecto): No permitirá la eliminación del registro en la tabla de catálogo si existen registros en la tabla de órdenes que lo referencian.
+
+ALTER TABLE orders
+ADD CONSTRAINT fk_fruit_catalog
+FOREIGN KEY (fruit_id)
+REFERENCES fruit_catalog(id)
+ON DELETE RESTRICT;
+
+
+```
 
 ### crear una llave foránea en PostgreSQL
 ```sql
