@@ -504,38 +504,146 @@ Los CONSTRAINTS (restricciones) son reglas que se aplican a las columnas de una 
 ```sql
 
 
-SET DEFAULT: Al eliminar un registro en la tabla de catálogo, se establecerá un valor por defecto en las columnas correspondientes en la tabla de órdenes.
+ 
+******************** CREANDO TABLAS ****************
 
-ALTER TABLE orders
-ADD CONSTRAINT fk_fruit_catalog
-FOREIGN KEY (fruit_id)
-REFERENCES fruit_catalog(id)
-ON DELETE SET DEFAULT;
+CREATE TABLE fruit_catalog (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+ 
+-- RESTRICT : No permitirá la eliminación del registro en la tabla de catálogo si existen registros en la tabla de órdenes que lo referencian.
+CREATE TABLE fruit_orders_restrict (
+    id SERIAL PRIMARY KEY,
+    fruit_id INTEGER REFERENCES fruit_catalog(id) ON DELETE RESTRICT,
+    quantity INTEGER NOT NULL
+);
 
 
-SET DEFAULT: Al eliminar un registro en la tabla de catálogo, se establecerá un valor por defecto en las columnas correspondientes en la tabla de órdenes.
+-- CASCADE: Al eliminar un registro en la tabla de catálogo, todos los registros en la tabla de órdenes que lo referencian también serán eliminados.
+CREATE TABLE fruit_orders_cascade (
+    id SERIAL PRIMARY KEY,
+    fruit_id INTEGER REFERENCES fruit_catalog(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL
+);
 
-ALTER TABLE orders
-ADD CONSTRAINT fk_fruit_catalog
-FOREIGN KEY (fruit_id)
-REFERENCES fruit_catalog(id)
-ON DELETE SET NULL;
 
-CASCADE: Al eliminar un registro en la tabla de catálogo, todos los registros en la tabla de órdenes que lo referencian también serán eliminados.
+--- SET NULL: Establece los valores referenciados a NULL.
+CREATE TABLE fruit_orders_set_null (
+    id SERIAL PRIMARY KEY,
+    fruit_id INTEGER REFERENCES fruit_catalog(id) ON DELETE SET NULL,
+    quantity INTEGER NOT NULL
+);
 
-ALTER TABLE orders
-ADD CONSTRAINT fk_fruit_catalog
-FOREIGN KEY (fruit_id)
-REFERENCES fruit_catalog(id)
-ON DELETE CASCADE;
 
-RESTRICT (el valor por defecto): No permitirá la eliminación del registro en la tabla de catálogo si existen registros en la tabla de órdenes que lo referencian.
+--- SET DEFAULT: Al eliminar un registro en la tabla de catálogo, se establecerá un valor por defecto en las columnas correspondientes en la tabla de órdenes.
+CREATE TABLE fruit_orders_set_default (
+    id SERIAL PRIMARY KEY,
+    fruit_id INTEGER DEFAULT 1 REFERENCES fruit_catalog(id) ON DELETE SET DEFAULT ,
+    quantity INTEGER NOT NULL
+);
 
-ALTER TABLE orders
-ADD CONSTRAINT fk_fruit_catalog
-FOREIGN KEY (fruit_id)
-REFERENCES fruit_catalog(id)
-ON DELETE RESTRICT;
+
+--- ON UPDATE,DELETE NO ACTION: Impide actualizaciones que afectarían la integridad referencial.
+CREATE TABLE fruit_orders (
+    id SERIAL PRIMARY KEY,
+    fruit_id INTEGER REFERENCES fruit_catalog(id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION,
+    quantity INTEGER NOT NULL
+);
+
+
+******************** INSERTANDO REGISTROS  ****************
+
+INSERT INTO fruit_catalog (name) VALUES ('Banana'), ('Apple'), ('Orange');
+
+postgres@angel# select * from fruit_catalog;
++----+--------+
+| id |  name  |
++----+--------+
+|  1 | Banana |
+|  2 | Apple  |
+|  3 | Orange |
++----+--------+
+(3 rows)
+
+
+ 
+-- Insertar en la tabla con RESTRICT
+INSERT INTO fruit_orders_restrict (fruit_id, quantity) VALUES (1, 10), (2, 20);
+
+-- Insertar en la tabla con CASCADE
+INSERT INTO fruit_orders_cascade (fruit_id, quantity) VALUES (1, 10), (3, 30);
+
+-- Insertar en la tabla con SET NULL
+INSERT INTO fruit_orders_set_null (fruit_id, quantity) VALUES (2, 15), (3, 25);
+
+-- Insertar en la tabla con SET DEFAULT
+INSERT INTO fruit_orders_set_default (fruit_id, quantity) VALUES (3, 35);
+
+INSERT INTO fruit_orders (fruit_id, quantity) VALUES (1, 10), (2, 15), (3, 20);
+
+
+******************** PRUEBAS ****************
+
+UPDATE fruit_catalog SET id = 4 WHERE id = 1;
+
+1.---------------
+DELETE FROM fruit_catalog WHERE id = 1;
+
+postgres@angel# DELETE FROM fruit_catalog WHERE id = 1;
+ERROR:  update or delete on table "fruit_catalog" violates foreign key constraint "fruit_orders_restrict_fruit_id_fkey" on table "fruit_orders_restrict"
+DETAIL:  Key (id)=(1) is still referenced from table "fruit_orders_restrict".
+Time: 0.869 ms
+
+
+2.---------------
+DELETE FROM fruit_catalog WHERE id = 3;
+
+
+DELETE FROM fruit_catalog WHERE id = 2;
+postgres@angel# SELECT *FROM fruit_orders_set_null;
++----+----------+----------+
+| id | fruit_id | quantity |
++----+----------+----------+
+|  2 |        3 |       25 |
+|  1 |     NULL |       15 |
++----+----------+----------+
+(2 rows)
+
+
+3.---------------
+
+DELETE FROM fruit_catalog WHERE id = 3;
+postgres@angel# DELETE FROM fruit_catalog WHERE id = 3;
+ERROR:  update or delete on table "fruit_catalog" violates foreign key constraint "fruit_orders_fruit_id_fkey" on table "fruit_orders"
+DETAIL:  Key (id)=(3) is still referenced from table "fruit_orders".
+Time: 0.918 ms
+
+ 
+
+
+
+
+
+
+******************** BORRANDO  TABLAS ****************
+DROP TABLE fruit_catalog CASCADE;
+DROP TABLE  fruit_orders_restrict CASCADE;
+DROP TABLE  fruit_orders_cascade CASCADE;
+DROP TABLE  fruit_orders_set_null CASCADE;
+DROP TABLE  fruit_orders_set_default CASCADE;
+DROP TABLE  fruit_orders CASCADE;
+
+
+
+
+ 
+ 
+
+ 
 
 
 ```
