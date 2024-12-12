@@ -154,28 +154,67 @@ DECLARE
     rec RECORD;
     row_number INTEGER := 0;
     error_lines TEXT := '';
+	error_oid int[];
+	query text;
 BEGIN
-    FOR rec IN SELECT * FROM psql.tables_columns LOOP
+	set client_min_messages = notice ; 
+	query := E'SELECT oid,relname AS table_name FROM pg_class WHERE relkind = \'r\'  ' ;
+	
+    FOR rec IN execute query  LOOP
         row_number := row_number + 1;
         BEGIN
             -- Aquí puedes poner la lógica que podría causar un error
             -- Por ejemplo, una conversión de codificación
-            PERFORM pg_catalog.convert_from(rec.column_name::bytea, 'UTF8');
+            PERFORM pg_catalog.convert_from(rec.table_name::bytea, 'UTF8');
         EXCEPTION
             WHEN OTHERS THEN
-				RAISE NOTICE 'Error en el ID : %  |  fila % | ErrorMSG  --> %',   rec.id , row_number ,  SQLERRM;
-                error_lines := error_lines || 'Error en la fila ' || row_number || E'\n';
+				RAISE NOTICE 'Error en el OID : %  | fila % | Error MSG  --> %',   rec.oid , row_number ,  SQLERRM;
+                		-- error_lines := error_lines || 'Error en la fila ' || row_number || E'\n';
+				
+				error_oid := array_append(error_oid, rec.oid);
+				 
         END;
     END LOOP;
 
     IF error_lines = '' THEN
         RAISE NOTICE E'\n\nNo se encontraron errores';
     ELSE
-        RAISE NOTICE E'\n\nErrores encontrados:%', error_lines;
+		query := FORMAT( '%s and not oid in(%s) ; ' ,  query, array_to_string(error_oid,','));
+		
+        RAISE NOTICE E'\n\nErrores encontrados:\n %', query;
+		
+		 
     END IF;
 END $$;
 
---- >  update psql.tables_columns set column_name = 'des_flag' where id = 8816307; 
+
+\l db_test
+                                         List of databases
+     Name     |      Owner      | Encoding  | Collate | Ctype |          Access privileges
+--------------+-----------------+-----------+---------+-------+-------------------------------------
+ db_test 		| user_test		 | SQL_ASCII | C       | en_US
+
+
+ db_test=# show client_encoding;
+ client_encoding
+-----------------
+ UTF8
+(1 row)
+
+
+db_test=# set client_encoding = SQL_ASCII;
+SET
+
+
+db_test=#  SELECT oid,relname AS table_name FROM pg_class WHERE relkind = 'r'   and  oid in(11502328,11502322) ;
+   oid    | table_name
+----------+------------
+ 11502328 | tg▒
+ 11502322 | tgy▒
+
+
+
+
 ```
 
 # Errores en el  archivo s.pgsql.5432.lock
