@@ -195,11 +195,17 @@ END $$;
  db_test 		| user_test		 | SQL_ASCII | C       | en_US
 
 
- db_test=# show client_encoding;
+ db_test=# SHOW SERVER_ENCODING; SHOW CLIENT_ENCODING;
+server_encoding
+-----------------
+ SQL_ASCII
+(1 row)
+
  client_encoding
 -----------------
  UTF8
 (1 row)
+
 
 
 db_test=# set client_encoding = SQL_ASCII;
