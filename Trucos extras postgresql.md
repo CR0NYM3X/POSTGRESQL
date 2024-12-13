@@ -1981,3 +1981,34 @@ echo "quit" | nc -v -w 1 127.0.0.1 5416
 
 ```
 
+
+
+
+# Remplazo de return table en funciones para versiones 8 
+```
+CREATE TYPE mi_tipo AS (
+    columna1 INTEGER,
+    columna2 TEXT,
+    columna3 DATE
+);
+
+ 
+ 
+CREATE OR REPLACE FUNCTION obtener_datos()
+RETURNS SETOF mi_tipo AS $$
+DECLARE
+    rec mi_tipo;
+BEGIN
+    FOR rec IN
+        SELECT 1 AS columna1, 'Texto1' AS columna2, '2024-01-01'::DATE AS columna3
+        UNION ALL
+        SELECT 2, 'Texto2', '2024-02-01'::DATE
+        UNION ALL
+        SELECT 3, 'Texto3', '2024-03-01'::DATE
+    LOOP
+        RETURN NEXT rec;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+```
