@@ -693,9 +693,9 @@ select  upper('Hola'); --> HOLA
 ---- divide en partes un string, colocando un delimitador y indica que parte quieres que retorne
 SELECT SPLIT_PART('A,B,C', ',', 3); --- C
 
---- convierte en filas el texto 
+--- convierte TEXTO en filas 
 SELECT regexp_split_to_table('INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER', ','); -- > V 9 
-SELECT split_part('texto1,texto2,texto3', ',', generate_series(1, length('texto1,texto2,texto3') - length(replace('texto1,texto2,texto3', ',', '')) + 1)) AS columna_individual; ---  < V9
+SELECT split_part('texto1,texto2,texto3', ',', generate_series(1, length('texto1,texto2,texto3') - length(replace('texto1,texto2,texto3', ',', '')) + 1)) AS columna_individual; ---  < V9 se puede usar en remplazo de unnest
 
 -- Cuenta la cantidad de caracteres 
 SELECT LENGTH('Hola Mundo'); ---> 10
