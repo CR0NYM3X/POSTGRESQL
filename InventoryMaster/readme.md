@@ -31,9 +31,9 @@ select extname,extversion from pg_extension ;
 
 # PRIVILEGIOS NECESARIOS
 ```
-
---------------- PSQL  --------------
-
+******************************************************************
+********************** PSQL  ************************************* 
+******************************************************************
 
 
 echo "DO \$\$
@@ -123,59 +123,87 @@ done
 
 
 
+ 
 
---------------- MSQL  --------------
-execute SYS.sp_MSforeachdb 'use [?];  CREATE USER [systest] FOR LOGIN [systest]'
+******************************************************************
+********************** MSSQL  ************************************* 
+******************************************************************
+
+
+
+
+-------------------- CREA EL USUARIO EN CADA BASE DE DATOS --------------------
+
+execute SYS.sp_MSforeachdb '
+
+use [?];  
+
+
+IF NOT EXISTS(SELECT 1 from sys.database_principals where name = ''systest'')
+BEGIN
+	CREATE USER [systest] FOR LOGIN [systest];
+END;
+
+if lower(DB_NAME()) like ''%aplicaciones%'' and lower(DB_NAME()) like ''%db%''
+begin 
+	EXEC sp_addrolemember db_datareader, systest;
+end 
+ 
+' 
+
+
+---------------------- OTORGA LOS PERMISOS IMPORTANTES EN LA MASTER ----------------------
+
 
 USE [master]
 GO
-EXEC sp_addrolemember N'db_datareader', N'systest';
+
+EXEC sp_addrolemember db_datareader, systest;
+GO 
+ 
+
+SELECT 'GRANT ' + permission_name + ' TO [systest];' FROM fn_builtin_permissions(DEFAULT) where permission_name in(
+'SHOWPLAN' --- 
+,'VIEW ANY ERROR LOG' -- 
+,'VIEW ANY DATABASE'
+,'VIEW ANY DEFINITION'
+,'VIEW ANY PERFORMANCE DEFINITION'
+,'VIEW ANY SECURITY DEFINITION'
+,'VIEW SERVER SECURITY AUDIT'
+,'VIEW SERVER SECURITY STATE'
+,'VIEW SERVER PERFORMANCE STATE'
+,'VIEW SERVER STATE'
+
+);
+ 
+
 GO
-GRANT SHOWPLAN TO [systest];
-GO
-GRANT VIEW ANY ERROR LOG  TO [systest];
-GO
-GRANT VIEW SERVER SECURITY AUDIT  TO [systest];
-GO
-GRANT VIEW ANY DATABASE  TO [systest];
-GO
-GRANT VIEW ANY SECURITY DEFINITION  TO [systest];
-GO
-GRANT VIEW ANY PERFORMANCE DEFINITION  TO [systest];
-GO
-GRANT VIEW ANY DEFINITION  TO [systest];
-GO
-GRANT VIEW SERVER SECURITY STATE  TO [systest];
-GO
-GRANT VIEW SERVER PERFORMANCE STATE  TO [systest];
-GO
-GRANT VIEW SERVER STATE  TO [systest];
-GO
-grant select  ON DATABASE::master TO [systest];  --- este por permisos de  object 'sysaltfiles' para ver los discos 
+grant select  ON DATABASE::master TO [systest];  --- este por permisos de  object sysaltfiles para ver los discos 
 GO
 GRANT execute on [dbo].[sp_help_revlogin]   to [systest]; --- este es para el permiso del proc sp_help_revlogin para ver los login
-GO
 
+GO
+-------------------------OTORGA LOS PERMISOS IMPORTANTES EN LA MSDB ----------------------
 
-USE [dbaplicaciones]
-GO
-EXEC sp_addrolemember N'db_datareader', N'systest'
-GO
 
 use msdb
 go 
-grant select  ON DATABASE::msdb TO [systest] --- este me pide permiso en la msdb
+grant select  ON DATABASE::msdb TO [systest]; --- este me pide permiso en la msdb
 GO
-GRANT SHOWPLAN TO [systest]; --- este para ver que no marque error al ver los jobs y backups 
+      GRANT SHOWPLAN TO [systest];  --- este para ver que no marque error al ver los jobs y backups 
 GO
+
+ 
+
+---------------------------------------
 
 
 --- Ver si tiene permisos 
-select * from sys.server_permissions where  grantee_principal_id in(select principal_id from sys.server_principals  where name = 'systest')
+select * from sys.server_permissions where  grantee_principal_id in(select principal_id from sys.server_principals  where name = systest)
 go
 
 --- veri si existe el usuario 
-  select * from sys.syslogins where name = 'systest' 
+  select * from sys.syslogins where name = systest 
  
 ```
 
