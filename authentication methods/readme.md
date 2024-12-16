@@ -15,3 +15,16 @@ Aqui encontraras diferentes metodos de autenticas un cliente
 **PAM Authentication:** Utiliza una biblioteca de Módulos de Autenticación Conectables (PAM) para la autenticación.
 
 **BSD Authentication:** Utiliza el marco de autenticación BSD (disponible solo en OpenBSD).
+
+
+---------- <br> 
+
+
+PostgreSQL access control using an external authentication provider:
+https://www.initmax.cz/wp-content/uploads/2023/10/postgresql-access-control.pdf
+
+Ldap con tls:
+https://www.percona.com/blog/configuring-postgresql-and-ldap-using-starttls/
+
+
+https://www.enterprisedb.com/postgres-tutorials/how-connect-postgres-ldap-starttls
