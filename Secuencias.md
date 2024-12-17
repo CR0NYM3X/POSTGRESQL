@@ -21,6 +21,7 @@ select sequencename,increment_by,last_value from pg_sequences where sequencename
 ```
 
 ### Ejecutar una secuencia
+[NOTA] - SI USAS NEXVAL DENTRO DE UN BEGIN Y HACES UN ROLLBACK ESTE NO SE REGRESA , EL ROLLBACK NO RESTABLECERAR LA SECUENCIA 
 ```sql
 
 --- al ejecutar la secuencia va aumentar la secuencia que estas ejecutando
