@@ -892,6 +892,16 @@ FROM json_to_recordset(
     (SELECT datos FROM ejemplo WHERE id = 1)
 ) AS x(nombre text, edad int);
 
+-------------------
+
+# Convertir un json en filas y tabla 
+SELECT *
+FROM json_to_recordset('[
+  {"id": 1, "nombre": "Alice", "edad": 25},
+  {"id": 2, "nombre": "Bob", "edad": 30}
+]') AS x(id int, nombre text, edad int);
+
+
 
 # row_to_json: Esta función convierte una fila de una tabla en un objeto JSON.
 	SELECT row_to_json(t) FROM (SELECT 1 AS id, 'Alice' AS name, 25 AS age) t; -- {"id":1, "name":"Alice", "age":25}
