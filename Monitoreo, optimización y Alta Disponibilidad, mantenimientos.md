@@ -218,12 +218,32 @@ select  pg_terminate_backend (pg_stat_activity.pid) FROM pg_stat_activity WHERE 
 ```
 
 
+## manipular bloqueos 
+```sql
 
+LOCK TABLE nombre_de_la_tabla IN ACCESS SHARE MODE;
+LOCK TABLE nombre_de_la_tabla IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE nombre_de_la_tabla IN EXCLUSIVE MODE;
+LOCK TABLE nombre_de_la_tabla IN ROW EXCLUSIVE MODE;
+LOCK TABLE nombre_de_la_tabla IN SHARE ROW EXCLUSIVE MODE;
+LOCK TABLE nombre_de_la_tabla IN ROW SHARE MODE;
+LOCK TABLE nombre_de_la_tabla IN SHARE MODE;
+LOCK TABLE nombre_de_la_tabla IN SHARE UPDATE EXCLUSIVE MODE;
+
+
+
+BEGIN;
+LOCK TABLE fdw_conf.scan_rules_query IN  ACCESS EXCLUSIVE MODE;
+delete from fdw_conf.scan_rules_query where id = 1 ; 
+COMMIT;
+
+
+```
 
 ## Buscar bloqueos 
 ```sql
 
-# Tipos de Locktype: (indica el tipo de objeto que está bloqueado)
+## Locktype: (indica el tipo de objeto que está bloqueado)
 relation: Bloqueo sobre una relación (tabla o índice).
 extend: Bloqueo de extensión para reservar espacio en la tabla.
 page: Bloqueo de página dentro de una relación.
@@ -235,18 +255,19 @@ userlock: Bloqueo definido por el usuario.
 advisory: Bloqueo consultivo, utilizado para sincronización de aplicaciones.
 
 
-# mode  (indica el tipo de bloqueo que se ha solicitado o que se mantiene sobre un objeto)
+## mode  (indica el tipo de bloqueo que se ha solicitado o que se mantiene sobre un objeto)
+ExclusiveLock: Bloquea algunas operaciones de lectura, Impide que otros puedan modificar la tabla
+AccessExclusiveLock: Bloquea todas las operaciones sobre la tabla, incluyendo las lecturas y las modificaciones.
 AccessShareLock: Permite a otros procesos leer el objeto pero no modificarlo.
 RowShareLock: Permite a otros procesos leer y bloquear filas, pero no cambiar la estructura de la tabla.
 RowExclusiveLock: Permite a otros procesos leer y bloquear filas, pero no cambiar la estructura de la tabla.
 ShareUpdateExclusiveLock: Bloquea los vaciados de tabla pero permite lecturas y modificaciones de fila.
 ShareLock: Permite que otros procesos lean el objeto pero no modificarlo o bloquearlo en un nivel superior.
-
 ShareRowExclusiveLock: Permite que otros procesos lean el objeto pero no modificarlo o bloquearlo en un nivel superior.
-ExclusiveLock: Bloquea a otros procesos de leer o modificar el objeto.
-AccessExclusiveLock: Bloquea a todos los demás procesos de acceder al objeto de cualquier manera.
 
-# granted: (indica si el bloqueo ha sido concedido o no)
+
+
+## granted: (indica si el bloqueo ha sido concedido o no)
 true: El bloqueo ha sido concedido y el proceso que lo solicitó tiene actualmente el control del recurso.
 false: El bloqueo no ha sido concedido todavía. El proceso que lo solicitó está esperando a que el recurso se desbloquee. esto es como un wait que esta en espera 
 
