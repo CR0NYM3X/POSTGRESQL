@@ -235,6 +235,44 @@ $$;
 
 
 
+--------------------------------------------
+
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100),
+    edad INTEGER
+);
+
+INSERT INTO usuarios (nombre, edad) VALUES
+    ('Juan', 25),
+    ('María', 30),
+    ('Pedro', 28),
+    ('Ana', 35);
+
+CREATE OR REPLACE FUNCTION guardar_usuarios_en_tabla() RETURNS VOID AS $$
+DECLARE
+    usuario_row RECORD;
+BEGIN
+    -- Borramos la tabla temporal si ya existe
+    DROP TABLE IF EXISTS temp_usuarios;
+
+    -- Creamos una tabla temporal para almacenar los resultados
+    CREATE TEMP TABLE temp_usuarios (
+        nombre VARCHAR(100),
+        edad INTEGER
+    );
+
+    -- Insertamos los datos de la tabla usuarios en la tabla temporal
+    FOR usuario_row IN SELECT * FROM usuarios LOOP
+        INSERT INTO temp_usuarios (nombre, edad) VALUES (usuario_row.nombre, usuario_row.edad);
+    END LOOP;
+
+    -- Puedes hacer cualquier otra operación con la tabla temporal aquí si lo deseas
+
+END;
+$$ LANGUAGE plpgsql;
+
+--https://sqltemuco.wordpress.com/2016/09/26/recorrer-cursores-con-postgresql/
  
 
 
@@ -260,6 +298,26 @@ START TRANSACTION ISOLATION LEVEL REPEATABLE READ
 DECLARE c1 CURSOR FOR SELECT id, fecha, cliente_id, producto_id, cantidad, precio FROM public.ventas;
 FETCH 10000 FROM c1 --- cada vez que ejecutes este comando estara recorriendo 10000 lineas 
 COMMIT TRANSACTION
+
+
+----------
+
+BEGIN;
+
+--WITH HOLD  :  el cursor debe permanecer abierto incluso después de que se haya hecho un COMMIT de la transacción
+DECLARE roberto CURSOR WITH HOLD FOR 
+SELECT 'amaaaaa' AS naa;
+
+
+-- Hacer commit de la transacción
+COMMIT;
+
+-- El cursor aún está abierto después del commit
+FETCH NEXT FROM roberto;
+
+-- Finalmente, cerrar el cursor cuando ya no sea necesario
+CLOSE roberto;
+
 
 
 --------------------------------------------
@@ -329,44 +387,6 @@ END $$;
 
 
 
---------------------------------------------
-
-CREATE TABLE usuarios (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100),
-    edad INTEGER
-);
-
-INSERT INTO usuarios (nombre, edad) VALUES
-    ('Juan', 25),
-    ('María', 30),
-    ('Pedro', 28),
-    ('Ana', 35);
-
-CREATE OR REPLACE FUNCTION guardar_usuarios_en_tabla() RETURNS VOID AS $$
-DECLARE
-    usuario_row RECORD;
-BEGIN
-    -- Borramos la tabla temporal si ya existe
-    DROP TABLE IF EXISTS temp_usuarios;
-
-    -- Creamos una tabla temporal para almacenar los resultados
-    CREATE TEMP TABLE temp_usuarios (
-        nombre VARCHAR(100),
-        edad INTEGER
-    );
-
-    -- Insertamos los datos de la tabla usuarios en la tabla temporal
-    FOR usuario_row IN SELECT * FROM usuarios LOOP
-        INSERT INTO temp_usuarios (nombre, edad) VALUES (usuario_row.nombre, usuario_row.edad);
-    END LOOP;
-
-    -- Puedes hacer cualquier otra operación con la tabla temporal aquí si lo deseas
-
-END;
-$$ LANGUAGE plpgsql;
-
---https://sqltemuco.wordpress.com/2016/09/26/recorrer-cursores-con-postgresql/
 ```
 
 
