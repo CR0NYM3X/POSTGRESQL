@@ -221,8 +221,89 @@ select  pg_terminate_backend (pg_stat_activity.pid) FROM pg_stat_activity WHERE 
 
 
 ## Buscar bloqueos 
+```sql
+
+# Tipos de Locktype: (indica el tipo de objeto que está bloqueado)
+relation: Bloqueo sobre una relación (tabla o índice).
+extend: Bloqueo de extensión para reservar espacio en la tabla.
+page: Bloqueo de página dentro de una relación.
+tuple: Bloqueo de tupla (fila) dentro de una página.
+transactionid: Bloqueo sobre un ID de transacción.
+virtualxid: Bloqueo sobre un ID de transacción virtual.
+object: Bloqueo sobre un objeto en el catálogo del sistema.
+userlock: Bloqueo definido por el usuario.
+advisory: Bloqueo consultivo, utilizado para sincronización de aplicaciones.
+
+
+# mode  (indica el tipo de bloqueo que se ha solicitado o que se mantiene sobre un objeto)
+AccessShareLock: Permite a otros procesos leer el objeto pero no modificarlo.
+RowShareLock: Permite a otros procesos leer y bloquear filas, pero no cambiar la estructura de la tabla.
+RowExclusiveLock: Permite a otros procesos leer y bloquear filas, pero no cambiar la estructura de la tabla.
+ShareUpdateExclusiveLock: Bloquea los vaciados de tabla pero permite lecturas y modificaciones de fila.
+ShareLock: Permite que otros procesos lean el objeto pero no modificarlo o bloquearlo en un nivel superior.
+
+ShareRowExclusiveLock: Permite que otros procesos lean el objeto pero no modificarlo o bloquearlo en un nivel superior.
+ExclusiveLock: Bloquea a otros procesos de leer o modificar el objeto.
+AccessExclusiveLock: Bloquea a todos los demás procesos de acceder al objeto de cualquier manera.
+
+# granted: (indica si el bloqueo ha sido concedido o no)
+true: El bloqueo ha sido concedido y el proceso que lo solicitó tiene actualmente el control del recurso.
+false: El bloqueo no ha sido concedido todavía. El proceso que lo solicitó está esperando a que el recurso se desbloquee. esto es como un wait que esta en espera 
+
+
+SELECT 
+    a.pid,
+	a.datname as db_name,
+	CASE
+		WHEN c.relkind= 'r' THEN 'TABLE'
+		WHEN c.relkind= 'p' THEN 'PARTITIONED TABLE'
+		WHEN c.relkind= 'i' THEN 'INDEX'
+		WHEN c.relkind= 'S' THEN 'SEQUENCE'
+		WHEN c.relkind= 'v' THEN 'VIEW'
+		WHEN c.relkind= 'm' THEN 'MATERIALIZED VIEW'
+		WHEN c.relkind= 'c' THEN 'type'
+		WHEN c.relkind= 't' THEN 'TOAST TABLE'
+		WHEN c.relkind= 'f' THEN 'FOREIGN TABLE'
+		WHEN c.relkind= 'p' THEN 'PARTITIONED FOREIGN'
+		WHEN c.relkind= 'I' THEN 'PARTITIONED INDEX'
+	END as obj_type,
+	nm.nspname as obj_schema, 
+    c.relname AS table_name,    l.page ,  l.tuple AS tupla,
+	A.CLIENT_ADDR AS CLI_ADDR,
+	a.usename,
+	a.state,
+    l.locktype,
+    l.mode,
+	a.query,
+    case when l.granted then 'NO WAIT' ELSE 'WAIT OBJECT' END AS status_wait,
+    a.wait_event_type,
+    --a.wait_event,
+    -- a.backend_start as user_start,
+    a.query_start
+    --a.state_change
+FROM 
+    pg_locks l
+LEFT JOIN 
+    pg_stat_activity a ON l.pid = a.pid
+LEFT JOIN 
+    pg_class c ON l.relation = c.oid   --and relkind   IN ('r','t','v','m','f','p')
+LEFT JOIN 
+	pg_namespace as nm ON c.relnamespace = nm.oid
+WHERE   l.PID !=   pg_backend_pid() 
+		AND c.relkind <> 'i'
+		-- AND NOT granted --- Estos son puros PID que estan esperando que un proceso sea liberado
+ORDER BY 
+	c.relkind, 
+	c.relname , 
+    a.query_start asc     ;
+
+
+
+
 select    l.mode AS bloqueo_modo,  l.granted AS concedido,  l.pid AS proceso_id,  a.usename AS usuario,  l.relation::regclass AS tabla,  l.page AS pagina,  l.tuple AS tupla FROM  pg_locks l JOIN   pg_stat_activity a ON l.pid = a.pid WHERE   NOT l.granted;
 
+
+```
 
 
 
