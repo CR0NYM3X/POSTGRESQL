@@ -893,7 +893,35 @@ FROM json_to_recordset(
 ) AS x(nombre text, edad int);
 
 
+# row_to_json: Esta función convierte una fila de una tabla en un objeto JSON.
+	SELECT row_to_json(t) FROM (SELECT 1 AS id, 'Alice' AS name, 25 AS age) t; -- {"id":1, "name":"Alice", "age":25}
+ 
+ 
+# Convierte cualquier valor en un objeto JSONB   más eficiente de JSON porque permite búsquedas más rápidas y consume menos espacio ya que PostgreSQL lo almacena en un formato binario.
+	 CREATE TABLE personas (
+		  id SERIAL PRIMARY KEY,
+		  nombre TEXT,
+		  edad INTEGER
+		);
 
+		INSERT INTO personas (nombre, edad) VALUES ('Alice', 25), ('Bob', 30);
+		
+		SELECT to_jsonb(personas) AS persona_jsonb FROM personas WHERE id = 1; -- {"id": 1, "nombre": "Alice", "edad": 25}
+ 
+
+
+ 
+
+
+# jsonb_set: Permite actualizar un valor dentro de un objeto JSONB. 
+	SELECT jsonb_set('{"id": 1, "name": "Alice", "age": 25}'::jsonb,  '{age}' , '26'::jsonb); -- {"id": 1, "name": "Alice", "age": 26}
+ 
+
+
+# jsonb_object_keys: Devuelve las claves (keys) de un objeto JSONB 
+	SELECT jsonb_object_keys('{"id": 1, "name": "Alice", "age": 25}'::jsonb); -- id name age
+
+ 
 
 ```
 
