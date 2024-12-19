@@ -7,13 +7,13 @@ Una función en PostgreSQL (o en cualquier sistema de gestión de bases de datos
 Las funciones devuelven un valor, ya sea un valor escalar o una tabla, y pueden utilizarse en una consulta SQL como si fueran una columna.
 
 **Ventajas  de usar funciones:**
+<br> Su capacidad única de poder usarse dentro de una cláusula WHERE o en cualquier parte de un SELECT incluso dentro de los index. Esto es algo que un procedimiento NUNCA podrá hacer.
 - **`Reutilización de Código:`** Puedes encapsular lógica compleja en funciones y reutilizarla en múltiples consultas o procedimientos almacenados.
 - **`Seguridad:`** Las funciones permiten controlar el acceso a datos al definir permisos específicos para su ejecución.
-
 - **`Rendimiento:`** PostgreSQL optimiza la ejecución de funciones y las incorpora en planes de consulta para mejorar el rendimiento de las consultas.
 
-
-
+**Ventajas  de usar PROCEDIMIENTO ALMACENADO:**
+ Su capacidad única de manejar transacciones (COMMIT/ROLLBACK). Esto es algo que una función NUNCA podrá hacer.
 
 # Tipos de funciones  
 ```sql
