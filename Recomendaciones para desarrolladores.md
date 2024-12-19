@@ -167,3 +167,7 @@ Evita trabajar con listas grandes dentro de un IN.
 
 Más eficiente cuando la lista es resultado de una subconsulta, especialmente en tablas grandes.
 
+
+
+---
+
