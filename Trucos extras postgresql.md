@@ -739,6 +739,7 @@ SELECT POSITION('com' IN 'example.com');  ---> 9
 select replace('test string','st','**') --> te** **ring
 
 ---  extraer una subcadena de una cadena de texto dada
+select substring('employee_attendance_2024_6' FROM '(\d{4}_\d{1,2}$)'); ---> 2024_6
 select substring('hola mundo', 1, 4); ---> hola 
 select substring('hola mundo', 5); ---> mundo
 
