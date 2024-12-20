@@ -313,7 +313,8 @@ LEFT JOIN
 WHERE   l.PID !=   pg_backend_pid() 
 		AND c.relkind <> 'i'
 		-- AND NOT granted --- Estos son puros PID que estan esperando que un proceso sea liberado
-ORDER BY 
+ORDER BY
+	a.pid,
 	c.relkind, 
 	c.relname , 
     a.query_start asc     ;
