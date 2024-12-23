@@ -2071,3 +2071,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 ```
+
+# traducir las palabras 
+
+```
+SELECT TRANSLATE('abracadabra', 'abc', '123'); --  '1r1d12d1r1'
+```
