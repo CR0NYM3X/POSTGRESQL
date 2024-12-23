@@ -795,3 +795,47 @@ END;
  
  
 ```
+
+
+
+# tabla heredando 
+```sql
+CREATE TABLE productos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(255),
+    precio DECIMAL
+);
+
+
+CREATE TABLE productos_electronicos (
+    especificaciones VARCHAR(255)
+) INHERITS (productos);
+
+
+
+CREATE TABLE productos_alimentos (
+    fecha_caducidad DATE
+) INHERITS (productos);
+
+
+INSERT INTO productos_electronicos (nombre, precio, especificaciones)
+VALUES ('Laptop', 1200.00, '16GB RAM, 512GB SSD');
+
+INSERT INTO productos_alimentos (nombre, precio, fecha_caducidad)
+VALUES ('Manzanas', 3.50, '2025-12-01');
+
+
+SELECT * FROM productos;
+
+
+SELECT 
+    parent.relname AS tabla_padre,
+    child.relname AS tabla_hija
+FROM 
+    pg_inherits
+JOIN 
+    pg_class parent ON pg_inherits.inhparent = parent.oid and parent.relkind = 'r'
+JOIN 
+    pg_class child ON pg_inherits.inhrelid = child.oid and parent.relkind = 'r' ;
+
+ ```
