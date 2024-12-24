@@ -714,12 +714,12 @@ client_min_messages = warning		# valores en orden de detalle:
 #row_security = on  # activa el , Row-Level Security (RLS) permite definir políticas de seguridad a nivel de fila para controlar el acceso a datos específicos según el usuario o el rol.  
 #search_path = '"$user", public'  # esto le indica a en que esquema buscar el objeto , en caso de que no se especifique en la query
 
-#######  parametros importantes ###### 
+#######  parametros importantes ######
+deadlock_timeout = '2s';   		 #  este determina cuanto tiempo puede esperar un deadlock para que sea cancelado uno de las dos tracciones 
 statement_timeout = 0			# in milliseconds, 0 is disabled -- Este parámetro controla cuánto tiempo puede ejecutarse una consulta antes de que se cancele automáticamente.
-lock_timeout = 0			# in milliseconds, 0 is disabled -- Determina cuánto tiempo una transacción debe esperar para adquirir un bloqueo antes de ser cancelada automáticamente (cancela consultas bloqueadas). 
+lock_timeout = 0			# in milliseconds, 0 is disabled -- Determina cuánto tiempo una transacción debe esperar para tener acceso a un objeto  bloqueado antes de ser cancelada automáticamente 
 idle_in_transaction_session_timeout = 0	# in milliseconds, 0 is disabled -- controla cuánto tiempo una "idle in transaction" puede permanecer inactiva antes de ser terminada automáticamente.
 idle_session_timeout = 0  		# in milliseconds, 0 is disabled -- esto controla el tiempo máximo de un cliente puede estar inactivo, despues de eso lo desconecta.
-
 
 
 client_encoding = 'UTF8'	 # establece la codificación (conjunto de caracteres) que se utiliza para la comunicación entre el cliente (como psql) y el servidor PostgreSQL	
