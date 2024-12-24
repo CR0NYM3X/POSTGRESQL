@@ -368,7 +368,7 @@ SELECT * FROM pg_seclabel;
 ####  Info Extra 
 
 ```sql
-
+[NOTA] --> no puedes especificar varios tipos de eventos en una sola regla
 
 Opciones DO INSTEAD ( Reemplaza la operación original con una operación alternativa.) : 
  
