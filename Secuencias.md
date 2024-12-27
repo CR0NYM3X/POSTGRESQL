@@ -3,6 +3,10 @@ BUSCAR PAR QUE SIRVE currval
 # Descripción Rápida de Sequences:
 Las Sequences se utilizan para generar valores autoincrementales, como claves primarias en una tabla
 
+[NOTA] --> Los cambios en las secuencias son permanentes y no se ven afectados por las transacciones. Esto es útil para garantizar que los valores generados por secuencias (como identificadores únicos) no se reutilicen, proporcionando consistencia y unicidad en la generación de claves primarias, entre otros usos. 
+
+ por ejemplo Las operaciones de secuencia (NEXTVAL, CURRVAL, SETVAL, etc.) no son transaccionales. Esto significa que los cambios en las secuencias se mantienen incluso si la transacción en la que se realizaron esos cambios se deshace con un ROLLBACK
+
 ### Ejemplos de uso:
 
 ### Buscar secuencias 
@@ -21,7 +25,7 @@ select sequencename,increment_by,last_value from pg_sequences where sequencename
 ```
 
 ### Ejecutar una secuencia
-[NOTA] - SI USAS NEXVAL DENTRO DE UN BEGIN Y HACES UN ROLLBACK ESTE NO SE REGRESA , EL ROLLBACK NO RESTABLECERAR LA SECUENCIA 
+
 ```sql
 
 --- al ejecutar la secuencia va aumentar la secuencia que estas ejecutando
