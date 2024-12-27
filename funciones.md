@@ -286,6 +286,9 @@ BEGIN
     BEGIN
         -- Intenta ejecutar una operación que genere un error (por ejemplo, dividir por cero)
         PERFORM 1 / 0; -- Esto generará un error de división por cero
+
+	-- PARA GENERAR UN ERROR PUEDES USAR RAISE:
+	--- RAISE EXCEPTION '  ESTE MENSAJE DE ERROR  ';
     EXCEPTION
         WHEN division_by_zero THEN
             -- Captura la excepción específica de división por cero
@@ -369,40 +372,6 @@ https://www.postgresqltutorial.com/postgresql-plpgsql/postgresql-exception/
 ```
 
 
-
-# usar transacciones como si fuera una funcion 
-```SQL
-
-DO $$
-DECLARE
-    columnas RECORD;
-	query text := 'insert into  mssql.test_conection(schema,ip_server ,connection) ';
-BEGIN
-    -- Bucle FOR para recorrer las filas
-    FOR columnas IN
-        select * from fdw_conf.schema_server 
-    LOOP
-        -- Imprimir la información de cada empleado
-        -- RAISE NOTICE 'ip_server: %, schema: %', columnas.ip_server,  columnas.schema;
-		
-		BEGIN
-			  EXECUTE query || 'select ' ||   columnas.schema || ',* from "' || columnas.schema ||'".test_conection'     ;
-
-			EXCEPTION
-			  WHEN OTHERS THEN
-			   RAISE NOTICE 'Error --> Server: % Msj_error : %', columnas.ip_server, SQLERRM;
-				 
-				 insert into  mssql.test_conection(ip_server ,schema,connection,error) select columnas.ip_server,columnas.schema,0,SQLERRM;
-					--insert into  mssql.test_conection(ip_server ,connection,error) select 'aaaa',0,'
-		END;
-		
-		
-		
-    END LOOP;
-END;
-$$;
-
-```
 
 
 # Ejemplos de funciones
