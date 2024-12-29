@@ -337,7 +337,7 @@ END $$;
 ********** DIAGNOSTICS que se pueden usar **********
 
 
-GET DIAGNOSTICS integer_var = ROW_COUNT; ---> https://www.postgresql.org/docs/16/plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS 
+GET DIAGNOSTICS filas_afectadas = ROW_COUNT  ---> https://www.postgresql.org/docs/16/plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS 
 GET STACKED DIAGNOSTICS ----> https://www.postgresql.org/docs/16/plpgsql-control-structures.html#PLPGSQL-EXCEPTION-DIAGNOSTICS
 
 ********** EXCEPCIÓN QUE SE PUEDEN USAR **********
