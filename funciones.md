@@ -558,6 +558,11 @@ FOUND se establece en TRUE si:
 	Una sentencia INSERT, UPDATE, DELETE o FETCH afecta al menos una fila.
 FOUND se establece en FALSE en caso contrario
 
+
+--- Herramienta
+es muy útil para obtener información sobre la ejecución(INSERT, UPDATE, DELETE, o MERGE) dentro de funciones
+GET DIAGNOSTICS filas_afectadas = ROW_COUNT;
+
 ```
 
 
