@@ -281,6 +281,10 @@ SQLSTATE:  Contiene el código de estado SQL (SQLSTATE) del error que ocurrió. 
  
 
 DO $$
+DECLARE
+  text_var1 text;
+  text_var2 text;
+  text_var3 text;
 BEGIN
     -- Bloque de código donde puede ocurrir una excepción
     BEGIN
@@ -293,6 +297,10 @@ BEGIN
         WHEN division_by_zero THEN
             -- Captura la excepción específica de división por cero
             RAISE NOTICE 'Error de división por cero capturado: %', SQLERRM;
+
+	  GET STACKED DIAGNOSTICS text_var1 = MESSAGE_TEXT,
+	                          text_var2 = PG_EXCEPTION_DETAIL,
+	                          text_var3 = PG_EXCEPTION_HINT;
     END;
     
     -- Más código después del bloque try-catch
@@ -300,6 +308,7 @@ BEGIN
 END $$;
 
 
+********** RAISE ********** 
 
  la instrucción RAISE se utiliza para generar mensajes de error, advertencias o excepciones. 
  
@@ -324,9 +333,15 @@ END $$;
    RAISE LOG 'Mensaje para el registro: Esto se registrará en el registro de eventos';
 
 
---- EXCEPCIÓN QUE SE PUEDEN USAR 
- 
 
+********** DIAGNOSTICS que se pueden usar **********
+
+
+GET DIAGNOSTICS integer_var = ROW_COUNT; ---> https://www.postgresql.org/docs/16/plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS 
+GET STACKED DIAGNOSTICS ----> https://www.postgresql.org/docs/16/plpgsql-control-structures.html#PLPGSQL-EXCEPTION-DIAGNOSTICS
+
+********** EXCEPCIÓN QUE SE PUEDEN USAR **********
+ 
 
  PostgreSQL Error Codes --- https://www.postgresql.org/docs/current/errcodes-appendix.html
 
