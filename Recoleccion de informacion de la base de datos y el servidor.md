@@ -302,3 +302,71 @@ left join pg_namespace as nc on   cl.relnamespace= nc.oid
 | pg_catalog      | pg_relation_size       |
 ```
 
+
+# comandos  de recoleccion extras 
+```sh
+################## IP ##################
+--- te proporciona información sobre la ruta predeterminada y el próximo salto 
+ip route get 1.2.3.4
+
+################## NOMBRE ##################
+hostname ;
+
+##################S.O. ##################
+ cat /etc/redhat-release ; uname -a | awk '{print $3}' ; 
+
+##################MEMORIA en Megas ##################
+vmstat -s -S M | head -n1 ;
+
+##################Procesadores ##################
+grep "model name" /proc/cpuinfo | head -n1
+
+
+##################CPUs ##################
+ grep "processor" /proc/cpuinfo | wc -l ;
+
+
+##################DISCO DURO ##################.
+ df -h ;
+
+##################GCC ##################.
+ gcc --version | head -n1
+ 
+ 
+##################APACHE ##################
+httpd -v 
+
+
+################## PHP ##################
+php -v | head -n1 
+
+
+
+################## NODE ##################
+node -v ; 
+
+
+################## PM2 ##################." 
+ pm2 -v ;
+
+
+################## Java ##################." 
+ which java ; java -version ; 
+
+
+################## Python ##################
+ python --version 
+ 
+################## POSTGRES ##################.
+psql --version
+
+################## MONGOD ##################.
+ mongod --version | head -n1 ; 
+ 
+
+################## MySQL ##################." 
+ mysql --version 
+
+################## NGINX ##################
+nginx -V
+```
