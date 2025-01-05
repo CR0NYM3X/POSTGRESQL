@@ -312,7 +312,7 @@ ip route get 1.2.3.4
 ################## NOMBRE ##################
 hostname ;
 
-##################S.O. ##################
+################## S.O y Kernel ##################
  cat /etc/redhat-release ; uname -a | awk '{print $3}' ; 
 
 ##################MEMORIA en Megas ##################
