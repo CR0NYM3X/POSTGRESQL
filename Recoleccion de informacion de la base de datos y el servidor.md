@@ -373,8 +373,14 @@ nginx -V
 
 ## Conexiones en linux
 ```
+
+"network statistics" Monitorear el estado de la red y las conexiones activas, estadísticas de red,  tablas de enrutamiento, interfaces de red
 netstat -tuln | grep postgres
+
+"socket statistics" Obtener información rápida y detallada sobre conexiones de red, incluyendo TCP, UDP, y más
 ss -tuln | grep postgres
+
+-- "list open files" Muestra información sobre archivos abiertos  o socket y los procesos que los tienen abiertos.
 lsof -i -P -n | grep postgres
 ```
 
