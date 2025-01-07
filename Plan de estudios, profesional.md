@@ -56,6 +56,9 @@ Este curso se distingue por su enfoque técnico y detallado, diseñado específi
   - ¿Qué es SQL?
   - Diferencias entre SQL y otros lenguajes de consulta
   - Introducción a PostgreSQL
+  - Procesamiento de Transacciones en Línea (OLTP)
+  - Procesamiento Analítico en Línea (OLAP)
+
 
 ## Arquitectura de PostgreSQL
 - **Estructura Interna**
