@@ -370,3 +370,13 @@ psql --version
 ################## NGINX ##################
 nginx -V
 ```
+
+## Conexiones en linux
+```
+netstat -tuln | grep postgres
+ss -tuln | grep postgres
+lsof -i -P -n | grep postgres
+```
+
+
+
