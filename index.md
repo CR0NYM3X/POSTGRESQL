@@ -2,6 +2,9 @@
 # INDEX
 Un índice es una estructura de datos que almacena una referencia a los datos en una tabla, permitiendo que las búsquedas y otras operaciones sean mucho más rápidas. Piensa en un índice como el índice de un libro, que te permite encontrar rápidamente la página donde se menciona un tema específico.
 
+### Conceptos: 
+**Baja cardinalidad** (columnas con pocos valores diferentes, Ejemplo status : successful y failed) 
+<br>**Alta cardinalidad** (columnas con muchos valores diferentes, Ejemplo: némeros teléfonos, direccione, etc )
 
 ## Impacto diferente en las operaciones de `INSERT`, `UPDATE` y `DELETE` en comparación con las consultas `SELECT`.
 
