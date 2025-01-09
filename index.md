@@ -44,6 +44,7 @@ Ventaja: Mejora el rendimiento al evitar el acceso a la tabla principal, ya que 
 
 ### Descripción
 El índice B-Tree es el tipo de índice más común y se utiliza para ordenar y buscar datos rápidamente.
+ocupar más espacio en disco, pero son mas seguros
 
 ### Cuándo Usarlo
 - Cuando necesitas buscar datos que están ordenados.
@@ -61,6 +62,7 @@ El índice B-Tree es el tipo de índice más común y se utiliza para ordenar y 
 
 ### Descripción
 El índice Hash es útil para búsquedas de igualdad, es decir, cuando buscas un valor específico.
+- Son extremadamente rápidos para operaciones de igualdad, ocupan menos espacio en disco 
 
 ### Cuándo Usarlo
 - Cuando necesitas buscar un valor exacto.
