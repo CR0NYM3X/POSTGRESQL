@@ -40,6 +40,22 @@ Detectar index compuestos
 Índices Bloat (Fragmentados)
 ```
 
+### Liberar recursos en session
+```sql
+afectará únicamente a la sesión específica de PostgreSQL desde la cual se ejecuta el comando, y no tendrá ningún efecto en otras sesiones o conexiones activas en el servidor.
+liberar todos los recursos internos
+- Cierra las conexiones activas
+- Restablece la autorización
+- Resetea configuraciones
+- Libera planes de consulta en caché
+- Limpia datos temporales
+
+postgres@test_db# DISCARD ALL;
+DISCARD ALL
+Time: 0.479 ms
+
+```
+
 ```sql
 -- falta por investigar 
 indices  perdidos que hacen falta
