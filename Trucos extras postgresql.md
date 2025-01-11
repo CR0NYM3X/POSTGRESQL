@@ -586,7 +586,7 @@ select array_agg(test_array) from (SELECT  '{8192,bytes}'::text[] as test_array 
 
 
 --- buscar un valor en un arreglo
-SELECT * FROM mi_tabla WHERE 'perro' = ANY(mi_array);
+SELECT * FROM mi_tabla WHERE 'perro' = ANY(ARRAY['MySQL', 'Oracle','PostgreSQL']);
 
  
 
@@ -1764,21 +1764,17 @@ SELECT 'PostgreSQL' NOT ILIKE 'post%'; -- Devuelve false
 
 3. Operadores relacionados con coincidencias avanzadas:
 
-SIMILAR TO:
-
-Es una mezcla entre LIKE y expresiones regulares, pero con una sintaxis más limitada.
+- SIMILAR TO: Es una mezcla entre LIKE y expresiones regulares, pero con una sintaxis más limitada.
 
 Usa el símbolo | como "OR".
-
 
 Ejemplo:
 
 SELECT 'PostgreSQL' SIMILAR TO 'Post|SQL'; -- Devuelve true
 SELECT 'PostgreSQL' SIMILAR TO '%(Post|Oracle)%'; -- Devuelve true
 
-NOT SIMILAR TO:
 
-Verifica que una cadena no coincida con el patrón.
+- NOT SIMILAR TO: Verifica que una cadena no coincida con el patrón.
 
 Ejemplo:
 
@@ -1789,16 +1785,17 @@ SELECT 'PostgreSQL' NOT SIMILAR TO '%(Post|Oracle)%'; -- Devuelve false
 
 4. Operadores con arrays o conjuntos:
 
-= ANY o = SOME:
+ANY y  SOME: son iguales y funcionan para los mismo , no hay diferencia
 
+
+ANY : 
 Verifica si un valor coincide con algún elemento en un conjunto.
 
-
 Ejemplo:
-
 SELECT 'PostgreSQL' = ANY (ARRAY['PostgreSQL', 'MySQL', 'Oracle']); -- Devuelve true
-<> ALL:
 
+
+<> ALL:
 Verifica que un valor no coincida con ningún elemento en un conjunto.
 
 Ejemplo:
