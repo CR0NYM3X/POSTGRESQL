@@ -40,7 +40,7 @@ Detectar index compuestos
 Índices Bloat (Fragmentados)
 ```
 
-### Liberar recursos en session
+### DISCARD Liberar recursos en session
 ```sql
 afectará únicamente a la sesión específica de PostgreSQL desde la cual se ejecuta el comando, y no tendrá ningún efecto en otras sesiones o conexiones activas en el servidor.
 liberar todos los recursos internos
@@ -50,9 +50,18 @@ liberar todos los recursos internos
 - Libera planes de consulta en caché
 - Limpia datos temporales
 
-postgres@test_db# DISCARD ALL;
-DISCARD ALL
-Time: 0.479 ms
+DISCARD ALL;
+DISCARD TEMP;
+DISCARD PLANS;
+DISCARD SEQUENCES;
+ 
+-- Establece el tiempo de espera de consultas a 5 segundos
+SET statement_timeout = '5s';
+
+-- Restablece statement_timeout a su valor predeterminado
+RESET statement_timeout;
+ 
+RESET ALL;
 
 ```
 
