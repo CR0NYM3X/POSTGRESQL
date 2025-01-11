@@ -6,8 +6,8 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
 ```
     2.- No se ha validado en entornos con PgBouncer
 ```
+# Proyecto para bloquear usuarios que usan pgadmin, DBeaver u otra aplicación y  obtener un reporte de los usuarios
 
-### Ejemplo: Configuración para bloquear usuarios que usan pgadmin y DBeaver y Obteniendo un reporte de los usuarios
 
 1. **Requisitos y posibles errores que puedes presentar durante la instalación de la extension** :
     En mi caso yo use el S.O "Red Hat 8.5.0-22), 64-bit" y tuve que instalar los siguientes paquetes :<br>
@@ -137,7 +137,7 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
 
 
 3. **Crear la función de inicio de sesión**:
-    Crear el archivo  "/tmp/script_fun.txt" y guarda el la query en el archivo, nota la funcion debe de estar en todas la base de datos donde quieres que se valide 
+    Crear el archivo  "/tmp/script_fun.txt" y guarda la query en el archivo, nota la funcion debe de estar en todas la base de datos donde quieres que se valide 
 
     ```sql
 
@@ -145,64 +145,92 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     
     --- Crea el esquema nuevo para que la funcion no se mescle con la información del esquema public
     CREATE SCHEMA IF NOT EXISTS sec_dba AUTHORIZATION postgres;
-    grant usage  on schema sec_dba to PUBLIC;
-    grant EXECUTE on function sec_dba.check_app to PUBLIC; ---- Esto para que todos los usuario puedan ejecutar la funcion
-
+ 
     
     --- Creando la funcion 
     CREATE OR REPLACE FUNCTION sec_dba.check_app() RETURNS void AS $$
     DECLARE 
-    	v_limit_time varchar(30) := '80 seconds';
-    	v_time_con TIMESTAMP;
-    	v_otro text;
-    
+    	
+    	v_time_con TIMESTAMP := CLOCK_TIMESTAMP();
+    	v_app_name VARCHAR(500) := current_setting('application_name');
+    	
+    	v_query_exec TEXT;
+    	v_path_log TEXT := current_setting('data_directory') || '/' || current_setting('log_directory') || '/';
+    	v_filename_user_failed 		TEXT := 'unauthorized_app_users.csv';
+    	v_filename_user_successful  TEXT := 'authorized_app_users.csv';
+    	
     BEGIN
-    
+     
     	-- Este valida si existe un PID en pg_stat_activity, en caso de que exista aborata la ejecucion de la funcion , esto evita que se llene el documento csv con registros falsos
     	IF (select 1 from pg_stat_activity where pid = pg_backend_pid())  THEN
     	 
     		RAISE EXCEPTION E'\n ----->  No puedes utilizar esta funcion, solo esta diseñada para el inicio de sesión' ;
     	
-    	END IF;
+    	END IF; 
     	
     	
-    
-         IF 
-    		/*    USUARIOS QUE QUIERES QUE VALIDE , VALIDARA LOS USUARIOS QUE NO EMPIEZAN CON UN NUMERO */ 
+        IF 
+    		--   VALIDAR USUARIOS QUE NO EMPIEZAN CON UN NUMERO  
     		  session_user !~ '^[0-9]'
-    		
     		and
     	 
-    		/*    APLICACIONES QUE QUIERES RESTRINGIR  */ 
+    		--  APLICACIONES QUE QUIERES RESTRINGIR   
     		(
-    		(current_setting('application_name') ilike  '%pg%' and current_setting('application_name') ilike  '%admin%'  )  or  
-    		(current_setting('application_name') ilike  '%DB%' and  current_setting('application_name') ilike  '%eaver%' )  or  
-    		(current_setting('application_name') ilike  '%psql%' )
+    			(v_app_name ilike  '%DB%' and v_app_name ilike  '%eaver%'  )  
+    			-- OR (v_app_name ilike  '%pg%' and v_app_name ilike  '%admin%'  )    
+    			-- OR (v_app_name ilike  '%psql%' )
     		)
     	 
-    		 THEN
+    		THEN
     	  
     		
     			-- realiza el registro de los usuarios bloqueados en el archivo unauthorized_app_users.csv
-    			COPY (select md5(CLOCK_TIMESTAMP()::text),coalesce(inet_server_addr()::text,'unix_socket'),current_setting('port') , current_database() , session_user , coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'Se detecto el uso de una aplicación no autorizada') TO PROGRAM 'cat >> /tmp/unauthorized_app_users.csv' WITH (FORMAT CSV);
-    		   
+    			v_query_exec := format(E'
+    									COPY(select 
+    											md5(%L::text || round(random()*10000)),
+    											coalesce(host(inet_server_addr()), \'127.0.0.1\'),
+    											current_setting(\'port\'), 
+    											current_database(), 
+    											session_user, 
+    											coalesce( host(inet_client_addr()) , \'127.0.0.1\'), 
+    											%L,
+    											%L, 
+    											\'¡¡Se detecto el uso de una aplicación no autorizada!!\'
+    										) TO PROGRAM \'cat >> %s%s\' WITH (FORMAT CSV);
+    									', v_time_con,v_app_name, v_time_con,v_path_log,v_filename_user_failed 
+    									);
+    		    EXECUTE  v_query_exec   ;
     		   
     		   -- select pg_terminate_backend(pg_backend_pid()); -- Esta query  es mas invasivo ya que cierra la session, no la recomiendo
     		   
-    		   -- Este solo genera una EXCEPTION y le mostrara un mensaje en la aplicacion al cliente, se recomienda mas 
-    			  RAISE EXCEPTION E' \n\n El usuario: [%] esta realizando una conexión a la base de datos [%] desde la aplicación [%] no autorizada. Esta acción está en violación de nuestras políticas de seguridad y no corresponde al propósito para el cual se creó el usuario. Si crees que este mensaje es un error, por favor contacta al equipo de seguridad de DBA inmediatamente. \n\n ',    session_user , current_database(),  current_setting('application_name') ;
+    		   -- Este solo genera una EXCEPTION y le mostrara un mensaje en la aplicacion al cliente, se recomienda mas 		   
+    			  RAISE EXCEPTION E' \n\n El usuario: [%] esta realizando una conexión a la base de datos [%] desde la aplicación [%] no autorizada. Esta acción está en violación de nuestras políticas de seguridad y no corresponde al propósito para el cual se creó el usuario. Si crees que este mensaje es un error, por favor contacta al equipo de seguridad de DBA inmediatamente. \n\n ',    session_user , current_database(),  v_app_name ;
     		
     
     		
     	ELSE 
     
-            -- Si quieres que aparezca un mensaje cuando se conectan exitosamente en la terminal descomenta el RAISE NOTICE
-              RAISE NOTICE E'\n ****** Usuario % conectado con exito ****** ', session_user ;
+            -- Si quieres que aparezca un mensaje cuando el usuario se conecta descomenta el RAISE
+             -- RAISE NOTICE E'\n ****** Usuario % conectado con exito ****** ', session_user ;
     
-    		-- realiza el registro de los usuarios conectados en el archivo authorized_app_users.csv
-    	    COPY (select md5(CLOCK_TIMESTAMP()::text),coalesce(inet_server_addr()::text,'unix_socket'), current_setting('port') , current_database() , session_user ,coalesce(inet_client_addr()::text,'unix_socket') , current_setting('application_name'),current_TIMESTAMP, 'usuario conectado') TO PROGRAM 'cat >> /tmp/authorized_app_users.csv' WITH (FORMAT CSV);
+    		-- Realiza el registro de los usuarios conectados en el archivo authorized_app_users.csv
+    		v_query_exec := format(E'
+    								COPY(select 
+    										md5(%L::text || round(random()*10000)),
+    										coalesce(host(inet_server_addr()), \'127.0.0.1\'), 
+    										current_setting(\'port\'), 
+    										current_database() , 
+    										session_user , 
+    										coalesce( host(inet_client_addr()) , \'127.0.0.1\') , 
+    										%L,
+    										%L, 
+    										\'usuario conectado\'
+    									) TO PROGRAM \'cat >> %s%s\' WITH (FORMAT CSV);
+    								', v_time_con,v_app_name, v_time_con,v_path_log,v_filename_user_successful  
+    								);
     	   
-    	
+    		 EXECUTE  v_query_exec ;
+    		 
         END IF;
     
     END;
@@ -211,8 +239,12 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     SET client_min_messages = notice
     SET client_encoding = 'UTF-8';
 
+
+
     --- Asignamos como owner el rol pg_execute_server_program para que no quede como owner el postgres por seguridad 
     ALTER FUNCTION  sec_dba.check_app()  OWNER TO pg_execute_server_program;
+   grant usage  on schema sec_dba to PUBLIC;
+    grant EXECUTE on function sec_dba.check_app to PUBLIC; ---- Esto para que todos los usuario puedan ejecutar la funcion
 
     ```
 
@@ -254,7 +286,7 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
         details TEXT
     )
     SERVER csv_server
-    OPTIONS (filename '/tmp/unauthorized_app_users.csv', format 'csv', header 'false');
+    OPTIONS (filename '/sysx/data16/pg_log/unauthorized_app_users.csv', format 'csv', header 'false');
     
     
     -- drop FOREIGN TABLE authorized_app_users;
@@ -271,13 +303,13 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
         details TEXT
     )
     SERVER csv_server
-    OPTIONS (filename '/tmp/authorized_app_users.csv', format 'csv', header 'false');
+    OPTIONS (filename '/sysx/data16/pg_log/authorized_app_users.csv', format 'csv', header 'false');
     
     
     ---- Con esto podemos limpiar los archivos donde se guardan los registros de los usuarios
     ---- Tambien sirve para que se creen los archivs en caso de que no existan 
-    copy (select '') to program  'cat /dev/null > /tmp/authorized_app_users.csv';
-    copy (select '') to program  'cat /dev/null > /tmp/unauthorized_app_users.csv';
+    copy (select '') to program  'cat /dev/null > /sysx/data16/pg_log/authorized_app_users.csv';
+    copy (select '') to program  'cat /dev/null > /sysx/data16/pg_log/unauthorized_app_users.csv';
     
     ----  consultar archivo como si fuera una tabla 
     select * from authorized_app_users ; 
@@ -344,6 +376,15 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
     cp /usr/pgsql-16/lib/session_exec.so /usr/pgsql-15
     cp /usr/pgsql-16/lib/bitcode/session_exec.index.bc /usr/pgsql-15
     cp -r /usr/pgsql-16/lib/bitcode/session_exec /usr/pgsql-15
+
+
+
+POSTGRESQL 17 - Login Event Trigger 
+https://www.dbi-services.com/blog/postgresql-17-login-event-triggers/
+https://www.postgresql.org/docs/current/event-trigger-database-login-example.html
+https://stackoverflow.com/questions/48104368/postgresql-trigger-on-user-logon
+
+
 ```
 
 
@@ -354,6 +395,8 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
 
 
  
+
+
 
 
 
