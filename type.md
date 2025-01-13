@@ -179,7 +179,7 @@ ALTER TABLE nombre_de_la_tabla ALTER COLUMN columna_de_tipo_contacto TYPE tipo_c
 
  
 ### 1. Tipos Numéricos
-- **Integer (int, int2, int4, int8)**
+- **Enteros - Integer (int, int2, int4, int8)**
   - **Límites**:
     - `int2 (Alias: Smallint)`: -32,768 a 32,767
     - `int4 (Alias: int, Integer)`: -2,147,483,648 a 2,147,483,647
@@ -190,16 +190,38 @@ ALTER TABLE nombre_de_la_tabla ALTER COLUMN columna_de_tipo_contacto TYPE tipo_c
     - `bigint`: 8 bytes
   - **Desventajas**: Limitados en rango y no adecuados para valores decimales.
 
-- **Serial (serial, bigserial)**
+- **Secuencias - Serial (serial, bigserial)**
   - **Límites**: Mismos que `integer` y `bigint`.
   - **Espacio en memoria**: Mismos que `integer` y `bigint`.
-  - **Desventajas**: No se puede reutilizar el valor una vez eliminado.
 
-- **Numeric (numeric, decimal) son igual **
+
+### Tipos de Punto Flotante (Decimales)
+
+1. **FLOAT4 (REAL)**
+   - **Descripción**: Almacena números de punto flotante de precisión simple.
+   - **Rango**: Aproximadamente ±1.18e-38 a ±3.4e+38.
+   - **Precisión**: Hasta 6 dígitos decimales.
+   - **Espacio en Memoria**: 4 bytes.
+   - **Desventajas**:
+     - Menor precisión con FLOAT8.
+     - Puede haber errores de redondeo en operaciones aritméticas debido a la precisión limitada.
+
+2. **FLOAT8 (FLOAT o DOUBLE PRECISION)**
+   - **Descripción**: Almacena números de punto flotante de doble precisión.
+   - **Rango**: Aproximadamente ±2.23e-308 a ±1.8e+308.
+   - **Precisión**: Hasta 15 dígitos decimales.
+   - **Espacio en Memoria**: 8 bytes.
+   - **Desventajas**:
+     - Ocupa más espacio en memoria comparado con FLOAT4.
+     - Aunque tiene mayor precisión, todavía puede haber errores de redondeo en operaciones aritméticas.
+	 - utilizan más recursos en términos de memoria y rendimiento
+
+3. **Numeric (numeric, decimal) son igual**
   -  sintaxis es NUMERIC(p, s), donde p es la precisión total (el número máximo de dígitos) y s es la escala (el número de dígitos a la derecha del punto decimal).
   - **Límites**: Depende de la precisión especificada.
   - **Espacio en memoria**: Variable, depende de la precisión y escala.
   - **Desventajas**: Más lentos y consumen más espacio en comparación con los enteros.
+
 
 ### 2. Tipos de Caracteres
 - **Character (char, varchar, text)**
