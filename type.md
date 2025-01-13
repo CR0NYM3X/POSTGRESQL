@@ -227,11 +227,11 @@ ALTER TABLE nombre_de_la_tabla ALTER COLUMN columna_de_tipo_contacto TYPE tipo_c
 - **Character (char, varchar, text)**
   - **Límites**:
     - `char(n)`: Fijo a n caracteres.
-    - `varchar(n)`: Hasta n caracteres.
+    - ` character varying(n) `: (Alias: varchar) Hasta n caracteres.
     - `text`: Ilimitado.
   - **Espacio en memoria**:
     - `char(n)`: n bytes
-    - `varchar(n)`: Longitud de la cadena + 1 o 4 bytes de sobrecarga
+    - ` character varying(n)`: Longitud de la cadena + 1 o 4 bytes de sobrecarga
     - `text`: Longitud de la cadena + 1 o 4 bytes de sobrecarga
   - **Desventajas**: `char` puede desperdiciar espacio debido a su longitud fija.
 
