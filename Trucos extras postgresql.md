@@ -52,7 +52,7 @@ SELECT * from mupaquetes where fec_fechamovto::date between '20210501' and '2021
 CAST ('10' AS INTEGER); convertir string a int --- O  (idu_valorconfiguracion)::INT
 select round(random()*10) ---- random 
 select round(random()* (3-1)  +1 )
-SELECT TO_CHAR(1234.89, 'FM$999,999,999.00');
+SELECT TO_CHAR(1234.89, 'FM$999,999,999.00'); --> $1,234,567.89 
 select (3::float/2::float)
 SELECT round((3/2)::numeric,2 ) -- ponerle 2 decimal en 00
 select TRUNC(5, 3) ---> agrega 3 decimales  trunc 5.000
