@@ -345,6 +345,7 @@ GET STACKED DIAGNOSTICS ----> https://www.postgresql.org/docs/16/plpgsql-control
 
  PostgreSQL Error Codes --- https://www.postgresql.org/docs/current/errcodes-appendix.html
 
+[NOTA] La condición especial OTHERS coincide con todos los tipos de error excepto QUERY_CANCELED y ASSERT_FAILURE.
 
  WHEN query_canceled THEN
  	RAISE NOTICE 'La consulta fue cancelada porque excedió el tiempo límite de 5 segundos';
