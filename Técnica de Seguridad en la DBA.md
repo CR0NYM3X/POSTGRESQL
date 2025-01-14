@@ -616,3 +616,26 @@ EXECUTE FUNCTION  audit_function_creation();
 
 
  ```
+
+
+
+### Tecnicas de ofuscacion
+Datos que más se ofuscan y  contienen información sensible y confidencial:
+
+1. **Información personal identificable (PII)**: Nombres, direcciones, números de teléfono, direcciones de correo electrónico, y números de seguridad social.
+2. **Datos financieros**: Números de tarjetas de crédito, información de cuentas bancarias, y detalles de transacciones financieras.
+3. **Datos médicos**: Historias clínicas, diagnósticos, y tratamientos médicos.
+4. **Contraseñas y credenciales**: Información de inicio de sesión, contraseñas, y tokens de autenticación.
+5. **Datos empresariales**: Información sobre empleados, contratos, y datos comerciales confidenciales.
+ 
+```SQL
+
+--- Para tarjetas 
+SELECT REPEAT('*', LENGTH(num) - 4) || RIGHT(num, 4) AS ultimos_cuatro_digitos  from (select '123456789' as num) as a ; -->  *****6789
+SELECT lpad( (RIGHT(num, 4)) ,  LENGTH(num) ,'*') AS ultimos_cuatro_digitos  from (select '123456789' as num) as a ; ---> *****6789
+
+--- Para Telefonos
+
+```
+
+
