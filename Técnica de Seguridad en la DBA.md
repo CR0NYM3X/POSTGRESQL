@@ -260,6 +260,7 @@ Select * from  pg_stat_activity    ;
 
 
 ### Evita Inyeccion SQL  #1
+Consultas dinamicas 
 Esto es útil para evitar problemas de inyección SQL y para manejar valores de manera segura y eficiente.
 Si no usáramos USING, tendríamos que concatenar los valores directamente en la cadena SQL, lo cual es menos seguro y más propenso a errores
 ```
@@ -295,7 +296,7 @@ El formato `%I` se utiliza para formatear identificadores SQL y coloca comillas 
 El formato `%L` se utiliza para formatear literales SQL y coloca comillas simples a los valores  , como cadenas de texto, números, etc. PostgreSQL se encarga de escaparlos adecuadamente para que sean seguros y correctos en el contexto de una consulta SQL. PostgreSQL los escapa adecuadamente para evitar inyecciones SQL y asegurar que sean interpretados correctamente.
  
   
- 
+ select format(nada, 'mundo') from (select 'hola %L' as nada);
   
 SELECT FORMAT('Hola, %s', 'PostgreSQL'); --- Hola, PostgreSQL 
 SELECT FORMAT('El número es: %s', 12345);---- El número es: 12345 
