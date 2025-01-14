@@ -60,7 +60,7 @@ https://www.qualoom.es/blog/administracion-usuarios-roles-postgresql/
 
 
 
-#  Recomendaciones Basicas
+# Restringir la conexion a la DB
 ```sql
 # Restringir la conexion a la DB template para que no modifiquen nada
 host    template1             all           0.0.0.0 0.0.0.0              reject
@@ -70,6 +70,8 @@ host    template1             all           0.0.0.0 0.0.0.0              reject
 UPDATE pg_database SET datallowconn = FALSE WHERE datname = 'template0';
 UPDATE pg_database SET datallowconn = FALSE WHERE datname = 'template1';
 
+--- es lo mismo que hacer el update 
+ALTER DATABASE template0  ALLOW_CONNECTIONS false;
 
 select datname,datallowconn,datistemplate  from pg_database;
 
