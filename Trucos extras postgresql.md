@@ -787,9 +787,10 @@ https://www.postgresql.org/docs/8.2/functions-string.html
 
  
 
---- Agregale al princio o al final una cierta cantidad de caracteres 
+--- Agregale, repetir al princio o al final una cierta cantidad de caracteres 
 select lpad('Hola Mundo',20,'-'); ---> '----------Hola Mundo'
 select rpad('Hola Mundo',20,'-'); ---> 'Hola Mundo----------'
+select REPEAT('*',6); ---> ******
 
 
 --- Saltos de linea 
