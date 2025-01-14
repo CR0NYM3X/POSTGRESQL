@@ -254,7 +254,7 @@ LOCK TABLE nombre_de_la_tabla IN SHARE ROW EXCLUSIVE MODE;
 LOCK TABLE nombre_de_la_tabla IN ROW SHARE MODE;
 LOCK TABLE nombre_de_la_tabla IN SHARE MODE;
 LOCK TABLE nombre_de_la_tabla IN SHARE UPDATE EXCLUSIVE MODE;
-
+ 
 
 
 BEGIN;
