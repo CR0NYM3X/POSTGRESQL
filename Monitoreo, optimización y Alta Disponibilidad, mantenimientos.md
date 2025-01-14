@@ -261,9 +261,26 @@ BEGIN;
 LOCK TABLE fdw_conf.scan_rules_query IN  ACCESS EXCLUSIVE MODE;
 delete from fdw_conf.scan_rules_query where id = 1 ; 
 COMMIT;
-
-
 ```
+
+
+## Ejemplo de un log con registros de locks
+```
+Parametros que registran esto :
+log_statement = 'all'
+log_lock_waits = on
+
+1.- El proceso 2709374 esta esperando un objeto bloqueado , y quiere colocarse en AccessShareLock de un objeto compartidos a nivel global en PostgreSQL y ha estado esperando por 1000.076 milisegundos.
+<2025-01-10 00:00:05 MST     2709374 6780c574.29577e >LOG:  process 2709374 still waiting for AccessShareLock on relation 2965 of database 0 after 1000.076 ms
+
+
+2.- Estos procesos (2675150, 2675331, 2675358, 2675364) son los que actualmente tienen el bloqueo que el proceso 2709374 y Estos procesos (2709280, 2709374) están en la cola de espera
+<2025-01-10 00:00:05 MST     2709374 6780c574.29577e >DETAIL:  Processes holding the lock: 2675150, 2675331, 2675358, 2675364. Wait queue: 2709280, 2709374.
+
+3.- El proceso 2709374 que finalmente ha adquirido el bloqueo AccessShareLock a esperado 7661187.620 milisegundos (2.13 horas))
+<2025-01-10 02:07:45 MST     2709374 6780c574.29577e >LOG:  process 2709374 acquired AccessShareLock on relation 2965 of database 0 after 7661187.620 ms
+```
+
 
 ## Buscar bloqueos 
 ```sql
