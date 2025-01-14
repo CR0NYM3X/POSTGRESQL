@@ -346,8 +346,6 @@ GET STACKED DIAGNOSTICS ----> https://www.postgresql.org/docs/16/plpgsql-control
  PostgreSQL Error Codes --- https://www.postgresql.org/docs/current/errcodes-appendix.html
 
 
- WHEN  WHEN query_canceled THEN THEN
-	  RAISE NOTICE 'sin datos';
  WHEN query_canceled THEN
  	RAISE NOTICE 'La consulta fue cancelada porque excedió el tiempo límite de 5 segundos';
  WHEN unique_violation THEN
