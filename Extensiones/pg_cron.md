@@ -72,7 +72,7 @@ AEST (Australian Eastern Standard Time): Hora Estándar del Este de Australia (U
 
 -- View active jobs
 select * from cron.job;
-select (coalesce(end_time, now()) - start_time) as duration , * from  cron.job_run_details order by start_time desc  ;--- puedes tener estatus  running | FAILED | successful
+select (coalesce(end_time, now()) - start_time) as duration , * from  cron.job_run_details  order by start_time::date  desc , jobid limit 100  ;--- puedes tener estatus  running | FAILED | successful
 
 ---- agregar una tarea/job, si hacer un nuevo job y dejas el mismo nombre , suplantaras el anterior 
 SELECT cron.schedule('create_copy', '32 14 * * *', ' COPY  ( select name,setting from pg_settings)  TO ''/tmp/pg_settings-25072024.csv'' ; ');
