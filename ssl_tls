@@ -1,3 +1,26 @@
+Certificados SSL/TLS son esenciales para asegurar las conexiones  
+
+### Tipos de Certificados SSL/TLS
+1. **Certificados de Dominio Único**: Protegen un solo dominio.
+2. **Certificados Comodín**: Protegen un dominio y todos sus subdominios.
+3. **Certificados Multidominio**: Protegen varios dominios diferentes.
+4. **Certificados de Validación de Dominio (DV)**: Verifican la propiedad del dominio.
+5. **Certificados de Validación de Empresa (OV)**: Verifican la propiedad del dominio y la existencia de la empresa.
+6. **Certificados de Validación Extendida (EV)**: Ofrecen el mayor nivel de verificación y seguridad.
+
+### Uso de Certificados SSL/TLS
+- **Comercio Electrónico**: Protege las transacciones y datos sensibles de los clientes.
+- **Formularios de Inicio de Sesión**: Protege las credenciales de los usuarios.
+- **Sitios Web Informativos**: Protege la privacidad de los usuarios.
+- **Mejora del Posicionamiento en Motores de Búsqueda**: Google favorece los sitios con HTTPS.
+
+### Desventajas de Certificados SSL/TLS
+- **Costo**: Los certificados pueden ser costosos, especialmente los de mayor nivel de seguridad.
+- **Rendimiento**: La encriptación puede afectar el rendimiento del sitio web.
+- **Configuración Compleja**: Implementar correctamente los certificados puede ser complicado.
+- **Caché Proxy**: El contenido cifrado no se puede almacenar en caché fácilmente.
+ 
+
 
 /******************* versiones de tls que se pueden configurar   *******************\.
 https://www.postgresql.org/docs/current/libpq-ssl.html
