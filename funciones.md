@@ -337,8 +337,8 @@ END $$;
 ********** DIAGNOSTICS que se pueden usar **********
 
 
-GET DIAGNOSTICS filas_afectadas = ROW_COUNT  ---> https://www.postgresql.org/docs/16/plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS 
-GET STACKED DIAGNOSTICS ----> https://www.postgresql.org/docs/16/plpgsql-control-structures.html#PLPGSQL-EXCEPTION-DIAGNOSTICS
+GET DIAGNOSTICS filas_afectadas = ROW_COUNT  ---> Este se usa despues de usar execute   https://www.postgresql.org/docs/16/plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS 
+GET STACKED DIAGNOSTICS text_var1 = MESSAGE_TEXT; ----> este se usa cuando un execute marca error y estas dentro de un EXCEPTION  https://www.postgresql.org/docs/16/plpgsql-control-structures.html#PLPGSQL-EXCEPTION-DIAGNOSTICS
 
 ********** EXCEPCIÓN QUE SE PUEDEN USAR **********
  
