@@ -960,6 +960,11 @@ ORDER BY npar.nspname   ;
 
 # Ensuring Unique IDs in Partitioned PostgreSQL Tables 
 ```
+
+ONLY  :se utiliza para especificar la tabla ,   sin afectar a sus tablas hijas
+CREATE INDEX index_name ON ONLY parent_table (column_name);
+
+
 https://medium.com/@andriikrymus/ensuring-unique-ids-in-partitioned-postgresql-tables-84b0fa4cf814
 ```
 
