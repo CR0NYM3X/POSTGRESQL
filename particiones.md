@@ -956,3 +956,10 @@ ORDER BY npar.nspname   ;
 
 
 
+
+
+# Ensuring Unique IDs in Partitioned PostgreSQL Tables 
+```
+https://medium.com/@andriikrymus/ensuring-unique-ids-in-partitioned-postgresql-tables-84b0fa4cf814
+```
+
