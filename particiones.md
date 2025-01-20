@@ -18,7 +18,7 @@ También facilita el mantenimiento, como hacer copias de seguridad o eliminar da
 3. **Optimización del espacio**: Puedes almacenar datos menos usados en medios de almacenamiento más baratos y lentos, usando los tablespace.
 
 ### Desventajas
-
+Super desventaja es que no sirven las particiones para tener foring keys y calumnas unicas esto debido a que no existe estos constraint de manera global y solo existe para cada tabla
 1. **Complejidad**: Configurar y gestionar particiones puede ser más complicado que manejar una tabla simple.
 2. **Limitaciones**: No todas las consultas se benefician de la partición, y en algunos casos, puede no haber una mejora significativa en el rendimiento³.
 3. **Rendimiento de Inserción**: Insertar datos puede ser más lento si PostgreSQL necesita determinar a qué partición pertenece cada fila. Esto puede ser mitigado con una buena planificación y configuración.
