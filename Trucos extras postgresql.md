@@ -1629,6 +1629,12 @@ LISTEN mi_canal_escucha;
 SELECT pg_notify('mi_canal_escucha', '¡Hola desde PostgreSQL!');
 NOTIFY mi_canal_escucha, 'Este es un mensaje de notificación';
 
+--- lista de los canales a los que las sesiones actuales están escuchando.
+select * from pg_listening_channels(); 
+
+--- devuelve el uso actual de la cola de notificaciones en PostgreSQL.
+select * from pg_notification_queue_usage(); 
+
 ```
 
 
