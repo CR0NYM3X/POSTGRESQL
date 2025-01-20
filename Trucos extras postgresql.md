@@ -584,8 +584,6 @@ select    unnest(array[ 822, 823, 2782, 2994, 2171,509,722, 1428,106,107,108 ]) 
 select array_agg(test_array) from (SELECT  '{8192,bytes}'::text[] as test_array union all select   '{9999,bytes}'::text[] ) as a ;
 
 
---- buscar un valor en un arreglo
-SELECT * FROM mi_tabla WHERE 'perro' = ANY(ARRAY['MySQL', 'Oracle','PostgreSQL']);
 
  
 
@@ -619,18 +617,21 @@ select array_replace( '{server=10.10.10.12,version=1.1}'::text[], 'version=1.1',
 
  **unnest**: Expande un array en una serie de filas
  SELECT unnest(ARRAY[1, 2, 3]); -- Resultado: 1, 2, 3 (en filas separadas)
- 
- **@>**: Verifica si el primer array contiene al segundo
+
+
+ **@>**: (Contiene) verificar si todos los elementos del array de la derecha están presentes en el array de la izquierda
  SELECT ARRAY[1, 2, 3] @> ARRAY[2]; -- Resultado: true
  
 
- **<@**: Verifica si el primer array está contenido en el segundo.
+ **<@**: (Está contenido) verificar si todos los elementos del array de la izquierda están presentes en el array de la derecha.
  SELECT ARRAY[1, 2] <@ ARRAY[1, 2, 3]; -- Resultado: true
  
 
- **&&**: Verifica si dos arrays tienen elementos en común., es quivalente al in()
+ **&&**: Verifica si dos arrays tienen elementos en común. te puede sevir como in
  SELECT ARRAY[1, 2, 3] && ARRAY[2, 4]; -- Resultado: true
- 
+
+-- verificar si un valor individual es igual a cualquiera de los elementos de un array , esto es lo que hace un in()
+SELECT * FROM mi_tabla WHERE 'perro' = ANY(ARRAY['MySQL', 'Oracle','PostgreSQL']); 
 
  **array_agg**: Agrega los valores de una columna en un array
  SELECT array_agg(column_name) FROM table_name;
