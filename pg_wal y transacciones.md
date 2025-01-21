@@ -66,6 +66,70 @@ savepoint my_name_savepoint;
 RELEASE SAVEPOINT my_savepoint;
  ```
 
+--- 
+
+### ¿Qué es `PREPARE TRANSACTION`?
+
+`PREPARE TRANSACTION` se utiliza para gestionar transacciones distribuidas en PostgreSQL. Imagina que estás realizando una operación que involucra varios sistemas diferentes (por ejemplo, dos bases de datos diferentes) y necesitas asegurarte de que ambos sistemas completen la operación de manera coherente. Aquí es donde entra en juego `PREPARE TRANSACTION`.
+
+
+- **Transacciones Distribuidas**: Útil cuando las operaciones abarcan múltiples bases de datos o sistemas.
+
+### Ejemplo Práctico:
+
+Supongamos que tienes dos bases de datos, `db1` y `db2`, y quieres transferir dinero entre dos cuentas que están en bases de datos diferentes. Necesitas asegurarte de que ambas operaciones (debit en `db1` y credit en `db2`) se completen correctamente.
+
+#### Paso a Paso:
+
+1. **Inicia una transacción en `db1`**:
+   ```sql
+   BEGIN;
+   UPDATE cuenta SET saldo = saldo - 100 WHERE id = 1; -- Debitar 100 de la cuenta en `db1`
+   ```
+
+2. **Prepara la transacción en `db1`**:
+   ```sql
+   PREPARE TRANSACTION 'transaccion_db1';
+   ```
+
+3. **Inicia una transacción en `db2`**:
+   ```sql
+   BEGIN;
+   UPDATE cuenta SET saldo = saldo + 100 WHERE id = 2; -- Acreditar 100 a la cuenta en `db2`
+   ```
+
+4. **Prepara la transacción en `db2`**:
+   ```sql
+   PREPARE TRANSACTION 'transaccion_db2';
+   ```
+
+5. **Compromete ambas transacciones**:
+   - En este punto, un coordinador de transacciones verifica que ambas operaciones estén listas para ser comprometidas.
+   - Si ambas están listas, compromete ambas:
+     ```sql
+     COMMIT PREPARED 'transaccion_db1'; -- En `db1`
+     COMMIT PREPARED 'transaccion_db2'; -- En `db2`
+     ```
+
+6. **Si hay un problema, revierte ambas transacciones**:
+   - Si algo sale mal en cualquiera de las operaciones, puedes revertir ambas:
+     ```sql
+     ROLLBACK PREPARED 'transaccion_db1'; -- En `db1`
+     ROLLBACK PREPARED 'transaccion_db2'; -- En `db2`
+     ```
+
+### ¿Dónde Aplicarlo?
+
+- **Transacciones Bancarias**: Transferencias entre cuentas en diferentes bancos.
+- **Sistemas de Inventario**: Actualización de inventarios en múltiples almacenes.
+- **Aplicaciones Distribuidas**: Cualquier aplicación que necesite mantener la consistencia entre varios sistemas distribuidos.
+
+### Resumen:
+
+`PREPARE TRANSACTION` te permite asegurarte de que las operaciones críticas que involucran múltiples sistemas se completen de manera coherente, sin riesgo de que una parte se ejecute y otra no, lo que podría llevar a inconsistencias.
+
+
+
 
 ### Ejemplo uso de Transacciones
  ```sql
