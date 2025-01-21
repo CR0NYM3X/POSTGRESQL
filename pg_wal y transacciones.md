@@ -81,6 +81,19 @@ Supongamos que tienes dos bases de datos, `db1` y `db2`, y quieres transferir di
 
 #### Paso a Paso:
 
+
+1. **Habilitar PREPARE TRANSACTION**:
+```sql
+postgres@postgres#* PREPARE TRANSACTION 'transaccion_123';
+ERROR:  prepared transactions are disabled
+HINT:  Set max_prepared_transactions to a nonzero value.
+Time: 0.419 ms
+
+postgres@postgres# set max_prepared_transactions =50;
+ERROR:  parameter "max_prepared_transactions" cannot be changed without restarting the server
+Time: 0.502 ms
+```
+
 1. **Inicia una transacción en `db1`**:
    ```sql
    BEGIN;
