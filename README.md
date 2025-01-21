@@ -42,6 +42,7 @@
 
 # Páginas para aprender más de Postgresql
 ```
+medium.com
 https://p2d2.cz/
 
 https://blog.unixpad.com/
