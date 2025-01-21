@@ -55,8 +55,8 @@ SELECT TO_CHAR(1234.89, 'FM$999,999,999.00'); --> $1,234,567.89
 select (3::float/2::float)
 SELECT round((3/2)::numeric,2 ) -- ponerle 2 decimal en 00
 select TRUNC(5, 3) ---> agrega 3 decimales  trunc 5.000
-select ceiling(12.34) -- redondea todo hacia arriba
-select floor(12.23) --  redondea todo hacia abajo
+select ceiling(12.34) --> 13 redondea todo hacia arriba
+select floor(12.23) --> 12  redondea todo hacia abajo
 select cast(52.55 as decimal(18,2) ) -- le permite dejar 2 decimales y el 18 es la precisión o el redodeo
 
 
