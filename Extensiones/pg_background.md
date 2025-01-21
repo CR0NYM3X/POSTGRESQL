@@ -29,6 +29,23 @@ https://github.com/vibhorkum/pg_background
 
 ### Ejemplo de Uso:
 
+# Limite de procesos 	
+Tienes un limite de procesos para abrir y esto depende como tienes configurado tu servidor, en caso de querer abrir mas procesos de lo permitido aparecera este mensaje
+   ```sql
+	postgres@postgres# SELECT * FROM lanzar_y_validar_procesos(15);
+	ERROR:  could not register background process
+	HINT:  You may need to increase max_worker_processes.
+	CONTEXT:  PL/pgSQL function lanzar_y_validar_procesos(integer) line 9 at assignment
+	Time: 7.471 ms
+
+	postgres@postgres# set max_worker_processes = 30 ;
+	ERROR:  parameter "max_worker_processes" cannot be changed without restarting the server
+	Time: 0.868 ms
+
+   ```
+
+
+
 
 1. **Ejecutar una consulta en segundo plano**:
    ```sql
