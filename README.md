@@ -42,6 +42,8 @@
 
 # Páginas para aprender más de Postgresql
 ```
+https://p2d2.cz/
+
 https://blog.unixpad.com/
 https://hexacluster.ai/blog/
 https://www.crunchydata.com/postgres-tips
