@@ -1,5 +1,5 @@
 
-`pg_background` es una extensión para PostgreSQL que permite ejecutar comandos SQL de manera asíncrona en procesos en segundo plano.
+`pg_background` es una extensión para PostgreSQL que permite ejecutar comandos SQL de manera asíncrona en procesos en segundo plano, utiliza el mismo usuario que ejecuto las funciones para ejecutar las querys en segundo plano.
 
 https://github.com/vibhorkum/pg_background
 
@@ -29,23 +29,46 @@ https://github.com/vibhorkum/pg_background
 
 ### Ejemplo de Uso:
 
+
 1. **Ejecutar una consulta en segundo plano**:
    ```sql
    SELECT pg_background_launch('VACUUM FULL my_table');
+
+   select * from pg_background_launch($$ insert into t  select round(random()*10) where  pg_sleep(20) is not null $$);
+
+   select pg_background_launch($$ select 5555,(current_user || '-' ||session_user|| '-' || random()::text)::text as jajaa   where  pg_sleep(20) is not null  $$);
+
+   
    ```
 
 2. **Obtener el resultado de un proceso en segundo plano**:
    ```sql
    SELECT pg_background_result(pid);
    
-   -- Run a command and wait for the result
+   -- De esta forma se ejecuta en segundo plano , pero espera a que termine la ejecucion para mostrar el resultado
 	SELECT pg_background_result(pg_background_launch('SELECT count(*) FROM your_table'));
    ```
 
 3. **desvincular un trabajador en segundo plano que fue lanzado con pg_background_launch**:
    ```sql
    
-   -- Permite que la sesión principal continúe ejecutando otras tareas sin bloquearse
+   -- desvincular un trabajador en segundo plano que fue lanzado con pg_background_launch, practicamente ya no podras usar la funcion pg_background_result desde la funcion principal 
    SELECT pg_background_detach(pid);
    ```
+
+4. **Validar los procesos** 
+   ```sql
+   select pid from pg_stat_activity where backend_type !~* 'launcher' and pid <> pg_backend_pid() and not backend_type in('walwriter','checkpointer','background writer') and pid <> 976760 and state = 'active' ;
+
+   select * from pg_stat_activity where  PID = 972751;
+   ```
+
+# Extra ejemplos 
+```sql
+CREATE TABLE t(id integer);
+
+SELECT * FROM pg_background_result(pg_background_launch('INSERT INTO t SELECT 1')) AS (result TEXT);
+SELECT * FROM t;
+truncate table t;
+```
  
