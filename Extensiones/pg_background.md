@@ -30,7 +30,15 @@ https://github.com/vibhorkum/pg_background
 ### Ejemplo de Uso:
 
 # Limite de procesos 	
-Tienes un limite de procesos para abrir y esto depende como tienes configurado tu servidor, en caso de querer abrir mas procesos de lo permitido aparecera este mensaje
+Tienes un limite de procesos para abrir y esto depende como tienes configurado tu servidor, en caso de querer abrir mas procesos de lo permitido aparecera este mensaje, 
+- `**max_worker_processes**` controla el número total de procesos que pueden ejecutarse en segundo plano. Es recomendable ajustar este parámetro en función del hardware disponible, especialmente la cantidad de núcleos de CPU. Aumentar demasiado este valor puede causar competencia por recursos y degradar el rendimiento. reserva un número de estos procesos para tareas críticas del sistema.
+
+Otros procesos que puedes ajustar 
+ 
+- `**max_parallel_workers**` = 8  # Ajusta según tus necesidades
+- `**shared_buffers**` = 2GB  # Ajusta según la cantidad de RAM disponible
+- `**work_mem**` = 4MB # Ajusta según la carga de trabajo
+  
    ```sql
 	postgres@postgres# SELECT * FROM lanzar_y_validar_procesos(15);
 	ERROR:  could not register background process
