@@ -133,6 +133,14 @@ locale | grep -i collate
 ### Memoria Ram
 
 ```sh
+htop (MEM):
+
+Verde: Memoria usada por procesos.
+Azul: Memoria usada por buffers.
+Amarillo/Naranja: Memoria usada por caché.
+Rojo: Memoria usada por el kernel.
+Rosa: Memoria de intercambio (swap).
+
  htop
  vmstat -s -S M 
  cat  /proc/meminfo
