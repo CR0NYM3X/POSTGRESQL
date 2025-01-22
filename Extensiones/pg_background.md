@@ -67,6 +67,7 @@ Otros procesos que puedes ajustar
    ```
 
 2. **Obtener el resultado de un proceso en segundo plano**:
+   Hay que tener cuidado con los type ya que esto puede generar errores 
    ```sql
    SELECT pg_background_result(pid);
    
@@ -74,14 +75,14 @@ Otros procesos que puedes ajustar
 	SELECT pg_background_result(pg_background_launch('SELECT count(*) FROM your_table'))  AS (result TEXT);
    ```
 
-3. **desvincular un trabajador en segundo plano que fue lanzado con pg_background_launch**:
+4. **desvincular un trabajador en segundo plano que fue lanzado con pg_background_launch**:
    ```sql
    
    -- desvincular un trabajador en segundo plano que fue lanzado con pg_background_launch, practicamente ya no podras usar la funcion pg_background_result desde la funcion principal 
    SELECT pg_background_detach(pid);
    ```
 
-4. **Validar los procesos** 
+5. **Validar los procesos** 
    ```sql
    select pid from pg_stat_activity where backend_type !~* 'launcher' and pid <> pg_backend_pid() and not backend_type in('walwriter','checkpointer','background writer') and pid <> 976760 and state = 'active' ;
 
