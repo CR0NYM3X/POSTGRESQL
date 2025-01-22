@@ -71,7 +71,7 @@ Otros procesos que puedes ajustar
    SELECT pg_background_result(pid);
    
    -- De esta forma se ejecuta en segundo plano , pero espera a que termine la ejecucion para mostrar el resultado
-	SELECT pg_background_result(pg_background_launch('SELECT count(*) FROM your_table'));
+	SELECT pg_background_result(pg_background_launch('SELECT count(*) FROM your_table'))  AS (result TEXT);
    ```
 
 3. **desvincular un trabajador en segundo plano que fue lanzado con pg_background_launch**:
