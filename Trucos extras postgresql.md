@@ -482,6 +482,7 @@ select age(timestamp '2011-10-01 ', timestamp '2011-11-01') --- saber los días 
 select ('2011-11-01'::date -  '2011-12-028'::date)--- saber los días que pasan  
 
 select to_char( timestamp'2009-12-31 11:25:50' , 'HH12:MI:SS') >  '12:26:52'
+SELECT to_char(now(), 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora;
 
 
 --- se utiliza para truncar una fecha o un valor de tipo timestamp a una precisión específica.
