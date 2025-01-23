@@ -204,49 +204,44 @@ SELECT notice_color('Text Transformado bold' , 'YELLOW', 'bold'  , FALSE );
 		
 		
 ---- COLORES 
-SELECT notice_color('Text Color black'   , 'black' , 'blink'  ,NULL, FALSE);
-SELECT notice_color('Text Color red'    , 'red'  , 'blink'  ,NULL, FALSE);
-SELECT notice_color('Text Color green'    , 'green'  , 'blink'  ,NULL, FALSE);
-SELECT notice_color('Text Color yellow'   , 'yellow' , 'blink'  ,NULL, FALSE);
-SELECT notice_color('Text Color blue'    , 'blue'  , 'blink'  ,NULL, FALSE);
-SELECT notice_color('Text Color magenta'  , 'magenta', 'blink'  ,NULL, FALSE);
-SELECT notice_color('Text Color cyan'    , 'cyan'  , 'blink'  ,NULL, FALSE);
-SELECT notice_color('Text Color white'    , 'white'  , 'blink'  ,NULL, FALSE);
+SELECT notice_color('Text Color black'   , 'black' , 'blink',TRUE  ,NULL, FALSE);
+SELECT notice_color('Text Color red'    , 'red'  , 'blink' ,TRUE ,NULL, FALSE);
+SELECT notice_color('Text Color green'    , 'green'  , 'blink',TRUE  ,NULL, FALSE);
+SELECT notice_color('Text Color yellow'   , 'yellow' , 'blink' ,TRUE ,NULL, FALSE);
+SELECT notice_color('Text Color blue'    , 'blue'  , 'blink' ,TRUE ,NULL, FALSE);
+SELECT notice_color('Text Color magenta'  , 'magenta', 'blink',TRUE  ,NULL, FALSE);
+SELECT notice_color('Text Color cyan'    , 'cyan'  , 'blink' ,TRUE ,NULL, FALSE);
+SELECT notice_color('Text Color white'    , 'white'  , 'blink' ,TRUE ,NULL, FALSE);
 		
 		
 ---- ESTILOS  
-SELECT notice_color('Text Estilo bold'  , '', 'bold'  ,NULL, FALSE);
-SELECT notice_color('Text Estilo dim'    , '', 'dim'    ,NULL, FALSE);
-SELECT notice_color('Text Estilo italic' , '', 'italic' ,NULL, FALSE);
-SELECT notice_color('Text Estilo underlin', '', 'underline' ,NULL, FALSE);
-SELECT notice_color('Text Estilo blink'  , '', 'blink'  ,NULL, FALSE);
-SELECT notice_color('Text Estilo reverse', '', 'reverse' ,NULL, FALSE);
-SELECT notice_color('Text Estilo hidden' , '', 'hidden'  ,NULL, FALSE);
+SELECT notice_color('Text Estilo bold'  , '', 'bold' ,TRUE  ,NULL, FALSE);
+SELECT notice_color('Text Estilo dim'    , '', 'dim'  ,TRUE   ,NULL, FALSE);
+SELECT notice_color('Text Estilo italic' , '', 'italic',TRUE  ,NULL, FALSE);
+SELECT notice_color('Text Estilo underlin', '', 'underline' ,TRUE ,NULL, FALSE);
+SELECT notice_color('Text Estilo blink'  , '', 'blink'  ,TRUE ,NULL, FALSE);
+SELECT notice_color('Text Estilo reverse', '', 'reverse' ,TRUE ,NULL, FALSE);
+SELECT notice_color('Text Estilo hidden' , '', 'hidden' ,TRUE  ,NULL, FALSE);
 
 
 
 ---- TRANSFORMACIONES   
-SELECT notice_color('Text Transformado bold' , '', ''  ,NULL, FALSE,NULL ,'bold' );
-SELECT notice_color('Text Transformado italic' , '', ''  ,NULL, FALSE,NULL ,'italic' );
-SELECT notice_color('Text Transformado bold_italic' , '', ''  ,NULL, FALSE,NULL ,'bold_italic' );
-SELECT notice_color('Text Transformado underlined' , '', ''  ,NULL, FALSE,NULL ,'underlined' );
-SELECT notice_color('Text Transformado strikethrough' , '', ''  ,NULL, FALSE,NULL ,'strikethrough' );
-SELECT notice_color('Text Transformado superscript' , '', ''  ,NULL, FALSE,NULL ,'superscript' );
-SELECT notice_color('Text Transformado subscript' , '', ''  ,NULL, FALSE,NULL ,'subscript' );
-SELECT notice_color('Text Transformado bubble' , '', ''  ,NULL, FALSE,NULL ,'bubble' );
-SELECT notice_color('Text Transformado inverted' , '', ''  ,NULL, FALSE,NULL ,'inverted' );
+SELECT notice_color('Text Transformado bold' , '', '' ,TRUE  ,NULL, FALSE,NULL ,'bold' );
+SELECT notice_color('Text Transformado italic' , '', '' ,TRUE  ,NULL, FALSE,NULL ,'italic' );
+SELECT notice_color('Text Transformado bold_italic' , '', '' ,TRUE  ,NULL, FALSE,NULL ,'bold_italic' );
+SELECT notice_color('Text Transformado underlined' , '', '' ,TRUE  ,NULL, FALSE,NULL ,'underlined' );
+SELECT notice_color('Text Transformado strikethrough' , '', '' ,TRUE  ,NULL, FALSE,NULL ,'strikethrough' );
+SELECT notice_color('Text Transformado superscript' , '', '' ,TRUE  ,NULL, FALSE,NULL ,'superscript' );
+SELECT notice_color('Text Transformado subscript' , '', '',TRUE   ,NULL, FALSE,NULL ,'subscript' );
+SELECT notice_color('Text Transformado bubble' , '', '' ,TRUE  ,NULL, FALSE,NULL ,'bubble' );
+SELECT notice_color('Text Transformado inverted' , '', '' ,TRUE  ,NULL, FALSE,NULL ,'inverted' );
 
  
 
 --- MAYÚSCULAS Y MINÚSCULAS
 SELECT notice_color('Text Transformado bold' , '', '' ,TRUE  ,NULL, false, 'upper' ,'bold' );
 SELECT notice_color('TEXT TRANSFORMADO BOLD' , '', '' ,TRUE  ,NULL, false, 'lower' ,'bold' );
-
-
-
-
  
-
 */
  
  
