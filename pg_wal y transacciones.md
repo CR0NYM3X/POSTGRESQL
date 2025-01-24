@@ -68,18 +68,16 @@ RELEASE SAVEPOINT my_savepoint;
 
 --- 
 
-### ¿Qué es `PREPARE TRANSACTION`?
+###  `PREPARE TRANSACTION` 
 
-`PREPARE TRANSACTION` se utiliza para gestionar transacciones distribuidas en PostgreSQL. Imagina que estás realizando una operación que involucra varios sistemas diferentes (por ejemplo, dos bases de datos diferentes) y necesitas asegurarte de que ambos sistemas completen la operación de manera coherente. Aquí es donde entra en juego `PREPARE TRANSACTION`.
+`PREPARE TRANSACTION` te permite asegurarte de que las operaciones críticas que involucran múltiples sistemas se completen de manera coherente, sin riesgo de que una parte se ejecute y otra no, lo que podría llevar a inconsistencias.
 
+### ¿Dónde Aplicarlo?
 
-- **Transacciones Distribuidas**: Útil cuando las operaciones abarcan múltiples bases de datos o sistemas.
-
-### Ejemplo Práctico:
-
-Supongamos que tienes dos bases de datos, `db1` y `db2`, y quieres transferir dinero entre dos cuentas que están en bases de datos diferentes. Necesitas asegurarte de que ambas operaciones (debit en `db1` y credit en `db2`) se completen correctamente.
-
-#### Paso a Paso:
+- **Transacciones Bancarias**: Transferencias entre cuentas en diferentes bancos.
+1. **Sistemas distribuidos**: Donde necesitas coordinar una transacción a través de múltiples bases de datos o servicios.
+2. **Aplicaciones con middleware**: Que requieren confirmar o deshacer transacciones en múltiples fuentes de datos.
+3. **Transacciones complejas**: Que necesitan ser preparadas antes de su confirmación final.
 
 
 1. **Habilitar PREPARE TRANSACTION**:
@@ -92,56 +90,180 @@ Time: 0.419 ms
 postgres@postgres# set max_prepared_transactions =50;
 ERROR:  parameter "max_prepared_transactions" cannot be changed without restarting the server
 Time: 0.502 ms
+
+--- una vez ya configurado en el archivo postgresql.conf
+postgres@postgres# show max_prepared_transactions;
++---------------------------+
+| max_prepared_transactions |
++---------------------------+
+| 4                         |
++---------------------------+
+
+
+
+
+################# PREGUNTAS #################
+¿Si cierro la sesión una vez que realizo el PREPARE TRANSACTION, se cancela?
+Respuesta: No, aunque cierres la sesión donde se generó el PREPARE TRANSACTION, puedes hacer el COMMIT o ROLLBACK en otra sesión sin problemas. La transacción preparada permanece en espera hasta que sea confirmada o revertida.
+
+¿Se abre otro proceso al momento de hacer el PREPARE?
+Respuesta: No, se monitoreó la cantidad de conexiones desde la vista pg_stat_activity y no se detectó un incremento en la cantidad de procesos. El PREPARE no abre un nuevo proceso, simplemente marca la transacción actual como preparada.
+
+¿Esto bloquea?
+Respuesta: Sí, aunque se salga del BEGIN y parezca que no va a bloquear, en realidad sí lo hace. La tabla se bloquea y la transacción preparada se queda esperando a que sea confirmada (COMMIT) o rechazada (ROLLBACK). Durante este tiempo, las operaciones que intenten acceder a los recursos bloqueados se verán afectadas.
+
+¿Si cuando realizo el PREPARE TRANSACTION se reinicia o se recarga PostgreSQL, pierdo la transacción?
+Respuesta: No, las transacciones preparadas se guardan en el disco y son resilientes a reinicios o recargas de PostgreSQL. Cuando el servidor vuelve a estar disponible, las transacciones preparadas seguirán existiendo y podrás hacer el COMMIT o ROLLBACK de esas transacciones.
+
+¿Qué pasa si ejecuto el mismo PREPARE dos veces?
+Respuesta: si quieres usar el mismo prepare  dos veces, causará un error porque una transacción con ese nombre ya existe , generara el siguiente error "ERROR:  transaction identifier "transferencia_prepare_db_test" is already in use
+Time: 0.391 ms"
+
+################# TERMINAL #1 #################
+
+
+
+-- conectarnos a la db test 
+postgres@test# \c test
+psql (16.6, server 14.15)
+You are now connected to database "test" as user "postgres".
+
+
+-- Crear la tabla
+-- drop table important_data;
+postgres@test# CREATE TABLE IF NOT EXISTS important_data (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT clock_timestamp()
+);
+CREATE TABLE
+Time: 0.701 ms
+
+
+-- Insertar registros
+postgres@test# INSERT INTO important_data (name, description) VALUES
+('First Item', 'important item.'),
+('Second Item', 'important item.'),
+('Third Item', 'important item.'),
+('Fourth Item', 'important item.');
+INSERT 0 4
+Time: 1.760 ms
+
+
+ 
+
+postgres@test# BEGIN;
+BEGIN
+Time: 0.213 ms
+postgres@test#*
+postgres@test#* SELECT pg_backend_pid(),current_database(),clock_timestamp();
++----------------+------------------+-------------------------------+
+| pg_backend_pid | current_database |        clock_timestamp        |
++----------------+------------------+-------------------------------+
+|          24571 | test             | 2025-01-24 15:38:52.560835-07 |
++----------------+------------------+-------------------------------+
+(1 row)
+
+Time: 0.305 ms
+postgres@test#*
+postgres@test#* update important_data set name = 'Jose Maria' where id = 1;
+UPDATE 1
+Time: 0.484 ms
+postgres@test#*
+postgres@test#* PREPARE TRANSACTION 'transferencia_prepare_db_test';
+PREPARE TRANSACTION
+Time: 1.435 ms
+
+
+-- Consultar los datos  
+postgres@test# SELECT * FROM important_data;
++----+-------------+-----------------+----------------------------+
+| id |    name     |   description   |         created_at         |
++----+-------------+-----------------+----------------------------+
+|  1 | First Item  | important item. | 2025-01-24 15:34:09.267672 |
+|  2 | Second Item | important item. | 2025-01-24 15:34:09.267833 |
+|  3 | Third Item  | important item. | 2025-01-24 15:34:09.267839 |
+|  4 | Fourth Item | important item. | 2025-01-24 15:34:09.267841 |
++----+-------------+-----------------+----------------------------+
+(4 rows)
+
+Time: 0.396 ms
+
+
+################# TERMINAL #2 #################
+
+
+-- conectarnos a la db test 
+postgres@test# \c test
+psql (16.6, server 14.15)
+You are now connected to database "test" as user "postgres".
+
+
+postgres@test# SELECT pg_backend_pid(),current_database(),clock_timestamp();
++----------------+------------------+-------------------------------+
+| pg_backend_pid | current_database |        clock_timestamp        |
++----------------+------------------+-------------------------------+
+|          24519 | test             | 2025-01-24 15:40:33.842792-07 |
++----------------+------------------+-------------------------------+
+(1 row)
+
+Time: 0.419 ms
+
+-- Consultar los datos 
+postgres@test# SELECT * FROM important_data;
++----+-------------+-----------------+----------------------------+
+| id |    name     |   description   |         created_at         |
++----+-------------+-----------------+----------------------------+
+|  1 | First Item  | important item. | 2025-01-24 15:34:09.267672 |
+|  2 | Second Item | important item. | 2025-01-24 15:34:09.267833 |
+|  3 | Third Item  | important item. | 2025-01-24 15:34:09.267839 |
+|  4 | Fourth Item | important item. | 2025-01-24 15:34:09.267841 |
++----+-------------+-----------------+----------------------------+
+(4 rows)
+
+Time: 0.296 ms
+
+postgres@test# BEGIN;
+BEGIN
+Time: 0.233 ms
+
+-- No se puede hacer commit o rollback a un prepare,  dentro de un begin.
+postgres@test#* COMMIT PREPARED 'transferencia_prepare_db_test';
+ERROR:  COMMIT PREPARED cannot run inside a transaction block
+Time: 0.291 ms
+
+postgres@test#! rollback;
+ROLLBACK
+Time: 0.293 ms
+
+
+-- confirma con COMMIT o rechaza con ROLLBACK desde otra session
+postgres@test# COMMIT PREPARED 'transferencia_prepare_db_test';
+COMMIT PREPARED
+Time: 1.118 ms
+
+-- Como vemos realizo los cambios
+postgres@test# SELECT * FROM important_data;
++----+-------------+-----------------+----------------------------+
+| id |    name     |   description   |         created_at         |
++----+-------------+-----------------+----------------------------+
+|  2 | Second Item | important item. | 2025-01-24 15:34:09.267833 |
+|  3 | Third Item  | important item. | 2025-01-24 15:34:09.267839 |
+|  4 | Fourth Item | important item. | 2025-01-24 15:34:09.267841 |
+|  1 | Jose Maria  | important item. | 2025-01-24 15:34:09.267672 |
++----+-------------+-----------------+----------------------------+
+(4 rows)
+
+Time: 0.648 ms
+
+ 
+ 
+
+
+ 
+
 ```
-
-1. **Inicia una transacción en `db1`**:
-   ```sql
-   BEGIN;
-   UPDATE cuenta SET saldo = saldo - 100 WHERE id = 1; -- Debitar 100 de la cuenta en `db1`
-   ```
-
-2. **Prepara la transacción en `db1`**:
-   ```sql
-   PREPARE TRANSACTION 'transaccion_db1';
-   ```
-
-3. **Inicia una transacción en `db2`**:
-   ```sql
-   BEGIN;
-   UPDATE cuenta SET saldo = saldo + 100 WHERE id = 2; -- Acreditar 100 a la cuenta en `db2`
-   ```
-
-4. **Prepara la transacción en `db2`**:
-   ```sql
-   PREPARE TRANSACTION 'transaccion_db2';
-   ```
-
-5. **Compromete ambas transacciones**:
-   - En este punto, un coordinador de transacciones verifica que ambas operaciones estén listas para ser comprometidas.
-   - Si ambas están listas, compromete ambas:
-     ```sql
-     COMMIT PREPARED 'transaccion_db1'; -- En `db1`
-     COMMIT PREPARED 'transaccion_db2'; -- En `db2`
-     ```
-
-6. **Si hay un problema, revierte ambas transacciones**:
-   - Si algo sale mal en cualquiera de las operaciones, puedes revertir ambas:
-     ```sql
-     ROLLBACK PREPARED 'transaccion_db1'; -- En `db1`
-     ROLLBACK PREPARED 'transaccion_db2'; -- En `db2`
-     ```
-
-### ¿Dónde Aplicarlo?
-
-- **Transacciones Bancarias**: Transferencias entre cuentas en diferentes bancos.
-- **Sistemas de Inventario**: Actualización de inventarios en múltiples almacenes.
-- **Aplicaciones Distribuidas**: Cualquier aplicación que necesite mantener la consistencia entre varios sistemas distribuidos.
-
-### Resumen:
-
-`PREPARE TRANSACTION` te permite asegurarte de que las operaciones críticas que involucran múltiples sistemas se completen de manera coherente, sin riesgo de que una parte se ejecute y otra no, lo que podría llevar a inconsistencias.
-
-
 
 
 ### Ejemplo uso de Transacciones
