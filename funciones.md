@@ -151,7 +151,7 @@ SET statement_timeout = '5min';
 ### EJEMPLO DE UNA FUNCION BIEN DOCUMENTADA Y ESTRUCTURADA
 
 ```
-  
+   
 /*********************************************************
  @Function: fun_ejemplo
  @Creation Date: 24/01/2025
@@ -171,6 +171,7 @@ SET statement_timeout = '5min';
  ---------------- LOG ----------------
  CREATE SCHEMA IF NOT EXISTS log;
  
+ 
  -- DROP TABLE log.functions;
  -- TRUNCATE TABLE log.functions RESTART IDENTITY ;
  CREATE TABLE IF NOT EXISTS log.functions (
@@ -182,10 +183,14 @@ SET statement_timeout = '5min';
 		user_name TEXT NOT NULL,            -- Nombre del usuario
 		query TEXT NOT NULL,                -- Consulta ejecutada
 		msg TEXT,                           -- Mensaje de error
+		md5_line VARCHAR(32), 				-- MD5 que identifica en que linea se genero el error
 		start_time TIMESTAMP,             -- Hora de inicio de la ejecución
 		date_insert TIMESTAMP DEFAULT clock_timestamp()  -- Fecha y hora de inserción del log
 	);
 
+	-- Generar MD5_line
+	-- SELECT MD5(RANDOM()::TEXT || NOW());
+	
 	SELECT * FROM log.functions;
 
  ---------------- EXAMPLE USAGE ----------------
@@ -224,11 +229,12 @@ BEGIN
 		RAISE  EXCEPTION 'SE INTENTO DIVIR A 0';
 	ELSE		
 		RAISE  NOTICE E'\n HOLA MUNDO!!!! ';
+		
 	END IF;
 	
 	
-	INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg, start_time, date_insert)
-									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg , v_start_time, clock_timestamp();	
+	INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg, md5_line, start_time, date_insert)
+									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg , '77a15f99e28732f9743af28f5e875eac', v_start_time, clock_timestamp();	
 	RETURN;
 	
 -- MANEJOR DE ERRORES
@@ -236,8 +242,8 @@ EXCEPTION
 	WHEN OTHERS THEN
 		v_msg := v_msg || ' ID:' || SQLSTATE || ' Error: ' || SQLERRM;
 		RAISE NOTICE E'\r%',v_msg ;		
-		INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg, start_time, date_insert)
-									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg , v_start_time, clock_timestamp();
+		INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg, md5_line, start_time, date_insert)
+									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg, '3fdbda1499e34347f6020f65c8972502' , v_start_time, clock_timestamp();
 		
 	WHEN QUERY_CANCELED  THEN
 		v_msg := v_msg || ' #' || SQLSTATE || ' Error:' || SQLERRM;
