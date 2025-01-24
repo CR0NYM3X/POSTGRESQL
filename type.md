@@ -616,6 +616,32 @@ drop table caracteres;
 
 
 
+# TIPOS DE DATOS DOMAINS 
+```SQL
+
+  -- Crear el dominio 'phone_number'
+CREATE DOMAIN phone_number AS VARCHAR(15)
+CHECK (VALUE ~ '^\+?[0-9\s\-]+$');
+
+-- Crear la tabla 'empleados' que usa el dominio 'phone_number'
+CREATE TABLE empleados (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100),
+    telefono phone_number
+);
+
+-- Insertar datos en la tabla 'empleados'
+INSERT INTO empleados (nombre, telefono) VALUES ('Juan Perez', '+52 123-456-7890');
+
+-- Esta inserción fallará debido a la restricción del dominio
+-- INSERT INTO empleados (nombre, telefono) VALUES ('Ana Gomez', '1234567890');
+
+-- Consultar datos en la tabla 'empleados'
+SELECT * FROM empleados;
+
+-- Puedes otorgar permisos a otors usuarios para que ellos puedan usar el DOMAIN
+GRANT USAGE ON DOMAIN phone_number TO app_user;
 
 
 
+```
