@@ -150,7 +150,7 @@ SET statement_timeout = '5min';
 
 ### EJEMPLO DE UNA FUNCION BIEN DOCUMENTADA Y ESTRUCTURADA
 
-```
+```sql
  
 /*********************************************************
  @Function: fun_ejemplo
