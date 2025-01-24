@@ -1357,3 +1357,4 @@ postgres@test_fun# SELECT * FROM pg_depend   WHERE objid = 18215;
 ## Bibliografía:
 
 https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf
+https://www.postgresql.org/docs/current/sql-grant.html
