@@ -148,36 +148,113 @@ SET statement_timeout = '5min';
 ```
 
 
-### Crear una Función:
+### EJEMPLO DE UNA FUNCION BIEN DOCUMENTADA Y ESTRUCTURADA
 
 ```
--- Definición de la función
-CREATE OR REPLACE FUNCTION calcular_precio_total(p_id INT, p_cantidad INT)
-RETURNS NUMERIC AS
+  
+/*********************************************************
+ @Function: fun_ejemplo
+ @Creation Date: 24/01/2025
+ @Description: Genera Errores dependiendo del valor.
+ @Parameters:
+   - @p_gen_exception (INT): Num para generar un error.
+ 
+ @Returns: VOID - Total sales for the given period.
+ @Author: CR0NYM3X
+
+ ---------------- HISTORY ----------------
+ @Date: 24/01/2025
+ @Change: Se agrego un ELSEIF.
+ @Author: CR0NYM3X
+
+
+ ---------------- LOG ----------------
+ CREATE SCHEMA IF NOT EXISTS log;
+ 
+ -- DROP TABLE log.functions;
+ -- TRUNCATE TABLE log.functions RESTART IDENTITY ;
+ CREATE TABLE IF NOT EXISTS log.functions (
+		log_id SERIAL PRIMARY KEY,          -- Identificador único para cada registro de log
+		status VARCHAR(10) NOT NULL,        -- Estado del log (e.g., 'FAILED')
+		db_name TEXT NOT NULL,              -- Nombre de la base de datos
+		fun_name TEXT NOT NULL,             -- Nombre de la función
+		ip_client INET,                     -- Dirección IP del cliente
+		user_name TEXT NOT NULL,            -- Nombre del usuario
+		query TEXT NOT NULL,                -- Consulta ejecutada
+		msg TEXT,                           -- Mensaje de error
+		start_time TIMESTAMP,             -- Hora de inicio de la ejecución
+		date_insert TIMESTAMP DEFAULT clock_timestamp()  -- Fecha y hora de inserción del log
+	);
+
+	SELECT * FROM log.functions;
+
+ ---------------- EXAMPLE USAGE ----------------
+ -- To remove the function:
+ -- DROP FUNCTION fun_ejemplo(INT);
+
+ -- To call the function:
+ -- SELECT fun_ejemplo(1);
+ 
+ 
+*********************************************************/
+
+
+CREATE OR REPLACE FUNCTION public.fun_ejemplo( p_gen_exception INT DEFAULT 1 ) 
+RETURNS VOID AS 
 
 $$
 DECLARE
+    
+	-- Guarda el parametro en la variable 
+	v_gen_exception INT := p_gen_exception ;
+	
+	v_start_time timestamp;
+	v_msg TEXT := '';
+	v_status VARCHAR(15) := 'successful';
 
-    -- Aquí se declaran las variables locales
-    v_precio_unitario NUMERIC;
-    v_precio_total NUMERIC := '';
 BEGIN
-
-    -- Obtener el precio unitario del producto y guardarlo en una variable
-    SELECT precio_unitario INTO v_precio_unitario FROM productos WHERE id = p_id;
-    
-    -- Calcular el precio total
-    v_precio_total := v_precio_unitario * p_cantidad;
-    
-    -- Devolver el resultado
-    RETURN v_precio_total;
+	v_start_time := clock_timestamp(); 
+ 
+	-- Validacion de parametro 
+	IF v_gen_exception = 1 THEN
+		v_status := 'failed';
+		SELECT 1/0;
+	ELSEIF v_gen_exception = 2 THEN
+		v_status := 'failed';
+		RAISE  EXCEPTION 'SE INTENTO DIVIR A 0';
+	ELSE		
+		RAISE  NOTICE E'\n HOLA MUNDO!!!! ';
+	END IF;
+	
+	
+	INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg, start_time, date_insert)
+									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg , v_start_time, clock_timestamp();	
+	RETURN;
+	
+-- MANEJOR DE ERRORES
+EXCEPTION 
+	WHEN OTHERS THEN
+		v_msg := v_msg || ' ID:' || SQLSTATE || ' Error: ' || SQLERRM;
+		RAISE NOTICE E'\r%',v_msg ;		
+		INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg, start_time, date_insert)
+									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg , v_start_time, clock_timestamp();
+		
+	WHEN QUERY_CANCELED  THEN
+		v_msg := v_msg || ' #' || SQLSTATE || ' Error:' || SQLERRM;
+		RAISE NOTICE E'\r%',v_msg ;		
+		INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg, start_time, date_insert)
+									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg , v_start_time, clock_timestamp();
+	
 END;
-$$ LANGUAGE plpgsql VOLATILE
+$$ 
+LANGUAGE plpgsql  
 SECURITY DEFINER
-PARALLEL UNSAFE;
+SET client_min_messages = 'notice'
+SET statement_timeout = 0
+SET lock_timeout = 0 ;
 
-# Forma de ejecutar la función
-SELECT calcular_precio_total(1, 5); -- Calcula el precio total del producto con ID 1 y cantidad 5
+
+ 
 
 ```
 
