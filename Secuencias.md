@@ -73,7 +73,7 @@ ALTER SEQUENCE mi_secuencia RESTART WITH 10;
 -- Restablecer la secuencia a un valor predeterminado, no se puede reiniciar a 0
 -- Este se usa en caso de haber realizado un delete
 -- suponiendo que el id que retorna es 10, entonces cuando se ejecute la secuencia insertara el id 11
-SELECT setval('mi_secuencia', (SELECT max(id) FROM mi_tabla));
+SELECT setval('public.mi_secuencia', (SELECT max(id) FROM mi_tabla));
 
 --- Reiniciar la secuencia, desde el valor por defaul por ejemplo si es un primarykey reainicia desde 0
 -- Este se usa en caso de haber realizado un truncate
