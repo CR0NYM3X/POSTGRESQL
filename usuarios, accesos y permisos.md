@@ -1353,8 +1353,56 @@ postgres@test_fun# SELECT * FROM pg_depend   WHERE objid = 18215;
  
  ```
 
+# OTROS PERMISOS
+ ```
+####### BUSCAR TABLAS QUE ALMACENAN LOS ACL ####### 
+
+--- Encontrar todos los ACL 
+select distinct table_schema,table_name,column_name from information_schema.columns where column_name ilike '%acl%';
+select table_schema,table_name from information_schema.tables where table_name ilike '%acl%';
+
+ 
+####### PERMISOS A PARAMETROS ####### 
+
+[NOTA] -> SOLO FUNCIONA APARTIR DE LA VERSION 15 
+
+select * from  pg_catalog.pg_parameter_acl ;
+
+GRANT SET ON PARAMETER log_statement TO ale;
+GRANT ALTER SYSTEM ON PARAMETER log_statement TO ale;
+
+REVOKE SET ON PARAMETER log_statement FROM ale;
+REVOKE ALTER SYSTEM ON PARAMETER log_statement FROM ale;
+
+
+####### PERMISOS A NIVEL COLUMNA ####### 
+
+
+--- Consultar los permisos 
+select *from information_schema.column_privileges where grantee  = 'analista_datos' limit 10;
+
+
+--- Otorgar los permisos 
+GRANT SELECT (nombre, edad), UPDATE (nombre, edad) ON TABLE empleados TO analista_datos;
+
+  
+
+####### PERMISOS DE MANTENIMIENTO SOLO A TABLAS  ####### 
+ 
+ 
+--- realizar varias tareas de mantenimiento en una tabla o un esquema. como : VACUUM,REINDEX,ANALYZE,CLUSTER
+GRANT MAINTAIN ON TABLE table_name TO role_name;
+
+
+####### PERMISOS A LOS TIPOS DE DATOS DOMAIN ####### 
+ 
+
+----Un dominio : tipo de datos que puede tener restricciones adicionales y se utiliza para garantizar la consistencia y la validez de los datos
+GRANT USAGE ON DOMAIN phone_number TO app_user;
+
+ ```
 
 ## Bibliografía:
 
 https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf
-https://www.postgresql.org/docs/current/sql-grant.html
+<br>https://www.postgresql.org/docs/current/sql-grant.html
