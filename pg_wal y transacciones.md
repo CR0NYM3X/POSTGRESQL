@@ -210,6 +210,27 @@ postgres@test# SELECT pg_backend_pid(),current_database(),clock_timestamp();
 
 Time: 0.419 ms
 
+postgres@test#  select * from pg_catalog.pg_prepared_statements;
++------+-----------+--------------+-----------------+----------+---------------+--------------+
+| name | statement | prepare_time | parameter_types | from_sql | generic_plans | custom_plans |
++------+-----------+--------------+-----------------+----------+---------------+--------------+
++------+-----------+--------------+-----------------+----------+---------------+--------------+
+(0 rows)
+
+Time: 0.420 ms
+
+-- Validar los prepares pendientes 
+postgres@test#  select * from pg_catalog.pg_prepared_xacts;
++-------------+-------------------------------+-------------------------------+----------+----------+
+| transaction |              gid              |           prepared            |  owner   | database |
++-------------+-------------------------------+-------------------------------+----------+----------+
+|        2464 | transferencia_prepare_db_test | 2025-01-24 15:40:34.842792-07 | postgres | test     |
++-------------+-------------------------------+-------------------------------+----------+----------+
+(1 row)
+
+Time: 0.735 ms
+
+
 -- Consultar los datos 
 postgres@test# SELECT * FROM important_data;
 +----+-------------+-----------------+----------------------------+
