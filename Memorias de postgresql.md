@@ -1,3 +1,17 @@
+### **1. ¿Cómo funciona el caché en PostgreSQL?**
+PostgreSQL usa dos capas de caché:
+- **Buffer cache de PostgreSQL (`shared_buffers`)**: Memoria reservada para almacenar bloques de datos e índices.
+- **Caché del sistema operativo (OS cache)**: Memoria que el SO usa para almacenar archivos accedidos recientemente, incluyendo los archivos de datos de PostgreSQL.
+
+Cuando ejecutas una consulta:
+1. PostgreSQL busca los datos en `shared_buffers`.
+2. Si no están allí, los lee del disco, pero el SO puede guardarlos en su caché.
+3. En consultas posteriores:
+   - Si los datos siguen en `shared_buffers` (u OS cache), se accede rápidamente.
+   - Si han sido desplazados por otros datos (por falta de espacio), se leen de nuevo del disco
+   
+ 
+
 
 ### 1. **Caching en el Sistema Operativo**
    - **Cache de disco (Page Cache):** Cuando se accede a datos por primera vez, el sistema operativo tiene que leerlos desde el disco, lo cual es un proceso lento. Sin embargo, una vez que esos datos se han leído, el sistema operativo suele mantenerlos en la memoria (`page cache`), de modo que las subsecuentes lecturas de los mismos datos no requieren acceso a disco y son mucho más rápidas. Este es uno de los factores clave que hace que las consultas repetidas sean más rápidas.
