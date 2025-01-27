@@ -17,9 +17,7 @@ Las funciones devuelven un valor, ya sea un valor escalar o una tabla, y pueden 
 
 # Tipos de funciones  
 ```sql
-IN: Solo entra.
-OUT: Solo sale.
-INOUT: Entra y sale.
+
 
 
 **Funciones SQL**: Estas funciones están escritas en el lenguaje SQL y son ideales para operaciones simples y directas.
@@ -598,6 +596,111 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM ejecutar_consulta_dinamica('select schemaname::varchar,tablename::varchar,tableowner::varchar from pg_tables limit 10')  AS t(schemaname varchar,tablename varchar, tableowner varchar);
 ```
 
+
+
+
+
+## notación de parámetros nombrados
+
+```sql
+--- DROP FUNCTION  asd( text ,text ) ; 
+
+CREATE OR REPLACE FUNCTION  asd( p_uno text  , p_dos TEXT    )
+RETURNS void AS $$
+
+BEGIN
+
+
+-- Usando referencia posicional. Esto permite acceder a los parámetros de entrada de la función usando su posición en la lista de parámetros
+	RAISE NOTICE 'HOLA  % MUNDO % ', 
+									$1 /*p_uno*/, 
+									$2 /*p_dos*/;
+									
+END;
+$$ 
+LANGUAGE plpgsql 
+set client_min_messages = 'notice' 
+set   log_statement  = 'none' 
+set   log_min_messages = 'panic';
+
+
+SELECT * FROM asd(	p_dos => 'NUEVO'
+			,p_uno  => 'ACTIVADO');
+
+
+NOTICE:  HOLA  ACTIVADO MUNDO NUEVO
++-----+
+| asd |
++-----+
+|     |
++-----+
+(1 row)
+
+ 
+```
+
+
+## Parámetros IN, OUT e INOUT
+ 
+```sql
+ 
+IN: Solo entra.
+OUT: Solo sale.
+INOUT: Entra y sale.
+ 
+**********************************  Parámetros `IN` **********************************
+
+Los parámetros `IN` necesitas utilizar RETURN para devolver el resultado, son los más comunes.
+ Se utilizan para pasar valores a la función. Estos valores no pueden ser modificados dentro de la función.
+
+ 
+CREATE OR REPLACE FUNCTION add_numbers(p_a INT, p_b INT) RETURNS INT AS $$
+BEGIN
+    RETURN p_a + p_b;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Llamada a la función
+SELECT add_numbers(3, 5);  -- Resultado: 8
+ 
+ 
+****************** Parámetros `OUT` ******************
+
+Los parámetros `OUT` no necesitas utilizar RETURN, se utilizan para devolver valores desde la función.
+ No necesitas usar una cláusula `RETURN` en la función, ya que los parámetros `OUT` definen los valores de retorno.
+
+
+ 
+CREATE OR REPLACE FUNCTION get_square(p_in INT, OUT p_out INT) AS $$
+BEGIN
+    p_out := p_in * p_in;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Llamada a la función
+SELECT get_square(4);  -- Resultado: 16
+ 
+
+
+
+****************** Parámetros `INOUT` ******************
+ 
+Los parámetros `INOUT`  combinan las funcionalidades de `IN` y `OUT`. Puedes pasar un valor al 
+parámetro y modificarlo dentro de la función. El valor modificado se devuelve como resultado.
+ 
+ 
+ 
+CREATE OR REPLACE FUNCTION increment_and_square(INOUT p_value INT) AS $$
+BEGIN
+    p_value := p_value + 1;
+    p_value := p_value * p_value;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Llamada a la función
+SELECT increment_and_square(3);  -- Resultado: 16 (3+1=4, 4*4=16)
+```
+ 
 
 
 # TIPS
