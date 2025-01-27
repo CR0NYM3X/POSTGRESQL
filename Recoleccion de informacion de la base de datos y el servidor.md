@@ -4,6 +4,11 @@
 Es recopilar información del servidor y la base de datos en caso de requerirse, por lo que enseñaremos los comandos necesarios para realizar esta recopilación de información.
 
 
+#
+```SQL
+Test-NetConnection -ComputerName 192.168.5.100 -Port  1433
+```
+
 ## Comandos:
 
 
