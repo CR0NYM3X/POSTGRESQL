@@ -16,7 +16,25 @@ peer
 PAM Authentication 
 BSD Authentication 
  
- 
+################# DESCUBRIR CN DESDE CMD  #################
+NECESITAS ESTAR EN DOMINIO
+
+ gpresult /r /scope user | find "CN="
+
+---  Obtener la ruta del usuario actual
+Get-ADUser $env:USERNAME -Properties DistinguishedName | Select-Object DistinguishedName
+
+---  Buscar por nombre de usuario
+$username = Read-Host "Ingrese su nombre de usuario (samAccountName)"
+Get-ADUser $username -Properties DistinguishedName | Select-Object DistinguishedName
+dsquery user -name "juan.perez"
+
+
+--- cmd
+whoami /fqdn
+nltest /dsgetdc:empresa.com /user:juan.perez
+
+
  
 ################# VALIDAR PAQUETES NECESARIOS  #################
 
