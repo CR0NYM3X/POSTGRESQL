@@ -854,8 +854,23 @@ SELECT generate_series('2024-01-01'::date  /* INICIO */ , '2024-01-10'::date  /*
 ```
 
 
-### Dividir letras 
+### CTE Recursivas (Common Table Expressions Recursivas) - Dividir letras 
+ herramienta poderosa para trabajar con datos jerárquicos, grafos, series temporales o cualquier estructura que requiera procesamiento iterativo. A diferencia de las CTE normales, las recursivas pueden autoreferenciarse, lo que permite resolver problemas complejos de manera elegante
+ 
 ```sql
+
+--------- ESTRUCTURA  --------- 
+WITH RECURSIVE nombre_cte AS (
+  -- Término no recursivo (Anchor Member)**: La consulta base que inicia la recursión.
+  SELECT ... FROM tabla WHERE condición_inicial
+  UNION ALL
+  -- Término recursivo (Recursive Member)**: La consulta que se une a la CTE para iterar.
+  SELECT ... FROM tabla JOIN nombre_cte ON condición_recursiva
+)
+SELECT * FROM nombre_cte;
+
+
+
 WITH RECURSIVE letters AS (
     SELECT 1 AS position, SUBSTRING('abcd', 1, 1) AS letter
     UNION ALL
