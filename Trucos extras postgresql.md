@@ -2161,12 +2161,15 @@ UPDATE inventario SET cantidad = cantidad - 10 WHERE producto = 'Producto B';
 UPDATE inventario SET cantidad = cantidad - 20 WHERE producto = 'Producto A';
 
 
-
-
 SET deadlock_timeout = '2s';
-
 SET lock_timeout = '5s';
-
 SET log_lock_waits = on;
 
 ```
+
+# Copiar tabla 
+Esta cláusula indica que la nueva tabla debe ser creada con una estructura idéntica a la de partman_test.time_taptest_table, incluyendo columnas y sus tipos de datos. Sin embargo, no incluye restricciones, índices u otros objetos de tabla como UNIQUE o PRIMARY KEY
+```
+CREATE TABLE partman_test.time_taptest_table_template (LIKE partman_test.time_taptest_table);
+```
+
