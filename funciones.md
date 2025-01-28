@@ -600,7 +600,7 @@ SELECT * FROM ejecutar_consulta_dinamica('select schemaname::varchar,tablename::
 
 
 
-## notación de parámetros nombrados
+## Notación de parámetros nombrados
 
 ```sql
 --- DROP FUNCTION  asd( text ,text ) ; 
@@ -625,7 +625,7 @@ set   log_min_messages = 'panic';
 
 
 SELECT * FROM asd(	p_dos => 'NUEVO'
-			,p_uno  => 'ACTIVADO');
+			,p_uno  := 'ACTIVADO');
 
 
 NOTICE:  HOLA  ACTIVADO MUNDO NUEVO
