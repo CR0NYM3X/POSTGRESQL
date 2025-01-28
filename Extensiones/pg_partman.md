@@ -7,7 +7,25 @@ Es una herramienta poderosa y flexible para administrar particiones en PostgreSQ
  
 ```sql
 
---- TABLAS 
+--- CONFIGURACIONES 
+postgres@test# select name,setting from pg_settings where name ilike '%pg_partman_bgw%';
++---------------------------------+----------+
+|              name               | setting  |
++---------------------------------+----------+
+| pg_partman_bgw.analyze          | off      |
+| pg_partman_bgw.dbname           |          |
+| pg_partman_bgw.interval         | 3600     |
+| pg_partman_bgw.jobmon           | on       |
+| pg_partman_bgw.maintenance_wait | 0        |
+| pg_partman_bgw.role             | postgres |
++---------------------------------+----------+
+(6 rows)
+
+Time: 1.604 ms
+
+
+
+--- TABLAS
 postgres@test# select table_name from information_schema.tables  where table_schema = 'partman';
 +-----------------+
 |   table_name    |
@@ -95,6 +113,27 @@ CREATE FUNCTION  create_parent(
     , p_time_encoder text DEFAULT NULL
     , p_time_decoder text DEFAULT NULL
 )
+
+
+1. **p_parent_table (text)**: Nombre de la tabla principal (parent table) que se va a crear.
+2. **p_control (text)**: Columna de control que se utilizará para la partición.
+3. **p_interval (text)**: Intervalo de partición, por ejemplo, puede ser 'daily', 'weekly', 'monthly', etc.
+4. **p_type (text DEFAULT 'range')**: Tipo de partición; por defecto es 'range'.
+5. **p_epoch (text DEFAULT 'none')**: Define el tiempo de epoch, que puede ser 'none' o una especificación de tiempo.
+6. **p_premake (int DEFAULT 4)**: Número de particiones futuras que se crearán de antemano.
+7. **p_start_partition (text DEFAULT NULL)**: Fecha o valor de inicio para la primera partición.
+8. **p_default_table (boolean DEFAULT true)**: Indica si se debe crear una tabla por defecto para manejar valores fuera del rango.
+9. **p_automatic_maintenance (text DEFAULT 'on')**: Activa o desactiva el mantenimiento automático.
+10. **p_constraint_cols (text[] DEFAULT NULL)**: Columnas que tendrán restricciones de integridad.
+11. **p_template_table (text DEFAULT NULL)**: Nombre de una tabla plantilla (template table) cuyas propiedades se heredarán en las particiones.
+12. **p_jobmon (boolean DEFAULT true)**: Indica si se debe habilitar la monitorización de trabajos.
+13. **p_date_trunc_interval (text DEFAULT NULL)**: Intervalo que se utilizará para truncar las fechas, por ejemplo, 'month', 'day'.
+14. **p_control_not_null (boolean DEFAULT true)**: Indica si la columna de control debe permitir valores NULL.
+15. **p_time_encoder (text DEFAULT NULL)**: Codificador de tiempo que se utilizará.
+16. **p_time_decoder (text DEFAULT NULL)**: Decodificador de tiempo que se utilizará.
+
+
+
 
 ```
 
