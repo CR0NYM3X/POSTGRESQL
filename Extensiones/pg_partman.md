@@ -17,8 +17,8 @@ postgres@test# select table_name from information_schema.tables  where table_sch
 | part_config_sub |
 +-----------------+
 
-SELECT * FROM part_config;
--> FUNCION DE LA TABLA:
+ 
+-> TABLA MÁS USADA (part_config):
 Define cómo se deben crear y gestionar las particiones, incluyendo el intervalo de particionamiento (diario, semanal, mensual)
 Almacena parámetros que permiten la creación automática de particiones futuras y el purgado de particiones antiguas basadas en los valores configurados
 Facilita el mantenimiento de las particiones al permitir la configuración de opciones como la ejecución automática de comandos VACUUM y ANALYZE en las particiones
@@ -75,6 +75,26 @@ postgres@test# select distinct proname from pg_proc where pronamespace in(select
 
 Time: 1.533 ms
 postgres@test#
+
+-> FUNCION MÁS USADA (part_config):
+CREATE FUNCTION  create_parent(
+    p_parent_table text
+    , p_control text
+    , p_interval text
+    , p_type text DEFAULT 'range'
+    , p_epoch text DEFAULT 'none'
+    , p_premake int DEFAULT 4
+    , p_start_partition text DEFAULT NULL
+    , p_default_table boolean DEFAULT true
+    , p_automatic_maintenance text DEFAULT 'on'
+    , p_constraint_cols text[] DEFAULT NULL
+    , p_template_table text DEFAULT NULL
+    , p_jobmon boolean DEFAULT true
+    , p_date_trunc_interval text DEFAULT NULL
+    , p_control_not_null boolean DEFAULT true
+    , p_time_encoder text DEFAULT NULL
+    , p_time_decoder text DEFAULT NULL
+)
 
 ```
 
