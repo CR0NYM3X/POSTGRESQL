@@ -149,7 +149,7 @@ SET statement_timeout = '5min';
 ### EJEMPLO DE UNA FUNCION BIEN DOCUMENTADA Y ESTRUCTURADA
 
 ```sql
- 
+  
 /*********************************************************
  @Function: fun_ejemplo
  @Creation Date: 24/01/2025
@@ -192,7 +192,7 @@ SET statement_timeout = '5min';
  -- DROP FUNCTION fun_ejemplo(INT);
 
  -- To call the function:
- -- SELECT fun_ejemplo(1);
+ -- SELECT fun_ejemplo(0);
  
  
 *********************************************************/
@@ -203,16 +203,35 @@ RETURNS VOID AS
 
 $$
 DECLARE
-    
+
+	--- Variables para el EXCEPTION
+	ex_message                      text;
+	ex_context                      text;
+	ex_detail                       text;
+	ex_hint                         text;
+
 	-- Guarda el parametro en la variable 
-	v_gen_exception INT := p_gen_exception ;
+	v_gen_exception               INT := p_gen_exception ;
 	
-	v_start_time timestamp;
-	v_msg TEXT := '';
-	v_status VARCHAR(15) := 'successful';
+	-- Variables para el monitoreo y estus de la funcion
+	v_start_time                  timestamp;
+	v_msg                         TEXT := '';
+	v_status                      VARCHAR(15) := 'successful';	
+	v_insert_log				  TEXT;
 
 BEGIN
 	v_start_time := clock_timestamp(); 
+	
+	v_insert_log := E'INSERT INTO log.functions( fun_name, db_name, ip_client, user_name, query,  start_time,  status, msg )
+										SELECT \'public.fun_ejemplo\', 
+												current_database(), 
+												coalesce( host(inet_client_addr()) , \'127.0.0.1\')::INET,  
+												session_user, 
+												current_query(),
+												%L,
+												%L,
+												%L;
+												';
  
 	-- Validacion de parametro 
 	IF v_gen_exception = 1 THEN
@@ -227,23 +246,35 @@ BEGIN
 	END IF;
 	
 	
-	INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg,  start_time, date_insert)
-									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg , v_start_time, clock_timestamp();	
+	EXECUTE FORMAT(v_insert_log, v_start_time , v_status , v_msg); 
+	
 	RETURN;
 	
 -- MANEJOR DE ERRORES
 EXCEPTION 
 	WHEN OTHERS THEN
-		v_msg := v_msg || ' ID_EXCEP:10E ' || SQLSTATE || ' Error: ' || SQLERRM;
-		RAISE NOTICE E'\r%',v_msg ;		
-		INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg,  start_time, date_insert)
-									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg , v_start_time, clock_timestamp();
+		GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
+                                ex_context = PG_EXCEPTION_CONTEXT,
+                                ex_detail = PG_EXCEPTION_DETAIL,
+                                ex_hint = PG_EXCEPTION_HINT;
+										
+		RAISE NOTICE '%
+		CONTEXT: %
+		DETAIL: %
+		HINT: %', ex_message, ex_context, ex_detail, ex_hint;	
+		EXECUTE FORMAT(v_insert_log, v_start_time , v_status , ex_message); 
 		
 	WHEN QUERY_CANCELED  THEN
-		v_msg := v_msg || ' ID_EXCEP:10E ' || SQLSTATE || ' Error:' || SQLERRM;
-		RAISE NOTICE E'\r%',v_msg ;		
-		INSERT INTO log.functions( status, db_name, fun_name, ip_client, user_name, query, msg, start_time, date_insert)
-									SELECT v_status, current_database(), 'public.fun_ejemplo', coalesce( host(inet_client_addr()) , '127.0.0.1')::INET, session_user, current_query() , v_msg , v_start_time, clock_timestamp();
+		GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
+                                ex_context = PG_EXCEPTION_CONTEXT,
+                                ex_detail = PG_EXCEPTION_DETAIL,
+                                ex_hint = PG_EXCEPTION_HINT;
+										
+		RAISE NOTICE '%
+		CONTEXT: %
+		DETAIL: %
+		HINT: %', ex_message, ex_context, ex_detail, ex_hint;			
+		EXECUTE FORMAT(v_insert_log, v_start_time , v_status , ex_message); 
 	
 END;
 $$ 
@@ -252,13 +283,6 @@ SECURITY DEFINER
 SET client_min_messages = 'notice'
 SET statement_timeout = 0
 SET lock_timeout = 0 ;
-
-
- 
-
-
- 
-
 ```
 
 **`CREATE OR REPLACE FUNCTION:`** Esto es parte de la declaración de la función que indica que estás creando una nueva función o reemplazando una existente si ya existe con el mismo nombre.<br>
