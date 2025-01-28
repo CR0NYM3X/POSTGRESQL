@@ -98,3 +98,51 @@ PostgreSQL utiliza varios tipos de memoria para diferentes propósitos a lo larg
    - **Descripción:** Cada conexión de cliente (backend) en PostgreSQL tiene su propia memoria privada que se usa para manejar variables de sesión, almacenamiento temporal y el estado de la sesión.
    - **Uso:** Esta memoria se utiliza para gestionar aspectos específicos de la sesión de un usuario, como el manejo de variables de entorno de la sesión, caché de resultados de funciones, o el almacenamiento de resultados intermedios que no se compartirán entre otras conexiones.
  
+# Monitoreo de buffer
+
+La caché de búfer almacena datos en la memoria para acelerar las consultas. Si la caché está bien optimizada, las consultas se ejecutarán más rápido al evitar accesos frecuentes al disco.
+
+```SQL
+
+
+bufferid: ID del búfer.
+relfilenode: Número de nodo de archivo de la relación.
+reltablespace: OID del espacio de tabla de la relación.
+reldatabase: OID de la base de datos de la relación.
+relforknumber: Número de bifurcación dentro de la relación.
+relblocknumber: Número de página dentro de la relación.
+isdirty: ¿Está sucia la página? (true/false).
+usagecount: Recuento de acceso de barrido de reloj.
+pinning_backends: Número de backends que fijan este búfe
+
+
+ --- Ejemplo 1: Ver el estado completo de la caché de búfer
+		SELECT * FROM pg_buffercache LIMIT 10;
+		 
+		
+		
+		-- Ejemplo 2: Contar la cantidad de búferes usados por cada relación 
+		SELECT c.relname, count(*) AS buffers
+		FROM pg_buffercache b
+		JOIN pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
+		GROUP BY c.relname
+		ORDER BY buffers DESC;
+
+--- Ejemplo 3: Verificar si hay páginas sucias en la caché
+SELECT count(*) AS dirty_buffers
+FROM pg_buffercache
+WHERE isdirty;
+
+--- Ejemplo 4: Obtener el recuento de búferes según su contador de uso
+SELECT usagecount, count(*) AS buffers
+FROM pg_buffercache
+GROUP BY usagecount
+ORDER BY usagecount;
+
+
+--- Ejemplo 5: Resumen del estado de la caché de búfer
+SELECT * FROM pg_buffercache_summary();
+
+--- 
+select * from  public.pg_buffercache_usage_counts()
+```
