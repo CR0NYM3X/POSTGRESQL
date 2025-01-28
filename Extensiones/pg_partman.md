@@ -81,6 +81,7 @@ postgres@test#
 
 
 Referencias: 
+- https://github.com/pgpartman/pg_partman
 - https://medium.com/@sajawalhamza252/database-partitioning-made-easy-an-in-depth-look-at-pg-partman-for-postgresql-c899b8e0ae80
 - https://www.percona.com/blog/postgresql-partitioning-made-easy-using-pg_partman-timebased/
 - https://neon.tech/docs/extensions/pg_partman
