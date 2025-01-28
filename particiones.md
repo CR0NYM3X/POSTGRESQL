@@ -680,6 +680,11 @@ ORDER BY inhparent ,inhrelid
 postgres@postgres# ALTER TABLE public.ventas DETACH PARTITION prttb.ventas_2022;
 ALTER TABLE
 
+
+----   Integrar la tabla como partición en caso de que quiera revertirlo 
+---ALTER TABLE public.mis_datos ATTACH PARTITION public.mis_datos_p20250101 FOR VALUES FROM ('2025-01-01 00:00:00') TO ('2025-01-02 00:00:00');
+
+
 ```
 
 
