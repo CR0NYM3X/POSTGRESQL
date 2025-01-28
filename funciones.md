@@ -623,7 +623,7 @@ set client_min_messages = 'notice'
 set   log_statement  = 'none' 
 set   log_min_messages = 'panic';
 
-
+--- Dos formas de usar :=   y  => 
 SELECT * FROM asd(	p_dos => 'NUEVO'
 			,p_uno  := 'ACTIVADO');
 
