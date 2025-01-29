@@ -55,10 +55,10 @@ Facilita el mantenimiento de las particiones al permitir la configuración de op
 7. **premake**: Número de particiones futuras que se deben crear de antemano.
 8. **automatic_maintenance**: Estado del mantenimiento automático (activado o desactivado).
 9. **template_table**: Tabla plantilla cuyas propiedades se heredarán en las particiones.
-10. **retention**: Configuración de retención de particiones antiguas, especificando cuándo se deben eliminar.
+10. **retention**: establecer el período de tiempo durante el cual deseas retener las particiones.
 11. **retention_schema**: Esquema en el que se deben almacenar las particiones retenidas.
 12. **retention_keep_index**: Indica si se deben mantener los índices de las particiones retenidas.
-13. **retention_keep_table**: Indica si se deben mantener las tablas de particiones que se eliminan según la configuración de retención.
+13. **retention_keep_table**: número exacto de particiones que deseas mantener, independientemente del período de tiempo.
 14. **epoch**: Época utilizada para calcular el inicio de las particiones.
 15. **constraint_cols**: Columnas en las que se aplican restricciones de integridad.
 16. **optimize_constraint**: Indica si se deben optimizar las restricciones en las particiones.
