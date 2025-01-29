@@ -323,7 +323,7 @@ cat /proc/cpuinfo
 
 temp_buffers = 10MB # Estos son buffers locales de sesión que se usan solo para acceder a tablas temporales.  https://www.postgresql.org/docs/current/runtime-config-resource.html
 
-max_prepared_transactions =50
+max_prepared_transactions = 0 -- en caos de que requiera transacciones en paralelo habilitarlo
 
 work_mem = 4MB  /*es un parámetro de configuración de PostgreSQL que especifica la cantidad de memoria que utilizarán las operaciones de ordenación internas  ORDER BY, DISTINCT, subconsultas IN y JOINS y las tablas hash antes de escribir en archivos de disco temporales, En un servidor dedicado podemos usar un 2-4% del total de nuestra memoria si tenemos solamente unas pocas sesiones (clientes) grandes. Como valor inicial podemos usar 8 Mbytes e ir aumentando progresivamente hasta tener un buen equilibrio entre uso de memoria y generación de temp files link : https://dbasinapuros.com/como-saber-si-esta-bien-ajustado-el-parametro-work_mem-de-postgresql/
 otros dicen que tambien se calcula  Total RAM * 0.25 / max_connections */
