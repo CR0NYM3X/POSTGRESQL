@@ -57,20 +57,23 @@ https://www.postgresql.org/ftp/source/
 
 ..................... Paquetes necesarios para que funcione .................
 
-postgresql15-15.6-1PGDG.rhel8.x86_64.rpm
-Este paquete contiene los binarios y archivos necesarios para ejecutar PostgreSQL en su versión 15.6, pero no incluye componentes adicionales como contribuciones, bibliotecas compartidas, extensiones o documentación, Por lo tanto, si solo deseas actualizar el motor de base de datos PostgreSQL a la última versión sin necesidad de extensiones adicionales o documentación, este paquete sería suficiente.
+ 
+1. **postgresql16-16.6-1PGDG.rhel8.x86_64**: Este paquete contiene los binarios y bibliotecas del cliente de PostgreSQL - PostgreSQL] . Es necesario para conectarse y ejecutar consultas en una base de datos PostgreSQL - PostgreSQL] 
 
-postgresql15-server-15.6-1PGDG.rhel8.x86_64.rpm
- Este paquete incluye los ejecutables y configuraciones necesarios para ejecutar el servidor de base de datos PostgreSQL en su última versión. Además, puede incluir scripts de inicialización y herramientas de administración específicas para el servidor PostgreSQL.
+2. **postgresql16-server-16.6-1PGDG.rhel8.x86_64**: Este paquete incluye el servidor de base de datos principal de PostgreSQL - PostgreSQL]( . Es el paquete principal que instala y configura el servidor de PostgreSQL en tu sistema - PostgreSQL] 
 
-postgresql15-odbc-16.00.0000-1PGDG.rhel8.x86_64
-postgresql15-contrib-15.6-1PGDG.rhel8.x86_64.rpm
-postgresql15-libs-15.6-1PGDG.rhel8.x86_64.rpm
+3. **postgresql16-contrib-16.6-1PGDG.rhel8.x86_64**: Este paquete contiene extensiones y módulos adicionales que no están incluidos en el paquete principal. Estas contribuciones pueden añadir funcionalidades adicionales a tu base de datos PostgreSQL.
 
+4. **postgresql16-devel-16.6-1PGDG.rhel8.x86_64**: Este paquete incluye las bibliotecas y encabezados necesarios para el desarrollo de aplicaciones en C que utilizan PostgreSQL - PostgreSQL]. Es útil para los desarrolladores que quieren crear aplicaciones que interactúen con PostgreSQL.
 
-postgresql15-llvmjit-15.6-1PGDG.rhel8.x86_64.rpm     
-Al instalar el paquete postgresql15-llvmjit-15.6-1PGDG.rhel8.x86_64.rpm, habilitas la capacidad de PostgreSQL para utilizar JIT con consultas seleccionadas. PostgreSQL puede analizar el patrón de consultas y, si identifica consultas que se ejecutan con frecuencia, puede compilarlas en código de máquina optimizado justo antes de ejecutarlas. Esto puede resultar en tiempos de respuesta más rápidos para estas consultas, lo que mejora el rendimiento general de la base de datos y la aplicación.
+5. **postgresql16-libs-16.6-1PGDG.rhel8.x86_64**: Este paquete contiene las bibliotecas compartidas necesarias para ejecutar aplicaciones que utilizan PostgreSQL - PostgreSQL]. Estas bibliotecas son requeridas por las aplicaciones que dependen de PostgreSQL.
+ 
+6. **postgresql16-llvmjit-15.6-1PGDG.rhel8.x86_64.rpm:** Este paquete contiene el soporte para JIT (Just-In-Time) compilación en PostgreSQL utilizando LLVM. La compilación JIT puede mejorar significativamente el rendimiento de ciertas consultas intensivas, como aquellas que implican muchas operaciones de cálculo o de procesamiento de datos.
+   - **Beneficio:** La compilación JIT permite que partes del código de ejecución de consultas SQL sean compiladas en tiempo real, optimizando y acelerando la ejecución.
 
+7. **postgresql16-odbc-16.00.0000-1PGDG.rhel8.x86_64:** Este paquete proporciona el controlador ODBC (Open Database Connectivity) para PostgreSQL. ODBC es una API estándar para acceder a bases de datos que permite a las aplicaciones conectarse a PostgreSQL de manera interoperable.
+   - **Beneficio:** El controlador ODBC permite que diversas aplicaciones y herramientas que utilizan ODBC se conecten y trabajen con bases de datos PostgreSQL, facilitando la integración con software de terceros.
+ 
 ```
 
 # ODBC
