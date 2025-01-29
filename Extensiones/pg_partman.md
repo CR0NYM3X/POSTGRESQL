@@ -173,6 +173,81 @@ CREATE FUNCTION  create_parent(
 
 ```
 
+# Ejemplo
+```SQL
+ -- # Utilizar un proceso de pg_partman para los mantenimientos automaticos 
+[postgres@pg ~]$ vim data/postgresql.conf
+shared_preload_libraries = 'pg_partman_bgw'
+  
+
+-- # Crear esquema 
+CREATE SCHEMA IF NOT EXISTS parman;
+CREATE SCHEMA IF NOT EXISTS prttb;
+
+
+-- # Crear la extension.
+CREATE EXTENSION pg_partman SCHEMA parman;
+
+-- # Crear tabla de ejemplo 
+CREATE TABLE user_activities (
+    activity_id serial,
+    activity_time TIMESTAMPTZ NOT NULL,
+    activity_type TEXT NOT NULL,
+    content_id INT NOT NULL,
+    user_id INT NOT NULL
+)
+PARTITION BY RANGE (activity_time);
+
+
+-- # Crea una tabla template que se usara para crear las particiones
+CREATE TABLE public.user_activities_template (LIKE public.user_activities INCLUDING ALL); -- INCLUDING DEFAULTS INCLUDING CONSTRAINTS
+
+
+-- # Configuración Inicial.
+SELECT partman.create_parent(	p_parent_table  => 'public.user_activities'
+								,p_control  => 'activity_time'
+								,p_interval => '1 month'
+								,p_type => 'range' 
+								,p_premake => 3
+								,p_start_partition  => (CURRENT_DATE + '1 month'::interval)::text
+								,p_default_table := false
+								,p_template_table := 'public.user_activities_template'
+								,p_automatic_maintenance  => 'on'
+							);
+
+
+-- # Validamos las particiones 	
+\d+ user_activities
+
+
+-- # Actualizar campos 
+update partman.part_config set retention = 12 , retention_keep_table = false, retention_keep_index = false   where   parent_table = 'public.user_activities';
+
+
+select * from partman.part_config;
+ 
+  
+-- # Crear particion manual
+SELECT partman.create_partition_time( p_parent_table => 'public.user_activities',  p_partition_times =>  array['2025-01-28'::date + INTERVAL '9 months']  );
+
+ 
+-- # Ver las nombres  de las aprticiones hijas
+SELECT * from partman.show_partitions( 'public.user_activities');
+select * from  partman.show_partition_info('public.user_activities_p20250301'); 
+
+
+-- # Aplicar mantenimientos:
+select * from   partman.run_maintenance(); 
+ 
+ 
+-- # Eliminar todo de pruebas 
+drop table user_activities;
+delete  from  partman.part_config;
+```
+
+
+ 
+
 
 
 Referencias: 
