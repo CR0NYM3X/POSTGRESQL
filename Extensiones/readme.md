@@ -1,4 +1,9 @@
 
+## Buscar extensiones centralizadas de postgres 
+```
+https://pgxn.org/
+```
+
 ### Buscar extensiones disponibles para instalar en el servidor 
 ```SQL
 dnf search pg_cron
