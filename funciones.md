@@ -773,8 +773,31 @@ GET DIAGNOSTICS filas_afectadas = ROW_COUNT;
 
 ```
 
+# Obtener nombre de la funcion que se ejecuta
+```
+CREATE OR REPLACE FUNCTION mi_funcion_ejemplo()
+RETURNS text AS $$
+DECLARE
+    _contexto TEXT;
+    _nombre_funcion TEXT;
+BEGIN
+    -- Obtener el contexto de ejecución
+    GET DIAGNOSTICS _contexto = PG_CONTEXT; --> 'PL/pgSQL function mi_funcion_ejemplo() line 7 at GET DIAGNOSTICS'
+	
+	_nombre_funcion :=  substring(_contexto FROM 'function (\w+)\(');
+
+     RETURN _nombre_funcion;
+END;
+$$ LANGUAGE plpgsql;
+
+select * from mi_funcion_ejemplo();
+```
+
 
 https://postgresconf.org/system/events/document/000/001/086/plpgsql.pdf
 <br> https://www.postgresql.org/docs/current/sql-createfunction.html
 
 <br> https://www.postgresql.org/docs/16/plpgsql-statements.html
+
+
+
