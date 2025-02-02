@@ -35,9 +35,9 @@ Tienes un limite de procesos para abrir y esto depende como tienes configurado t
 
 Otros procesos que puedes ajustar 
  
-- `**max_parallel_workers**` = 8  #máximo de trabajadores paralelos en el servidor. Ajusta según tus necesidades
-- `**shared_buffers**` = 2GB  # Tamaño de memoria compartida. Ajusta según la cantidad de RAM disponible
-- `**work_mem**` = 4MB # : Memoria disponible por proceso.  Ajusta según la carga de trabajo
+- `**max_parallel_workers**`    #máximo de trabajadores paralelos en el servidor. Ajusta según tus necesidades
+- `**shared_buffers**`    # Tamaño de memoria compartida. Ajusta según la cantidad de RAM disponible
+- `**work_mem**`   # : Memoria disponible por proceso.  Ajusta según la carga de trabajo
   
    ```sql
 	postgres@postgres# SELECT * FROM lanzar_y_validar_procesos(15);
