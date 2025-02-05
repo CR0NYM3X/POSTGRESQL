@@ -192,7 +192,14 @@ Certificate:
 ```
 
 
-
+# Herramientas para automatizar la certificación de servidores
+| **Herramienta** | **Uso** |
+|-----------------------|-------------------------------------------------------------------------|
+| **HashiCorp Vault** | Emite certificados bajo demanda via API con PKI dinámica. |
+| **Ansible/Puppet** | Despliega certificados, claves y configuración en masa. |
+| **OpenSSL Scripts** | Scripts personalizados para generar CSRs y firmar en lote. |
+| **Certbot (Let’s Encrypt)** | Solo aplica si los servidores tienen DNS público y pueden validarse automáticamente. |
+| **Ansible/Puppet/Chef** | Para despliegue automatizado de certificados. |
 
 ## **Consejos Clave**
 - **SAN (Subject Alternative Name)**: Esencial para certificados multi-dominio.
