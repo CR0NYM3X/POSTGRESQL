@@ -181,8 +181,7 @@ shared_preload_libraries = 'pg_partman_bgw'
   
 
 -- # Crear esquema 
-CREATE SCHEMA IF NOT EXISTS parman;
-CREATE SCHEMA IF NOT EXISTS prttb;
+CREATE SCHEMA IF NOT EXISTS parman; 
 
 
 -- # Crear la extension.
