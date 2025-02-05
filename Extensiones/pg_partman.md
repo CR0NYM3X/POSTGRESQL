@@ -130,7 +130,7 @@ postgres@test# select distinct proname from pg_proc where pronamespace in(select
 Time: 1.533 ms
 postgres@test#
 
--> FUNCION MÁS USADA (part_config):
+-> FUNCION MÁS USADA (create_parent):
 CREATE FUNCTION  create_parent(
     p_parent_table text
     , p_control text
