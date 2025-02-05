@@ -20,21 +20,21 @@ TLS se utiliza en una variedad de aplicaciones para proteger la información sen
 
 1. **Certificados DV (Domain Validation)**:
    - **Uso**: Blogs, sitios web personales.
-   - **Validación**: Verificación de control sobre el dominio.
+   - **Validación**: Verificación de control sobre el dominio.Solo si no hay requisitos estrictos de compliance y los servidores son internos.
 
 2. **Certificados OV (Organization Validation)**:
    - **Uso**: Sitios web comerciales, organizaciones.
-   - **Validación**: Verifican la propiedad del dominio y la existencia de la empresa.
+   - **Validación**: Verifican la propiedad del dominio y la existencia de la empresa.  Ideal para entornos críticos, ya que valida la identidad de la empresa y es aceptado en auditorías.
 
 3. **Certificados EV (Extended Validation)**:
-   - **Uso**: Bancos, tiendas en línea.
+   - **Uso**: Bancos, tiendas en línea. (es para páginas web públicas).
    - **Validación**: Verificación exhaustiva de la identidad del solicitante.  Ofrecen el mayor nivel de verificación y seguridad.
 
 4. **Certificados Wildcard**:
    - **Uso**: Protección de un dominio y todos sus subdominios.
    - **Ejemplo**: `*.example.com` protege `www.example.com`, `mail.example.com`, etc.
 
-5. **Certificados Multi-Dominio (SAN)**:
+5. **Certificados Multi-Dominio (SAN [Subject Alternative Name])**:
    - **Uso**: Protección de múltiples dominios con un solo certificado.
    - **Ejemplo**: `example.com`, `example.net`, `example.org`.
 
