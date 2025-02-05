@@ -170,7 +170,8 @@ openssl s_client -connect liverpool.com:3269
  
  
 --- obtener  Root CA
-openssl s_client -connect 10.30.120.23:636  -showcerts
+openssl s_client -connect 192.168.2.100:636  -showcerts
+openssl s_client -connect ldap.example.com:389 -starttls ldap
 openssl s_client -showcerts -verify 5 -connect liverpool.com:636  < /dev/null | awk '/BEGIN/,/END/{ if(/BEGIN/)    {a++}; out="cert"a".pem"; print >out}'
 
 
