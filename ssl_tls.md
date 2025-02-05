@@ -1,11 +1,7 @@
 
  
  
-# Versiones de TLS que se pueden configurar
-
-Documentación de PostgreSQL sobre SSL  
-Configuración de conexión en PostgreSQL    
-Configuración de versiones de protocolo SSL/TLS en PostgreSQL  
+# TLS
 
 ## Parámetro `ssl_min_protocol_version` (El valor predeterminado es TLSv1)
 
