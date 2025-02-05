@@ -1,116 +1,116 @@
-Certificados SSL/TLS son esenciales para asegurar las conexiones  
 
-### Tipos de Certificados SSL/TLS
-1. **Certificados de Dominio Único**: Protegen un solo dominio.
-2. **Certificados Comodín**: Protegen un dominio y todos sus subdominios.
-3. **Certificados Multidominio**: Protegen varios dominios diferentes.
-4. **Certificados de Validación de Dominio (DV)**: Verifican la propiedad del dominio.
-5. **Certificados de Validación de Empresa (OV)**: Verifican la propiedad del dominio y la existencia de la empresa.
-6. **Certificados de Validación Extendida (EV)**: Ofrecen el mayor nivel de verificación y seguridad.
+ 
+ 
+# Versiones de TLS que se pueden configurar
 
-### Uso de Certificados SSL/TLS
-- **Comercio Electrónico**: Protege las transacciones y datos sensibles de los clientes.
-- **Formularios de Inicio de Sesión**: Protege las credenciales de los usuarios.
-- **Sitios Web Informativos**: Protege la privacidad de los usuarios.
-- **Mejora del Posicionamiento en Motores de Búsqueda**: Google favorece los sitios con HTTPS.
+Documentación de PostgreSQL sobre SSL  
+Configuración de conexión en PostgreSQL    
+Configuración de versiones de protocolo SSL/TLS en PostgreSQL  
 
-### Desventajas de Certificados SSL/TLS
-- **Costo**: Los certificados pueden ser costosos, especialmente los de mayor nivel de seguridad.
-- **Rendimiento**: La encriptación puede afectar el rendimiento del sitio web.
-- **Configuración Compleja**: Implementar correctamente los certificados puede ser complicado.
-- **Caché Proxy**: El contenido cifrado no se puede almacenar en caché fácilmente.
+## Valores posibles para `ssl_min_protocol_version` (El valor predeterminado es TLSv1)
+
+| Versión de PostgreSQL | Valores posibles para `ssl_min_protocol_version` |
+|-----------------------|--------------------------------------------------|
+| 10                    | No disponible                                    |
+| 11                    | No disponible (puedes activar TLS pero no usa)   |
+| 12                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
+| 13                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
+| 14                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
+| 15                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
+| 16                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
+| 17                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
+
+## Versiones compatibles de TLS para diferentes versiones de PostgreSQL (El valor predeterminado es TLSv1)
+
+- **PostgreSQL 8.x**: Soporta TLS 1.0.
+- **PostgreSQL 9.x**: Soporta TLS 1.0 y TLS 1.1.
+- **PostgreSQL 10.x**: Soporta TLS 1.0, TLS 1.1.
+- **PostgreSQL 11.x**: Soporta TLS 1.0, TLS 1.1.
+- **PostgreSQL 12.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
+- **PostgreSQL 13.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
+- **PostgreSQL 14.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
+- **PostgreSQL 15.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
+- **PostgreSQL 16.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
+- **PostgreSQL 17.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
  
 
 
-/******************* versiones de tls que se pueden configurar   *******************\.
-https://www.postgresql.org/docs/current/libpq-ssl.html
-https://www.postgresql.org/docs/12/runtime-config-connection.html 
-https://www.enterprisedb.com/blog/setting-ssltls-protocol-versions-postgresql-12
+# Pasos para implementar TLS en Postgresql  
 
-Versión de PostgreSQL	Valores Posibles para ssl_min_protocol_version , El valor predeterminado es TLSv1
-10	No disponible
-11	No disponible -- si puedes activar el tls pero no usa 
-12	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
-13	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
-14	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
-15	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
-16	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
-17	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
+
+###  Paso 1: generar certificados para PostgreSQL    
 
 
 
-ssl_min_protocol_version 
-## versiones compatibles de TLS para diferentes versiones de PostgreSQL ( El valor predeterminado es TLSv1):
-PostgreSQL 8.x: Soporta TLS 1.0.
-PostgreSQL 9.x: Soporta TLS 1.0 y TLS 1.1.
-PostgreSQL 10.x: Soporta TLS 1.0, TLS 1.1 .
-PostgreSQL 11.x: Soporta TLS 1.0, TLS 1.1.
-PostgreSQL 12.x: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-PostgreSQL 13.x: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-PostgreSQL 14.x: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-PostgreSQL 15.x: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-PostgreSQL 16.x: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-PostgreSQL 17.x: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-
-
-
-
-####################################################################################################
-########################    Pasos para implementar TLS en PSQL   ###################################
-####################################################################################################
-
-
-####################  Paso 1: Generar un archivo de autoridad de certificación (CA)  #################### 
-
-
-
-1.- Generación del certificado raíz (CA): 
-
-  	1.1 Genera un certificado autofirmado para la autoridad de certificación (CA) -  
-  	Este certificado es utilizado para firmar digitalmente otros certificados, incluidos los certificados de servidor y de cliente.
-  	
-  	openssl req -new -x509   -nodes -out root.crt -keyout root.key -subj "/CN=CA Root"
-  	
-  	----- segunda opcion/ aqui tu generas una paswd para el root ---
-  	
+### Paso 1: Crear un certificado raíz
+1. **Comando**: `openssl req -new -x509 -nodes -out root.crt -keyout root.key -subj "/CN=CA Root"`
+   - **Qué hace**: Este comando crea un certificado raíz (root.crt) y una clave privada (root.key).
+   - **Explicación**: Piensa en el certificado raíz como la "autoridad" que va a firmar otros certificados. La clave privada es como una contraseña que solo la autoridad conoce. 
+   
+  	```
+	----- segunda opcion/ aqui tu generas una paswd para el root ---
+   
   	 openssl genrsa -aes128  -out root.key 2048 -- Genera una clave privada para tu CA | . Si no generas una clave privada   La clave privada es esencial para la firma de certificados,
   	 openssl rsa -in root.key -out root.key
   	 chmod 400 root.key
   	 openssl req -new -x509 -key root.key -out root.crt -subj '/CN=CA Root' --- Crea un certificado autofirmado para tu CA:
-  	--------------------
+  	 
+   	```
   	
   
-2.- Generación del certificado del servidor:
+
+### Paso 2: Crear un certificado para el servidor
+2.1 **Generar una solicitud de certificado para el servidor**
+   - **Comando**: `openssl req -new -nodes -out server.csr -keyout server.key -subj "/C=US/ST=California/L=Los Angeles/O=Mi Organización/OU=Mi Unidad/CN=127.0.0.1"`
+ 
+ - **Qué hace**: Crea una solicitud de certificado (server.csr) y una clave privada (server.key) para el servidor.
+   - **Explicación**: La solicitud de certificado es como pedir un permiso para que el servidor sea reconocido como seguro. La clave privada es la contraseña del servidor.
+
+2.2 **Firmar la solicitud del servidor con el certificado raíz**
+   - **Comando**: `openssl x509 -req -in server.csr -CA root.crt -CAkey root.key -CAcreateserial -out server.crt`
+   - **Qué hace**: Firma la solicitud del servidor (server.csr) con el certificado raíz (root.crt) y la clave privada del certificado raíz (root.key), creando el certificado del servidor (server.crt).
+   - **Explicación**: Es como si la autoridad (certificado raíz) aprobara y firmara el permiso del servidor, diciendo "este servidor es seguro".
+
   
-  	2.1  Genera una solicitud de certificado para el servidor con una clave privada
-  	openssl req -new -nodes -out server.csr -keyout server.key \
-      -subj "/C=US/ST=California/L=Los Angeles/O=Mi Organización/OU=Mi Unidad/CN=127.0.0.1"
-  	
-  	2.2 Firma la solicitud de certificado del servidor con el certificado raíz y su clave privada.
-  	openssl x509 -req   -in server.csr -CA root.crt -CAkey root.key -CAcreateserial -out server.crt 
+### Paso 3: Crear un certificado para el cliente
+3.1 **Generar una solicitud de certificado para el cliente**
+   - **Comando**: `openssl req -new -nodes -out client.csr -keyout client.key -subj "/CN=sys_user_test"`
+   - **Qué hace**: Crea una solicitud de certificado (client.csr) y una clave privada (client.key) para el cliente.
+   - **Explicación**: Similar al servidor, pero esta vez es para el cliente. La solicitud de certificado es el permiso y la clave privada es la contraseña del cliente.
+
+3.2 **Firmar la solicitud del cliente con el certificado raíz**
+   - **Comando**: `openssl x509 -req -in client.csr -CA root.crt -CAkey root.key -CAcreateserial -out client.crt`
+   - **Qué hace**: Firma la solicitud del cliente (client.csr) con el certificado raíz (root.crt) y la clave privada del certificado raíz (root.key), creando el certificado del cliente (client.crt).
+   - **Explicación**: La autoridad (certificado raíz) aprueba y firma el permiso del cliente, diciendo "este cliente es seguro".
+
   
+
+### Paso 4: Limpiar archivos temporales
+- **Comando**: `rm *.csr` y `rm *.srl`
+  - **Qué hace**: Elimina los archivos de solicitud de certificado (.csr) y los archivos de serial (.srl) que ya no son necesarios.
   
+
+
+### Paso 5: Proteger los archivos de clave y certificado
+- **Comando**: `chmod 400 *.{key,crt}`
+  - **Qué hace**: Cambia los permisos de los archivos de clave (.key) y certificado (.crt) para que solo el propietario pueda leerlos.
+  - **Explicación**: Es como poner una cerradura en los archivos para que nadie más pueda acceder a ellos.
+
   
-3.- Generación del certificado del cliente: 
-  
-  	3.1 - Genera una solicitud de certificado para el cliente con una clave privada 
-  	openssl req -new -nodes -out client.csr -keyout client.key -subj "/CN=sys_user_test"
-  
-  	3.2 - Firma la solicitud de certificado del cliente con el certificado raíz y su clave privada.
-  	openssl x509 -req   -in client.csr -CA root.crt -CAkey root.key -CAcreateserial -out client.crt
-  
-  
-4.- Eliminar los archivos que no se ocupan 
-    rm *.csr
-    rm *.srl
-  
-5.- dar permisos de lectura 
-    chmod 400 *.{key,crt}
-  
-  
-6.- Validar que los certificados funcionen correctamente 
-   openssl verify -CAfile root.crt client.crt
-   openssl verify -CAfile root.crt server.crt
+### Paso 6: Verificar los certificados
+- **Comando**: `openssl verify -CAfile root.crt client.crt` y `openssl verify -CAfile root.crt server.crt`
+  - **Qué hace**: Verifica que los certificados del cliente (client.crt) y del servidor (server.crt) sean válidos y estén firmados por el certificado raíz (root.crt).
+  - **Explicación**: Es como comprobar que los permisos del cliente y del servidor son auténticos y aprobados por la autoridad.
+
+
+## **Verifica el certificado del servidor**
+- Deberías ver los detalles del certificado y la cadena de confianza.
+```bash
+openssl s_client -connect db.example.com:5432 -starttls postgres
+```
+
+
+
   
   [NOTA] si todo esta bien retorna esto "server.crt: OK" o "client.crt: OK"
 
