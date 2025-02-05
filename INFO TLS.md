@@ -206,4 +206,20 @@ Certificate:
 - **Cadena de Confianza**: Instala siempre los certificados intermedios.
 - **Formato PEM vs DER**: PEM es textual (comienza con `-----BEGIN CERTIFICATE-----`), DER es binario.
 
+ 
+### ¿Qué es un CRL?
 
+Un **CRL (Lista de Revocación de Certificados)** es como una lista negra de certificados que ya no son confiables. Imagina que tienes una tarjeta de identificación, y si alguien la pierde o se la roban, esa tarjeta se pone en una lista para que nadie más pueda usarla.
+
+### ¿Por qué es importante?
+
+Es importante porque ayuda a asegurar que las conexiones entre tu computadora y el servidor de la base de datos sean seguras. Si alguien intenta usar un certificado que está en la lista negra, la conexión no se permitirá.
+
+### ¿Cuándo lo necesitas?
+
+- **Lo necesitas** si estás manejando información sensible y quieres asegurarte de que todas las conexiones sean seguras.
+- **No lo necesitas** si estás trabajando en un proyecto pequeño o en un entorno donde la seguridad no es una gran preocupación.
+
+
+
+ 
