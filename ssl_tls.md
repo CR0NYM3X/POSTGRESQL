@@ -35,31 +35,29 @@ Configuración de versiones de protocolo SSL/TLS en PostgreSQL
  
 
 
-# Pasos para implementar TLS en Postgresql  
+# Pasos para implementar TLS en Postgresql
 
 
-###  Paso 1: generar certificados para PostgreSQL    
+##  Paso 1: generar certificados para PostgreSQL 
+```Markdown
 
-
-
-### Paso 1: Crear un certificado raíz
+### 1: Crear un certificado raíz
 1. **Comando**: `openssl req -new -x509 -nodes -out root.crt -keyout root.key -subj "/CN=CA Root"`
    - **Qué hace**: Este comando crea un certificado raíz (root.crt) y una clave privada (root.key).
    - **Explicación**: Piensa en el certificado raíz como la "autoridad" que va a firmar otros certificados. La clave privada es como una contraseña que solo la autoridad conoce. 
    
-  	```
+  	 
 	----- segunda opcion/ aqui tu generas una paswd para el root ---
    
   	 openssl genrsa -aes128  -out root.key 2048 -- Genera una clave privada para tu CA | . Si no generas una clave privada   La clave privada es esencial para la firma de certificados,
   	 openssl rsa -in root.key -out root.key
   	 chmod 400 root.key
   	 openssl req -new -x509 -key root.key -out root.crt -subj '/CN=CA Root' --- Crea un certificado autofirmado para tu CA:
-  	 
-   	```
+  	  
   	
   
 
-### Paso 2: Crear un certificado para el servidor
+### 2: Crear un certificado para el servidor
 2.1 **Generar una solicitud de certificado para el servidor**
    - **Comando**: `openssl req -new -nodes -out server.csr -keyout server.key -subj "/C=US/ST=California/L=Los Angeles/O=Mi Organización/OU=Mi Unidad/CN=127.0.0.1"`
  
@@ -72,7 +70,7 @@ Configuración de versiones de protocolo SSL/TLS en PostgreSQL
    - **Explicación**: Es como si la autoridad (certificado raíz) aprobara y firmara el permiso del servidor, diciendo "este servidor es seguro".
 
   
-### Paso 3: Crear un certificado para el cliente
+### 3: Crear un certificado para el cliente
 3.1 **Generar una solicitud de certificado para el cliente**
    - **Comando**: `openssl req -new -nodes -out client.csr -keyout client.key -subj "/CN=sys_user_test"`
    - **Qué hace**: Crea una solicitud de certificado (client.csr) y una clave privada (client.key) para el cliente.
@@ -85,55 +83,50 @@ Configuración de versiones de protocolo SSL/TLS en PostgreSQL
 
   
 
-### Paso 4: Limpiar archivos temporales
+### 4: Limpiar archivos temporales
 - **Comando**: `rm *.csr` y `rm *.srl`
   - **Qué hace**: Elimina los archivos de solicitud de certificado (.csr) y los archivos de serial (.srl) que ya no son necesarios.
   
 
 
-### Paso 5: Proteger los archivos de clave y certificado
+### 5: Proteger los archivos de clave y certificado
 - **Comando**: `chmod 400 *.{key,crt}`
   - **Qué hace**: Cambia los permisos de los archivos de clave (.key) y certificado (.crt) para que solo el propietario pueda leerlos.
   - **Explicación**: Es como poner una cerradura en los archivos para que nadie más pueda acceder a ellos.
 
   
-### Paso 6: Verificar los certificados
+### 6: Verificar los certificados
 - **Comando**: `openssl verify -CAfile root.crt client.crt` y `openssl verify -CAfile root.crt server.crt`
   - **Qué hace**: Verifica que los certificados del cliente (client.crt) y del servidor (server.crt) sean válidos y estén firmados por el certificado raíz (root.crt).
   - **Explicación**: Es como comprobar que los permisos del cliente y del servidor son auténticos y aprobados por la autoridad.
-
+  [NOTA] si todo esta bien retorna esto "server.crt: OK" o "client.crt: OK"
 
 ## **Verifica el certificado del servidor**
 - Deberías ver los detalles del certificado y la cadena de confianza.
-```bash
-openssl s_client -connect db.example.com:5432 -starttls postgres
-```
+- **Comando**: openssl s_client -connect db.example.com:5432 -starttls postgres
+ ```
 
 
 
-  
-  [NOTA] si todo esta bien retorna esto "server.crt: OK" o "client.crt: OK"
+## Paso 2: Configurar los parámetros en postgresql.conf 
+```Markdown
+## Editar los parámetros en `postgresql.conf`
 
+### Parámetros SSL
 
+- **ssl**: Este parámetro determina si se habilita o no la capa de sockets seguros (SSL).
+- **ssl_ca_file**: Especifica la ubicación del archivo de autoridad de certificación (CA) que se utilizará para verificar los certificados SSL presentados por los clientes.
+- **ssl_cert_file**: Especifica la ubicación del archivo de certificado del servidor PostgreSQL. Este certificado se presenta a los clientes durante el proceso de autenticación SSL.
+- **ssl_crl_file**: Especifica la ubicación del archivo de lista de revocación de certificados (CRL), si se utiliza, para verificar si los certificados SSL presentados por los clientes han sido revocados.
+- **ssl_key_file**: Especifica la ubicación del archivo de clave privada del servidor PostgreSQL. Esta clave se utiliza para el intercambio de claves durante el proceso de autenticación SSL.
+- **ssl_min_protocol_version**: Especifica la versión mínima del protocolo SSL/TLS que se aceptará para la comunicación segura.
+- **ssl_max_protocol_version**: Especifica la versión máxima del protocolo SSL/TLS que se aceptará para la comunicación segura.
+- **ssl_prefer_server_ciphers = on**: El servidor elige el cifrador preferido. Esto es útil si deseas que el servidor tenga control sobre la selección de cifradores para mejorar la seguridad.
+- **ssl_prefer_server_ciphers = off**: El cliente elige el cifrador preferido. Esto puede ser útil si deseas que el cliente tenga control sobre la selección de cifradores, por ejemplo, para cumplir con requisitos específicos de seguridad del cliente.
 
+### Ejemplo de configuración en `postgresql.conf`
 
-
-
-####################   Paso 2: Configurar los parámetros en postgresql.conf #################### 
-
-1.- Editar los  parametros  vim  postgresql.conf : 
-
-ssl: Este parámetro determina si se habilita o no la capa de sockets seguros (SSL).
-ssl_ca_file: Especifica la ubicación del archivo de autoridad de certificación (CA) que se utilizará para verificar los certificados SSL presentados por los clientes.
-ssl_cert_file: Especifica la ubicación del archivo de certificado del servidor PostgreSQL. Este certificado se presenta a los clientes durante el proceso de autenticación SSL.
-ssl_crl_file: Especifica la ubicación del archivo de lista de revocación de certificados (CRL), si se utiliza, para verificar si los certificados SSL presentados por los clientes han sido revocados.
-ssl_key_file: Especifica la ubicación del archivo de clave privada del servidor PostgreSQL. Esta clave se utiliza para el intercambio de claves durante el proceso de autenticación SSL.
-ssl_min_protocol_version: Especifica la versión mínima del protocolo SSL/TLS que se aceptará para la comunicación segura.
-ssl_max_protocol_version: Especifica la versión máxima del protocolo SSL/TLS que se aceptará para la comunicación segura.
-ssl_prefer_server_ciphers = on: El servidor elige el cifrador preferido1 . Esto es útil si deseas que el servidor tenga control sobre la selección de cifradores para mejorar la seguridad.
-ssl_prefer_server_ciphers = off: El cliente elige el cifrador preferido1 . Esto puede ser útil si deseas que el cliente tenga control sobre la selección de cifradores, por ejemplo, para cumplir con requisitos específicos de seguridad del cliente
-
-
+ 
 listen_addresses = '*'
 ssl = on
 ssl_cert_file = 'server.crt'
@@ -142,101 +135,88 @@ ssl_ca_file = 'root.crt'
 ssl_min_protocol_version = 'TLSv1.3'
 ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL' # allowed SSL ciphers
 ssl_prefer_server_ciphers = on
+```
 
 
 
 
+## Paso 3: Configurar los parámetros en pg_hba.conf
+```Markdown
+## Parámetros de configuración en `pg_hba.conf`
 
+### Opciones de `clientcert`
 
+- **clientcert=1**: Exige que el cliente presente un certificado válido y que este sea verificado por el servidor. Ideal para escenarios donde se requiere alta seguridad y autenticación mutua.
+- **Sin clientcert=1**: Solo asegura que la conexión sea cifrada, sin requerir la verificación del certificado del cliente. Útil en escenarios donde el cifrado de la conexión es suficiente.
 
-####################   Paso 3: Configurar los parámetros en pg_hba.conf ####################  
+### Editar el archivo `pg_hba.conf`
 
-clientcert=1: Exige que el cliente presente un certificado válido y que este sea verificado por el servidor. Ideal para escenarios donde se requiere alta seguridad y autenticación mutua.
-
-Sin clientcert=1: Solo asegura que la conexión sea cifrada, sin requerir la verificación del certificado del cliente. Útil en escenarios donde la cifrado de la conexión es suficiente.
-
-
-1.- Editar el vim pg_hba.conf :
-
+ 
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
-hostssl   all         sys_user_test             all                      cert
-hostssl    all        sys_user_test           0.0.0.0 0.0.0.0         scram-sha-256 
+hostssl   all           sys_user_test   all                      cert
+hostssl   all           sys_user_test   0.0.0.0/0               scram-sha-256
+hostssl   all           sys_user_test   0.0.0.0/0               cert    clientcert=1
+```
 
-hostssl    all    sys_user_test    0.0.0.0 0.0.0.0     cert    clientcert=1
- 
-
-
-####################   Paso 5: Reiniciar las configuraciones de postgresql ####################  
- 
-1.- Realizar un reinicio.
+## Paso 4: Reiniciar las configuraciones de postgresql 
+```
+# Realizar un reinicio.
  /usr/pgsql-15/bin/pg_ctl reload  -D /sysx/data
+```
 
 
-
-####################   Paso 6: pasar los archivos al clientes     ####################  
-
+##   Paso 5: pasar los archivos al clientes   
+```
  scp client.crt   client.key root.crt  192.100.8.162:/tmp/encript
+```
 
 
 
-
-####################   Paso 6: Conectarse con el cliente     ####################  
+## Paso 6: Ejemplo de conexión del cliente
+```
 https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION
 
-
+-- Preparar el entorno del cliente
 mkdir ~/.postgresql
 cp client.crt client.key root.crt .postgresql/
 cd ~/.postgresql	
 mv client.crt postgresql.crt
 mv client.key postgresql.key
 
-
+-- Modos de SSL
 sslmode=require   : Esto significa que la conexión debe ser cifrada, pero no se comprueba si el certificado del servidor es válido.  se recomienda solo para entornos de desarrollo o pruebas 
 sslmode=verify-ca  :  verifica que el certificado del servidor esté firmado por una autoridad de certificación (CA) confiable. Sin embargo, no verifica que el nombre del servidor coincida con el nombre en el certificado 
 sslmode=verify-full: verifica que el certificado del servidor esté firmado por una autoridad de certificación (CA) confiable y también verifica que el nombre del servidor coincida con el nombre en el certificado. 
 
-
-psql "sslmode=verify-full   host=192.100.68.94  user=sys_user_test dbname=postgres"
-psql "sslmode=verify-full  host=192.100.68.94  user=sys_user_test dbname=postgres sslrootcert=root.crt sslcert=client.crt sslkey=client.key"
-
+-- Ejemplos de conexión
+psql "sslmode=verify-full host=192.100.68.94 user=sys_user_test dbname=postgres"
+psql "sslmode=verify-full host=192.100.68.94 user=sys_user_test dbname=postgres sslrootcert=root.crt sslcert=client.crt sslkey=client.key"
 psql -d postgres -U alejandro -p 5432 -h 192.100.68.94
 
 
---- asi es como te debe de salir
+-- Resultado esperado
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
+```
 
+## Paso 7: Validar que todo este configurado y funcionando correctamente
 
-
-
-
-
-####################   Paso 7: Validar que todo este configurado y funcionando correctamente     ####################  
-
+```
 1.- Validar las configuraciones si se hayan realizado los cambios 
 SELECT name, setting FROM pg_settings WHERE name LIKE '%ssl%';
  
 2.- Validar que esten clientes conectados 
-
 select   datname ,pg_ssl.ssl, pg_ssl.version,  pg_sa.backend_type, pg_sa.usename, pg_sa.client_addr , application_name from pg_stat_ssl pg_ssl  join pg_stat_activity pg_sa  on pg_ssl.pid = pg_sa.pid;
 
-
+-- Ejemplo de resultado esperado
  datname  | ssl | version |  backend_type  |  usename  | client_addr | application_name
 ----------+-----+---------+----------------+-----------+-------------+------------------
  postgres | t   | TLSv1.3 | client backend | alejandro | 192.100.8.162 | psql
  postgres | f   |         | client backend | postgres  |             | psql
+```
 
 
-
-
-
-
-
-
-
-
-
-
-############ EXTRA INFO  ########### 
+## INFO EXTRA
+```
 https://www.postgresql.org/docs/current/sslinfo.html
 
 
@@ -381,45 +361,28 @@ Paso 3: Generar certificados para  el cliente
 
 
 
+```
 
 
-
-
-
-
--*-*-*-*-*-*-*-*-*--*-*-*-*-*-*-*-*-*-  REFERENCIA : -*-*-*-*-*-*-*-*-*- -*-*-*-*-*-*-*-*-*- 
-
-
-
-Manuales: 
+## Bibliografias
+```
+## Manuales
 https://postgresconf.org/system/events/document/000/001/285/PostgreSQL_and_SSL.pdf
 
-
------ el mejor  : 
+### El mejor:
 https://gist.github.com/achesco/b893fb55b90651cf5f4cc803b78e19fd
 
-
----------------- 1
+### Recursos adicionales
 
 https://www.postgresql.org/docs/current/ssl-tcp.html
 https://www.highgo.ca/2024/01/06/how-to-setup-tls-connection-for-postgresql/
 https://access.redhat.com/documentation/fr-fr/red_hat_enterprise_linux/9/html/configuring_and_using_database_servers/proc_configuring-tls-encryption-on-a-postgresql-server_using-postgresql
-
----------------- 2 
 https://www.cherryservers.com/blog/how-to-configure-ssl-on-postgresql
-
----------------- 3 
-
-- Conf basica 
 https://docs.cloudera.com/cdp-private-cloud-base/7.1.9/installation/topics/cdpdc-enable-tls-12-postgresql.html
 
 
 
-
-
-
-
-Referencias: 
+## Referencias
 https://docs.aws.amazon.com/es_es/cloudhsm/latest/userguide/ssl-offload-windows-create-csr-and-certificate.html
 https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000Cm1eCAC&lang=es
 https://docs.vmware.com/es/VMware-Horizon-7/7.13/horizon-scenarios-ssl-certificates/GUID-3A8CFE07-0A1A-4AB1-B2B6-41DA8E592EFB.html
@@ -429,5 +392,4 @@ https://documentation.meraki.com/General_Administration/Other_Topics/Creating_an
 https://docs.citrix.com/es-es/xenmobile/server/authentication/client-certificate.html
 
 
-
-
+```
