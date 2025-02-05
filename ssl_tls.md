@@ -98,7 +98,7 @@
   [NOTA] si todo esta bien retorna esto "server.crt: OK" o "client.crt: OK"
 
 ## **Verifica el certificado del servidor**
-- Deberías ver los detalles del certificado y la cadena de confianza.
+- Ver detalles del certificado server.crt
 - **Comando**: openssl s_client -connect db.example.com:5432 -starttls postgres
  ```
 
