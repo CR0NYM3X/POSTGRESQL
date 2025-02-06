@@ -54,6 +54,7 @@
   	
  
 ### 2: Crear un certificado para el servidor
+
 2.1 **Generar una solicitud de certificado para el servidor**
    - **Comando**: `openssl req -new -nodes -out server.csr -keyout server.key -subj "/C=US/ST=California/L=Los Angeles/O=Mi Organización/OU=Mi Unidad/CN=127.0.0.1"`
    - **Qué hace**: Crea una solicitud de certificado (server.csr) y una clave privada (server.key) para el servidor.
@@ -61,6 +62,15 @@
    - **server.csr**: Este es el **Certificate Signing Request** (Solicitud de Firma de Certificado). Es un archivo que contiene información sobre el servidor y se envía a la CA para solicitar un certificado.
    - **server.key**: Esta es la **clave privada** del servidor. Se utiliza para cifrar la comunicación entre el servidor y los clientes.
 
+	### Información Solicitada en un CSR
+	
+	1. **Nombre Común (Common Name)**: El nombre de dominio completo (FQDN) para el cual se emitirá el certificado, por ejemplo, `www.tusitio.com`.
+	2. **Organización (Organization)**: El nombre legal completo de tu organización.
+	3. **Unidad Organizativa (Organizational Unit)**: El departamento dentro de la organización que solicita el certificado, como "IT" o "Seguridad".
+	4. **Ciudad o Localidad (Locality)**: La ciudad donde se encuentra tu organización.
+	5. **Estado o Provincia (State or Province)**: El estado o provincia donde se encuentra tu organización.
+	6. **País (Country)**: El código de dos letras del país donde se encuentra tu organización, por ejemplo, "MX" para México.
+ 
 
 2.2 **Firmar la solicitud del servidor con el certificado raíz**
    - **Comando**: `openssl x509 -req -in server.csr -CA root.crt -CAkey root.key -CAcreateserial -out server.crt`
