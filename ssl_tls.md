@@ -41,7 +41,8 @@
 1. **Comando**: `openssl req -new -x509 -nodes -out root.crt -keyout root.key -subj "/CN=CA Root"`
    - **Qué hace**: Este comando crea un certificado raíz (root.crt) y una clave privada (root.key).
    - **Explicación**: Piensa en el certificado raíz como la "autoridad" que va a firmar otros certificados. La clave privada es como una contraseña que solo la autoridad conoce. 
-   
+   - **root.crt**: Este es el **certificado raíz** de la autoridad certificadora (CA). Se utiliza para verificar la autenticidad de los certificados emitidos por la CA.
+   - **root.key**: Esta es la **clave privada** de la CA. Se utiliza para firmar los certificados que la CA emite, asegurando que son auténticos y confiables.
   	 
 	----- segunda opcion/ aqui tu generas una paswd para el root ---
    
@@ -51,19 +52,21 @@
   	 openssl req -new -x509 -key root.key -out root.crt -subj '/CN=CA Root' --- Crea un certificado autofirmado para tu CA:
   	  
   	
-  
-
+ 
 ### 2: Crear un certificado para el servidor
 2.1 **Generar una solicitud de certificado para el servidor**
    - **Comando**: `openssl req -new -nodes -out server.csr -keyout server.key -subj "/C=US/ST=California/L=Los Angeles/O=Mi Organización/OU=Mi Unidad/CN=127.0.0.1"`
- 
- - **Qué hace**: Crea una solicitud de certificado (server.csr) y una clave privada (server.key) para el servidor.
+   - **Qué hace**: Crea una solicitud de certificado (server.csr) y una clave privada (server.key) para el servidor.
    - **Explicación**: La solicitud de certificado es como pedir un permiso para que el servidor sea reconocido como seguro. La clave privada es la contraseña del servidor.
+   - **server.csr**: Este es el **Certificate Signing Request** (Solicitud de Firma de Certificado). Es un archivo que contiene información sobre el servidor y se envía a la CA para solicitar un certificado.
+   - **server.key**: Esta es la **clave privada** del servidor. Se utiliza para cifrar la comunicación entre el servidor y los clientes.
+
 
 2.2 **Firmar la solicitud del servidor con el certificado raíz**
    - **Comando**: `openssl x509 -req -in server.csr -CA root.crt -CAkey root.key -CAcreateserial -out server.crt`
    - **Qué hace**: Firma la solicitud del servidor (server.csr) con el certificado raíz (root.crt) y la clave privada del certificado raíz (root.key), creando el certificado del servidor (server.crt).
    - **Explicación**: Es como si la autoridad (certificado raíz) aprobara y firmara el permiso del servidor, diciendo "este servidor es seguro".
+   - **server.crt**: Este es el **(Clave pública) certificado del servidor**. Es emitido por la CA y  Se usa para descifrar la información.
 
   
 ### 3: Crear un certificado para el cliente
@@ -77,25 +80,25 @@
    - **Qué hace**: Firma la solicitud del cliente (client.csr) con el certificado raíz (root.crt) y la clave privada del certificado raíz (root.key), creando el certificado del cliente (client.crt).
    - **Explicación**: La autoridad (certificado raíz) aprueba y firma el permiso del cliente, diciendo "este cliente es seguro".
 
-  
+
 
 ### 4: Limpiar archivos temporales
 - **Comando**: `rm *.csr` y `rm *.srl`
-  - **Qué hace**: Elimina los archivos de solicitud de certificado (.csr) y los archivos de serial (.srl) que ya no son necesarios.
+  - **Qué hace**: Elimina los archivos de solicitud de certificado (.csr) y los archivos de serial (.srl) utilizada para llevar un registro de los certificados emitidos y revocados. que ya no son necesarios.
   
-
-
-### 5: Proteger los archivos de clave y certificado
+ 
+### 5: Otorgar permisos de lectura a certificados
 - **Comando**: `chmod 400 *.{key,crt}`
   - **Qué hace**: Cambia los permisos de los archivos de clave (.key) y certificado (.crt) para que solo el propietario pueda leerlos.
   - **Explicación**: Es como poner una cerradura en los archivos para que nadie más pueda acceder a ellos.
 
-  
+
 ### 6: Verificar los certificados
 - **Comando**: `openssl verify -CAfile root.crt client.crt` y `openssl verify -CAfile root.crt server.crt`
   - **Qué hace**: Verifica que los certificados del cliente (client.crt) y del servidor (server.crt) sean válidos y estén firmados por el certificado raíz (root.crt).
   - **Explicación**: Es como comprobar que los permisos del cliente y del servidor son auténticos y aprobados por la autoridad.
   [NOTA] si todo esta bien retorna esto "server.crt: OK" o "client.crt: OK"
+
 
 ## **Verifica el certificado del servidor**
 - Ver detalles del certificado server.crt
