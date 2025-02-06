@@ -113,6 +113,10 @@
 ## **Verifica el certificado del servidor**
 - Ver detalles del certificado server.crt
 - **Comando**: openssl s_client -connect db.example.com:5432 -starttls postgres
+
+## **Ver los detalles de los certificados**
+- **Comando**:  openssl x509 -in server.crt -text -noout
+
  ```
 
 
