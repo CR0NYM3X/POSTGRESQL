@@ -111,7 +111,7 @@
 
 
 ## **Verifica el certificado del servidor**
-- Ver detalles del certificado server.crt
+- Validar si un servidor esta f
 - **Comando**: openssl s_client -connect db.example.com:5432 -starttls postgres
 
 ## **Ver los detalles de los certificados**
