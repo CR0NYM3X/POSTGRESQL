@@ -1,0 +1,177 @@
+
+vim /etc/pki/tls/openssl.cnf
+
+
+Si tienes políticas de seguridad estrictas, como en entornos financieros o de salud.
+Si necesitas cumplir regulaciones como GDPR o PCI-DSS.
+Si usas autenticación basada en certificados en lugar de contraseñas.
+
+
+Cuando contratas a un proveedor externo de certificados (como DigiCert, Let's Encrypt, GlobalSign, etc.), los archivos que recibes dependen del tipo de certificado y la jerarquía de confianza. Aquí te explico con claridad:
+
+
+
+
+Una PKI interna (Infraestructura de Clave Pública) es un sistema que permite la creación, gestión, distribución, uso, almacenamiento y revocación de certificados digitales dentro de una organización. A diferencia de una PKI pública, que es gestionada por una autoridad certificadora externa, una PKI interna es gestionada por la propia organización.
+
+
+Problema: Tengo varios archivos con extensión crt,key y no se cual es el root, el intermediario y la llave no se a quien corresponde , se puede indentificar? 
+
+
+👉 **Nota:** El root CA casi nunca comparte su clave privada (`.key`) 
+
+
+Para identificar los certificados y la clave privada, sigue estos pasos:
+
+1. **Identificar el Certificado Raíz (Root CA):**
+	- El certificado raíz es **auto-firmado (self-signed)**  
+	- Si `Issuer` y `Subject` son iguales, es el **certificado raíz**.
+	- Ejecuta este comando para cada `.crt`:
+     **comando:**  openssl x509 -in root.crt -text -noout | grep -E "Issuer:|Subject:"
+	 
+	 
+2. **Identificar el Certificado Intermedio (si existe):**
+   - Es un CA intermedio firmado por el root CA pero no es auto-firmado.
+   - Su `Subject` será diferente del root, y su `Issuer` coincidirá con el `Subject` del root CA.
+   - Tiene la extensión **CA:TRUE**:
+   **comando:** openssl x509 -in intermediate_ca.crt -text -noout | grep -E "Issuer:|Subject:"
+   **comando:** openssl x509 -in intermediate_ca.crt -text -noout | grep "CA:TRUE"
+   
+
+
+3. **Identificar el Certificado del Servidor:**
+	- El certificado del servidor es el que **no es auto-firmado** y generalmente tiene `CN` igual al dominio del servidor (e.g., `example.com`).
+	- Verifica si su `Issuer` coincide con el `Subject` de otro certificado (el *intermediate.crt* el root.crt, si existe).
+	- Busca la extensión **X509v3 Extended Key Usage**:
+     **comando:** openssl x509 -in servidor.crt -text -noout | grep -Ei "TLS Web|Issuer|Subject"
+
+
+
+4. **Verificar la clave privada (.key):**
+   - La clave privada debe coincidir con el **certificado del servidor** (no con el root).
+   - Compara el módulo público de la clave y el certificado:
+     ``` 
+		 openssl rsa -in servidor.key -modulus -noout | openssl sha256 # Obtener hash del módulo de la clave privada
+
+		 openssl x509 -in servidor.crt -modulus -noout | openssl sha256 # Obtener hash del módulo de cada certificado (.crt)
+     ```
+     Si los hashes coinciden, el `.key` pertenece al certificado del servidor.
+	 
+	 
+5.-**verificar la cadena de un certificado emitido por una solicitud CSR:**
+		**comando:** openssl verify -CAfile root.crt -untrusted intermediate.crt servidor.crt # Salida esperada:: server.crt: OK
+		
+	 
+6.- **Verificar la fecha de expiración de un certificado**
+	openssl x509 -in servidor.crt -noout -enddate  #  Salida esperada: `notAfter=Dec 31 23:59:59 2025 GMT`
+	openssl x509 -in certificado.crt -noout -dates  #  Salida esperada:   notBefore=Fecha y hora de inicio  , notAfter=Fecha y hora de expiración
+	
+7.- 6.- **Verificar la fecha de expiración de un certificado Servidor remoto**
+	openssl s_client -connect dominio.com:443 -servername dominio.com 2>/dev/null | openssl x509 -noout -dates 
+	openssl s_client -connect 192.168.1.100:5416 -starttls postgres 2>/dev/null | openssl x509 -noout -dates 
+
+
+
+
+
+# Preguntas frecuentes: 	 
+
+¿Por qué el archivo `.key` no es del certificado raíz?
+	La clave privada (`.key`) del **certificado raíz** (Root CA) es un secreto crítico y **nunca se comparte** en entornos seguros.  
+	Si tienes un `.key`, lo más probable es que pertenezca al certificado del servidor, porque:
+	   - El **certificado raíz** solo se usa para firmar otros certificados (intermedios o servidores), y su clave privada se guarda offline (en una máquina desconectada de internet).
+	   - El **certificado del servidor** (generado desde un CSR) sí necesita su clave privada asociada para funcionar (e.g., en Apache/Nginx), por eso el `.key` suele estar presente.
+
+
+¿Qué significa "auto-firmado" (self-signed)?
+
+
+	- **Auto-firmado (self-signed):**  
+		Es un certificado donde el **emisor (Issuer)** y el **sujeto (Subject)** son el mismo. 
+		Ejemplo:
+		```
+			Issuer: C=US, O=Mi Root CA, CN=Mi Root CA
+			Subject: C=US, O=Mi Root CA, CN=Mi Root CA
+		```
+		el certificado se firma a sí mismo (no hay una entidad superior que lo valide).Solo el certificado raíz es auto-firmado.
+
+	- **No auto-firmado:**  
+		El certificado es emitido por una entidad superior (como un Root CA o CA intermedio).  
+		Ejemplo:
+		```
+			Issuer: C=US, O=Mi Root CA, CN=Mi Root CA # Emisor = Root CA
+			Subject: C=US, O=Mi Servidor, CN=servidor.com # Sujeto = Servidor
+		```
+		Este certificado fue firmado por el Root CA (no es auto-firmado).
+
+
+¿Qué es un Certificado Intermedio?
+El certificado intermedio (Intermediate CA) es una capa de seguridad entre el Root CA y el certificado del servidor. Su función es:
+
+	Proteger el Root CA:  Si el certificado intermedio se compromete, el Root CA sigue seguro (no se expone su clave privada). 
+	Jerarquía de confianza: Root CA ➔ Firma al Intermediate CA ➔ Intermediate CA firma al servidor.
+	Flexibilidad:  Permite revocar intermediarios sin afectar al Root CA.
+	
+
+
+
+¿Por qué los clientes se conectan con certificados vencidos?
+	- **Comportamiento predeterminado:** PostgreSQL no verifica la fecha de expiración de los certificados SSL/TLS del lado del servidor o del cliente, a menos que se configuren parámetros específicos.
+	- **Tu escenario:**  
+	  - El certificado (`server.crt`) está vencido (las fechas `notBefore` y `notAfter` están fuera del rango actual).  
+	  - Los clientes se conectan usando SSL (como muestra `pg_stat_ssl`), pero **PostgreSQL no está validando la expiración del certificado**.
+
+
+
+¿Qué es `Extended Key Usage` (EKU)?
+	- Es una extensión opcional en un certificado X.509.
+	- Define los **usos permitidos** del certificado, como autenticación de servidor, autenticación de cliente, firma de código, etc.
+	- Si no está presente, el certificado puede usarse para **cualquier propósito** (dependiendo de la política de la CA).
+	- Limita el uso del certificado a operaciones específicas
+
+	**Valores Comunes de `Extended Key Usage`**
+		 **`serverAuth`**  El certificado puede usarse para autenticar un servidor (ej: HTTPS, PostgreSQL). 
+		 **`clientAuth`**  El certificado puede usarse para autenticar un cliente (ej: aplicaciones que se conectan a PostgreSQL). 
+		 **`codeSigning`**  El certificado puede usarse para firmar código (ej: aplicaciones, scripts). 
+		 **`emailProtection`**  El certificado puede usarse para firmar o cifrar correos electrónicos. 
+		 **`timeStamping`**  El certificado puede usarse para firmar marcas de tiempo. 
+		 **`OCSPSigning`**  El certificado puede usarse para firmar respuestas OCSP (revocación de certificados). 
+	 
+	 
+		**comando** openssl x509 -in certificado.crt -text -noout
+		
+		**Salida esperada:**
+			X509v3 Extended Key Usage:
+				TLS Web Server Authentication, TLS Web Client Authentication
+
+			
+			- **`TLS Web Server Authentication`**: Equivale a `serverAuth`.
+			- **`TLS Web Client Authentication`**: Equivale a `clientAuth`.
+
+
+
+	 
+
+# Jerarquía típica:
+```markdown
+	pki/
+	├─── root/ #(self-signed)
+	│ ├── root.crt # (self-signed) Certificado Root (distribúyelo a clientes)
+	│ ├── root.key # Clave privada del Root (¡GUÁRDALA OFFLINE!)
+	├── intermediate/   # (firmado por Root CA):
+	│ ├── intermediate.crt
+	│ ├── intermediate.key # (usada para firmar servidores).
+	└── server/ #  (firmado por Intermediate CA)
+		├── server.crt # Certificado del servidor
+		├── server.key # Clave privada del servidor
+		└── fullchain.crt # Certificado Serv  + Intermediate
+```
+
+
+
+
+### **Consejo de Seguridad**
+Si el `.key` que tienes coincide con el certificado raíz, **¡ten mucho cuidado!** La clave privada del Root CA debe estar protegida y no exponerse en servidores. Si la pierdes o comprometes, toda tu infraestructura de certificados quedará en riesgo.
+
+ 
+ 
