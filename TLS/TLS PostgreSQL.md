@@ -235,9 +235,9 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
 
 ```
 
-## Paso 7: Validar que todo este configurado y funcionando correctamente
+## Paso 7: Validar si las conexiones estan usando TLS
 
-```
+```sql
 1.- Validar las configuraciones si se hayan realizado los cambios 
 SELECT name, setting FROM pg_settings WHERE name LIKE '%ssl%';
  
@@ -250,6 +250,53 @@ select   datname ,pg_ssl.ssl, pg_ssl.version,  pg_sa.backend_type, pg_sa.usename
  postgres | t   | TLSv1.3 | client backend | alejandro | 192.100.8.162 | psql
  postgres | f   |         | client backend | postgres  |             | psql
 ```
+
+## Paso 8: Capturar el trafico para validar si esta cifrado
+```bash
+verificar si la comunicación de PostgreSQL está cifrada usando **Tcpdump**:
+
+---
+
+### **1. Capturar tráfico de red con Tcpdump**
+Abrir una terminal y Ejecuta el siguiente comando para capturar el tráfico en el puerto de PostgreSQL (`5432` por defecto):
+ 
+	sudo /sbin/tcpdump -i any -s 0 -A 'host 127.0.0.1 && tcp port 5416'| grep -A 5 -Ei Passw0rd
+
+
+1. **`sudo`**: Ejecuta el comando con privilegios de superusuario.
+2. **`/sbin/tcpdump`**: Ejecuta la herramienta `tcpdump`, que captura y analiza el tráfico de red.
+3. **`-i any`**: Captura paquetes en todas las interfaces de red.
+4. **`-s 0`**: Captura el tamaño completo de cada paquete.
+5. **`-A`**: Muestra los datos del paquete en formato ASCII.
+6. **`'host 127.0.0.1 && tcp port 5416'`**: Filtra los paquetes para capturar solo aquellos que provienen o van hacia el host `127.0.0.1` (localhost) y que utilizan el puerto TCP `5416`.
+7. **`| grep -Ei Passw0rd`**: Pasa la salida de `tcpdump` a `grep`, que busca de manera insensible a mayúsculas y minúsculas (`-i`) cualquier línea que contenga la palabra "Passw0rd".
+
+
+---
+
+
+#### **3. Hacer una conexion con el cliente y una consulta**
+	- Abrir otra terminal y intentar conectarse 
+
+	psql "sslmode=disable host=127.0.0.1  port=5416  user=sinssl dbname=centraldata" -c "select 'mi Passw0rd';"
+
+	psql "sslmode=prefer host=127.0.0.1  port=5416  user=conssl dbname=centraldata" -c "select 'mi Passw0rd';"
+
+#### **3. Análisis del tráfico **
+
+- Opcion #1
+	validar la termina #1 donde se esta capturando el trafico
+
+- Opcion #2
+	Abre el archivo `sin_tls.pcap` en caso de haber generado el archivo:
+  
+	sudo /sbin/tcpdump -r sin_tls.pcap -A | grep -Ei 'Passw0rd'
+  
+	- **Resultado esperado**: Verás la contraseña en texto plano:
+
+
+```
+
 
 
 ## INFO EXTRA
