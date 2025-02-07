@@ -175,7 +175,7 @@ hostssl   all           sys_user_test   0.0.0.0/0               cert    clientce
 
 
 ## Paso 6: Ejemplo de conexión del cliente
-```
+```Markdown
 https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION
 
 -- Preparar el entorno del cliente
@@ -185,10 +185,7 @@ cd ~/.postgresql
 mv client.crt postgresql.crt
 mv client.key postgresql.key
 
--- Modos de SSL
-sslmode=require   : Esto significa que la conexión debe ser cifrada, pero no se comprueba si el certificado del servidor es válido.  se recomienda solo para entornos de desarrollo o pruebas 
-sslmode=verify-ca  :  verifica que el certificado del servidor esté firmado por una autoridad de certificación (CA) confiable. Sin embargo, no verifica que el nombre del servidor coincida con el nombre en el certificado 
-sslmode=verify-full: verifica que el certificado del servidor esté firmado por una autoridad de certificación (CA) confiable y también verifica que el nombre del servidor coincida con el nombre en el certificado. 
+
 
 -- Ejemplos de conexión
 psql "sslmode=verify-full host=192.100.68.94 port=5432  user=sys_user_test dbname=postgres"
@@ -202,6 +199,35 @@ psql: error: connection to server at "127.0.0.1", port 5416 failed: FATAL:  no p
 
 -- Resultado esperado
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
+
+
+
+El modo define el nivel de seguridad y verificación de certificados durante la conexión SSL/TLS.
+
+- **`disable`**: Conexión **sin cifrado**. Ignora SSL/TLS.
+  - **Cuándo usar**: En entornos locales sin datos sensibles (ej: testing).
+  - **Cuándo NO usar**: En redes públicas o con datos críticos.
+
+- **`allow`**: Intenta conexión sin SSL primero. Si falla, intenta con SSL.
+  - **Cuándo usar**: En migraciones o para compatibilidad con clientes antiguos.
+  - **Cuándo NO usar**: Casi nunca, ya que es un modo inseguro por defecto.
+
+- **`prefer`**: Intenta conexión **con SSL** primero. Si falla, usa sin cifrado.
+  - **Cuándo usar**: En entornos mixtos donde no todos soportan SSL.
+  - **Cuándo NO usar**: Cuando se requiera seguridad garantizada.
+
+- **`require`**: **Obliga SSL**, pero **no verifica el certificado del servidor** (sin autenticación).
+  - **Cuándo usar**: Para conexiones rápidas con cifrado básico.
+  - **Cuándo NO usar**: Si el servidor usa certificados autofirmados no confiables.
+
+- **`verify-ca`**: Obliga SSL y **valida que el certificado del servidor está firmado por una CA confiable**, pero no verifica el nombre del host.
+  - **Cuándo usar**: Cuando se confía en la CA pero el host puede variar (ej: IP dinámica).
+  - **Cuándo NO usar**: Si el nombre del host debe coincidir exactamente (ej: dominio específico).
+
+- **`verify-full`**: Obliga SSL, **valida la CA y el nombre del host** en el certificado. Máxima seguridad.
+  - **Cuándo usar**: En entornos productivos (ej: servidores en la nube).
+  - **Cuándo NO usar**: Nunca evitarlo en casos críticos.
+
 ```
 
 ## Paso 7: Validar que todo este configurado y funcionando correctamente
@@ -449,6 +475,7 @@ https://gist.github.com/achesco/b893fb55b90651cf5f4cc803b78e19fd
 32.19. SSL Support  https://www.postgresql.org/docs/current/libpq-ssl.html
 20.1. The pg_hba.conf File  https://www.postgresql.org/docs/current/auth-pg-hba-conf.html
 18.9. Secure TCP/IP Connections with SSL https://www.postgresql.org/docs/current/ssl-tcp.html
+
 https://www.highgo.ca/2024/01/06/how-to-setup-tls-connection-for-postgresql/
 https://access.redhat.com/documentation/fr-fr/red_hat_enterprise_linux/9/html/configuring_and_using_database_servers/proc_configuring-tls-encryption-on-a-postgresql-server_using-postgresql
 https://www.cherryservers.com/blog/how-to-configure-ssl-on-postgresql
