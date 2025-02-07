@@ -124,27 +124,11 @@
 ## Paso 2: Configurar los parámetros en postgresql.conf 
 ```Markdown
 ## Editar los parámetros en `postgresql.conf`
-
-### Parámetros SSL
-
-- **ssl**: Este parámetro determina si se habilita o no la capa de sockets seguros (SSL).
-- **ssl_ca_file**: Especifica la ubicación del archivo de autoridad de certificación (CA) que se utilizará para verificar los certificados SSL presentados por los clientes.
-- **ssl_cert_file**: Especifica la ubicación del archivo de certificado del servidor PostgreSQL. Este certificado se presenta a los clientes durante el proceso de autenticación SSL.
-- **ssl_crl_file**: Especifica la ubicación del archivo de lista de revocación de certificados (CRL), si se utiliza, para verificar si los certificados SSL presentados por los clientes han sido revocados.
-- **ssl_key_file**: Especifica la ubicación del archivo de clave privada del servidor PostgreSQL. Esta clave se utiliza para el intercambio de claves durante el proceso de autenticación SSL.
-- **ssl_min_protocol_version**: Especifica la versión mínima del protocolo SSL/TLS que se aceptará para la comunicación segura.
-- **ssl_max_protocol_version**: Especifica la versión máxima del protocolo SSL/TLS que se aceptará para la comunicación segura.
-- **ssl_prefer_server_ciphers = on**: El servidor elige el cifrador preferido. Esto es útil si deseas que el servidor tenga control sobre la selección de cifradores para mejorar la seguridad.
-- **ssl_prefer_server_ciphers = off**: El cliente elige el cifrador preferido. Esto puede ser útil si deseas que el cliente tenga control sobre la selección de cifradores, por ejemplo, para cumplir con requisitos específicos de seguridad del cliente.
-
-### Ejemplo de configuración en `postgresql.conf`
-
  
-listen_addresses = '*'
+ 
 ssl = on
 ssl_cert_file = 'server.crt'
 ssl_key_file = 'server.key'
-ssl_ca_file = 'root.crt'
 ssl_min_protocol_version = 'TLSv1.3'
 ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL' # allowed SSL ciphers
 ssl_prefer_server_ciphers = on
@@ -166,8 +150,10 @@ ssl_prefer_server_ciphers = on
 
  
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
-hostssl   all           sys_user_test   all                      cert
 hostssl   all           sys_user_test   0.0.0.0/0               scram-sha-256
+
+# Clientes con autenticación por certificado y no por contraseña
+hostssl   all           sys_user_test   all                     cert
 hostssl   all           sys_user_test   0.0.0.0/0               cert    clientcert=1
 ```
 
@@ -233,6 +219,86 @@ select   datname ,pg_ssl.ssl, pg_ssl.version,  pg_sa.backend_type, pg_sa.usename
 https://www.postgresql.org/docs/current/sslinfo.html
 
 
+
+ 
+Parámetros y sus usos:
+
+1. ssl
+
+	¿Para qué sirve? Habilita o deshabilita SSL en PostgreSQL.
+	Uso recomendado: Si deseas encriptar las conexiones entre clientes y el servidor para mayor seguridad.
+
+2. ssl_ca_file
+	¿Para qué sirve? Especifica la ubicación del archivo de la Autoridad de Certificación (CA) que se usa para verificar los certificados de los clientes.
+	Uso recomendado: Cuando requieras autenticar clientes con certificados en una configuración de SSL mutuo.
+
+3. ssl_cert_file
+	¿Para qué sirve? Define la ruta del certificado SSL del servidor PostgreSQL.
+	Uso recomendado: Siempre que uses SSL para conexiones seguras.
+
+
+4. ssl_ciphers
+	¿Para qué sirve? Permite definir qué conjuntos de cifrados (cipher suites) se pueden usar en las conexiones SSL.
+	Uso recomendado: Para restringir los cifrados inseguros y mejorar la seguridad.
+	Ejemplo: HIGH:!aNULL:!MD5 (solo cifrados fuertes).
+
+
+5. ssl_crl_dir
+	¿Para qué sirve? Especifica un directorio donde se almacenan listas de revocación de certificados (CRL).
+	Uso recomendado: Si manejas muchas CRL en un entorno de certificados que expiran o pueden ser revocados.
+
+6. ssl_crl_file
+	¿Para qué sirve? Especifica un archivo con la lista de revocación de certificados (CRL).
+	Uso recomendado: Si necesitas invalidar certificados que han sido comprometidos o revocados.
+
+7. ssl_dh_params_file
+	¿Para qué sirve? Especifica un archivo con parámetros de Diffie-Hellman personalizados para mejorar la seguridad de las claves compartidas.
+	Uso recomendado: Cuando necesitas un mayor control sobre el intercambio de claves en SSL.
+
+
+8. ssl_ecdh_curve
+	¿Para qué sirve? Define la curva elíptica usada para el intercambio de claves ECDH.	
+	Uso recomendado: Cuando usas cifrados basados en curvas elípticas (como ECDHE).
+	Valor por defecto: prime256v1.
+
+
+9. ssl_key_file
+	¿Para qué sirve? Especifica la ruta del archivo de clave privada del servidor SSL.
+	Uso recomendado: Siempre que uses SSL en PostgreSQL.
+
+
+10. ssl_library
+	¿Para qué sirve? Indica qué biblioteca SSL está en uso (OpenSSL por defecto).
+	Uso recomendado: Solo si quieres asegurarte de qué implementación de SSL está activa.
+
+11. ssl_max_protocol_version
+	¿Para qué sirve? Especifica la versión máxima de SSL/TLS permitida en las conexiones.
+	Uso recomendado: Para evitar el uso de versiones no compatibles o vulnerables.
+	Ejemplo: TLSv1.3.
+
+12. ssl_min_protocol_version
+	¿Para qué sirve? Define la versión mínima de SSL/TLS permitida.
+	Uso recomendado: Para obligar a los clientes a usar protocolos seguros (ejemplo: evitar TLSv1.0).
+	Ejemplo recomendado: TLSv1.2.
+
+13. ssl_passphrase_command
+	¿Para qué sirve? Especifica un comando que se ejecutará para obtener la contraseña de la clave privada SSL.
+	Uso recomendado: Si la clave privada está protegida con contraseña.
+
+
+14. ssl_passphrase_command_supports_reload
+	¿Para qué sirve? Indica si PostgreSQL puede recargar la clave privada sin reiniciar el servidor.
+	Uso recomendado: Para minimizar interrupciones al actualizar certificados.
+
+
+15. ssl_prefer_server_ciphers
+	¿Para qué sirve? Si está en on, el servidor define qué cifrado usar en lugar del cliente.
+	Uso recomendado: Para asegurar que se usen cifrados seguros definidos por el servidor.
+
+
+
+******************************************************************************************************************
+
 CREATE EXTENSION IF NOT EXISTS sslinfo ;
 
 1.- Información sobre la Conexión SSL:
@@ -249,7 +315,7 @@ CREATE EXTENSION IF NOT EXISTS sslinfo ;
 	ssl_issuer_dn(): Retorna el nombre completo del emisor del certificado del cliente.
 	ssl_client_dn(): Ofrece el nombre completo del sujeto del certificado del cliente.
 
-
+******************************************************************************************************************
  
  -------- Empresan que emiten Certificados C.A 
  Let's Encrypt: Es una autoridad de certificación gratuita y automatizada que emite certificados SSL/TLS de forma gratuita. Es ampliamente utilizada para proporcionar certificados SSL/TLS en sitios web.
@@ -262,28 +328,11 @@ GoDaddy: Aunque es conocido principalmente como un registrador de dominios, GoDa
 
 GlobalSign: Es una autoridad de certificación global que proporciona una variedad de certificados SSL/TLS y soluciones de seguridad en línea.
 
- 
+
+
+
 -*-*-*-*-*-*-*-*-*--*-*-*-*-*-*-*-*-*-  opciones secundarias para generar certificados firmados   : -*-*-*-*-*-*-*-*-*- -*-*-*-*-*-*-*-*-*- 
 
-######### opcion #1 #########
- ------------------------------------- server  -------------------------------------
- 
-  openssl req -days 3650 -new -text -nodes -subj '/C=US/ST=Massachusetts/L=Bedford/O=Personal/OU=Personal/emailAddress=example@example.com/CN=10.30.68.94' -keyout server.key -out server.csr
-  openssl req -days 3650 -x509 -text -in server.csr -key server.key -out server.crt
-  cp server.crt root.crt
- rm server.csr
-
-chmod 400 ca.key
- 
- ------------------------------------- cliente  -------------------------------------
- 
-  openssl req -days 3650 -new -nodes -subj '/C=US/ST=Massachusetts/L=Bedford/O=Personal/OU=Personal/emailAddress=example@example.com/CN=alejandro' -keyout client.key -out client.csr
-  openssl x509 -days 3650 -req  -CAcreateserial -in client.csr -CA root.crt -CAkey server.key -out client.crt
- rm client.csr
- 
- 
- ***************************************************************************
- 
  
 
  ######### LINUX CA (CERTIFICADOS ) #########
