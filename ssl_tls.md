@@ -242,10 +242,13 @@ Parámetros y sus usos:
 	Uso recomendado: Para restringir los cifrados inseguros y mejorar la seguridad.
 	Ejemplo: HIGH:!aNULL:!MD5 (solo cifrados fuertes).
 
-
 5. ssl_crl_dir
 	¿Para qué sirve? Especifica un directorio donde se almacenan listas de revocación de certificados (CRL).
 	Uso recomendado: Si manejas muchas CRL en un entorno de certificados que expiran o pueden ser revocados.
+	¿Cuándo se usa?:  se usa cuando los clientes utilizan certificados SSL para autenticarse, no contraseñas.
+			Este archivo contiene una lista de certificados que han sido revocados por la autoridad
+			certificadora (CA) antes de su fecha de expiración, generalmente porque se han comprometido
+			 o ya no son confiables.
 
 6. ssl_crl_file
 	¿Para qué sirve? Especifica un archivo con la lista de revocación de certificados (CRL).
