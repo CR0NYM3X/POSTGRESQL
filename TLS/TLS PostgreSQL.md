@@ -275,7 +275,7 @@ Abrir una terminal y Ejecuta el siguiente comando para capturar el tráfico en e
 ---
 
 
-#### **3. Hacer una conexion con el cliente y una consulta**
+#### **2. Hacer una conexion con el cliente y una consulta**
 	- Abrir otra terminal y intentar conectarse 
 
 	psql "sslmode=disable host=127.0.0.1  port=5416  user=sinssl dbname=centraldata" -c "select 'mi Passw0rd';"
