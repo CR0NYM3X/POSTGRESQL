@@ -6,7 +6,7 @@ Doc Man:
 
 # inicializar postgresql
 ```sql
-/usr/pgsql-15/bin/initdb -E SQL_ASCII -D /sysx/data
+/usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data
 ``` 
 
 
