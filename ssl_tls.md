@@ -204,6 +204,11 @@ SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: 
 
 El modo define el nivel de seguridad y verificación de certificados durante la conexión SSL/TLS.
 
+### **Diagrama de Seguridad**
+
+	Seguridad Baja → Alta
+	disable → allow → prefer → require → verify-ca → verify-full
+ 
 - **`disable`**: Conexión **sin cifrado**. Ignora SSL/TLS.
   - **Cuándo usar**: En entornos locales sin datos sensibles (ej: testing).
   - **Cuándo NO usar**: En redes públicas o con datos críticos.
