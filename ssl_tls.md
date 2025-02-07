@@ -195,6 +195,10 @@ psql "sslmode=verify-full host=192.100.68.94 port=5432  user=sys_user_test dbnam
 psql "sslmode=verify-full host=192.100.68.94 port=5432  user=sys_user_test dbname=postgres sslrootcert=root.crt sslcert=client.crt sslkey=client.key"
 psql -d postgres -U alejandro -p 5432 -h 192.100.68.94
 
+--- Ejemplo intentando conectarme de forma insegura
+psql "sslmode=disable host=192.100.68.94  port=5432  user=sys_user_test dbname=postgres"
+psql: error: connection to server at "127.0.0.1", port 5416 failed: FATAL:  no pg_hba.conf entry for host "127.0.0.1", user "otheruser", database "centraldata", no encryption
+
 
 -- Resultado esperado
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
