@@ -145,6 +145,9 @@ ssl_prefer_server_ciphers = on
 
 - **clientcert=1**: Exige que el cliente presente un certificado válido y que este sea verificado por el servidor. Ideal para escenarios donde se requiere alta seguridad y autenticación mutua.
 - **Sin clientcert=1**: Solo asegura que la conexión sea cifrada, sin requerir la verificación del certificado del cliente. Útil en escenarios donde el cifrado de la conexión es suficiente.
+ 
+hostssl -> Forza al cliente a usar una conexión cifrada en caso de que no rechaza la conexión
+cert -> Esto es para que el cliente pueda usar un certificado para autenticarse en vez de una contraseña
 
 ### Editar el archivo `pg_hba.conf`
 
@@ -188,8 +191,8 @@ sslmode=verify-ca  :  verifica que el certificado del servidor esté firmado por
 sslmode=verify-full: verifica que el certificado del servidor esté firmado por una autoridad de certificación (CA) confiable y también verifica que el nombre del servidor coincida con el nombre en el certificado. 
 
 -- Ejemplos de conexión
-psql "sslmode=verify-full host=192.100.68.94 user=sys_user_test dbname=postgres"
-psql "sslmode=verify-full host=192.100.68.94 user=sys_user_test dbname=postgres sslrootcert=root.crt sslcert=client.crt sslkey=client.key"
+psql "sslmode=verify-full host=192.100.68.94 port=5432  user=sys_user_test dbname=postgres"
+psql "sslmode=verify-full host=192.100.68.94 port=5432  user=sys_user_test dbname=postgres sslrootcert=root.crt sslcert=client.crt sslkey=client.key"
 psql -d postgres -U alejandro -p 5432 -h 192.100.68.94
 
 
