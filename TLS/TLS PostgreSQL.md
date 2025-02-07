@@ -257,11 +257,22 @@ verificar si la comunicación de PostgreSQL está cifrada usando **Tcpdump**:
 
 ---
 
-### **1. Capturar tráfico de red con Tcpdump**
-Abrir una terminal y Ejecuta el siguiente comando para capturar el tráfico en el puerto de PostgreSQL (`5432` por defecto):
+### **1 Crear una tabla de prueba**
+	- Abrir una terminal  #1 creamos y insertamos y no nos salimos de la conexión
+		[postgres@hostname_serv ~]$ psql -X  "sslmode=disable host=127.0.0.1  port=5416  user=sinssl dbname=postgres"
+		Password for user sinssl:
+		psql (17.2, server 16.6)
+		Type "help" for help.
+		
+		db_test=# create temp table  clientes(numcli int,password text);
+		CREATE TABLE
+		db_test=# insert into clientes select 12345,'Passw0rd';
+		INSERT 0 1
  
-	sudo /sbin/tcpdump -i any -s 0 -A 'host 127.0.0.1 && tcp port 5416'| grep -A 5 -Ei Passw0rd
-
+### **2. Capturar tráfico de red con Tcpdump**
+Abrir otra terminal #2 y Ejecuta el siguiente comando para capturar el tráfico en el puerto de PostgreSQL (`5432` por defecto):
+ 
+	sudo /sbin/tcpdump -i any -s 0 -A 'host 127.0.0.1 && tcp port 5416' 
 
 1. **`sudo`**: Ejecuta el comando con privilegios de superusuario.
 2. **`/sbin/tcpdump`**: Ejecuta la herramienta `tcpdump`, que captura y analiza el tráfico de red.
@@ -274,26 +285,64 @@ Abrir una terminal y Ejecuta el siguiente comando para capturar el tráfico en e
 
 ---
 
+### **3. Consultamos los datos**
+	- Abrimos la terminal #1
 
-#### **2. Hacer una conexion con el cliente y una consulta**
-	- Abrir otra terminal y intentar conectarse 
+	db_test=# select * from clientes; /*ESTE ES UN COMENTARIO*/
+	 numcli | password
+	--------+----------
+	  12345 | Passw0rd
 
-	psql "sslmode=disable host=127.0.0.1  port=5416  user=sinssl dbname=centraldata" -c "select 'mi Passw0rd';"
 
-	psql "sslmode=prefer host=127.0.0.1  port=5416  user=conssl dbname=centraldata" -c "select 'mi Passw0rd';"
 
-#### **3. Análisis del tráfico **
+### **4.  Análisis del tráfico sin crifrar **
+- Como vemos se expone la contraseña 
+	[postgres@hostname_serv ~]$ sudo /sbin/tcpdump -i any -s 0 -A 'host 127.0.0.1 && tcp && port 5416'
+	dropped privs to tcpdump
+	tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+	listening on lo, link-type EN10MB (Ethernet), capture size 262144 bytes
+	
+	14:51:13.301877 IP localhost.58094 > localhost.sns-gateway: Flags [P.], seq 3141752243:3141752272, ack 2227224492, win 88, options [nop,nop,TS val 2307337496 ecr 2307293188], length 29
+	E..Qwt@.@..0...........(.CU........X.E.....
+	..-.....Q....select * from clientes;.
+	14:51:13.302510 IP localhost.sns-gateway > localhost.58094: Flags [P.], seq 1:108, ack 29, win 86, options [nop,nop,TS val 2307337497 ecr 2307337496], length 107
+	E...@h@.@............(.......CU....V.......
+	..-...-.T...:..numcli..A.N..............password..A.N..............D..........12345....Passw0rdC....SELECT 1.Z....I
+	14:51:13.302531 IP localhost.58094 > localhost.sns-gateway: Flags [.], ack 108, win 88, options [nop,nop,TS val 2307337497 ecr 2307337497], length 0
+	E..4wu@.@..L...........(.CU........X.(.....
+	..-...-.
+	^C
+	3 packets captured
+	6 packets received by filter
+	0 packets dropped by kernel
 
-- Opcion #1
-	validar la termina #1 donde se esta capturando el trafico
 
-- Opcion #2
-	Abre el archivo `sin_tls.pcap` en caso de haber generado el archivo:
-  
-	sudo /sbin/tcpdump -r sin_tls.pcap -A | grep -Ei 'Passw0rd'
-  
-	- **Resultado esperado**: Verás la contraseña en texto plano:
+ ### **5.  Análisis del tráfico crifrado **
+	1.- En este caso nos conectamos de esta forma:
+		psql "sslmode=prefer host=127.0.0.1  port=5416  user=conssl dbname=postgres"  
+	2.- Creamos la tabla temporal
+		create temp table  clientes(numcli int,password text);
+	3.- Insertamos el registro
+		insert into clientes select 12345,'Passw0rd';
 
+	4.- sudo /sbin/tcpdump -i any -s 0 -A 'host 127.0.0.1 && tcp && port 5416'
+
+	5.- Consultamos la tabla 
+		select * from clientes; /*ESTE ES UN COMENTARIO*/
+	6.- Analisamos el trafico.
+		listening on any, link-type LINUX_SLL (Linux cooked v1), capture size 262144 bytes
+		14:58:01.093659 IP localhost.5588 > localhost.sns-gateway: Flags [P.], seq 702641659:702641710, ack 539927623, win 351, options [nop,nop,TS val 2307745288 ecr 2307737001], length 51
+		E..g..@.@._............().u. ..G..._.[.....
+		..f...E........>.=......~....p~yn.O..k.V.....K.k3K|.{...."f
+		14:58:01.094236 IP localhost.sns-gateway > localhost.5588: Flags [P.], seq 1:130, ack 51, win 92, options [nop,nop,TS val 2307745289 ecr 2307745288], length 129
+		E...iV@.@............(.. ..G).v....\.......
+		..f     ..f.....|.~by....E..G ..uc...]X.;|..........F.!....;t.#...K...7........Y........O.BT.`....s.>k......q...hX./y.7.v.....Y.d.....%\.Y...
+		14:58:01.094249 IP localhost.5588 > localhost.sns-gateway: Flags [.], ack 130, win 360, options [nop,nop,TS val 2307745289 ecr 2307745289], length 0
+		E..4..@.@._............().v. ......h.(.....
+		..f     ..f
+		^C
+
+ 	7.- conclusion con el TLS activo no podemos analizar el trafico
 
 ```
 
