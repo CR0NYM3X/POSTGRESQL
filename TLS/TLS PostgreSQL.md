@@ -364,7 +364,7 @@ Parámetros y sus usos:
 
 2. ssl_ca_file
 	¿Para qué sirve? Especifica la ubicación del archivo de la Autoridad de Certificación (CA) que se usa para verificar los certificados de los clientes.
-	Uso recomendado: solo cuando requieras autenticar clientes con certificados.
+	Uso recomendado: solo cuando usar el sslmode verify-full  o verify-ca
 
 3. ssl_cert_file
 	¿Para qué sirve? Define la ruta del certificado SSL del servidor PostgreSQL.
