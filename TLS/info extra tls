@@ -157,10 +157,10 @@ El certificado intermedio (Intermediate CA) es una capa de seguridad entre el Ro
 	pki/
 	├─── root/ #(self-signed)
 	│ ├── root.crt # (self-signed) Certificado Root (distribúyelo a clientes)
-	│ ├── root.key # Clave privada del Root (¡GUÁRDALA OFFLINE!)
+	│ └── root.key # Clave privada del Root (¡GUÁRDALA OFFLINE!)
 	├── intermediate/   # (firmado por Root CA):
 	│ ├── intermediate.crt
-	│ ├── intermediate.key # (usada para firmar servidores).
+	│ └── intermediate.key # (usada para firmar servidores).
 	└── server/ #  (firmado por Intermediate CA)
 		├── server.crt # Certificado del servidor
 		├── server.key # Clave privada del servidor
