@@ -4,6 +4,7 @@ Fase #1 TLS
 ¿Qué es TLS?
   ¿Qué es SSL? 
   Ejemplo de la vida real con y sin TLS
+  versiones de SSL y TLS 
   ¿Dónde se usa el TLS?
   Beneficios de implementar TLS
   Desventajas de usar TLS
@@ -11,9 +12,13 @@ Fase #1 TLS
 
 
 ¿Qué son los certificados?
-      ¿usos comunes donde se usan certificados?
-     ¿Para que sirven?
-     ¿Estructura de un certificado?
+    ¿Para que sirven?
+    ¿Dónde se usa el certificados?
+    ¿tipos de certificados?    
+    ¿Estructura de un certificado?
+
+– Autofiramdos self-signed
+- Entidad o Autoridad Certificadora (Proveedor)
 
 # Administración de certificados 
   PKI 
