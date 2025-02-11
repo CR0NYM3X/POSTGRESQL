@@ -140,7 +140,7 @@ Un certificado TLS contiene información técnica y metadatos que permiten auten
    - Firma digital generada con la clave privada de la CA para validar la autenticidad del certificado.
    
  
-Ejemplo de Estructura con OpenSSL
+### Ejemplo de Estructura con OpenSSL
 Para inspeccionar un certificado:
 ```bash
 openssl x509 -in example_com.crt -text -noout
