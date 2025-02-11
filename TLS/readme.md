@@ -37,9 +37,6 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **📜 ¿Qué es un protocolo?**
 	- **🔍 Características Clave de un Protocolo**
 	- **🔄 Diferencia entre un algoritmo de cifrado y un algoritmo criptográfico**
-	  - Algoritmo de Cifrado
-	  - Algoritmo Criptográfico
-
 	- **🔑 Criptografía Asimétrica y Simétrica**
 	- **🌐 Protocolos que usan criptografía**
 	- **🔒 Tipos de cifrados más utilizados en criptografía**
