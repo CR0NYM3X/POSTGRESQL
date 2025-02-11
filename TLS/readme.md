@@ -30,3 +30,17 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **🧾 Estructura y Características de un Certificado TLS (X.509)**
 	- **🔍 Ejemplo de Estructura con OpenSSL**
 	 
+
+# 📘 Fase #3: Introducción a Criptografía
+
+	- **🔐 ¿Qué es un Protocolo Criptográfico?**
+	- **📜 ¿Qué es un protocolo?**
+	- **🔍 Características Clave de un Protocolo**
+	- **🔄 Diferencia entre un algoritmo de cifrado y un algoritmo criptográfico**
+	  - Algoritmo de Cifrado
+	  - Algoritmo Criptográfico
+
+	- **🔑 Criptografía Asimétrica y Simétrica**
+	- **🌐 Protocolos que usan criptografía**
+	- **🔒 Tipos de cifrados más utilizados en criptografía**
+ 
