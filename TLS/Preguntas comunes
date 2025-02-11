@@ -1,6 +1,4 @@
-
-vim /etc/pki/tls/openssl.cnf
-
+ 
 
 Si tienes políticas de seguridad estrictas, como en entornos financieros o de salud.
 Si necesitas cumplir regulaciones como GDPR o PCI-DSS.
@@ -149,26 +147,7 @@ El certificado intermedio (Intermediate CA) es una capa de seguridad entre el Ro
 			- **`TLS Web Client Authentication`**: Equivale a `clientAuth`.
 
 
-
-	 
-
-# Jerarquía típica:
-```markdown
-	pki/
-	├─── root/ #(self-signed)
-	│ ├── root.crt # (self-signed) Certificado Root (distribúyelo a clientes)
-	│ └── root.key # Clave privada del Root (¡GUÁRDALA OFFLINE!)
-	├── intermediate/   # (firmado por Root CA):
-	│ ├── intermediate.crt
-	│ └── intermediate.key # (usada para firmar servidores).
-	└── server/ #  (firmado por Intermediate CA)
-		├── server.crt # Certificado del servidor
-		├── server.key # Clave privada del servidor
-		└── fullchain.crt # Certificado Serv  + Intermediate
-```
-
-
-
+ 
 
 ### **Consejo de Seguridad**
 Si el `.key` que tienes coincide con el certificado raíz, **¡ten mucho cuidado!** La clave privada del Root CA debe estar protegida y no exponerse en servidores. Si la pierdes o comprometes, toda tu infraestructura de certificados quedará en riesgo.
