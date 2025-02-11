@@ -5,17 +5,17 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
  
 # 📘 #1: Introducción a TLS
 
-### 🔍 ¿Qué es TLS (Transport Layer Security)?
-- **Características y Propósitos Principales de TLS**
+- **🔍 ¿Qué es TLS (Transport Layer Security)?**
+  - Características y Propósitos Principales de TLS
 
-### 🔒 ¿Qué es SSL (Secure Sockets Layer)?
-- **Ejemplo de TLS en la vida real**
-  - ❌ **Sin TLS (sin cifrado):**
-  - ✅ **Con TLS (con cifrado):**
+- **🔒 ¿Qué es SSL (Secure Sockets Layer)?**
+  - Ejemplo de TLS en la vida real
+    - ❌ Sin TLS (sin cifrado):
+    - ✅ Con TLS (con cifrado):
 
-### 🌐 Aplicaciones Comunes de TLS
-### 🛡️ Beneficios de Usar TLS y Por Qué Deberíamos Utilizarlo
-### ⚙️ Resumen Rápido del Funcionamiento de TLS
-### 📊 Diagrama en PlantUML
-### ⚠️ Desventajas de Implementar TLS
+- **🌐 Aplicaciones Comunes de TLS**
+- **🛡️ Beneficios de Usar TLS y Por Qué Deberíamos Utilizarlo**
+- **⚙️ Resumen Rápido del Funcionamiento de TLS**
+- **📊 Diagrama en PlantUML**
+- **⚠️ Desventajas de Implementar TLS**
  
