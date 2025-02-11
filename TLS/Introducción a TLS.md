@@ -96,8 +96,7 @@ end note
 
 @enduml
 ```
- 
- 
+
 
 ## Desventajas de Implementar TLS
 
@@ -110,89 +109,6 @@ end note
 
 
 
-
-
  
---- 
- 
-### 📜 ¿Qué son los certificados?
-
-Los **certificados** son documentos digitales que verifican la identidad de una entidad (como un servidor, un usuario o un dispositivo) en una red. Funcionan como una especie de "pasaporte digital" que asegura que la comunicación entre dos partes es segura y confiable.
-
-### 🔑 Componentes de un certificado
-
-1. **Clave Pública**: Utilizada para cifrar datos que solo pueden ser descifrados por la clave privada correspondiente.
-2. **Clave Privada**: Mantenida en secreto y utilizada para descifrar datos cifrados con la clave pública.
-3. **Firma Digital**: Garantiza la autenticidad del certificado y que no ha sido alterado.
-
-### 🔒 ¿Usan criptografía?
-
-Sí, los certificados utilizan criptografía. Específicamente, emplean criptografía asimétrica, que involucra un par de claves: una clave pública y una clave privada.
-
-### 🎯 ¿Para qué sirven?
-
-Los certificados son esenciales para:
-- **Seguridad**: Protegen la información sensible durante la transmisión.
-- **Confianza**: Aseguran a los usuarios que están comunicándose con la entidad correcta.
-- **Integridad**: Garantizan que los datos no han sido alterados durante la transmisión.
-
-
-### 🛡️ Tipos de certificados
- 
-- **Certificados SSL/TLS**: Los certificados X.509 son utilizados para asegurar la comunicación en sitios web mediante el protocolo SSL/TLS. Estos certificados autentican la identidad del servidor (y opcionalmente del cliente) antes de establecer una conexión segura.
-- **Certificados de Firma de Código**: Los certificados X.509 también se utilizan para verificar la autenticidad del software. Estos certificados aseguran que el código no ha sido alterado desde que fue firmado por el desarrollador.
-- **Certificados de Usuario**: Los certificados X.509 pueden autenticar la identidad de usuarios individuales en diversas aplicaciones, como el acceso a redes privadas o servicios en línea.
-- **Certificados de Correo Electrónico**: Los certificados X.509 se utilizan en protocolos como S/MIME para cifrar y firmar correos electrónicos, asegurando la privacidad y autenticidad de los mensajes.
-
- 
-## 📜 Certificados X.509
-
-Los certificados **X.509** son un estándar internacional definido por la ITU (International Telecommunication Union) que especifica el formato de los certificados de clave pública. Son ampliamente utilizados en muchos protocolos de Internet, incluyendo **TLS/SSL**, que es la base para **HTTPS**.
-
-### 🔍 Características de los certificados X.509
-
-- **Versión**: Indica la versión del estándar X.509.
-- **Número de Serie**: Un identificador único para cada certificado emitido por una autoridad de certificación.
-- **Algoritmo de Firma**: El algoritmo utilizado por la autoridad de certificación para firmar el certificado.
-- **Emisor**: La entidad que emite el certificado.
-- **Período de Validez**: Las fechas de inicio y expiración del certificado.
-- **Sujeto**: La entidad a la que pertenece el certificado.
-- **Clave Pública del Sujeto**: La clave pública utilizada para cifrar datos.
-- **Firma Digital del Emisor**: Garantiza la autenticidad del certificado.
-
-Los certificados X.509 son esenciales para establecer una infraestructura de clave pública (PKI) y asegurar las comunicaciones en la red.
-
-
-### 🏗️ Estructura de un certificado
-
-Un certificado típico contiene:
-- **Información del Sujeto**: Datos sobre la entidad a la que pertenece el certificado.
-- **Clave Pública del Sujeto**: La clave pública utilizada para cifrar datos.
-- **Información del Emisor**: Datos sobre la entidad que emitió el certificado.
-- **Período de Validez**: Las fechas de inicio y expiración del certificado.
-- **Firma Digital del Emisor**: Garantiza la autenticidad del certificado.
- 
- 
-
-
-
-
- 
-
-
-
-
-
-
-
-
- 
-# Referencias extras.
-
-  - **Documentation**  https://www.postgresql.org/docs/
-  - **Transport Layer** Security (TLS) Parameters https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml
-  - **Qué es TLS** https://www.cloudflare.com/es-es/learning/ssl/transport-layer-security-tls/
- **Qué es x.509 Certificado y cómo funciona** https://www.ssldragon.com/es/blog/que-es-certificado-x-509/
- **GDPR**  https://www.powerdata.es/gdpr-proteccion-datos
 
 
