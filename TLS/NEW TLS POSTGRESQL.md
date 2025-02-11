@@ -54,18 +54,82 @@ TLS verifica la identidad de las partes que se comunican. Utiliza certificados d
 
 
 
-## Beneficios de Usar TLS
+## Beneficios de Usar TLS y Por Qué Deberíamos Utilizarlo
 
 - **Seguridad Mejorada**: Protege contra ataques como la interceptación de datos  y la manipulación conocida como (MITM).
 - **Confianza del Usuario**: Los usuarios confían más en sitios web o servicios que utilizan TLS.
 - **Cumplimiento Normativo**: TLS ayuda a cumplir normativas de seguridad  y estándares aplicables, como : 
-    1. **PCI DSS**: El Consejo de Normas de Seguridad de la Industria de Tarjetas de Pago (PCI SSC) proporciona información sobre los requisitos de seguridad para proteger los datos de las cuentas de pago. Puedes visitar su sitio oficial [aquí](https://www.pcisecuritystandards.org/).
+    1. **PCI DSS**: El Consejo de Normas de Seguridad de la Industria de Tarjetas de Pago (PCI SSC) proporciona información sobre los requisitos de seguridad para proteger los datos de las cuentas de pago. Puedes visitar su sitio oficial [aquí](https://www.pcisecuritystandards.org/faq/articles/Frequently_Asked_Question/does-pci-dss-define-which-versions-of-tls-must-be-used/).
     
-    2. **HIPAA**: El Departamento de Salud y Servicios Humanos de los Estados Unidos (HHS) ofrece información sobre la Ley de Portabilidad y Responsabilidad de Seguros de Salud (HIPAA), incluyendo las reglas de seguridad y privacidad. Puedes acceder a su sitio oficial [aquí](https://www.hhs.gov/hipaa/index.html).
+    2. **HIPAA**: El Departamento de Salud y Servicios Humanos de los Estados Unidos (HHS) ofrece información sobre la Ley de Portabilidad y Responsabilidad de Seguros de Salud (HIPAA), incluyendo las reglas de seguridad y privacidad. Puedes acceder a su sitio oficial [aquí](https://www.hhs.gov/hipaa/for-professionals/breach-notification/guidance/index.html).
     
-    3. **NIST**: El Instituto Nacional de Estándares y Tecnología (NIST) desarrolla y mantiene estándares, incluyendo los relacionados con la ciberseguridad y el uso de TLS. Puedes visitar su sitio oficial [aquí](https://www.nist.gov/).
+    3. **NIST**: El Instituto Nacional de Estándares y Tecnología (NIST) desarrolla y mantiene estándares, incluyendo los relacionados con la ciberseguridad y el uso de TLS. Puedes visitar su sitio oficial [aquí](https://csrc.nist.gov/pubs/sp/800/52/r2/final).
+
+ 
+
+## Resumen Rápido del Funcionamiento de TLS
+
+1. **Negociación de la Conexión** 🔄: El cliente y el servidor inician la conexión acordando los parámetros de seguridad, como la versión de TLS y los algoritmos de cifrado a utilizar.
+2. **Intercambio de Claves** 🔑: Se realiza un intercambio de claves criptográficas mediante un protocolo seguro, como el intercambio de claves Diffie-Hellman, para establecer una conexión segura.
+3. **Cifrado de Datos** 🔒: Una vez establecida la conexión segura, los datos se cifran y se transmiten de manera segura entre el cliente y el servidor, protegiendo la información contra interceptaciones y manipulaciones.
+
+**Diagrama en PlantUML**
+```plantuml
+@startuml
+title Proceso Básico de TLS
+
+actor Cliente
+actor Servidor
+
+Cliente -> Servidor: Solicitud de Conexión (ClientHello)
+Servidor -> Cliente: Respuesta de Conexión (ServerHello)
+Servidor -> Cliente: Certificado del Servidor
+Servidor -> Cliente: Solicitud de Clave Pública
+Cliente -> Servidor: Clave Pública del Cliente
+Cliente -> Cliente: Genera Clave Simétrica
+Cliente -> Servidor: Clave Simétrica Cifrada
+Servidor -> Servidor: Desencripta Clave Simétrica
+Cliente -> Servidor: Mensaje Cifrado
+Servidor -> Cliente: Mensaje Cifrado
+
+note right of Cliente
+  1. Negociación de la Conexión
+  2. Intercambio de Claves
+  3. Cifrado de Datos
+end note
+
+@enduml
+```
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  
+# Referencias extras.
+
+  - **Documentation**  https://www.postgresql.org/docs/
+  - **Transport Layer** Security (TLS) Parameters https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml
+  - **Qué es TLS** https://www.cloudflare.com/es-es/learning/ssl/transport-layer-security-tls/
 
 
