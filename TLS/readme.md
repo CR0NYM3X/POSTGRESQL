@@ -31,7 +31,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **🔍 Ejemplo de Estructura con OpenSSL**
 	 
 
-# 📘 Fase #3: Introducción a Criptografía
+# 📘 #3: Introducción a Criptografía
 
 	- **🔐 ¿Qué es un Protocolo Criptográfico?**
 	- **📜 ¿Qué es un protocolo?**
