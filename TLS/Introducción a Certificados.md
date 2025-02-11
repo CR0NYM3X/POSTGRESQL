@@ -45,13 +45,7 @@ Los certificados son esenciales para:
    - **Uso**: Utilizados para autenticar y cifrar conexiones SSH.
    - **Modelo**: No siguen el estándar X.509, sino que utilizan su propio formato.
 
-4. **🖊️ Certificados de Firma de Código**:
-   - **Uso**: Utilizados para firmar digitalmente software y scripts.
-   - **Modelo**: Aseguran que el código no ha sido alterado desde su firma.
-
-5. **👤 Certificados de Autenticación de Cliente**:
-   - **Uso**: Utilizados para autenticar usuarios en aplicaciones y servicios.
-   - **Modelo**: Pueden estar basados en X.509 o en otros estándares.
+ 
 
 ### 🔐 Tipos de Certificados para TLS
 
@@ -91,28 +85,111 @@ Los certificados son esenciales para:
 ## 📜 Certificados X.509
 
 Los certificados **X.509** son un estándar internacional definido por la ITU (International Telecommunication Union) y normalizados para su uso en Infraestructuras de Clave Pública (PKI) que especifica el formato de los certificados de clave pública. Son ampliamente utilizados en muchos protocolos de Internet, incluyendo **TLS/SSL** 
-
-### 🔍 Características de los certificados X.509
-
-- **Versión**: Indica la versión del estándar X.509.
-- **Número de Serie**: Un identificador único para cada certificado emitido por una autoridad de certificación.
-- **Algoritmo de Firma**: El algoritmo utilizado por la autoridad de certificación para firmar el certificado.
-- **Emisor**: La entidad que emite el certificado.
-- **Período de Validez**: Las fechas de inicio y expiración del certificado.
-- **Sujeto**: La entidad a la que pertenece el certificado.
-- **Clave Pública del Sujeto**: La clave pública utilizada para cifrar datos.
-- **Firma Digital del Emisor**: Garantiza la autenticidad del certificado.
-
-Los certificados X.509 son esenciales para establecer una infraestructura de clave pública (PKI) y asegurar las comunicaciones en la red.
-
-
-### 🏗️ Estructura de un certificado
-
-Un certificado típico contiene:
-- **Información del Sujeto**: Datos sobre la entidad a la que pertenece el certificado.
-- **Clave Pública del Sujeto**: La clave pública utilizada para cifrar datos.
-- **Información del Emisor**: Datos sobre la entidad que emitió el certificado.
-- **Período de Validez**: Las fechas de inicio y expiración del certificado.
-- **Firma Digital del Emisor**: Garantiza la autenticidad del certificado.
  
+
+
+## 🔍 **Estructura y Características de un Certificado TLS (X.509)**
+Un certificado TLS contiene información técnica y metadatos que permiten autenticar un servidor o entidad. Su estructura se divide en secciones clave:
+
+
+  **1. Versión del Certificado**
+   - Indica la versión del estándar X.509 usado (ej: v3, la más común).
+   
+   
+  **2. Número de Serie**
+   - Identificador único asignado por la CA para distinguir certificados.
+
+  **3. Algoritmo de Firma**
+   - Algoritmo usado por la CA para firmar el certificado (ej: `SHA256-RSA`, `ECDSA`).
+
+  **4. Emisor (Issuer)**
+   - Información de la CA que emitió el certificado, en formato **DN (Distinguished Name)**:
+     - `CN` (Common Name): Nombre de la CA (ej: `DigiCert Global Root CA`).
+     - `O` (Organization): Organización emisora.
+     - `C` (Country): País.
+     - `L` (Locality): Localidad.
+
+  **5. Validez**
+   - Período de vigencia del certificado:
+     - `Not Before`: Fecha de inicio.
+     - `Not After`: Fecha de expiración.
+
+  **6. Sujeto (Subject)**
+   - Información de la entidad propietaria del certificado (ej: un dominio):
+     - `CN`: Nombre común (ej: `*.example.com` para certificados wildcard).
+     - `O`, `C`, `L`: Datos de la organización.
+
+
+  **7. Clave Pública del Sujeto**
+   - Contiene:
+     - **Algoritmo de clave pública** (ej: RSA, ECDSA).
+     - **Clave pública** del servidor (en formato PEM o DER).
+
  
+  **8. Extensiones (X.509 v3)**
+   - Campos adicionales críticos para seguridad y funcionalidad:
+     - **Subject Alternative Names (SAN)**: Lista de dominios cubiertos (ej: `DNS:example.com`, `DNS:www.example.com`).
+     - **Key Usage**: Uso permitido de la clave (ej: `Digital Signature`, `Key Encipherment`).
+     - **Extended Key Usage**: Casos específicos (ej: `TLS Web Server Authentication`).
+     - **Basic Constraints**: Indica si el certificado es de una CA (generalmente `CA:FALSE` para certificados de servidor).
+     - **CRL Distribution Points**: URL para listas de revocación (CRL).
+     - **Authority Key Identifier**: Identificador de la CA que lo firmó.
+     - **Certificate Policies**: Políticas de la CA (ej: `2.23.140.1.2.1` para certificados validados por dominio).
+ 
+  **9. Firma de la CA**
+   - Firma digital generada con la clave privada de la CA para validar la autenticidad del certificado.
+   
+ 
+Ejemplo de Estructura con OpenSSL
+Para inspeccionar un certificado:
+```bash
+openssl x509 -in example_com.crt -text -noout
+```
+Salida relevante:
+
+```plaintext
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            04:92:4b:7e:8b:6a:2e:3d:1a:2b:3c:4d:5e:6f:7a:8b
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=US, O=DigiCert Inc, CN=DigiCert Global Root CA
+        Validity
+            Not Before: Jan  1 00:00:00 2023 GMT
+            Not After : Dec 31 23:59:59 2025 GMT
+        Subject: C=US, ST=California, L=San Francisco, O=Example Inc, CN=*.example.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:af:82:3b:4c:5d:6e:7f:8a:9b:ac:bd:ce:df:ef:
+                    00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:
+                    ...
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Alternative Name: 
+                DNS:example.com, DNS:www.example.com
+            X509v3 Key Usage: 
+                Digital Signature, Key Encipherment
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication, TLS Web Client Authentication
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 CRL Distribution Points: 
+                URI:http://crl3.digicert.com/ExampleRootCA.crl
+            Authority Information Access: 
+                OCSP - URI:http://ocsp.digicert.com
+                CA Issuers - URI:http://cacerts.digicert.com/ExampleRootCA.crt
+            X509v3 Authority Key Identifier: 
+                keyid:AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90:AB:CD:EF:12
+            X509v3 Certificate Policies: 
+                Policy: 2.23.140.1.2.1
+    Signature Algorithm: sha256WithRSAEncryption
+         00:ab:cd:ef:12:34:56:78:90:ab:cd:ef:12:34:56:78:
+         90:ab:cd:ef:12:34:56:78:90:ab:cd:ef:12:34:56:78:
+         ...
+```
+ 
+
+
