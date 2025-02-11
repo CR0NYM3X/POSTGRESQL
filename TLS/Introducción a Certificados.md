@@ -1,6 +1,7 @@
 
 ### 📜 ¿Qué son los certificados?
-Los **certificados** son documentos digitales que verifican la identidad de una entidad (como un servidor, un usuario o un dispositivo) en una red. Funcionan como una especie de "pasaporte digital" que asegura que la comunicación entre dos partes es segura y confiable. Utilizan **criptografía de clave pública** para cifrar y firmar digitalmente la información, garantizando así la autenticidad y la integridad de los datos transmitidos.
+Los certificados digitales son documentos electrónicos que utilizan criptografía para asegurar la identidad de una entidad (como un servidor, un usuario o un dispositivo) y proteger la información transmitida en una red. Estos certificados emplean varios tipos de protocolos criptográficos para garantizar la seguridad.
+
 
 ### 🔑 Componentes de un certificado
 
