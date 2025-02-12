@@ -105,10 +105,12 @@ Un certificado TLS contiene información técnica y metadatos que permiten auten
 
   **4. Emisor (Issuer)**
    - Información de la CA que emitió el certificado, en formato **DN (Distinguished Name)**:
-     - `CN` (Common Name): Nombre de la CA (ej: `DigiCert Global Root CA`).
-     - `O` (Organization): Organización emisora.
-     - `C` (Country): País.
-     - `L` (Locality): Localidad.
+     - **C (Country)**:  Especifica el país de la entidad estándar ISO 3166 (por ejemplo, "US" para Estados Unidos, "MX" para México).
+     - **ST (State or Province)**:  Indica el estado o provincia de la entidad. Nombre completo del estado o provincia (por ejemplo, "California").
+     - **L (Locality)**: Especifica la localidad o ciudad de la entidad. Nombre completo de la ciudad (por ejemplo, "San Francisco").
+     - **O (Organization)**:  Indica el nombre de la organización a la que pertenece la entidad. Nombre completo de la organización (por ejemplo, "Example Corp").
+     - **OU (Organizational Unit)**: Especifica la unidad organizativa dentro de la organización. Nombre de la unidad organizativa (por ejemplo, "IT Department").
+     - **CN (Common Name)**: Es el nombre común de la entidad y suele ser el nombre del servidor o el dominio para el cual se emite el certificado.  Nombre completo del dominio o servidor (por ejemplo, "www.example.com").
 
   **5. Validez**
    - Período de vigencia del certificado:
