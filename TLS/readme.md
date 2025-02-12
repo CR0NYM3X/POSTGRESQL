@@ -41,3 +41,24 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **🌐 Protocolos que usan criptografía**
 	- **🔒 Tipos de cifrados más utilizados en criptografía**
  
+# 📘 #4 Introducción a la Gestión de Certificados
+
+	- 📜 **¿Qué es la gestión de certificados?**
+	- 🎯 **¿Para qué sirve la gestión de certificados?**
+	- 🌟 **Ventajas de la gestión de certificados**
+	- 🕒 **¿Cuándo usar la gestión de certificados?**
+	- 🚫 **¿Cuándo no usar la gestión de certificados?**
+	- 🔑 **¿Qué es PKI y para qué sirve?**
+	- 🌟 **Ventajas**
+	- 🚫 **Desventajas**
+	- 🕒 **¿Cuándo considerar implementar una PKI?**
+	- 🚫 **¿Cuándo no es ideal?**
+	- 📋 **Componentes de PKI**
+	- 🔒 **PKI Privada vs. PKI Pública**
+	- 💼 **Sistemas de Gestión de PKI (De paga)**
+	- 🛠️ **Herramientas de Gestión de Certificados**
+	- ⚖️ **Herramientas de Gestión vs. Sistemas PKI**
+	- 📂 **Formatos de certificados SSL y extensiones de archivos de certificados**
+	- 🏢 **Jerarquía típica**
+	- ❓ **¿Qué es un CRL?**
+	- ❓ **¿Por qué es importante?**
