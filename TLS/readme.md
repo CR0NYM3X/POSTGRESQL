@@ -69,13 +69,12 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	  - ❌ **Desventajas de OCSP**
  
  
+# 📘 #5  Creación de Certificados TLS
 
-
-
-# 📘 #5  Implementacion de TLS en postgresql 
-# 📘 #6  Medidas de seguridad y recomendaciones
-# 📘 #7  Preguntas comunes
-# 📘 #8  Aprendiendo usar TCPDump (Extra)
+# 📘 #6  Implementacion de TLS en postgresql 
+# 📘 #7  Medidas de seguridad y recomendaciones
+# 📘 #8  Preguntas comunes
+# 📘 #9  Aprendiendo usar TCPDump (Extra)
 
  
 # Referencias extras.
