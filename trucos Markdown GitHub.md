@@ -1,115 +1,66 @@
 # trucos Markdown GitHub
-
-
+ 
 ```stl
-solid house_example
-  facet normal 0.0 0.0 1.0
+ solid pyramid
+  facet normal 0 0 0
     outer loop
-      vertex 0.0 0.0 0.0   // Punto A
-      vertex 2.0 0.0 0.0   // Punto B
-      vertex 2.0 1.0 0.0   // Punto C
+      vertex 0 0 0
+      vertex 1 0 0
+      vertex 0.5 0.5 1
     endloop
   endfacet
-  facet normal 0.0 0.0 1.0
+  facet normal 0 0 0
     outer loop
-      vertex 0.0 0.0 0.0   // Punto A
-      vertex 2.0 1.0 0.0   // Punto C
-      vertex 0.0 1.0 0.0   // Punto D
+      vertex 1 0 0
+      vertex 1 1 0
+      vertex 0.5 0.5 1
     endloop
   endfacet
-  facet normal 0.0 0.0 -1.0
+  facet normal 0 0 0
     outer loop
-      vertex 0.0 0.0 1.0   // Punto E
-      vertex 2.0 0.0 1.0   // Punto F
-      vertex 2.0 1.0 1.0   // Punto G
+      vertex 1 1 0
+      vertex 0 1 0
+      vertex 0.5 0.5 1
     endloop
   endfacet
-  facet normal 0.0 0.0 -1.0
+  facet normal 0 0 0
     outer loop
-      vertex 0.0 0.0 1.0   // Punto E
-      vertex 2.0 1.0 1.0   // Punto G
-      vertex 0.0 1.0 1.0   // Punto H
+      vertex 0 1 0
+      vertex 0 0 0
+      vertex 0.5 0.5 1
     endloop
   endfacet
-  facet normal -1.0 0.0 0.0
+  facet normal 0 0 0
     outer loop
-      vertex 0.0 0.0 0.0   // Punto A
-      vertex 0.0 1.0 0.0   // Punto D
-      vertex 0.0 1.0 1.0   // Punto H
+      vertex 0 0 0
+      vertex 1 0 0
+      vertex 1 1 0
+      vertex 0 1 0
     endloop
   endfacet
-  facet normal -1.0 0.0 0.0
-    outer loop
-      vertex 0.0 0.0 0.0   // Punto A
-      vertex 0.0 1.0 1.0   // Punto H
-      vertex 0.0 0.0 1.0   // Punto E
-    endloop
-  endfacet
-  facet normal 1.0 0.0 0.0
-    outer loop
-      vertex 2.0 0.0 0.0   // Punto B
-      vertex 2.0 1.0 0.0   // Punto C
-      vertex 2.0 1.0 1.0   // Punto G
-    endloop
-  endfacet
-  facet normal 1.0 0.0 0.0
-    outer loop
-      vertex 2.0 0.0 0.0   // Punto B
-      vertex 2.0 1.0 1.0   // Punto G
-      vertex 2.0 0.0 1.0   // Punto F
-    endloop
-  endfacet
-  // Techo
-  facet normal 0.0 1.0 0.0
-    outer loop
-      vertex 0.0 1.0 0.0   // Punto D
-      vertex 2.0 1.0 0.0   // Punto C
-      vertex 2.0 1.0 1.0   // Punto G
-    endloop
-  endfacet
-  facet normal 0.0 1.0 0.0
-    outer loop
-      vertex 0.0 1.0 0.0   // Punto D
-      vertex 2.0 1.0 1.0   // Punto G
-      vertex 0.0 1.0 1.0   // Punto H
-    endloop
-  endfacet
-  // Puerta
-  facet normal 0.0 -1.0 0.0
-    outer loop
-      vertex 0.8 0.0 0.0   // Punto I
-      vertex 1.2 0.0 0.0   // Punto J
-      vertex 1.2 0.6 0.0   // Punto K
-    endloop
-  endfacet
-  facet normal 0.0 -1.0 0.0
-    outer loop
-      vertex 0.8 0.0 0.0   // Punto I
-      vertex 1.2 0.6 0.0   // Punto K
-      vertex 0.8 0.6 0.0   // Punto L
-    endloop
-  endfacet
-  // Ventana
-  facet normal 0.0 0.0 -1.0
-    outer loop
-      vertex 1.5 0.3 1.0   // Punto M
-      vertex 1.7 0.3 1.0   // Punto N
-      vertex 1.7 0.5 1.0   // Punto O
-    endloop
-  endfacet
-  facet normal 0.0 0.0 -1.0
-    outer loop
-      vertex 1.5 0.3 1.0   // Punto M
-      vertex 1.7 0.5 1.0   // Punto O
-      vertex 1.5 0.5 1.0   // Punto P
-    endloop
-  endfacet
-endsolid
+endsolid pyramid
 
 ```
+
+
+
 ```SQL 
 SELECT * FROM TABLAS WHERE NOMBRE= 'JOOSE;'
 ```
+
+
+1. **titulo** 
+   ```sql
+   texto
+   ```
+   
+
+# ABC
+## ABC
+### ABC
+#### ABC
+##### ABC
+###### ABC
 
 
 MANUAL :  https://docs.github.com/es/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
