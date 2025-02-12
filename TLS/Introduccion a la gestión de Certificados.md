@@ -178,10 +178,10 @@ Las herramientas que mencionaste (HashiCorp Vault, Ansible, Puppet, OpenSSL, Cer
  
  
 
- ### 🗂️ [**Formatos de certificados SSL y extensiones de archivos de certificados**](https://www.ssldragon.com/es/blog/formatos-certificados-ssl/)
+ ### 🗂️ [**Formatos y Extensiones de certificados SSL y extensiones de archivos de certificados**](https://www.ssldragon.com/es/blog/formatos-certificados-ssl/)
 | Extensión | Descripción |
 |-----------|-------------|
-| **.pem**  | Privacy-Enhanced Mail. Es el formato más común para certificados SSL/TLS. Utiliza codificación Base64, el archivo contine el certificados y la claves privadas y cadenas de certificados, estan protegiadas con una contraseña por lo que cada vez que la usas solicita una contraseña. Es ampliamente utilizado en servidores Apache y otros sistemas Unix/Linux. |
+| [**.pem**](https://www.ssldragon.com/es/blog/pem-archivo/)  | Privacy-Enhanced Mail. Es el formato más común para certificados SSL/TLS. Utiliza codificación Base64, el archivo contine el certificados y la claves privadas y cadenas de certificados, estan protegiadas con una contraseña por lo que cada vez que la usas solicita una contraseña. Es ampliamente utilizado en servidores Apache y otros sistemas Unix/Linux. |
 | **.der**  | Distinguished Encoding Rules. Es un formato binario que no es legible como texto. Se utiliza principalmente en plataformas Java y en sistemas Windows. Las extensiones comunes para este formato son .der y .cer. |
 | **.p7b** o **.p7c** | PKCS#7. Este formato puede contener uno o más certificados en codificación Base64 ASCII. No incluye la clave privada y se utiliza comúnmente en plataformas Windows y Java. |
 | **.pfx** o **.p12** | PKCS#12. Es un formato binario que puede contener el certificado, la clave privada y la cadena de certificados. Es utilizado principalmente en sistemas Windows para importar y exportar certificados y claves privadas. |
@@ -189,6 +189,89 @@ Las herramientas que mencionaste (HashiCorp Vault, Ansible, Puppet, OpenSSL, Cer
 | **.crl**  | Certificate Revocation List. Es una lista negra de certificados que ya no se pueden usar  |
 | **.csr**  | Certificate Signing Request. Es un archivo que contiene una solicitud de firma de certificado, incluyendo la clave pública y la información de identificación del solicitante. |
 | **.key**  | Archivo que contiene una clave privada. Se utiliza junto con un certificado para establecer conexiones seguras.  (¡nunca compartir!). |
+
+
+#  [¿Qué son los archivos PEM?](https://www.ssldragon.com/es/blog/pem-archivo/)
+archivos .pem es la extensión más común, los archivos PEM también pueden tener extensiones .crt, .cer y .key, dependiendo del contenido específico
+
+- **Formato**: Los archivos PEM son archivos de texto plano codificados en Base64 que pueden contener en el mismo archivo certificados, claves privadas y otros datos criptográficos.
+- **Usos Comunes**: Son ampliamente utilizados para almacenar certificados y claves privadas en un formato legible y editable.
+- **Compatibilidad**: PostgreSQL y muchas otras aplicaciones soportan archivos PEM para configurar TLS/SSL.
+
+
+**Ventajas**:
+- **Simplicidad**: Un solo archivo para gestionar, lo que simplifica la configuración y el mantenimiento.
+- **Compatibilidad**: Ampliamente compatible con muchas aplicaciones y servidores.
+- **Legibilidad**: Fácil de leer y editar con cualquier editor de texto.
+
+**Desventajas**:
+- **Seguridad**: Si el archivo PEM contiene una clave privada cifrada, necesitarás usar los parámetros `ssl_passphrase_command` y `ssl_passphrase_command_supports_reload` para automatizar la obtención de la frase de contraseña.
+- **Riesgo de Exposición**: Si el archivo no está cifrado, la clave privada está expuesta en texto plano.
+
+
+
+**Ejemplo de Contenido**:
+```plaintext
+
+
+- Certificado PEM:
+
+-----BEGIN CERTIFICATE-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7V1...
+-----END CERTIFICATE-----
+
+
+-  clave privada PEM:
+
+-----BEGIN ENCRYPTED PRIVATE KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7V1...
+-----END ENCRYPTED PRIVATE KEY-----
+
+```
+ 
+
+**Ejemplo de Configuración en PostgreSQL**:
+
+```plaintext
+ssl_cert_file = '/path/to/server.pem'
+ssl_key_file = '/path/to/server.pem'
+
+# Necesario para colocar la contraseña de manera automatica
+ssl_passphrase_command_supports_reload = on
+ssl_passphrase_command = '/path/to/get_passphrase.sh'
+```
+ 
+ 
+### Archivos PEM por Separados (CRT y KEY) 📂
+
+- **Formato**: Los archivos CRT son esencialmente certificados en formato PEM, pero con una extensión diferente. A menudo se utilizan unicamente para almacenar certificados de servidor.
+- **Usos Comunes**: Se utilizan principalmente para certificados de servidor y certificados intermedios.
+- **Compatibilidad**: También son compatibles con PostgreSQL y otras aplicaciones para configurar TLS/SSL.
+
+
+**Ventajas**:
+- **Seguridad Mejorada**: Permite aplicar diferentes permisos de acceso a cada archivo, mejorando la seguridad.
+- **Flexibilidad**: Facilita la actualización del certificado sin cambiar la clave privada.
+- **Cumplimiento Normativo**: Ayuda a cumplir con políticas de seguridad que requieren la separación de certificados y claves privadas.
+
+**Desventajas**:
+- **Complejidad**: Requiere gestionar múltiples archivos, lo que puede complicar la configuración y el mantenimiento.
+- **Compatibilidad**: Aunque es compatible con PostgreSQL, puede requerir configuraciones adicionales en algunos casos.
+
+
+**Ejemplo de Configuración en PostgreSQL**:
+```plaintext
+ssl_cert_file = '/path/to/server.crt'
+ssl_key_file = '/path/to/server.key'
+```
+ 
+ 
+
+
+
+
+
+
 
 
 
