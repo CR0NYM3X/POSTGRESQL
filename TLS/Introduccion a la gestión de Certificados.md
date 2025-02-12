@@ -237,7 +237,7 @@ Un **CRL (Lista de Revocación de Certificados)** Es un archivo que es como una 
 
   
 ### Método de revocacion  OCSP 📜
-**Online Certificate Status Protocol (OCSP)**  es un protocolo diseñado para determinar en tiempo real si un certificado digital sigue siendo válido o ha sido revocado. Funciona enviando una solicitud a un servidor OCSP (conocido como "respondedor OCSP") que verifica el estado del certificado y devuelve una respuesta. [1](https://www.sectigo.com/es/recursos/ocsp-stapling-seguridad-certificados-online) [2](https://www.ssldragon.com/es/blog/que-es-el-ocsp/)
+**Online Certificate Status Protocol (OCSP)**  es un protocolo diseñado para determinar en tiempo real si un certificado digital sigue siendo válido o ha sido revocado. Funciona enviando una solicitud a un servidor OCSP (conocido como "respondedor OCSP") que verifica el estado del certificado y devuelve una respuesta. [[1]](https://www.sectigo.com/es/recursos/ocsp-stapling-seguridad-certificados-online) [[2]](https://www.ssldragon.com/es/blog/que-es-el-ocsp/)
 
 ### ¿Para qué sirve OCSP? 🎯
 - **Verificación en Tiempo Real**: Permite a los clientes (como navegadores web) verificar el estado de un certificado digital en tiempo real.
