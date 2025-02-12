@@ -28,6 +28,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **📜 Certificados X.509**
 	- **🧾 Estructura y Características de un Certificado TLS (X.509)**
 	- **🔍 Ejemplo de Estructura con OpenSSL**
+ 	- **Mejores proveedores de certificados SSL**
 	 
 
 # 📘 #3: Introducción a Criptografía
