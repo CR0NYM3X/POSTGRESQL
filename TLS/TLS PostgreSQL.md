@@ -1,34 +1,4 @@
  
- 
-# TLS
-
-## Parámetro `ssl_min_protocol_version` (El valor predeterminado es TLSv1)
-
-| Versión de PostgreSQL | Valores posibles para `ssl_min_protocol_version` |
-|-----------------------|--------------------------------------------------|
-| 10                    | No disponible                                    |
-| 11                    | No disponible (puedes activar TLS pero no usa)   |
-| 12                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
-| 13                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
-| 14                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
-| 15                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
-| 16                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
-| 17                    | TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3               |
-
-## Versiones compatibles de TLS para diferentes versiones de PostgreSQL (El valor predeterminado es TLSv1)
-
-- **PostgreSQL 8.x**: Soporta TLS 1.0.
-- **PostgreSQL 9.x**: Soporta TLS 1.0 y TLS 1.1.
-- **PostgreSQL 10.x**: Soporta TLS 1.0, TLS 1.1.
-- **PostgreSQL 11.x**: Soporta TLS 1.0, TLS 1.1.
-- **PostgreSQL 12.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-- **PostgreSQL 13.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-- **PostgreSQL 14.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-- **PostgreSQL 15.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-- **PostgreSQL 16.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
-- **PostgreSQL 17.x**: Soporta TLS 1.0, TLS 1.1, TLS 1.2 y TLS 1.3.
- 
-
 
 # Pasos para implementar TLS en Postgresql
 
