@@ -62,3 +62,18 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- 🏢 **Jerarquía típica**
 	- ❓ **¿Qué es un CRL?**
 	- ❓ **¿Por qué es importante?**
+
+
+
+
+
+ 
+# Referencias extras.
+
+  - **Documentation PostgreSQL**  https://www.postgresql.org/docs/
+  - **Transport Layer** Security (TLS) Parameters https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml
+  - **Qué es TLS** https://www.cloudflare.com/es-es/learning/ssl/transport-layer-security-tls/
+  - **Qué es x.509 Certificado y cómo funciona** https://www.ssldragon.com/es/blog/que-es-certificado-x-509/
+  - **GDPR**  https://www.powerdata.es/gdpr-proteccion-datos
+  - **¿Qué es la PKI?** https://www.digicert.com/es/what-is-pki
+
