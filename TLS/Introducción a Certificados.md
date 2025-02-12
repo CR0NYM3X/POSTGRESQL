@@ -48,7 +48,7 @@ Los certificados son esenciales para:
 
  
 
-### 🔐 Tipos de Certificados para TLS
+### 🔐 [Tipos de Certificados para TLS](https://www.ssldragon.com/es/blog/tipos-certificados-ssl)
 
 1. **🌐 Certificados DV (Domain Validation)**:
    - **Uso**: Blogs, sitios web personales.
@@ -79,8 +79,8 @@ Los certificados son esenciales para:
    - **Ejemplo**: Comunicaciones seguras por correo electrónico en entornos corporativos.
 
 8. **🌐 Certificados de IP**:
-   - **Uso**: Protegen direcciones IP en lugar de nombres de dominio.
-   - **Ejemplo**: Útiles para servidores que se acceden directamente por IP.
+   - **Uso**: Protegen direcciones IP Publicas en lugar de nombres de dominio.
+   - **Ejemplo**: Útiles para servidores que se acceden directamente por IP y no por un dominio.
 
  
 ## 📜 Certificados X.509
