@@ -130,9 +130,11 @@ ssl = on
 ssl_cert_file = 'server.crt'
 ssl_key_file = 'server.key'
 ssl_min_protocol_version = 'TLSv1.2'
+ssl_max_protocol_version = 'TLSv1.3'
+ssl_prefer_server_ciphers = on
 ssl_ciphers = 'HIGH:!aNULL:!MD5:!3DES:!RC4:!DES:!IDEA:!RC2' # Este para entornos Criticos
 ###  ssl_ciphers = 'HIGH:MEDIUM:!aNULL:!MD5:!RC4' # Este para entornos Normales
-ssl_prefer_server_ciphers = on
+
 ```
 
 
