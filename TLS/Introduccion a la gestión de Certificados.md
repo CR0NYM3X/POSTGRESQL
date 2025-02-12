@@ -181,7 +181,7 @@ Las herramientas que mencionaste (HashiCorp Vault, Ansible, Puppet, OpenSSL, Cer
  ### 🗂️ [**Formatos de certificados SSL y extensiones de archivos de certificados**](https://www.ssldragon.com/es/blog/formatos-certificados-ssl/)
 | Extensión | Descripción |
 |-----------|-------------|
-| **.pem**  | Privacy-Enhanced Mail. Es el formato más común para certificados SSL/TLS. Utiliza codificación Base64 y puede contener certificados, claves privadas y cadenas de certificados. Es ampliamente utilizado en servidores Apache y otros sistemas Unix/Linux. |
+| **.pem**  | Privacy-Enhanced Mail. Es el formato más común para certificados SSL/TLS. Utiliza codificación Base64, el archivo contine el certificados y la claves privadas y cadenas de certificados, estan protegiadas con una contraseña por lo que cada vez que la usas solicita una contraseña. Es ampliamente utilizado en servidores Apache y otros sistemas Unix/Linux. |
 | **.der**  | Distinguished Encoding Rules. Es un formato binario que no es legible como texto. Se utiliza principalmente en plataformas Java y en sistemas Windows. Las extensiones comunes para este formato son .der y .cer. |
 | **.p7b** o **.p7c** | PKCS#7. Este formato puede contener uno o más certificados en codificación Base64 ASCII. No incluye la clave privada y se utiliza comúnmente en plataformas Windows y Java. |
 | **.pfx** o **.p12** | PKCS#12. Es un formato binario que puede contener el certificado, la clave privada y la cadena de certificados. Es utilizado principalmente en sistemas Windows para importar y exportar certificados y claves privadas. |
