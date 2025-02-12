@@ -193,7 +193,7 @@ Las herramientas que mencionaste (HashiCorp Vault, Ansible, Puppet, OpenSSL, Cer
 
 
 
-# Jerarquía típica:
+# Jerarquía de PKI:
 ```markdown
 	pki/
 	├─── Root/ 
@@ -208,6 +208,69 @@ Las herramientas que mencionaste (HashiCorp Vault, Ansible, Puppet, OpenSSL, Cer
 			├── server.crl 
 			└── fullchain.crt 
 ```
+
+
+
+
+
+
+### Root/
+#### root.crt
+- **Propósito**: Es el certificado de la Autoridad de Certificación Raíz (Root CA).
+- **Función o Uso**: Verifica la autenticidad de todos los certificados emitidos por la CA raíz y las CAs intermedias.
+- **Contenido**: Contiene la clave pública de la CA raíz y la información de la entidad emisora.
+- **Importancia**: Es el pilar de confianza en la jerarquía PKI. Si este certificado es comprometido, toda la cadena de confianza se ve afectada.
+
+#### root.key
+- **Propósito**: Es la clave privada de la Autoridad de Certificación Raíz.
+- **Función o Uso**: Se utiliza para firmar digitalmente los certificados emitidos por la CA raíz y las CAs intermedias.
+- **Contenido**: Contiene la clave privada de la CA raíz.
+- **Importancia**: Debe mantenerse extremadamente segura y protegida, ya que su compromiso puede permitir la emisión de certificados falsos.
+
+
+### Intermediate/
+#### intermediate.crt
+- **Propósito**: Es el certificado de la Autoridad de Certificación Intermedia (Intermediate CA).
+- **Función o Uso**: Verifica la autenticidad de los certificados emitidos por la CA intermedia.
+- **Contenido**: Contiene la clave pública de la CA intermedia y la información de la entidad emisora.
+- **Importancia**: Permite delegar la emisión de certificados, mejorando la seguridad y la gestión de la PKI.
+- **Delegación de Funciones:** En lugar de utilizar el certificado raíz (root.crt) para emitir certificados de usuario final directamente, se utilizan certificados intermedios. Esto reduce el riesgo de comprometer el certificado raíz, ya que este se mantiene más seguro y aislado.
+- **Compromiso Controlado:** Si una CA intermedia es comprometida, solo los certificados emitidos por esa CA intermedia se ven afectados, no toda la cadena de confianza. Esto limita el alcance del daño potencial.
+
+#### intermediate.key
+- **Propósito**: Es la clave privada de la Autoridad de Certificación Intermedia.
+- **Función o Uso**: Se utiliza para firmar digitalmente los certificados emitidos por la CA intermedia.
+- **Contenido**: Contiene la clave privada de la CA intermedia.
+- **Importancia**: Debe mantenerse segura para evitar la emisión de certificados no autorizados.
+
+### Server/
+#### server.crt
+- **Propósito**: Es el certificado del servidor.
+- **Función o Uso**: Verifica la identidad del servidor ante los clientes y permite establecer conexiones seguras (HTTPS).
+- **Contenido**: Contiene la clave pública del servidor, el nombre del dominio y la información de la entidad emisora.
+- **Importancia**: Es esencial para establecer conexiones seguras y cifradas entre el servidor y los clientes.
+
+#### server.key
+- **Propósito**: Es la clave privada del servidor.
+- **Función o Uso**: Se utiliza para descifrar la información recibida y firmar digitalmente la información enviada.
+- **Contenido**: Contiene la clave privada del servidor.
+- **Importancia**: Debe mantenerse segura para proteger la integridad y confidencialidad de las comunicaciones del servidor.
+
+#### server.crl
+- **Propósito**: Es la Lista de Revocación de Certificados (CRL) del servidor.
+- **Función o Uso**: Lista los certificados que han sido revocados antes de su fecha de expiración.
+- **Contenido**: Contiene los números de serie de los certificados revocados y la fecha de revocación.
+- **Importancia**: Permite a los clientes verificar si un certificado ha sido revocado, manteniendo la integridad y seguridad de la PKI.
+
+
+
+
+
+
+
+
+
+
 
 
 # Métodos de revocación o validación de certificados 
