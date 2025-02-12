@@ -59,8 +59,17 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- ⚖️ **Herramientas de Gestión vs. Sistemas PKI**
 	- 📂 **Formatos de certificados SSL y extensiones de archivos de certificados**
 	- 🏢 **Jerarquía típica**
-	- ❓ **¿Qué es un CRL?**
-	- ❓ **¿Por qué es importante?**
+	- 🔒 **Métodos de revocación o validación de certificados**
+	- 📜 **Método de revocación CRL**
+	  - ✅ **Ventajas de CRL**
+	  - ❌ **Desventajas de CRL**
+	- 🌐 **Método de revocación OCSP**
+	  - ❓ **¿Para qué sirve OCSP?**
+	  - ✅ **Ventajas de OCSP**
+	  - ❌ **Desventajas de OCSP**
+ 
+ 
+
 
 
 # 📘 #5  Implementacion de TLS en postgresql 
