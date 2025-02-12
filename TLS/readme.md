@@ -1,7 +1,6 @@
 En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport Layer Security). Desde los conceptos básicos hasta los detalles técnicos más avanzados, te guiaremos para que entiendas y domines todos los aspectos relacionados con TLS. Además, aprenderás cómo implementar TLS en PostgreSQL, asegurando que tus bases de datos estén protegidas y cumplan con los más altos estándares de seguridad.
 
-
-
+ 
  
 # 📘 #1: Introducción a TLS
 
@@ -64,8 +63,10 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- ❓ **¿Por qué es importante?**
 
 
-
-
+# 📘 #5  Implementacion de TLS en postgresql 
+# 📘 #6  Medidas de seguridad y recomendaciones
+# 📘 #7  Preguntas comunes
+# 📘 #8  Aprendiendo usar TCPDump
 
  
 # Referencias extras.
