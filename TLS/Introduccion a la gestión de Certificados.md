@@ -195,18 +195,20 @@ Las herramientas que mencionaste (HashiCorp Vault, Ansible, Puppet, OpenSSL, Cer
 
 # Jerarquía de PKI:
 ```markdown
-	pki/
+pki/
 	├─── Root/ 
 	│ ├── root.crt 
 	│ └── root.key
 	├─── Intermediate/  
 	│ ├── intermediate.crt
 	│ └── intermediate.key 
-	└─── Server/ 
-			├── server.crt 
-			├── server.key 
-			├── server.crl 
-			└── fullchain.crt 
+	├─── Server/ 
+	│ ├── server.crt 
+	│ ├── server.key 
+	│ └── server.crl 
+	└─── Client/ 
+	  ├── client.crt
+	  └── client.key
 ```
 
 
@@ -262,8 +264,18 @@ Las herramientas que mencionaste (HashiCorp Vault, Ansible, Puppet, OpenSSL, Cer
 - **Contenido**: Contiene los números de serie de los certificados revocados y la fecha de revocación.
 - **Importancia**: Permite a los clientes verificar si un certificado ha sido revocado, manteniendo la integridad y seguridad de la PKI.
 
+ 
+#### client.crt
+- **Propósito**: Verifica la identidad del cliente ante el servidor.
+- **Función o Uso**: Permite al servidor autenticar al cliente y establecer una conexión segura.
+- **Contenido**: Contiene la clave pública del cliente y la información de la entidad emisora.
+- **Importancia**: Es crucial para la autenticación mutua y la seguridad de las comunicaciones entre el cliente y el servidor.
 
-
+#### client.key
+- **Propósito**: Se utiliza para firmar digitalmente la información enviada al servidor.
+- **Función o Uso**: Permite al cliente cifrar la información y garantizar su integridad.
+- **Contenido**: Contiene la clave privada del cliente.
+- **Importancia**: Debe mantenerse segura para proteger la integridad y confidencialidad de las comunicaciones del cliente.
 
 
 
