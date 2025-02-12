@@ -1,17 +1,5 @@
  
-
-Si tienes políticas de seguridad estrictas, como en entornos financieros o de salud.
-Si necesitas cumplir regulaciones como GDPR o PCI-DSS.
-Si usas autenticación basada en certificados en lugar de contraseñas.
-
-
-Cuando contratas a un proveedor externo de certificados (como DigiCert, Let's Encrypt, GlobalSign, etc.), los archivos que recibes dependen del tipo de certificado y la jerarquía de confianza. Aquí te explico con claridad:
-
-
-
-
-Una PKI interna (Infraestructura de Clave Pública) es un sistema que permite la creación, gestión, distribución, uso, almacenamiento y revocación de certificados digitales dentro de una organización. A diferencia de una PKI pública, que es gestionada por una autoridad certificadora externa, una PKI interna es gestionada por la propia organización.
-
+ 
 
 Problema: Tengo varios archivos con extensión crt,key y no se cual es el root, el intermediario y la llave no se a quien corresponde , se puede indentificar? 
 
