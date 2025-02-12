@@ -59,6 +59,15 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- 🛠️ **Herramientas de Gestión de Certificados**
 	- ⚖️ **Herramientas de Gestión vs. Sistemas PKI**
 	- 📂 **Formatos de certificados SSL y extensiones de archivos de certificados**
+	- **¿Qué son los archivos PEM?**
+			Ventajas
+			Ventajas
+			Ejemplo de Contenido:
+			Ejemplo de Configuración en PostgreSQL
+	- **Archivos PEM por Separados (CRT y KEY)**
+			Ventajas
+			Desventajas
+			Ejemplo de Configuración en PostgreSQL
 	- 🏢 **Jerarquía típica**
 	- 🔒 **Métodos de revocación o validación de certificados**
 	- 📜 **Método de revocación CRL**
