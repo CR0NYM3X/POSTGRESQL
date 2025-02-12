@@ -192,5 +192,12 @@ Certificate:
          ...
 ```
  
+# [Mejores proveedores de certificados SSL ](https://www.ssldragon.com/es/blog/mejores-proveedores-certificados-ssl/)
 
-
+1. **Sectigo (anteriormente Comodo)**: Es uno de los mayores proveedores de certificados SSL, conocido por su asequibilidad y amplia gama de productos.
+2. **DigiCert**: Reconocido por sus certificados de alta garantía, es una opción popular entre grandes empresas e instituciones financieras.
+3. **Thawte**: Ofrece certificados SSL de bajo coste y tiene una reputación mundialmente reconocida por la seguridad de sitios web.
+4. **GeoTrust**: Con más de 100,000 clientes en 150 países, es una de las marcas de seguridad web más confiables.
+5. **RapidSSL**: Especializado en certificados SSL económicos y con un proceso de emisión ultrarrápido.
+6. **GlobalSign**: Una Autoridad de Certificación consolidada y un reconocido distribuidor de certificados digitales.
+ 
