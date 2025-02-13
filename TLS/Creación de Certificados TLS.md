@@ -53,80 +53,80 @@ En este ejemplo nosotros crearemos nuestro propio sistema PKI con las configurac
  ``` 
 
 **Generar el archivo openssl.conf** 
+[archivo github Openssl.conf](https://github.com/openssl/openssl/blob/master/apps/openssl.cnf)
  ```BASH
 #El archivo `openssl.conf` es crucial para la configuración de OpenSSL, ya que define los parámetros y opciones que se utilizarán en diversas operaciones, ese se usa por default en caso de no especificarlo con `-config` y se recomienda siempre usarlo para todas las operaciones relacionadas con la CA (solicitudes, emisión de certificados, firmas, revocaciones, etc.).
 vim /tmp/pki/tls/openssl.conf
+
 ``` 
 
 **Pegamos el contenido en el archivo /tmp/pki/openssl.conf**
+
 ```ini
-[ ca ]
+[ ca ] #  Define la configuración general para la autoridad certificadora (CA).
 default_ca = CA_default  # Define la CA predeterminada
 
-[ CA_default ]
+[ CA_default ] #  Configuración predeterminada para la CA, incluyendo directorios, archivos de base de datos, y políticas de emisión de certificados.
 dir               = /tmp/pki/CA  # Directorio base para la CA
 database          = $dir/index.txt  # Archivo de base de datos de certificados emitidos y revocados
 serial            = $dir/serial  # Archivo que contiene el número de serie del próximo certificado
 crlnumber         = $dir/crlnumber  # Archivo que contiene el número de serie de la próxima CRL
 new_certs_dir     = $dir/newcerts  # Directorio para almacenar nuevos certificados emitidos
-#crl               = $dir/crl.pem  # Archivo de la CRL (No se usara )
-#certificate       = $dir/ca.crt  # Certificado de la CA  (No se usara ya que especificaremos la ruta)
-#private_key       = $dir/ca.key  # Clave privada de la CA  (No se usara ya que especificaremos la ruta)
 default_days      = 365  # Días de validez predeterminados para los certificados emitidos
 default_md        = sha512  # Algoritmo de hash predeterminado para firmar certificados
 policy            = policy_any  # Política de emisión de certificados
 default_crl_days  = 30  # Días de validez predeterminados para la CRL
+x509_extensions	= usr_cert
+
+[ policy_any ]  #  Define una política de emisión de certificados que requiere que ciertos campos coincidan con los valores esperados.
+countryName             = optional
+stateOrProvinceName     = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ req ] #  Configuración para la generación de solicitudes de certificados (CSR), incluyendo el tamaño de la clave y el algoritmo de hash.
+default_bits        = 2048
+default_md          = sha512
+default_keyfile     = root.key
+prompt              = no
+distinguished_name  = req_distinguished_name
+x509_extensions     = v3_ca_root
+
+[ req_distinguished_name ] #  Define los campos del nombre distinguido (DN) que se incluirán en las solicitudes de certificados.
+C                   = US
+ST                  = California
+L                   = San Francisco
+O                   = Example Corp
+OU                  = IT Department
+CN                  = Example Root CA
 
 
-[ policy_any ]
-countryName             = optional  # El nombre del país es opcional
-stateOrProvinceName     = optional  # El estado o provincia es opcional
-organizationName        = optional  # El nombre de la organización es opcional
-organizationalUnitName  = optional  # El nombre de la unidad organizativa es opcional
-commonName              = supplied  # El nombre común debe ser proporcionado
-emailAddress            = optional  # La dirección de correo electrónico es opcional
+# Extensiones para el certificado raíz
+[ v3_ca_root ]
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+basicConstraints = critical, CA:true
+keyUsage = critical, digitalSignature, keyCertSign, cRLSign
 
-[ req ]
-default_bits        = 2048  # Tamaño de la clave predeterminado en bits
-default_md          = sha512  # Algoritmo de hash predeterminado para solicitudes de certificados
-default_keyfile     = intermediate.key  # Archivo de clave predeterminado para solicitudes
-prompt              = no  # No solicitar información al usuario durante la generación de la solicitud
-distinguished_name  = req_distinguished_name  # Sección que define el nombre distinguido
-x509_extensions     = v3_ca  # Extensiones X.509 para certificados de CA
+# Extensiones para el certificado intermedio
+[ v3_ca_intermediate ]
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+basicConstraints = critical, CA:true, pathlen:0
+keyUsage = critical, digitalSignature, keyCertSign, cRLSign
+certificatePolicies = 2.16.840.1.114412.2.1, 2.23.140.1.1, 2.23.140.1.2.1, 2.23.140.1.2.2, 2.23.140.1.2.3
 
-[ req_distinguished_name ]
-C                   = US  # País
-ST                  = California  # Estado o provincia
-L                   = San Francisco  # Localidad
-O                   = Example Corp  # Organización
-OU                  = IT Department  # Unidad organizativa
-CN                  = Example Intermediate CA  # Nombre común
-
-[ v3_ca ]
-subjectKeyIdentifier = hash  # Identificador de clave del sujeto
-authorityKeyIdentifier = keyid:always,issuer  # Identificador de clave de la autoridad
-basicConstraints = critical, CA:true, pathlen:0  # Restricciones básicas para certificados de CA
-keyUsage = critical, digitalSignature, cRLSign, keyCertSign  # Uso de clave
-extendedKeyUsage = serverAuth, clientAuth  # Uso extendido de clave
-certificatePolicies = @pol_section  # Políticas de certificado
-
-[ pol_section ]
-policyIdentifier = 2.16.840.1.114412.2.1  # Identificador de política 1
-policyIdentifier = 2.23.140.1.1  # Identificador de política 2
-policyIdentifier = 2.23.140.1.2.1  # Identificador de política 3
-policyIdentifier = 2.23.140.1.2.2  # Identificador de política 4
-policyIdentifier = 2.23.140.1.2.3  # Identificador de política 5
+# Extensiones para los certificados de servidor y cliente
+[ usr_cert ]
+basicConstraints = critical, CA:false
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+certificatePolicies = 2.23.140.1.2.2
 ```
- 
 
- 
-
-
-
-
-
-
-
+  
  
 ### Escenario simulado
 - **IP del Servidor**: 127.0.0.1
@@ -172,54 +172,13 @@ policyIdentifier = 2.23.140.1.2.3  # Identificador de política 5
 
 ### Paso 2: Crear el Certificado y la Clave Privada de la CA Intermedia
 
-1.- **Generar un archivo mi_openssl.cnf**
-Puedes generar tu propio archivo de configuración de manera independiente. Si prefieres no modificar el archivo `/etc/pki/tls/openssl.cnf`, esta  ruta la encuentras con el comando: **openssl version -d**
 
-   ```bash
-   vim /tmp/mi_openssl.cnf
-   ```
-
-2.- **Pegar lo siguiente en el archivo mi_openssl.conf**
-Este archivos de configuración lo puedes usar para definir varios parámetros y opciones cuando se generan y gestionan certificados y claves. 
-   ```bash
-   [ req ]
-   default_bits        = 2048
-   default_md          = sha512
-   default_keyfile     = intermediate.key
-   prompt              = no
-   distinguished_name  = req_distinguished_name
-   x509_extensions     = v3_ca
-   
-   [ req_distinguished_name ]
-   C                   = US
-   ST                  = California
-   L                   = San Francisco
-   O                   = Example Corp
-   OU                  = IT Department
-   CN                  = Example Intermediate CA
-   
-   [ v3_ca ]
-   subjectKeyIdentifier = hash
-   authorityKeyIdentifier = keyid:always,issuer
-   basicConstraints = critical, CA:true, pathlen:0
-   keyUsage = critical, digitalSignature, cRLSign, keyCertSign
-   extendedKeyUsage = serverAuth, clientAuth
-   certificatePolicies = @pol_section
-   
-   [ pol_section ]
-   policyIdentifier = 2.16.840.1.114412.2.1
-   policyIdentifier = 2.23.140.1.1
-   policyIdentifier = 2.23.140.1.2.1
-   policyIdentifier = 2.23.140.1.2.2
-   policyIdentifier = 2.23.140.1.2.3
-   ```
-
-3. **Generar la Clave Privada sin contraseña para la CA Intermedia**:
+1. **Generar la Clave Privada sin contraseña para la CA Intermedia**:
    ```bash
    openssl genpkey -algorithm RSA -out /tmp/pki/private/intermediate.key
    ```
 
-4. **Generar la Solicitud de Certificado (CSR) para la CA Intermedia**:
+2. **Generar la Solicitud de Certificado (CSR) para la CA Intermedia**:
    ```bash
     openssl req -new \
 	 -config /tmp/pki/tls/openssl.conf \
@@ -234,7 +193,7 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
    - **`-config /tmp/mi_openssl.cnf`**: Especifica el archivo de configuración de OpenSSL que contiene los detalles necesarios para generar la CSR. En este caso, `/tmp/mi_openssl.cnf`.
 
  
-5. **Firmar el Certificado de la CA Intermedia con la CA Raíz**:
+3. **Firmar el Certificado de la CA Intermedia con la CA Raíz**:
    ```bash
    openssl x509 -req \
 	   -extfile  /tmp/pki/tls/openssl.conf \
