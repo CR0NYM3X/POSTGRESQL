@@ -67,37 +67,84 @@ OPENSSLDIR: "/etc/pki/tls"
    - `-days 3650`: Validez del certificado en días (10 años).
 
 
+
+
 ### Paso 2: Crear el Certificado y la Clave Privada de la CA Intermedia
 
-1. **Generar la Clave Privada de la CA Intermedia**:
+1.- **Generar un archivo mi_openssl.cnf**
+Puedes generar tu propio archivo de configuración de manera independiente. Si prefieres no modificar el archivo `/etc/pki/tls/openssl.cnf`, esta  ruta la encuentras con el comando: **openssl version -d**
+
+   ```bash
+   vim /tmp/mi_openssl.cnf
+   ```
+
+2.- **Pegar lo siguiente en el archivo mi_openssl.conf**
+Este archivos de configuración lo puedes usar para definir varios parámetros y opciones cuando se generan y gestionan certificados y claves. 
+   ```bash
+   [ req ]
+   default_bits        = 2048
+   default_md          = sha512
+   default_keyfile     = intermediate.key
+   prompt              = no
+   distinguished_name  = req_distinguished_name
+   x509_extensions     = v3_ca
+   
+   [ req_distinguished_name ]
+   C                   = US
+   ST                  = California
+   L                   = San Francisco
+   O                   = Example Corp
+   OU                  = IT Department
+   CN                  = Example Intermediate CA
+   
+   [ v3_ca ]
+   subjectKeyIdentifier = hash
+   authorityKeyIdentifier = keyid:always,issuer
+   basicConstraints = critical, CA:true, pathlen:0
+   keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+   extendedKeyUsage = serverAuth, clientAuth
+   certificatePolicies = @pol_section
+   
+   [ pol_section ]
+   policyIdentifier = 2.16.840.1.114412.2.1
+   policyIdentifier = 2.23.140.1.1
+   policyIdentifier = 2.23.140.1.2.1
+   policyIdentifier = 2.23.140.1.2.2
+   policyIdentifier = 2.23.140.1.2.3
+   ```
+
+3. **Generar la Clave Privada de la CA Intermedia**:
    ```bash
    openssl genpkey -algorithm RSA -out intermediate.key 
    ```
    - Igual que en el paso 1.
 
-2. **Generar la Solicitud de Certificado (CSR) para la CA Intermedia**:
+4. **Generar la Solicitud de Certificado (CSR) para la CA Intermedia**:
    ```bash
-   openssl req -new -key intermediate.key -out intermediate.csr -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=Example Intermediate CA"
+   openssl req -new -key intermediate.key -out intermediate.csr -config /tmp/mi_openssl.cnf
    ```
-   - `openssl req`: Comando para generar una solicitud de certificado (CSR).
-   - `-new`: Genera una nueva solicitud de certificado.
-   - `-key intermediate.key`: Especifica la clave privada a usar.
-   - `-out intermediate.csr`: Nombre del archivo de salida para la CSR.
-   - `-subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=Example Intermediate CA"`: Proporciona los detalles del Distinguished Name (DN) directamente en la línea de comandos.
+   - **`openssl req`**: Utiliza el comando `req` de OpenSSL para generar una solicitud de certificado (CSR).
+   - **`-new`**: Indica que se está generando una nueva solicitud de certificado.
+   - **`-key intermediate.key`**: Especifica el archivo de clave privada que se utilizará para generar la CSR. En este caso, `intermediate.key`.
+   - **`-out intermediate.csr`**: Especifica el archivo de salida donde se guardará la CSR generada. En este caso, `intermediate.csr`.
+   - **`-config /tmp/mi_openssl.cnf`**: Especifica el archivo de configuración de OpenSSL que contiene los detalles necesarios para generar la CSR. En este caso, `/tmp/mi_openssl.cnf`.
 
-3. **Firmar el Certificado de la CA Intermedia con la CA Raíz**:
+ 
+5. **Firmar el Certificado de la CA Intermedia con la CA Raíz**:
    ```bash
-   openssl x509 -req -in intermediate.csr -CA root.crt -CAkey root.key -CAcreateserial -out intermediate.crt -days 3650 -sha512
+   openssl x509 -req -in intermediate.csr -CA root.crt -CAkey root.key -CAcreateserial -out intermediate.crt -days 3650 -sha512 -extensions v3_ca -extfile /tmp/mi_openssl.cnf
    ```
-   - `openssl x509`: Comando para gestionar certificados X.509.
-   - `-req`: Indica que se está procesando una CSR.
-   - `-in intermediate.csr`: Especifica la CSR a usar.
-   - `-CA root.crt`: Certificado de la CA que firmará la CSR.
-   - `-CAkey root.key`: Clave privada de la CA que firmará la CSR.
-   - `-CAcreateserial`: Crea un número de serie para el certificado.
-   - `-out intermediate.crt`: Nombre del archivo de salida para el certificado firmado.
-   - `-days 3650`: Validez del certificado en días (10 años).
-   - `-sha512`: Utiliza el algoritmo SHA-512 para la firma.
+   - **`openssl x509`**: Utiliza el comando `x509` de OpenSSL para gestionar certificados X.509.
+   - **`-req`**: Indica que se está procesando una CSR.
+   - **`-in intermediate.csr`**: Especifica el archivo de entrada que contiene la CSR. En este caso, `intermediate.csr`.
+   - **`-CA root.crt`**: Especifica el archivo del certificado de la CA que firmará la CSR. En este caso, `root.crt`.
+   - **`-CAkey root.key`**: Especifica el archivo de clave privada de la CA que firmará la CSR. En este caso, `root.key`.
+   - **`-CAcreateserial`**: Crea un número de serie para el certificado si no existe uno. Genera un archivo `root.srl` que contiene el número de serie.
+   - **`-out intermediate.crt`**: Especifica el archivo de salida donde se guardará el certificado firmado. En este caso, `intermediate.crt`.
+   - **`-days 3650`**: Especifica la validez del certificado en días. En este caso, 3650 días (10 años).
+   - **`-sha512`**: Utiliza el algoritmo SHA-512 para firmar el certificado.
+   - **`-extensions v3_ca`**: Especifica las extensiones que se deben aplicar al certificado. Estas extensiones están definidas en el archivo de configuración.
+   - **`-extfile /tmp/mi_openssl.cnf`**: Especifica el archivo de configuración que contiene las extensiones y otros detalles necesarios para generar el certificado. En este caso, `/tmp/mi_openssl.cnf`.
 
 ### Paso 3: Crear el Certificado y la Clave Privada del Servidor
 
@@ -175,12 +222,6 @@ OPENSSLDIR: "/etc/pki/tls"
   [NOTA] si todo esta bien retorna esto "server.crt: OK" o "client.crt: OK"
   
   
-  
-## **Validar si TLS esta activado**
-- Validar si esta tls activado y retorna la información del certificado
-- **Comando**: openssl s_client -connect 127.0.0.1:5432 -starttls postgres
-
-
 ## **Ver los detalles de los certificados**
 - **Comando**:  openssl x509 -in server.crt -text -noout
 
@@ -197,6 +238,69 @@ OPENSSLDIR: "/etc/pki/tls"
 
 
 
+## **Validar si el TLS esta activado en un servidor**
+ 
+**Comando:**
+```sh
+openssl s_client -connect 172.10.10.100:5432 -starttls postgres -tls1_2
+```
+Salida esperada TLSv1.2:
+```plaintext
+CONNECTED(00000003)
+depth=1 C = US, O = Let's Encrypt, CN = Let's Encrypt Authority X3
+verify return:1
+depth=0 CN = example.com
+verify return:1
+---
+Certificate chain
+ 0 s:CN = example.com
+   i:C = US, O = Let's Encrypt, CN = Let's Encrypt Authority X3
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIF...
+-----END CERTIFICATE-----
+subject=CN = example.com
+issuer=C = US, O = Let's Encrypt, CN = Let's Encrypt Authority X3
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 3051 bytes and written 456 bytes
+Verification: OK
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES128-GCM-SHA256
+Server public key is 2048 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES128-GCM-SHA256
+    Session-ID: 3A4B...
+    Session-ID-ctx:
+    Master-Key: 1A2B...
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1739407853
+    Timeout   : 7200 (sec)
+    Verify return code: 0 (ok)
+    Extended master secret: yes
+---
+```
+
+
+### Puntos Clave:
+- **Certificate chain**: Muestra la cadena de certificados.
+- **Server certificate**: Detalles del certificado del servidor.
+- **SSL handshake**: Información sobre el proceso de handshake SSL.
+- **SSL-Session**: Detalles de la sesión SSL, incluyendo el protocolo y el cifrado utilizado.
+- **Sin certificado**: si no retorna el texto "-----BEGIN CERTIFICATE-----" hay algun problema con el tls
+  
 
 
 
