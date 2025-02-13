@@ -138,18 +138,24 @@ policyIdentifier = 2.23.140.1.2.3  # Identificador de política 5
 
 ### Paso 1: Crear el Certificado y la Clave Privada de la CA Raíz
 
-1. **Generar la Clave Privada de la CA Raíz**:
+1. **Generar la Clave Privada con contraseña para la CA Raíz**:
    ```bash
-   openssl genpkey -algorithm RSA -out root.key -aes256
+   openssl genpkey -algorithm RSA -out /tmp/pki/private/root.key -aes256
    ```
    - `openssl genpkey`: Comando para generar una clave privada.
    - `-algorithm RSA`: Especifica el algoritmo RSA para la clave.
    - `-out root.key`: Nombre del archivo de salida para la clave privada.
    - `-aes256`: Cifra la clave privada con el algoritmo AES-256.
 
+
 2. **Generar el Certificado de la CA Raíz**:
    ```bash
-   openssl req -x509 -new -nodes -key root.key  -out root.crt -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=Root CA" -sha512 -days 3650
+   openssl req -x509 -new -nodes \
+     -config /tmp/pki/tls/openssl.conf \
+     -key /tmp/pki/private/root.key \
+     -out /tmp/pki/CA/root.crt \
+     -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=Root CA" \
+     -sha512 -days 3650 
    ```
    - `openssl req`: Comando para generar una solicitud de certificado (CSR) o un certificado autofirmado.
    - `-x509`: Indica que se debe generar un certificado autofirmado en lugar de una CSR.
@@ -208,15 +214,18 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
    policyIdentifier = 2.23.140.1.2.3
    ```
 
-3. **Generar la Clave Privada de la CA Intermedia**:
+3. **Generar la Clave Privada sin contraseña para la CA Intermedia**:
    ```bash
-   openssl genpkey -algorithm RSA -out intermediate.key 
+   openssl genpkey -algorithm RSA -out /tmp/pki/private/intermediate.key
    ```
-   - Igual que en el paso 1.
 
 4. **Generar la Solicitud de Certificado (CSR) para la CA Intermedia**:
    ```bash
-   openssl req -new -key intermediate.key -out intermediate.csr -config /tmp/mi_openssl.cnf
+    openssl req -new \
+	 -config /tmp/pki/tls/openssl.conf \
+	 -key /tmp/pki/private/intermediate.key \
+	 -out /tmp/pki/CA/intermediate.csr \
+   	 -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=Example Intermediate CA" 
    ```
    - **`openssl req`**: Utiliza el comando `req` de OpenSSL para generar una solicitud de certificado (CSR).
    - **`-new`**: Indica que se está generando una nueva solicitud de certificado.
@@ -227,7 +236,13 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
  
 5. **Firmar el Certificado de la CA Intermedia con la CA Raíz**:
    ```bash
-   openssl x509 -req -in intermediate.csr -CA root.crt -CAkey root.key -CAcreateserial -out intermediate.crt -days 3650 -sha512 -extensions v3_ca -extfile /tmp/mi_openssl.cnf
+   openssl x509 -req \
+	   -extfile  /tmp/pki/tls/openssl.conf \
+	   -CA /tmp/pki/CA/root.crt \
+	   -CAkey /tmp/pki/private/root.key \
+	   -in /tmp/pki/CA/intermediate.csr \
+	   -out /tmp/pki/CA/intermediate.crt \
+	   -CAcreateserial -days 3650 -sha512 -extensions v3_ca 
    ```
    - **`openssl x509`**: Utiliza el comando `x509` de OpenSSL para gestionar certificados X.509.
    - **`-req`**: Indica que se está procesando una CSR.
@@ -243,21 +258,31 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
 
 ### Paso 3: Crear el Certificado y la Clave Privada del Servidor
 
-1. **Generar la Clave Privada del Servidor**:
+1. **Generar la Clave Privada sin contraseña del Servidor**:
    ```bash
-   openssl genpkey -algorithm RSA -out server.key  
+   openssl genpkey -algorithm RSA -out /tmp/pki/private/server.key
    ```
-   - Igual que en el paso 1.
+
 
 2. **Generar la Solicitud de Certificado (CSR) para el Servidor**:
    ```bash
-   openssl req -new -key server.key -out server.csr -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=127.0.0.1"
+   openssl req -new \
+	-config /tmp/pki/tls/openssl.conf \
+	-key /tmp/pki/private/server.key \
+	-out /tmp/pki/certs/server.csr \
+	-subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=127.0.0.1"
    ```
    - Igual que en el paso 2.
 
 3. **Firmar el Certificado del Servidor con la CA Intermedia**:
    ```bash
-   openssl x509 -req -in server.csr -CA intermediate.crt -CAkey intermediate.key -CAcreateserial -out server.crt -days 825 -sha512
+    openssl x509 -req \
+	 -extfile  /tmp/pki/tls/openssl.conf \
+	 -CA /tmp/pki/CA/intermediate.crt \
+	 -CAkey /tmp/pki/private/intermediate.key \
+	 -in /tmp/pki/certs/server.csr  \
+	 -out /tmp/pki/certs/server.crt  \
+	 -CAcreateserial -days 825 -sha512
    ```
    - Igual que en el paso 2, pero usando el certificado y la clave de la CA intermedia.
 
