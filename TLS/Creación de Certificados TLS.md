@@ -24,13 +24,105 @@ Este manual proporciona una guía completa para la creación y gestión de certi
 ``` 
 
 # Requisitos 
+
 Se recomienda usar openssl 1.1.1 en adelante ya que es compatible con tls 1.2 y 1.3 
-``` 
+```
+--- version 
 [postgres@SERV ejem]$ openssl version
 OpenSSL 1.1.1k  FIPS 25 Mar 2021
+
+-- Directorio original del todo el sitema PKI 
 [postgres@SERV ejem]$ openssl version -d
 OPENSSLDIR: "/etc/pki/tls"
 ``` 
+
+
+En este ejemplo nosotros crearemos nuestro propio sistema PKI con las configuraciones y archivos necesarios para no manipular las carpetas originales y intervenir en los registros que ya existentes
+ ```BASH
+
+  mkdir -p  /tmp/pki/CA #Subdirectorio que puede contener archivos de la Autoridad Certificadora, como certificados de la CA, claves privadas y listas de revocación de certificados (CRL).
+  mkdir -p  /tmp/pki/tls  #Subdirectorio que contiene archivos de configuración y certificados relacionados con TLS (Transport Layer Security).
+  mkdir -p  /tmp/pki/certs # Subdirectorio para almacenar certificados públicos.
+  mkdir -p  /tmp/pki/private #Subdirectorio para almacenar claves privadas.
+
+  mkdir -p /tmp/pki/CA/newcerts # Guarda certificados nuevos en caso de no indicar la ruta de salida.
+  touch   /tmp/pki/CA/index.txt # Este archivo actúa como una base de datos que registra todos los certificados emitidos y revocados por la CA. ermite a la CA llevar un seguimiento de todos los certificados, incluyendo su estado (válido, revocado, caducado).
+  echo 01 > /tmp/pki/CA/serial # Contiene el número de serie que se asignará al próximo certificado emitido y Garantiza que cada certificado tenga un número de serie único.
+  echo 01 > /tmp/pki/CA/crlnumber # Contiene el número de serie que se asignará a la próxima Lista de Revocación de Certificados (CRL) y Asegura que cada CRL generada tenga un número de serie único.
+
+ ``` 
+
+**Generar el archivo openssl.conf** 
+ ```BASH
+#El archivo `openssl.conf` es crucial para la configuración de OpenSSL, ya que define los parámetros y opciones que se utilizarán en diversas operaciones, ese se usa por default en caso de no especificarlo con `-config` y se recomienda siempre usarlo para todas las operaciones relacionadas con la CA (solicitudes, emisión de certificados, firmas, revocaciones, etc.).
+vim /tmp/pki/tls/openssl.conf
+``` 
+
+**Pegamos el contenido en el archivo /tmp/pki/openssl.conf**
+```ini
+[ ca ]
+default_ca = CA_default  # Define la CA predeterminada
+
+[ CA_default ]
+dir               = /tmp/pki/CA  # Directorio base para la CA
+database          = $dir/index.txt  # Archivo de base de datos de certificados emitidos y revocados
+serial            = $dir/serial  # Archivo que contiene el número de serie del próximo certificado
+crlnumber         = $dir/crlnumber  # Archivo que contiene el número de serie de la próxima CRL
+new_certs_dir     = $dir/newcerts  # Directorio para almacenar nuevos certificados emitidos
+#crl               = $dir/crl.pem  # Archivo de la CRL (No se usara )
+#certificate       = $dir/ca.crt  # Certificado de la CA  (No se usara ya que especificaremos la ruta)
+#private_key       = $dir/ca.key  # Clave privada de la CA  (No se usara ya que especificaremos la ruta)
+default_days      = 365  # Días de validez predeterminados para los certificados emitidos
+default_md        = sha512  # Algoritmo de hash predeterminado para firmar certificados
+policy            = policy_any  # Política de emisión de certificados
+default_crl_days  = 30  # Días de validez predeterminados para la CRL
+
+
+[ policy_any ]
+countryName             = optional  # El nombre del país es opcional
+stateOrProvinceName     = optional  # El estado o provincia es opcional
+organizationName        = optional  # El nombre de la organización es opcional
+organizationalUnitName  = optional  # El nombre de la unidad organizativa es opcional
+commonName              = supplied  # El nombre común debe ser proporcionado
+emailAddress            = optional  # La dirección de correo electrónico es opcional
+
+[ req ]
+default_bits        = 2048  # Tamaño de la clave predeterminado en bits
+default_md          = sha512  # Algoritmo de hash predeterminado para solicitudes de certificados
+default_keyfile     = intermediate.key  # Archivo de clave predeterminado para solicitudes
+prompt              = no  # No solicitar información al usuario durante la generación de la solicitud
+distinguished_name  = req_distinguished_name  # Sección que define el nombre distinguido
+x509_extensions     = v3_ca  # Extensiones X.509 para certificados de CA
+
+[ req_distinguished_name ]
+C                   = US  # País
+ST                  = California  # Estado o provincia
+L                   = San Francisco  # Localidad
+O                   = Example Corp  # Organización
+OU                  = IT Department  # Unidad organizativa
+CN                  = Example Intermediate CA  # Nombre común
+
+[ v3_ca ]
+subjectKeyIdentifier = hash  # Identificador de clave del sujeto
+authorityKeyIdentifier = keyid:always,issuer  # Identificador de clave de la autoridad
+basicConstraints = critical, CA:true, pathlen:0  # Restricciones básicas para certificados de CA
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign  # Uso de clave
+extendedKeyUsage = serverAuth, clientAuth  # Uso extendido de clave
+certificatePolicies = @pol_section  # Políticas de certificado
+
+[ pol_section ]
+policyIdentifier = 2.16.840.1.114412.2.1  # Identificador de política 1
+policyIdentifier = 2.23.140.1.1  # Identificador de política 2
+policyIdentifier = 2.23.140.1.2.1  # Identificador de política 3
+policyIdentifier = 2.23.140.1.2.2  # Identificador de política 4
+policyIdentifier = 2.23.140.1.2.3  # Identificador de política 5
+```
+ 
+
+ 
+
+
+
 
 
 
@@ -40,6 +132,9 @@ OPENSSLDIR: "/etc/pki/tls"
 - **IP del Servidor**: 127.0.0.1
 - **IP del Cliente**: 192.168.1.20
 - **Nombre de Usuario**: conssl
+
+
+# Implementación
 
 ### Paso 1: Crear el Certificado y la Clave Privada de la CA Raíz
 
@@ -193,13 +288,20 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
 
 
 
-### Paso 5: Crear la Lista de Revocación de Certificados (CRL)
-[NOTA] -> Para esto ocupas permisos en la ruta de /etc/pki de lo contrario no podras generar el crl
+### Paso 5: **Genera una lista de revocación de certificados (CRL)**
 
-1. **Generar la CRL con la CA Intermedia**:
-   ```bash
-   openssl ca -gencrl -keyfile intermediate.key -cert intermediate.crt -out intermediate.crl
-   ```
+1. **Primero, revoca un certificado (por ejemplo, `cert.crt`):**
+     ```bash
+     openssl ca -revoke client.crt -keyfile intermediate.key -cert intermediate.crt -config crl_openssl.conf -verbose
+     ```
+
+
+2. **Generar la CRL con la CA Intermedia**:
+   - Finalmente, genera la CRL:
+     ```bash
+     openssl ca -gencrl -keyfile intermediate.key -cert intermediate.crt -out revoke.crl -config crl_openssl.conf -verbose
+     ```
+     
    - `openssl ca`: Comando para gestionar una CA.
    - `-gencrl`: Genera una lista de revocación de certificados (CRL).
    - `-keyfile intermediate.key`: Especifica la clave privada de la CA intermedia.
@@ -207,6 +309,10 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
    - `-out intermediate.crl`: Nombre del archivo de salida para la CRL.
 
 
+3. **Verifica la CRL**:
+   ```bash
+   openssl crl -in revoke.crl -noout -text
+   ```
 
 
 ### Paso 6: Otorgar permisos de lectura a certificados
@@ -216,12 +322,14 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
  
 
 
-### 7: Verificar la autenticidad de los certificados
+### Paso 7: Verificar la autenticidad de los certificados
 - **Comando**: `openssl verify -CAfile root.crt client.crt` o `openssl verify -CAfile root.crt server.crt` o  `openssl verify -CAfile root.crt -untrusted intermediate.crt server.crt`
   - **Explicación**: Es como comprobar que los permisos del cliente y del servidor son auténticos y aprobados por la autoridad.
   [NOTA] si todo esta bien retorna esto "server.crt: OK" o "client.crt: OK"
   
-  
+
+# Post-Implementación
+
 ## **Ver los detalles de los certificados**
 - **Comando**:  openssl x509 -in server.crt -text -noout
 
