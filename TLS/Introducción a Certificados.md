@@ -203,3 +203,37 @@ Certificate:
 5. **RapidSSL**: Especializado en certificados SSL económicos y con un proceso de emisión ultrarrápido.
 6. **GlobalSign**: Una Autoridad de Certificación consolidada y un reconocido distribuidor de certificados digitales.
  
+
+
+
+# Info extra
+
+```Markdown
+La extensión extendedKeyUsage (EKU) en los certificados X.509 define los propósitos específicos para los cuales se puede utilizar la clave pública del certificado.
+
+	1. **serverAuth**: Autenticación de servidor. Utilizado en certificados de servidores web para establecer conexiones HTTPS seguras.
+	2. **clientAuth**: Autenticación de cliente. Utilizado en certificados de clientes para autenticarse ante servidores.
+	3. **codeSigning**: Firma de código. Utilizado para firmar software y asegurar que no ha sido alterado.
+	4. **emailProtection**: Protección de correo electrónico. Utilizado para firmar y cifrar correos electrónicos.
+	5. **timeStamping**: Sellado de tiempo. Utilizado para firmar sellos de tiempo que prueban la existencia de un documento en un momento específico.
+	6. **OCSPSigning**: Firma de respuestas OCSP (Online Certificate Status Protocol). Utilizado por servidores OCSP para firmar respuestas que verifican el estado de los certificados.
+	7. **ipsecEndSystem**: Utilizado en sistemas finales IPsec para asegurar comunicaciones IP.
+	8. **ipsecTunnel**: Utilizado en túneles IPsec para asegurar comunicaciones IP.
+	9. **ipsecUser**: Utilizado en usuarios IPsec para asegurar comunicaciones IP.
+	10. **smartcardLogon**: Utilizado para autenticación de inicio de sesión con tarjetas inteligentes.
+
+ 
+ 
+La extensión **keyUsage** en los certificados X.509 define los usos específicos permitidos para la clave criptográfica asociada con el certificado. 
+
+	1. **digitalSignature**: Permite el uso de la clave para firmar digitalmente datos, como documentos o transacciones. Es común en certificados de servidor y cliente.
+	2. **nonRepudiation**: Permite el uso de la clave para firmar datos de manera que el firmante no pueda negar haber realizado la firma. Es importante para la autenticidad y la integridad de los datos.
+	3. **keyEncipherment**: Permite el uso de la clave para cifrar claves de sesión, que luego se utilizan para cifrar datos. Es común en certificados de servidor para establecer conexiones seguras.
+	4. **dataEncipherment**: Permite el uso de la clave para cifrar datos directamente, en lugar de claves de sesión.
+	5. **keyAgreement**: Permite el uso de la clave para acordar claves de sesión con otros participantes, como en el protocolo Diffie-Hellman.
+	6. **keyCertSign**: Permite el uso de la clave para firmar otros certificados. Es esencial para certificados de autoridad certificadora (CA).
+	7. **cRLSign**: Permite el uso de la clave para firmar listas de revocación de certificados (CRL), que se utilizan para revocar certificados emitidos previamente.
+	8. **encipherOnly**: Permite el uso de la clave solo para cifrar datos, en combinación con keyAgreement.
+	9. **decipherOnly**: Permite el uso de la clave solo para descifrar datos, en combinación con keyAgreement.
+
+ ```
