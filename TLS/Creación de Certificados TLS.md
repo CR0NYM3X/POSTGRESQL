@@ -272,7 +272,7 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
 	-out /tmp/pki/certs/server.csr \
 	-subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=127.0.0.1"
    ```
-   - Igual que en el paso 2.
+
 
 3. **Firmar el Certificado del Servidor con la CA Intermedia**:
    ```bash
@@ -284,31 +284,34 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
 	 -out /tmp/pki/certs/server.crt  \
 	 -CAcreateserial -days 825 -sha512
    ```
-   - Igual que en el paso 2, pero usando el certificado y la clave de la CA intermedia.
-
-
 
 
 
 ### Paso 4: Crear el Certificado y la Clave Privada del Cliente
 
-1. **Generar la Clave Privada del Cliente**:
+1. **Generar la Clave Privada sin contraseña para el Cliente**:
    ```bash
-   openssl genpkey -algorithm RSA -out client.key  
+	openssl genpkey -algorithm RSA -out /tmp/pki/private/client.key  
    ```
-   - Igual que en el paso 1.
 
 2. **Generar la Solicitud de Certificado (CSR) para el Cliente**:
    ```bash
-   openssl req -new -key client.key -out client.csr -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=conssl"
+   openssl req -new \
+	-config /tmp/pki/tls/openssl.conf \
+	-key /tmp/pki/private/client.key \
+	-out /tmp/pki/certs/client.csr \
+	-subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=conssl"
    ```
-   - Igual que en el paso 2.
 
 3. **Firmar el Certificado del Cliente con la CA Intermedia**:
    ```bash
-   openssl x509 -req -in client.csr -CA intermediate.crt -CAkey intermediate.key -CAcreateserial -out client.crt -days 825 -sha512
+	  openssl x509 -req \
+		  -CA /tmp/pki/CA/intermediate.crt \
+		  -CAkey /tmp/pki/private/intermediate.key \
+		  -in /tmp/pki/certs/client.csr \
+		  -out /tmp/pki/certs/client.crt  \
+		  -CAcreateserial -days 825 -sha512
    ```
-   - Igual que en el paso 2, pero usando el certificado y la clave de la CA intermedia.
 
 
 
@@ -317,14 +320,22 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
 
 1. **Primero, revoca un certificado (por ejemplo, `cert.crt`):**
      ```bash
-     openssl ca -revoke client.crt -keyfile intermediate.key -cert intermediate.crt -config crl_openssl.conf -verbose
+     openssl ca -verbose \
+	-config /tmp/pki/tls/openssl.conf  \
+	-cert /tmp/pki/CA/intermediate.crt \
+	-keyfile /tmp/pki/private/intermediate.key \
+	-revoke /tmp/pki/certs/client.crt
      ```
 
 
 2. **Generar la CRL con la CA Intermedia**:
    - Finalmente, genera la CRL:
      ```bash
-     openssl ca -gencrl -keyfile intermediate.key -cert intermediate.crt -out revoke.crl -config crl_openssl.conf -verbose
+	     openssl ca -gencrl  -verbose \
+		-config /tmp/pki/tls/openssl.conf \
+		-cert /tmp/pki/CA/intermediate.crt \
+		-keyfile /tmp/pki/private/intermediate.key \
+		-out /tmp/pki/CA/revoke.crl 
      ```
      
    - `openssl ca`: Comando para gestionar una CA.
@@ -336,18 +347,12 @@ Este archivos de configuración lo puedes usar para definir varios parámetros y
 
 3. **Verifica la CRL**:
    ```bash
-   openssl crl -in revoke.crl -noout -text
+   openssl crl -in /tmp/pki/CA/revoke.crl  -noout -text
    ```
 
-
-### Paso 6: Otorgar permisos de lectura a certificados
-- **Comando**: `chmod 400 *.{key,crt}`
-  - **Qué hace**: Cambia los permisos de los archivos de clave (.key) y certificado (.crt) para que solo el propietario pueda leerlos.
-  - **Explicación**: Es como poner una cerradura en los archivos para que nadie más pueda acceder a ellos.
  
 
-
-### Paso 7: Verificar la autenticidad de los certificados
+### Paso 6: Verificar la autenticidad de los certificados
 - **Comando**: `openssl verify -CAfile root.crt client.crt` o `openssl verify -CAfile root.crt server.crt` o  `openssl verify -CAfile root.crt -untrusted intermediate.crt server.crt`
   - **Explicación**: Es como comprobar que los permisos del cliente y del servidor son auténticos y aprobados por la autoridad.
   [NOTA] si todo esta bien retorna esto "server.crt: OK" o "client.crt: OK"
