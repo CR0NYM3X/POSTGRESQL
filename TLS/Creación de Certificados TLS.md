@@ -7,20 +7,33 @@ Este manual proporciona una guía completa para la creación y gestión de certi
 
 # Estructura de PKI 
 ``` 
-	pki/
-	├─── Root/ 
-	│ ├── root.crt 
-	│ └── root.key
-	├─── Intermediate/  
-	│ ├── intermediate.crt
-	│ └── intermediate.key 
-	├─── Server/ 
-	│ ├── server.crt 
-	│ ├── server.key 
-	│ └── server.crl 
-	└─── Client/ 
-	  ├── client.crt
-	  └── client.key
+[postgres@server_test pki]$ tree /tmp/pki
+	/tmp/pki
+	├── CA
+	│   ├── crlnumber
+	│   ├── index.txt
+	│   ├── intermediate.crt
+	│   ├── intermediate.csr
+	│   ├── intermediate.srl
+	│   ├── newcerts
+	│   ├── root.crt
+	│   ├── root.srl
+	│   └── serial
+	├── certs
+	│   ├── client.crt
+	│   ├── client.csr
+	│   ├── server.crt
+	│   └── server.csr
+	├── private
+	│   ├── client.key
+	│   ├── intermediate.key
+	│   ├── root.key
+	│   └── server.key
+	└── tls
+	    └── openssl.conf
+	
+	5 directories, 17 files
+
 ``` 
 
 # Requisitos 
@@ -150,13 +163,13 @@ certificatePolicies = 2.23.140.1.2.2
 
 2. **Generar el Certificado de la CA Raíz**:
    ```bash
-   openssl req -x509 -new -nodes \
-     -config /tmp/pki/tls/openssl.conf \
-     -key /tmp/pki/private/root.key \
-     -out /tmp/pki/CA/root.crt \
-     -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=Root CA" \
-     -sha512 -days 3650 
-   ```
+	openssl req -x509 -new -nodes \
+	  -config /tmp/pki/tls/openssl.conf -extensions v3_ca_root \
+	  -key /tmp/pki/private/root.key \
+	  -out /tmp/pki/CA/root.crt \
+	  -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=Root CA" \
+	  -sha512 -days 3650 
+   ```tre
    - `openssl req`: Comando para generar una solicitud de certificado (CSR) o un certificado autofirmado.
    - `-x509`: Indica que se debe generar un certificado autofirmado en lugar de una CSR.
    - `-new`: Genera una nueva solicitud de certificado.
@@ -181,7 +194,7 @@ certificatePolicies = 2.23.140.1.2.2
 2. **Generar la Solicitud de Certificado (CSR) para la CA Intermedia**:
    ```bash
     openssl req -new \
-	 -config /tmp/pki/tls/openssl.conf \
+	 -config /tmp/pki/tls/openssl.conf -extensions v3_ca_intermediate \
 	 -key /tmp/pki/private/intermediate.key \
 	 -out /tmp/pki/CA/intermediate.csr \
    	 -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=Example Intermediate CA" 
@@ -196,12 +209,12 @@ certificatePolicies = 2.23.140.1.2.2
 3. **Firmar el Certificado de la CA Intermedia con la CA Raíz**:
    ```bash
    openssl x509 -req \
-	   -extfile  /tmp/pki/tls/openssl.conf \
+	   -extfile  /tmp/pki/tls/openssl.conf  -extensions v3_ca_intermediate \
 	   -CA /tmp/pki/CA/root.crt \
 	   -CAkey /tmp/pki/private/root.key \
 	   -in /tmp/pki/CA/intermediate.csr \
 	   -out /tmp/pki/CA/intermediate.crt \
-	   -CAcreateserial -days 3650 -sha512 -extensions v3_ca 
+	   -CAcreateserial -days 3650 -sha512  
    ```
    - **`openssl x509`**: Utiliza el comando `x509` de OpenSSL para gestionar certificados X.509.
    - **`-req`**: Indica que se está procesando una CSR.
@@ -226,7 +239,7 @@ certificatePolicies = 2.23.140.1.2.2
 2. **Generar la Solicitud de Certificado (CSR) para el Servidor**:
    ```bash
    openssl req -new \
-	-config /tmp/pki/tls/openssl.conf \
+	-config /tmp/pki/tls/openssl.conf -extensions usr_cert \
 	-key /tmp/pki/private/server.key \
 	-out /tmp/pki/certs/server.csr \
 	-subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=127.0.0.1"
@@ -236,7 +249,7 @@ certificatePolicies = 2.23.140.1.2.2
 3. **Firmar el Certificado del Servidor con la CA Intermedia**:
    ```bash
     openssl x509 -req \
-	 -extfile  /tmp/pki/tls/openssl.conf \
+	 -extfile  /tmp/pki/tls/openssl.conf -extensions usr_cert \
 	 -CA /tmp/pki/CA/intermediate.crt \
 	 -CAkey /tmp/pki/private/intermediate.key \
 	 -in /tmp/pki/certs/server.csr  \
@@ -256,7 +269,7 @@ certificatePolicies = 2.23.140.1.2.2
 2. **Generar la Solicitud de Certificado (CSR) para el Cliente**:
    ```bash
    openssl req -new \
-	-config /tmp/pki/tls/openssl.conf \
+	-config /tmp/pki/tls/openssl.conf  -extensions usr_cert \
 	-key /tmp/pki/private/client.key \
 	-out /tmp/pki/certs/client.csr \
 	-subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=conssl"
@@ -265,7 +278,7 @@ certificatePolicies = 2.23.140.1.2.2
 3. **Firmar el Certificado del Cliente con la CA Intermedia**:
    ```bash
 	  openssl x509 -req \
-		  -CA /tmp/pki/CA/intermediate.crt \
+		  -CA /tmp/pki/CA/intermediate.crt  -extensions usr_cert \
 		  -CAkey /tmp/pki/private/intermediate.key \
 		  -in /tmp/pki/certs/client.csr \
 		  -out /tmp/pki/certs/client.crt  \
@@ -312,25 +325,26 @@ certificatePolicies = 2.23.140.1.2.2
  
 
 ### Paso 6: Verificar la autenticidad de los certificados
-- **Comando**: `openssl verify -CAfile root.crt client.crt` o `openssl verify -CAfile root.crt server.crt` o  `openssl verify -CAfile root.crt -untrusted intermediate.crt server.crt`
-  - **Explicación**: Es como comprobar que los permisos del cliente y del servidor son auténticos y aprobados por la autoridad.
-  [NOTA] si todo esta bien retorna esto "server.crt: OK" o "client.crt: OK"
-  
+- **Comando**: `openssl verify -CAfile /tmp/pki/CA/root.crt  -untrusted /tmp/pki/CA/intermediate.crt /tmp/pki/certs/server.crt`
+- **Comando**:  `openssl verify -CAfile /tmp/pki/CA/root.crt /tmp/pki/CA/intermediate.crt` 
+- **Explicación**: Es como comprobar que los permisos del cliente y del servidor son auténticos y aprobados por la autoridad.
+  [NOTA] Salida esperada "/tmp/pki/CA/intermediate.crt: OK"
+
 
 # Post-Implementación
 
 ## **Ver los detalles de los certificados**
-- **Comando**:  openssl x509 -in server.crt -text -noout
+- **Comando**:  `openssl x509 -in /tmp/pki/certs/server.crt -text -noout`
 
  
 ## Simular cliente y servidor con Certificados
 
 - **iniciar un servidor TLS/SSL simple para pruebas **
-	- **Comando:** openssl s_server -key server.key -cert server.crt -tls1_2 -accept 4433 
+	- **Comando:** `openssl s_server -key server.key -cert server.crt -tls1_2 -accept 4433 `
 	
 
 - **iniciar un servidor TLS/SSL simple para pruebas **
-	- **Comando:** openssl s_client -connect 127.0.0.1:4433 -tls1_2
+	- **Comando:** `openssl s_client -connect 127.0.0.1:4433 -tls1_2`
 
 
 
