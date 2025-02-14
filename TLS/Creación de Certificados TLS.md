@@ -331,6 +331,10 @@ certificatePolicies = 2.23.140.1.2.2
   [NOTA] Salida esperada "/tmp/pki/CA/intermediate.crt: OK"
 
 
+
+
+
+
 # Post-Implementación
 
 ## **Ver los detalles de los certificados**
@@ -416,7 +420,75 @@ SSL-Session:
 
 
 
+## **Identificar el Certificado Raíz (Root CA):**
+- Si `Issuer` y `Subject` son iguales, es el **certificado raíz (root.crt)**.
+- Ejecuta este comando para cada `.crt`:
+- **comando:**  openssl x509 -in /tmp/pki/CA/root.crt -text -noout | grep -E "Issuer:|Subject:"
+	 
+	 
+## **Identificar el Certificado Intermedio (si existe):**
+   - El `Issuer` y `Subject` son diferentes, y su `Issuer` coincidirá con el `Subject` del root CA.
+   - Tiene la extensión **CA:TRUE**:
+   - **comando:** openssl x509 -in /tmp/pki/CA/intermediate.crt -text -noout | grep -E "CA:TRUE|Issuer:|Subject:"
+ 
 
+
+## **Identificar el Certificado del server.crt o client.crt:**
+- Verifica si su `Issuer` coincide con el `Subject` de otro certificado (el *intermediate.crt* el root.crt, si existe).
+- Busca la extensión **X509v3 Extended Key Usage**:
+**comando:**  openssl x509 -in /tmp/pki/certs/server.crt -text -noout | grep -Ei "TLS Web|Issuer|Subject"
+	 
+	 
+## **Verificar de quien es la clave privada (.key):**
+   - La clave privada debe coincidir con el archivo (root.crt, intermediate.crt, server.crt o client.crt) 
+   - Compara el módulo público de la clave y el certificado:
+     ``` 
+		 openssl rsa -in /tmp/pki/private/server.key -modulus -noout | openssl sha256 # Obtener hash del módulo de la clave privada
+
+		 openssl x509 -in /tmp/pki/certs/server.crt -modulus -noout | openssl sha256 # Obtener hash del módulo de cada certificado (.crt)
+     ```
+
+ 
+
+## **Verificar la fecha de expiración de un certificado**
+``` 
+openssl x509 -in /tmp/pki/certs/server.crt -noout -dates  #  Salida esperada:   notBefore=Fecha y hora de inicio  , notAfter=Fecha y hora de expiración
+openssl x509 -in /tmp/pki/certs/server.crt -noout -enddate  #  Salida esperada: `notAfter=Dec 31 23:59:59 2025 GMT`
+``` 
+	
+## **Verificar la fecha de expiración de un certificado Servidor remoto**
+``` 
+openssl s_client -connect dominio.com:443 -servername dominio.com 2>/dev/null | openssl x509 -noout -dates 
+openssl s_client -connect 192.168.1.100:5416 -starttls postgres 2>/dev/null | openssl x509 -noout -dates 
+``` 
+
+
+# Preguntas frecuentes 
+
+¿Se puede invalidar todos los certificados emitidos por un intermediario , simplemente revocando el intermediario?
+Revocar el certificado intermedio invalida los certificados emitidos por él, pero es recomendable revocar explícitamente todos sus  certificados emitidos por el intermediario para asegurar una mayor seguridad y confianza en tu infraestructura de clave pública 
+
+
+
+¿Se pueden firmar solicitudes de certificados (csr) solo con una KEY?
+Sí, pero tiene sus ventajas y deventajas 
+ 
+### Comando 2: Firmar con una Clave Privada
+```bash
+openssl x509 -req -days 365 -in server.csr -signkey private.key -out server.crt
+```
+
+#### Ventajas
+- **Simplicidad**: No requiere una CA, lo que simplifica el proceso.
+- **Costo**: No hay costos asociados con el uso de una CA pública.
+
+#### Desventajas
+- **Confianza Limitada**: Los certificados autofirmados no son confiados por navegadores y clientes sin configuración adicional.
+- **Seguridad**: Menos seguro que un certificado firmado por una CA, ya que no hay una cadena de confianza.
+
+#### Cuándo Usarlo
+- **Entornos de Desarrollo**: Ideal para pruebas y desarrollo donde la confianza del navegador no es crítica.
+- **Aplicaciones Internas**: Para servicios internos donde puedes configurar manualmente la confianza en los certificados.
 
 
 
