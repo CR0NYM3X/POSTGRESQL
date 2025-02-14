@@ -3,7 +3,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
  
  
 # 📘 #1: Introducción a TLS
-
+```markdown
 	- **🔍 ¿Qué es TLS (Transport Layer Security)?**
 	- Características y Propósitos Principales de TLS
 
@@ -17,9 +17,10 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **⚙️ Resumen Rápido del Funcionamiento de TLS**
 	- **📊 Diagrama en PlantUML**
 	- **⚠️ Desventajas de Implementar TLS**
- 
-# 📘 #2: Introducción a Certificados
+ ```
 
+# 📘 #2: Introducción a Certificados
+```markdown
 	- **🔍 ¿Qué son los certificados?**
 	- **🔧 Componentes de un certificado**
 	- **🎯 ¿Para qué sirven?**
@@ -29,10 +30,10 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **🧾 Estructura y Características de un Certificado TLS (X.509)**
 	- **🔍 Ejemplo de Estructura con OpenSSL**
  	- **Mejores proveedores de certificados SSL**
-	 
+```
 
 # 📘 #3: Introducción a Criptografía
-
+```markdown
 	- **🔐 ¿Qué es un Protocolo Criptográfico?**
 	- **📜 ¿Qué es un protocolo?**
 	- **🔍 Características Clave de un Protocolo**
@@ -40,9 +41,10 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **🔑 Criptografía Asimétrica y Simétrica**
 	- **🌐 Protocolos que usan criptografía**
 	- **🔒 Tipos de cifrados más utilizados en criptografía**
- 
-# 📘 #4 Introducción a la Gestión de Certificados
+ ```
 
+# 📘 #4 Introducción a la Gestión de Certificados
+```markdown
 	- 📜 **¿Qué es la gestión de certificados?**
 	- 🎯 **¿Para qué sirve la gestión de certificados?**
 	- 🌟 **Ventajas de la gestión de certificados**
@@ -77,9 +79,38 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	  - ❓ **¿Para qué sirve OCSP?**
 	  - ✅ **Ventajas de OCSP**
 	  - ❌ **Desventajas de OCSP**
- 
+ ```
  
 # 📘 #5  Creación de Certificados TLS
+ 
+```markdown
+	📜 **Estructura de PKI**
+	
+	📋 **Requisitos**
+		- version openssl
+		- Generar el archivo openssl.conf
+	🚀 **Implementación**
+		1. 🛠️ **Paso 1**: Crear el Certificado y la Clave Privada de la CA Raíz
+		2. 🛠️ **Paso 2**: Crear el Certificado y la Clave Privada de la CA Intermedia
+		3. 🛠️ **Paso 3**: Crear el Certificado y la Clave Privada del Servidor
+		4. 🛠️ **Paso 4**: Crear el Certificado y la Clave Privada del Cliente
+		5. 🛠️ **Paso 5**: Generar una lista de revocación de certificados (CRL)
+		6. 🛠️ **Paso 6**: Verificar la autenticidad de los certificados
+	
+	🔧 **Post-Implementación**
+		- 🔍 Ver los detalles de los certificados
+		- 🖥️ Simular cliente y servidor con Certificados
+		- ✅ Validar si el TLS está activado en un servidor
+		- 🔑 Identificar el Certificado Raíz (Root CA)
+		- 🔑 Identificar el Certificado Intermedio (si existe)
+		- 🔑 Identificar el Certificado del server.crt o client.crt
+		- 🔑 Verificar de quién es la clave privada (.key)
+		- 📅 Verificar la fecha de expiración de un certificado
+		- 📅 Verificar la fecha de expiración de un certificado Servidor remoto
+	
+	❓ **Preguntas frecuentes**
+```
+ 
 
 # 📘 #6  Implementacion de TLS en postgresql 
 # 📘 #7  Medidas de seguridad y recomendaciones
