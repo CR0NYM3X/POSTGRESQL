@@ -125,7 +125,7 @@ cert -> Esto es para que el cliente pueda usar un certificado para autenticarse 
 
  
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
-hostssl   all           sys_user_test   0.0.0.0/0               scram-sha-256
+hostssl   all           sys_user_test   0.0.0.0/0               scram-sha-256 clientcert=verify-full
 
 # Clientes con autenticación por certificado y no por contraseña
 hostssl   all           sys_user_test   all                     cert
