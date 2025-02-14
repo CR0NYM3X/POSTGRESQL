@@ -112,20 +112,21 @@ ssl_ciphers = 'HIGH:!aNULL:!MD5:!3DES:!RC4:!DES:!IDEA:!RC2' # Este para entornos
 ## Paso 3: Configurar los parámetros en pg_hba.conf
 ```Markdown
 ## Parámetros de configuración en `pg_hba.conf`
-
-### Opciones de `clientcert`
-
-- **clientcert=1**: Exige que el cliente presente un certificado válido y que este sea verificado por el servidor. Ideal para escenarios donde se requiere alta seguridad y autenticación mutua.
-- **Sin clientcert=1**: Solo asegura que la conexión sea cifrada, sin requerir la verificación del certificado del cliente. Útil en escenarios donde el cifrado de la conexión es suficiente.
- 
 hostssl -> Forza al cliente a usar una conexión cifrada en caso de que no rechaza la conexión
 cert -> Esto es para que el cliente pueda usar un certificado para autenticarse en vez de una contraseña
 
-### Editar el archivo `pg_hba.conf`
+
+### Opciones para clientes que autentican con certificado 
+
+clientcert=1: solo verifica que el certificado del cliente esté firmado por una CA de confianza.
+clientcert=verify-ca: proporciona un nivel adicional de seguridad al verificar toda la cadena de certificados.
+clientcert=verify-full: Además de requerir un certificado válido, verifica que el nombre del cliente en el certificado coincida con el nombre esperado.
 
  
+### Editar el archivo `pg_hba.conf`
+
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
-hostssl   all           sys_user_test   0.0.0.0/0               scram-sha-256 clientcert=verify-full
+hostssl   all           sys_user_test   0.0.0.0/0               scram-sha-256 
 
 # Clientes con autenticación por certificado y no por contraseña
 hostssl   all           sys_user_test   all                     cert
