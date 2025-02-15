@@ -119,7 +119,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 
  
 # Referencias extras.
-
+```
   - **Documentation PostgreSQL**  https://www.postgresql.org/docs/
   - **Transport Layer** Security (TLS) Parameters https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml
   - **Qué es TLS** https://www.cloudflare.com/es-es/learning/ssl/transport-layer-security-tls/
@@ -127,3 +127,31 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
   - **GDPR**  https://www.powerdata.es/gdpr-proteccion-datos
   - **¿Qué es la PKI?** https://www.digicert.com/es/what-is-pki
 
+## Manuales
+https://postgresconf.org/system/events/document/000/001/285/PostgreSQL_and_SSL.pdf
+
+### El mejor:
+https://gist.github.com/achesco/b893fb55b90651cf5f4cc803b78e19fd
+
+### Recursos adicionales
+
+19.3. Connections and Authentication  https://www.postgresql.org/docs/current/runtime-config-connection.html
+32.19. SSL Support  https://www.postgresql.org/docs/current/libpq-ssl.html
+20.1. The pg_hba.conf File  https://www.postgresql.org/docs/current/auth-pg-hba-conf.html
+18.9. Secure TCP/IP Connections with SSL https://www.postgresql.org/docs/current/ssl-tcp.html
+
+https://www.highgo.ca/2024/01/06/how-to-setup-tls-connection-for-postgresql/
+https://access.redhat.com/documentation/fr-fr/red_hat_enterprise_linux/9/html/configuring_and_using_database_servers/proc_configuring-tls-encryption-on-a-postgresql-server_using-postgresql
+https://www.cherryservers.com/blog/how-to-configure-ssl-on-postgresql
+https://docs.cloudera.com/cdp-private-cloud-base/7.1.9/installation/topics/cdpdc-enable-tls-12-postgresql.html
+ 
+
+## Referencias
+https://docs.aws.amazon.com/es_es/cloudhsm/latest/userguide/ssl-offload-windows-create-csr-and-certificate.html
+https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000Cm1eCAC&lang=es
+https://docs.vmware.com/es/VMware-Horizon-7/7.13/horizon-scenarios-ssl-certificates/GUID-3A8CFE07-0A1A-4AB1-B2B6-41DA8E592EFB.html
+https://www.nominalia.com/asistencia/como-instalar-un-certificado-ssl-en-windows-server-2016/
+https://www.cisco.com/c/es_mx/support/docs/unified-communications/unified-communications-manager-callmanager/215534-create-windows-ca-certificate-templates.pdf
+https://documentation.meraki.com/General_Administration/Other_Topics/Creating_an_Offline_Certificate_Request_in_Windows_Server
+https://docs.citrix.com/es-es/xenmobile/server/authentication/client-certificate.html
+```
