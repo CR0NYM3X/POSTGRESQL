@@ -187,7 +187,7 @@ Time: 0.557 ms
    ```
 
 1. **Tercera capa de seguridad nivel Usuario ( Usar Certificado para autenticarse )** 
-  ```sql
+   ```sql
     # Se conectara directo  
    psql "host=127.0.0.1  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/combined.crt  sslcert=/tmp/pki/certs/client.crt sslkey=/tmp/pki/private/client.key"
 
@@ -195,7 +195,7 @@ Time: 0.557 ms
    #psql: error: connection to server at "127.0.0.1", port 5416 failed: FATAL:  certificate authentication failed for user "otros"
 
 
-  ```
+   ```
 
 
 # **Post-Implementación.** 
