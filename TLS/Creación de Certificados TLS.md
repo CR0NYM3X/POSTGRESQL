@@ -169,7 +169,8 @@ certificatePolicies = 2.23.140.1.2.2
 	  -out /tmp/pki/CA/root.crt \
 	  -subj "/C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Department/CN=Root CA" \
 	  -sha512 -days 3650 
-   ```tre
+   ```
+   
    - `openssl req`: Comando para generar una solicitud de certificado (CSR) o un certificado autofirmado.
    - `-x509`: Indica que se debe generar un certificado autofirmado en lugar de una CSR.
    - `-new`: Genera una nueva solicitud de certificado.
