@@ -62,12 +62,28 @@ Time: 0.557 ms
 
 ### Información importante 
  ```markdown
-  ### Si el archivo server.crt fue emitido por un intermediate.crt tiene que ser asi la configuracion:
+
+  ### Opción #1 (Recomendada de Validación Mutua )  Si el archivo server.crt fue emitido por un intermediate.crt puedes usar esta tipo de configuración:
+	# ssl_cert_file = server_combined.crt ( cat /tmp/pki/certs/server.crt /tmp/pki/CA/intermediate.crt > /tmp/pki/certs/server_combined.crt)
+	# ssl_ca_file = root.crt  -> sslrootcert = root.crt
+
+
+  ### Opción #2 Si el archivo server.crt fue emitido por un intermediate.crt puedes usar esta tipo de configuración:
         # ssl_ca_file = root.crt  -> sslrootcert = combined.crt (cat /tmp/pki/CA/intermediate.crt /tmp/pki/CA/root.crt > /tmp/pki/CA/combined.crt)  
-     
+
+
+
+
   ###  Si el server.crt fue emitido por el root.crt 
         # ssl_ca_file = root.crt  -> sslrootcert = root.crt
- ```sql
+
+	
+ ```
+
+
+### [32.19.1. Verificación de certificados de servidor por parte del cliente](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBQ-SSL-CERTIFICATES)
+De forma predeterminada, PostgreSQL no realizará ninguna verificación del certificado del servidor. Esto significa que es posible falsificar la identidad del servidor (por ejemplo, modificando un registro DNS o apropiándose de la dirección IP del servidor) sin que el cliente lo sepa. Para evitar la suplantación, el cliente debe poder verificar la identidad del servidor a través de una cadena de confianza. Una cadena de confianza se establece colocando un certificado raíz (autofirmado) de una autoridad de certificación ( CA ) en una computadora y un certificado de hoja firmado por el certificado raíz en otra computadora. También es posible utilizar un certificado " intermedio " que esté firmado por el certificado raíz y firme los certificados de hoja.
+
 
 
 
