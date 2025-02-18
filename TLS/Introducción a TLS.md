@@ -2,7 +2,7 @@
 # Secure TCP/IP Connections with SSL/TLS 
 
 ### ¿Qué es TLS (Transport Layer Security)? !🔒
- Es un protocolo criptográfico de seguridad que proporciona **privacidad** y **integridad** en las comunicaciones entre aplicaciones y usuarios en Internet. TLS asegura que los datos transmitidos entre un cliente (como un navegador web) y un servidor no puedan ser interceptados o alterados por terceros. **TLS** utiliza **certificados X.509** para autenticar la identidad del servidor (y opcionalmente del cliente) antes de establecer una conexión segura.
+ Versión mejorada de SSL Es un protocolo criptográfico de seguridad que proporciona **privacidad** y **integridad** en las comunicaciones entre aplicaciones y usuarios en Internet. TLS asegura que los datos transmitidos entre un cliente (como un navegador web) y un servidor no puedan ser interceptados o alterados por terceros. **TLS** utiliza **certificados X.509** para autenticar la identidad del servidor (y opcionalmente del cliente) antes de establecer una conexión segura.
 - Los **certificados** son una parte esencial del proceso de **autenticación** en el protocolo **TLS**.  [las versiones permitidas son 1.2 y 1.3](https://documentation.meraki.com/General_Administration/Privacy_and_Security/TLS_Protocol_and_Compliance_Standards).
 
 **⚠️ Advertencias**
@@ -21,6 +21,11 @@ Es un protocolo criptográfico desarrollado para proporcionar comunicaciones seg
 
 **⚠️ Advertencias**
   - **Vulnerabilidades de SSL**: Las versiones antiguas de SSL (1.0, 2.0 y 3.0) tienen múltiples vulnerabilidades conocidas y no deben utilizarse. [vulnerabilidades de SSL](https://nicolascoolman.eu/es/2024/10/17/openssl-securite-2/)
+
+
+### Motivo de migación de ssl a tls 
+El cambio de SSL a TLS fue una evolución necesaria para abordar fallas de seguridad, establecer un protocolo estandarizado bajo el IETF y alinearse con las prácticas criptográficas modernas. TLS continúa evolucionando, lo que garantiza una protección sólida para las comunicaciones por Internet, mientras que SSL sigue obsoleto debido a sus riesgos inherentes.
+TLS: Rendimiento y compatibilidad, Mejoras continuas, Estandarización por parte de la IETF
 
  
 ## Ejemplo de TLS en la vida real
