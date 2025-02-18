@@ -179,6 +179,7 @@ https://gist.github.com/achesco/b893fb55b90651cf5f4cc803b78e19fd
 32.19. SSL Support  https://www.postgresql.org/docs/current/libpq-ssl.html
 20.1. The pg_hba.conf File  https://www.postgresql.org/docs/current/auth-pg-hba-conf.html
 18.9. Secure TCP/IP Connections with SSL https://www.postgresql.org/docs/current/ssl-tcp.html
+20.12. Certificate Authentication https://www.postgresql.org/docs/current/auth-cert.html
 
 https://www.highgo.ca/2024/01/06/how-to-setup-tls-connection-for-postgresql/
 https://access.redhat.com/documentation/fr-fr/red_hat_enterprise_linux/9/html/configuring_and_using_database_servers/proc_configuring-tls-encryption-on-a-postgresql-server_using-postgresql
