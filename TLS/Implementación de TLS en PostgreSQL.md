@@ -603,7 +603,7 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
 	Uso recomendado: Para asegurar que se usen cifrados seguros definidos por el servidor.
 ```
 
-# Funciones de la extension sslinfo
+### Funciones de la extension sslinfo
 ```
 1.- Información sobre la Conexión SSL:
 	 select ssl_is_used(): Devuelve verdadero si la conexión actual utiliza SSL.
@@ -620,7 +620,7 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
  	select ssl_client_dn(): Ofrece el nombre completo del sujeto del certificado del cliente.
 ```
 
-# Configuración extra en postgresql
+### Configuración extra en postgresql
 En caso de que la llave privada este protegida con una contraseña , es necesario que cuando reinicien el servidor el administrador tenga que colocar la contraseña , por lo que esto puede ser algo tedioso cuando se administran varios servidores por lo que se pueden habilitar estos parametros para que obtenga la contraseña de alguna parte segura como un la coloque de ser necesario.
 ```
 	ssl_passphrase_command_supports_reload = on
