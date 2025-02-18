@@ -90,6 +90,12 @@ Time: 0.557 ms
   ###  Si el server.crt fue emitido por el root.crt 
         # ssl_ca_file = root.crt  -> sslrootcert = root.crt
 
+
+
+	### ** Verificación de la Cadena de Certificados:**  `server.crt` → `intermedio.crt` → `root.crt` 
+
+
+
  ```
 
 
