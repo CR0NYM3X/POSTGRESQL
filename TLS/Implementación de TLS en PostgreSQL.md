@@ -216,8 +216,10 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    psql "host=127.0.0.1  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/combined.crt  sslcert=/tmp/pki/certs/client.crt sslkey=/tmp/pki/private/client.key"
 
    # Si colocas otros usuario aparecera esto : 
-   #psql: error: connection to server at "127.0.0.1", port 5416 failed: FATAL:  certificate authentication failed for user "otros"
+      #psql: error: connection to server at "127.0.0.1", port 5416 failed: FATAL:  certificate authentication failed for user "otros"
 
+   # En caso de quererte conectatar usando un certificado revocado aparecera este mensaje al cliente : 
+      # psql: error: connection to server at "127.0.0.1", port 5416 failed: SSL error: sslv3 alert certificate revoked
 
    ```
 
@@ -226,26 +228,157 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
 
 1. **Concideraciones y Posibles errores en entornos de productivos.** 
    ```sql
-   versiones de postgresql, incompatibilidad con los cifrados fuertes 
+    1.- Incompatibilidad con los cifrados fuertes
+    2.- Aplicaciones con ssl vulnerables como tls 1.0 , 1.1 hay que actualizar 
    ```
 
 
 
-1. **Monitoreo y validacion de conexiónes.** 
+2. **Monitoreo conexiónes que usan tls.** 
    ```sql
-   select   datname ,pg_ssl.ssl, pg_ssl.version,  pg_sa.backend_type, pg_sa.usename, pg_sa.client_addr , application_name from pg_stat_ssl pg_ssl  join pg_stat_activity pg_sa  on pg_ssl.pid = pg_sa.pid;
+	1.- Validar las configuraciones si se hayan realizado los cambios 
+	SELECT name, setting FROM pg_settings WHERE name LIKE '%ssl%';
+
+	   2.- Validar que esten clientes conectados 
+	   select
+	   	datname
+	   	,pg_ssl.ssl
+	   	,pg_ssl.version
+	   	,pg_ssl.cipher
+	   	,pg_sa.backend_type
+	   	,pg_sa.usename
+	   	,pg_sa.client_addr
+	   	,application_name
+	   from pg_stat_ssl pg_ssl
+	   LEFT JOIN pg_stat_activity AS pg_sa ON pg_ssl.pid = pg_sa.pid;
+
+	+-------------+-----+---------+------------------------+----------------+----------+---------------+----------------------------+
+	|   datname   | ssl | version |         cipher         |  backend_type  | usename  |  client_addr  |      application_name      |
+	+-------------+-----+---------+------------------------+----------------+----------+---------------+----------------------------+
+	| postgres    | t   | TLSv1.3 | TLS_AES_256_GCM_SHA384 | client backend | sysdbas  | 192.168.1.101 | pgAdmin 4 - DB:postgres   |
+	| postgres    | t   | TLSv1.3 | TLS_AES_256_GCM_SHA384 | client backend | postgres | 192.168.1.102 | pgAdmin 4 - DB:postgres   |
+	| postgres    | t   | TLSv1.3 | TLS_AES_256_GCM_SHA384 | client backend | postgres | 192.168.1.103 | pgAdmin 4 - CONN:7509538   |
+
    ```
-1. **Validar que se este usando TLS** 
+   
+3. **Validar la información de tls del lado del cliente** 
    ```sql
+
+	select 
+		ssl_is_used()
+		,ssl_version() 
+		,ssl_cipher()
+		,ssl_client_cert_present()
+		,ssl_client_serial()
+	 	--,ssl_issuer_dn()
+	 	,ssl_client_dn();
+
+	+-[ RECORD 1 ]------------+-----------------------------------------------------------------+
+	| ssl_is_used             | t                                                               |
+	| ssl_version             | TLSv1.3                                                         |
+	| ssl_cipher              | TLS_AES_256_GCM_SHA384                                          |
+	| ssl_client_cert_present | t                                                               |
+	| ssl_client_serial       | 94996677583678954084741597939484696981543727840                 |
+	| ssl_client_dn           | /C=US/ST=California/L=San Francisco/O=Example Corp/OU=IT Depart |
+	+-------------------------+-----------------------------------------------------------------+
+
+   
    ```
+ 
 
-1. **Entrega de documentación y metricas de resultados..** 
-   ```sql
+4.-  Capturar el trafico para validar si esta cifrado
+   ```bash
+verificar si la comunicación de PostgreSQL está cifrada usando **Tcpdump**:
+
+---
+
+### **1 Crear una tabla de prueba**
+	- Abrir una terminal  #1 creamos y insertamos y no nos salimos de la conexión
+		[postgres@hostname_serv ~]$ psql -X  "sslmode=disable host=127.0.0.1  port=5416  user=sinssl dbname=postgres"
+		Password for user sinssl:
+		psql (17.2, server 16.6)
+		Type "help" for help.
+		
+		db_test=# create temp table  clientes(numcli int,password text);
+		CREATE TABLE
+		db_test=# insert into clientes select 12345,'Passw0rd';
+		INSERT 0 1
+ 
+### **2. Capturar tráfico de red con Tcpdump**
+Abrir otra terminal #2 y Ejecuta el siguiente comando para capturar el tráfico en el puerto de PostgreSQL (`5432` por defecto):
+ 
+	sudo /sbin/tcpdump -i any -s 0 -A 'host 127.0.0.1 && tcp port 5416' 
+
+1. **`sudo`**: Ejecuta el comando con privilegios de superusuario.
+2. **`/sbin/tcpdump`**: Ejecuta la herramienta `tcpdump`, que captura y analiza el tráfico de red.
+3. **`-i any`**: Captura paquetes en todas las interfaces de red.
+4. **`-s 0`**: Captura el tamaño completo de cada paquete.
+5. **`-A`**: Muestra los datos del paquete en formato ASCII.
+6. **`'host 127.0.0.1 && tcp port 5416'`**: Filtra los paquetes para capturar solo aquellos que provienen o van hacia el host `127.0.0.1` (localhost) y que utilizan el puerto TCP `5416`.
+7. **`| grep -Ei Passw0rd`**: Pasa la salida de `tcpdump` a `grep`, que busca de manera insensible a mayúsculas y minúsculas (`-i`) cualquier línea que contenga la palabra "Passw0rd".
+
+
+---
+
+### **3. Consultamos los datos**
+	- Abrimos la terminal #1
+
+	db_test=# select * from clientes; /*ESTE ES UN COMENTARIO*/
+	 numcli | password
+	--------+----------
+	  12345 | Passw0rd
+
+
+
+### **4.  Análisis del tráfico sin crifrar **
+- Como vemos se expone la contraseña 
+	[postgres@hostname_serv ~]$ sudo /sbin/tcpdump -i any -s 0 -A 'host 127.0.0.1 && tcp && port 5416'
+	dropped privs to tcpdump
+	tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+	listening on lo, link-type EN10MB (Ethernet), capture size 262144 bytes
+	
+	14:51:13.301877 IP localhost.58094 > localhost.sns-gateway: Flags [P.], seq 3141752243:3141752272, ack 2227224492, win 88, options [nop,nop,TS val 2307337496 ecr 2307293188], length 29
+	E..Qwt@.@..0...........(.CU........X.E.....
+	..-.....Q....select * from clientes;.
+	14:51:13.302510 IP localhost.sns-gateway > localhost.58094: Flags [P.], seq 1:108, ack 29, win 86, options [nop,nop,TS val 2307337497 ecr 2307337496], length 107
+	E...@h@.@............(.......CU....V.......
+	..-...-.T...:..numcli..A.N..............password..A.N..............D..........12345....Passw0rdC....SELECT 1.Z....I
+	14:51:13.302531 IP localhost.58094 > localhost.sns-gateway: Flags [.], ack 108, win 88, options [nop,nop,TS val 2307337497 ecr 2307337497], length 0
+	E..4wu@.@..L...........(.CU........X.(.....
+	..-...-.
+	^C
+	3 packets captured
+	6 packets received by filter
+	0 packets dropped by kernel
+
+
+ ### **5.  Análisis del tráfico crifrado con tls activo **
+	1.- En este caso nos conectamos de esta forma:
+		psql "sslmode=prefer host=127.0.0.1  port=5416  user=conssl dbname=postgres"  
+	2.- Creamos la tabla temporal
+		create temp table  clientes(numcli int,password text);
+	3.- Insertamos el registro
+		insert into clientes select 12345,'Passw0rd';
+
+	4.- sudo /sbin/tcpdump -i any -s 0 -A 'host 127.0.0.1 && tcp && port 5416'
+
+	5.- Consultamos la tabla 
+		select * from clientes; /*ESTE ES UN COMENTARIO*/
+	6.- Analisamos el trafico.
+		listening on any, link-type LINUX_SLL (Linux cooked v1), capture size 262144 bytes
+		14:58:01.093659 IP localhost.5588 > localhost.sns-gateway: Flags [P.], seq 702641659:702641710, ack 539927623, win 351, options [nop,nop,TS val 2307745288 ecr 2307737001], length 51
+		E..g..@.@._............().u. ..G..._.[.....
+		..f...E........>.=......~....p~yn.O..k.V.....K.k3K|.{...."f
+		14:58:01.094236 IP localhost.sns-gateway > localhost.5588: Flags [P.], seq 1:130, ack 51, win 92, options [nop,nop,TS val 2307745289 ecr 2307745288], length 129
+		E...iV@.@............(.. ..G).v....\.......
+		..f     ..f.....|.~by....E..G ..uc...]X.;|..........F.!....;t.#...K...7........Y........O.BT.`....s.>k......q...hX./y.7.v.....Y.d.....%\.Y...
+		14:58:01.094249 IP localhost.5588 > localhost.sns-gateway: Flags [.], ack 130, win 360, options [nop,nop,TS val 2307745289 ecr 2307745289], length 0
+		E..4..@.@._............().v. ......h.(.....
+		..f     ..f
+		^C
+
+ 	7.- conclusion con el TLS activo no podemos ver la comunicación entre el cliente y servidor en texto plano
    ```
-
-
-
-
 
 
 # Conceptos 
@@ -377,7 +510,7 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
  	select ssl_client_dn_field(fieldname text): Proporciona un campo específico del nombre del cliente 
 
 3.- Información sobre la Conexión del Servidor:
- 	select select ssl_version(): Retorna el nombre del protocolo utilizado para la conexión SSL (por ejemplo, TLSv1.2).
+ 	select  ssl_version(): Retorna el nombre del protocolo utilizado para la conexión SSL (por ejemplo, TLSv1.2).
  	select ssl_cipher(): Proporciona el nombre del cifrado utilizado (por ejemplo, DHE-RSA-AES256-SHA).
  	select ssl_issuer_dn(): Retorna el nombre completo del emisor del certificado del cliente.
  	select ssl_client_dn(): Ofrece el nombre completo del sujeto del certificado del cliente.
