@@ -227,9 +227,23 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
 # **Post-Implementación.** 
 
 1. **Concideraciones y Posibles errores en entornos de productivos.** 
-   ```sql
-    1.- Incompatibilidad con los cifrados fuertes
-    2.- Aplicaciones con ssl vulnerables como tls 1.0 , 1.1 hay que actualizar 
+   ```markdown
+    
+	El cifrado utilizado en una conexión TLS depende de la versión de TLS que se esté utilizando. Con cada nueva versión de TLS, se introducen mejoras en seguridad y rendimiento, y a menudo se eliminan cifrados inseguros.
+	
+	### TLS 1.2
+	- **Cifrados soportados**: TLS 1.2 soporta una amplia variedad de cifrados, incluyendo algunos que ya no se consideran seguros, como RC4 y AES-CBC.
+	- **Configuración**: Es posible configurar TLS 1.2 para excluir cifrados inseguros y utilizar solo cifrados modernos y seguros, como AES-GCM.
+	
+	### TLS 1.3
+	- **Cifrados soportados**: TLS 1.3 ha eliminado muchos de los cifrados inseguros y solo soporta cifrados modernos y seguros. Algunos de los cifrados eliminados incluyen RC4, AES-CBC y cualquier cifrado que no soporte AEAD (Authenticated Encryption with 			Associated Data).
+	- **Mejoras**: TLS 1.3 también introduce un proceso de "handshake" más rápido y seguro, reduciendo la latencia y mejorando el rendimiento.
+	
+	### ¿Qué debe hacer el área de desarrollo en caso de conflictos?
+	1. **Actualizar la Biblioteca de TLS**: Asegúrate de que la biblioteca de TLS utilizada por el cliente esté actualizada y sea compatible con TLS 1.2 o 1.3.
+	3. **Verificar la Conexión**: Después de realizar las actualizaciones y configuraciones necesarias, verifica que el cliente pueda conectarse correctamente al servidor utilizando cifrados seguros.
+
+ 
    ```
 
 
