@@ -110,7 +110,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
     ssl_max_protocol_version = 'TLSv1.3'   
    ```
 
-4. **Segunda capa de seguridad nivel configuración ( forzar el uso de TLS en  `pg_hba.conf` )** 
+4. **Tercera capa de seguridad nivel configuración ( forzar el uso de TLS en  `pg_hba.conf` )** 
    ```Markdown
 
    ## Parámetros de configuración en `pg_hba.conf`
@@ -132,7 +132,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
 
 
 
-5. **Tercera capa de seguridad nivel configuración ( Restringir los cifrados inseguros en  `postgresql.conf`)** 
+5. **Cuarta capa de seguridad nivel configuración ( Restringir los cifrados inseguros en  `postgresql.conf`)** 
    ```sql
    ssl_prefer_server_ciphers = on
    ssl_ciphers = 'HIGH:!aNULL:!MD5:!3DES:!RC4:!DES:!IDEA:!RC2' # Este para entornos Criticos (Bancos, Tiendas, Etc)
@@ -140,7 +140,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    ```
    
  
-6. **Cuarta capa de seguridad nivel configuración ( Validar )** 
+6. **Quinta capa de seguridad nivel configuración ( Validar )** 
    ```sql
    # Esto se habilita cuando del lado del cliente se usaran las opciones sslmode=verify-ca o verify-full  y aumenta la seguridad 
     ssl_ca_file = '/tmp/pki/CA/root.crt'
