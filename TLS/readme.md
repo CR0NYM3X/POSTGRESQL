@@ -175,7 +175,7 @@ https://gist.github.com/achesco/b893fb55b90651cf5f4cc803b78e19fd
 
 ### Recursos adicionales
 
-19.3. Connections and Authentication  https://www.postgresql.org/docs/current/runtime-config-connection.html
+19.3. Connections and Authentication  https://www.postgresql.org/docs/current/runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SSL
 32.19. SSL Support  https://www.postgresql.org/docs/current/libpq-ssl.html
 20.1. The pg_hba.conf File  https://www.postgresql.org/docs/current/auth-pg-hba-conf.html
 18.9. Secure TCP/IP Connections with SSL https://www.postgresql.org/docs/current/ssl-tcp.html
