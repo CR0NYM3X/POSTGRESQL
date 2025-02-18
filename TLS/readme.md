@@ -113,6 +113,46 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
  
 
 # 📘 #6  Implementacion de TLS en postgresql 
+```markdown
+	Fase #1 Pre-Implementación
+	Requisitos
+		Versiones compatibles de SSL/TLS con OpenSSL
+		Versiones compatibles de SSL/TLS con PostgreSQL
+		Validar si esta disponible la extension sslinfo
+		Crear el usuario conssl para este ejemplo
+		Información importante
+	
+	Fase #2 Implementación
+		Crear la extension en la Db postgres
+		Primera capa de seguridad nivel configuración ( Habilitar TLS en postgresql.conf)
+		Segunda capa de seguridad nivel configuración ( Establecer version Minima y Máximo de TLS en postgresql.conf)
+		Tercera capa de seguridad nivel configuración ( forzar el uso de TLS en pg_hba.conf )
+		Cuarta capa de seguridad nivel configuración ( Restringir los cifrados inseguros en postgresql.conf)
+		Quinta capa de seguridad nivel configuración ( Habilitar la revocación de certificados con crl en postgresql.conf )
+		Sexta capa de seguridad nivel configuración ( Verficiación de Certificados postgresql.conf )
+		Validar si configuramos el archivo postgresql.conf y pg_hba.conf
+		Recargar archivo de configuración
+		Validar si el log arroja algun error
+		Preparar el entorno del cliente para su conexion [NOTA] -> En nuestro caso realizaremos las pruebas en el mismo servidor donde tenemos postgresql
+		Primera capa de seguridad nivel Usuario ( Conexión con sslmode=verify-ca )
+		Segunda capa de seguridad nivel Usuario ( Conexión con sslmode=verify-full )
+		Tercera capa de seguridad nivel Usuario ( Usar Certificado para autenticarse )
+	
+	
+	Fase #3 Post-Implementación.
+		Concideraciones y Posibles errores en entornos de productivos.
+		Monitoreo conexiónes que usan tls.
+		Validar la información de tls del lado del cliente
+		Capturar el trafico para validar si esta cifrado
+	
+	
+	Conceptos información extra
+		Tipos de sslmode
+		Parámetros y sus usos:
+		Funciones de la extension sslinfo
+		Configuración extra en postgresql
+```
+
 # 📘 #7  Medidas de seguridad y recomendaciones
 # 📘 #8  Preguntas comunes
 # 📘 #9  Aprendiendo usar TCPDump (Extra)
