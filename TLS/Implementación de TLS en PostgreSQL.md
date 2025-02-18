@@ -226,9 +226,9 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
 
 # **Fase #3 Post-Implementación.** 
 
-1. **Concideraciones y Posibles errores en entornos de productivos.** 
+1. **Concideraciones entornos de productivos.** 
    ```markdown
-    
+   	--> Si el cliente no puede conectarse puedes ver considerar lo siguiente : 
 	El cifrado utilizado en una conexión TLS depende de la versión de TLS que se esté utilizando. Con cada nueva versión de TLS, se introducen mejoras en seguridad y rendimiento, y a menudo se eliminan cifrados inseguros.
 	
 	### TLS 1.2
@@ -395,7 +395,19 @@ Abrir otra terminal #2 y Ejecuta el siguiente comando para capturar el tráfico 
    ```
 
 
-# Conceptos 
+# Conceptos información extra
+
+
+### Mensajes de Error 
+```markdown
+
+
+
+```
+
+
+
+
 
 ### [Tipos de sslmode](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION)
 
