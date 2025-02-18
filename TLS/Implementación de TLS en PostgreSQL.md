@@ -62,22 +62,18 @@ Time: 0.557 ms
 
 ### Información importante 
  ```markdown
+ (cat /tmp/pki/CA/intermediate.crt /tmp/pki/CA/root.crt > /tmp/pki/CA/combined.crt)
 
-  ### Opción #1 (Recomendada de Validación Mutua )  Si el archivo server.crt fue emitido por un intermediate.crt puedes usar esta tipo de configuración:
-	# ssl_cert_file = server_combined.crt ( cat /tmp/pki/certs/server.crt /tmp/pki/CA/intermediate.crt > /tmp/pki/certs/server_combined.crt)
-	# ssl_ca_file = root.crt  -> sslrootcert = root.crt
+  ### Opción #1 Si el archivo server.crt fue emitido por un intermediate.crt puedes usar esta tipo de configuración:
+ 	# ssl_ca_file = /tmp/pki/CA/combined.crt -> sslrootcert = /tmp/pki/CA/root.crt
 
-
-  ### Opción #2 Si el archivo server.crt fue emitido por un intermediate.crt puedes usar esta tipo de configuración:
+  ### Opción #1 Si el archivo server.crt fue emitido por un intermediate.crt puedes usar esta tipo de configuración:
         # ssl_ca_file = root.crt  -> sslrootcert = combined.crt (cat /tmp/pki/CA/intermediate.crt /tmp/pki/CA/root.crt > /tmp/pki/CA/combined.crt)  
-
-
 
 
   ###  Si el server.crt fue emitido por el root.crt 
         # ssl_ca_file = root.crt  -> sslrootcert = root.crt
 
-	
  ```
 
 
@@ -140,14 +136,19 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    ```
    
  
-6. **Quinta capa de seguridad nivel configuración ( Validar )** 
+6. **Quinta capa de seguridad nivel configuración ( Habilitar la revocación de certificados con crl en  `postgresql.conf` )**
    ```sql
-   # Esto se habilita cuando del lado del cliente se usaran las opciones sslmode=verify-ca o verify-full  y aumenta la seguridad 
-    ssl_ca_file = '/tmp/pki/CA/root.crt'
+   ssl_crl_file = '/tmp/pki/CA/combined.crl'
    ```
 
+7. **Sexta capa de seguridad nivel configuración ( Verficiación de Certificados  `postgresql.conf` )** 
+   ```sql
+   #  Verifica que el certificado presentado por el cliente ha sido emitido por una CA de confianza. 
+   # Esto se habilita cuando del lado del cliente  usara las opciones sslmode=verify-ca o verify-full  y aumenta la seguridad 
+    ssl_ca_file = '/tmp/pki/CA/combined.crt'
+   ```
    
-7. Validar si configuramos el archivo  `postgresql.conf y pg_hba.conf`
+8. Validar si configuramos el archivo  `postgresql.conf y pg_hba.conf`
    ```sql
      # En caso de arrojar algun registro , es porque algo esta mal configurado
     select * from pg_catalog.pg_file_settings where error is not null; -- postgresql.conf
@@ -156,32 +157,38 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
  
  
 
-8. Recargar archivo de configuración 
+9. Recargar archivo de configuración 
    ```sql
    /usr/pgsql-16/bin/pg_ctl reload -D /sysx/data
    ```
 
-9. Validar si el log arroja algun error 
+1. Validar si el log arroja algun error 
    ```sql
     # En caso de encontrar algun error hay que corregir 
    grep -A 14 -Ei "SIGHUP|reload" postgresql-250214.log
    ```
 
 
-1. **Preparar el entorno del cliente para su conexion** 
+1. **Preparar el entorno del cliente para su conexion**
+   `[NOTA] -> En nuestro caso realizaremos las pruebas en el mismo servidor donde tenemos postgresql`
    ```sql
     # Tienes que enviarle los archivos 
     scp  /tmp/pki/certs/client.crt   /tmp/pki/private/client.key  /tmp/pki/CA/root.crt  192.100.8.162:/tmp
 
-   # esto lo puedes hacer en caso de que no quieras colocar los parametros de sslrootcert sslcert ,  sslkey 
+   # esto lo puedes hacer en caso de que no quieras colocar los parametros de sslrootcert sslcert ,  sslkey , postgresql lo detecta de manera auotmatica 
    mkdir ~/.postgresql
    cp client.crt client.key root.crt .postgresql/
-   cd ~/.postgresql	
+   cd ~/.postgresql
    mv client.crt postgresql.crt
    mv client.key postgresql.key
+
+   	sudo chown postgres:postgres  postgresql.crt
+	sudo chown postgres:postgres  postgresql.key
+	sudo chmod 600 postgresql.key
+	sudo chmod 644 postgresql.crt
    ```
 
-   `[NOTA] -> En nuestro caso realizaremos las pruebas en el mismo servidor donde tenemos postgresql`
+ 
 
 1. **Primera capa de seguridad nivel Usuario ( Conexión con sslmode=verify-ca )**
    
