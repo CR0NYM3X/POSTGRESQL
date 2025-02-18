@@ -1,4 +1,17 @@
 
+
+| Modo TLS en el cliente | Num nivel de seguridad | Recomendado | Entornos aplicables | Impacto en Rendimiento | Complejidad de Configuración | Función | Compatible con HOST en pg_hba | Compatible con HOSTSSL en pg_hba | Parámetros necesarios en postgresql.conf | Parámetros necesarios en el cliente/App | Vulnerable a MITM (Man-in-the-Middle) |
+|------------------------|------------------------|-------------|---------------------|------------------------|-----------------------------|---------|-------------------------------|----------------------------------|-------------------------------------------|--------------------------------------|-----------------------------------------|
+| disable                | 0 - Crítico            | No          | Redes locales aisladas como desarrollo | Ninguno                    | Muy Baja                        | Desactiva la negociación SSL/TLS | Sí                               | No                               | Ninguno                                   | Ninguno                              | Sí                                     |
+| allow                  | 2 - Muy alto           | No          | Pruebas, Desarrollo | Muy bajo                | Baja                           | Intenta primero sin SSL, si falla usa SSL/TLS | Sí                               | No                               | `ssl = on`<br>`ssl_cert_file = 'server.crt'`<br>`ssl_key_file = 'server.key'` | Ninguno                              | Sí                                     |
+| prefer (Default)       | 4 - Alto riesgo        | No          | Desarrollo, QA       | Media                   | Media                          | Intenta primero con SSL, si falla permite sin SSL/TLS | Sí                               | Sí                               | `ssl = on`<br>`ssl_cert_file = 'server.crt'`<br>`ssl_key_file = 'server.key'` | Ninguno                              | Sí                                     |
+| require                | 6 - Medio              | Sí          | Staging, Pre-Producción | Media                   | Media                          | Forza al cliente usar SSL/TLS | Sí                               | Sí                               | `ssl = on`<br>`ssl_cert_file = 'server.crt'`<br>`ssl_key_file = 'server.key'` | Ninguno                              | Sí                                     |
+| verify-ca              | 8 - Seguro             | Sí          | Productivos, Sistemas críticos | Media-Alto               | Alta                           | Verifica que el servidor tenga un certificado válido | Sí                               | Sí                               | `ssl = on`<br>`ssl_cert_file = 'server.crt'`<br>`ssl_key_file = 'server.key'`<br>`ssl_ca_file = 'combined.crt'` | `sslmode=verify-ca`<br>`sslrootcert=intermediate_root.crt` | Sí y No (Depende de la política de CA) |
+| verify-full            | 10 - Máxima Seguridad  | Sí          | Productivos, Datos Sensibles | Alto                    | Muy alta                       | Verifica el certificado y el host del servidor | Sí                               | Sí                               | `ssl = on`<br>`ssl_cert_file = 'server.crt'`<br>`ssl_key_file = 'server.key'`<br>`ssl_ca_file = 'combined.crt'` | `sslmode=verify-full`<br>`sslrootcert=intermediate_root.crt` | Ninguna conocida                       |
+
+ 
+
+
 # Técnicas de vulnerabilidad 
 
 ### 1. **`disable`**
