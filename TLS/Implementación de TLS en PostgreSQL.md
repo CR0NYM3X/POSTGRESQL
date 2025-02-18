@@ -224,7 +224,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    ```
 
 
-# **Post-Implementación.** 
+# **Fase #3 Post-Implementación.** 
 
 1. **Concideraciones y Posibles errores en entornos de productivos.** 
    ```markdown
