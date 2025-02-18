@@ -140,17 +140,18 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    ```
    
  
-6. **Cuarta capa de seguridad nivel configuración ( Restringir los cifrados inseguros en  `postgresql.conf`)** 
+6. **Cuarta capa de seguridad nivel configuración ( Validar )** 
    ```sql
-   # Esto se habilita cuando del lado del cliente se usaran las opciones sslmode=verify-ca o verify-full  
-    ssl_ca_file = /tmp/pki/CA/intermediate.crt
+   # Esto se habilita cuando del lado del cliente se usaran las opciones sslmode=verify-ca o verify-full  y aumenta la seguridad 
+    ssl_ca_file = '/tmp/pki/CA/root.crt'
    ```
 
    
-7. Validar si configuramos el archivo  `postgresql.conf`
+7. Validar si configuramos el archivo  `postgresql.conf y pg_hba.conf`
    ```sql
-     # En caso de arrojar algun registro , el archivo postgresql.conf quedo mal 
-    select * from pg_catalog.pg_file_settings where error is not null;
+     # En caso de arrojar algun registro , es porque algo esta mal configurado
+    select * from pg_catalog.pg_file_settings where error is not null; -- postgresql.conf
+    select * from pg_hba_file_rules where error is not null;  -- pg_hba.conf 
    ```
  
  
@@ -272,11 +273,10 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
 
 - **`verify-ca`**: Obliga SSL y **valida que el certificado del servidor está firmado por una CA confiable**, pero no verifica el nombre del dominio o ip al que se conecta.
   - **Cuándo usar**: Cuando se confía en la CA pero el host puede variar (ej: IP dinámica).
-  - **Cuándo NO usar**: Si el nombre del host debe coincidir exactamente (ej: dominio específico).
+
 
 - **`verify-full`**: Obliga SSL, **valida la CA y el nombre del host** en el certificado. Máxima seguridad.
   - **Cuándo usar**: En entornos productivos (ej: servidores en la nube).
-  - **Cuándo NO usar**: Nunca evitarlo en casos críticos.
 ```
 
 
