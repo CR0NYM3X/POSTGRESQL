@@ -304,11 +304,26 @@ certificatePolicies = 2.23.140.1.2.2
 2. **Generar la CRL con la CA Intermedia**:
    - Finalmente, genera la CRL:
      ```bash
-	     openssl ca -gencrl  -verbose \
+
+		openssl ca -gencrl -verbose \
+		-config /tmp/pki/tls/openssl.conf \
+		-cert /tmp/pki/CA/root.crt \
+		-keyfile /tmp/pki/private/root.key \
+		-out /tmp/pki/CA/root.crl
+		
+		
+		
+		openssl ca -gencrl  -verbose \
 		-config /tmp/pki/tls/openssl.conf \
 		-cert /tmp/pki/CA/intermediate.crt \
 		-keyfile /tmp/pki/private/intermediate.key \
-		-out /tmp/pki/CA/revoke.crl 
+		-out /tmp/pki/CA/intermediate.crl 
+		
+		# Nota hay software que te permite agregar los dos archivos (intermediate.crl , root.crl) en un directorio y desde el software hacer referencia al directorio , por ejemplo postgresql existe el parámetro ssl_crl_dir
+     		# En este caso concatenamos los dos archivos
+		cat /tmp/pki/CA/root.crl /tmp/pki/CA/intermediate.crl > /tmp/pki/CA/combined.crl
+
+     		
      ```
      
    - `openssl ca`: Comando para gestionar una CA.
