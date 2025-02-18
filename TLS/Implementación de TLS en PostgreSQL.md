@@ -3,6 +3,22 @@ para mayor seguridad. Esto requiere que OpenSSL esté instalado tanto en los sis
 que el soporte en PostgreSQL esté habilitado en el momento de la compilación.
 
 
+
+ TLS en PostgreSQL utiliza una combinación de criptografía asimétrica y simétrica para proporcionar una comunicación segura. La criptografía asimétrica se utiliza para el intercambio seguro de claves y la autenticación, mientras que la criptografía simétrica se emplea para el cifrado rápido de los datos transmitidos.
+ 
+
+## Proceso de TLS en PostgreSQL
+
+1. **Intercambio de Claves (Criptografía Asimétrica)**:
+   - El cliente y el servidor utilizan criptografía asimétrica para intercambiar una clave de sesión de manera segura.
+   - Este proceso asegura que la clave de sesión no pueda ser interceptada por terceros.
+
+2. **Cifrado de Datos (Criptografía Simétrica)**:
+   - Una vez que se ha intercambiado la clave de sesión, se utiliza criptografía simétrica para cifrar los datos transmitidos entre el cliente y el servidor.
+   - Esto garantiza que los datos sean transmitidos de manera segura y eficiente.
+ 
+ 
+ 
  
 
 # Fase #1 Pre-Implementación 
@@ -128,27 +144,36 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
 
 
 
-5. **Cuarta capa de seguridad nivel configuración ( Restringir los cifrados inseguros en  `postgresql.conf`)** 
+5. **Cuarta capa de seguridad nivel configuración ( Restringir los cifrados inseguros en  `postgresql.conf`)**
+ En entorno crítico como el bancario, donde se deben cumplir estrictas políticas de seguridad, es fundamental configurar el parámetro ssl_ciphers en PostgreSQL para asegurar el uso de suites de cifrado fuertes y seguras permitidas para las conexiones SSL.
    ```sql
    ssl_prefer_server_ciphers = on
    ssl_ciphers = 'HIGH:!aNULL:!MD5:!3DES:!RC4:!DES:!IDEA:!RC2' # Este para entornos Criticos (Bancos, Tiendas, Etc)
-      # ssl_ciphers = 'HIGH:MEDIUM:!aNULL:!MD5:!RC4' # Este para entornos Normales 
+      # ssl_ciphers = 'HIGH:MEDIUM:!aNULL:!MD5:!RC4' # Este para entornos Normales
+
+   	Explicación de la Configuración:
+	HIGH: Incluye suites de cifrado de alta seguridad, como AES y Camellia.
+	MEDIUM: Incluye suites de cifrado de seguridad media, como SEED.
+	!aNULL: Excluye las suites de cifrado anónimas que no realizan autenticación.
+	!MD5: Excluye las suites de cifrado que utilizan el algoritmo MD5, que es considerado inseguro.
+	!RC4: Excluye RC4, ya que es un cifrado obsoleto y vulnerable.
+
    ```
    
  
-6. **Quinta capa de seguridad nivel configuración ( Habilitar la revocación de certificados con crl en  `postgresql.conf` )**
+7. **Quinta capa de seguridad nivel configuración ( Habilitar la revocación de certificados con crl en  `postgresql.conf` )**
    ```sql
    ssl_crl_file = '/tmp/pki/CA/combined.crl'
    ```
 
-7. **Sexta capa de seguridad nivel configuración ( Verficiación de Certificados  `postgresql.conf` )** 
+8. **Sexta capa de seguridad nivel configuración ( Verficiación de Certificados  `postgresql.conf` )** 
    ```sql
    #  Verifica que el certificado presentado por el cliente ha sido emitido por una CA de confianza. 
    # Esto se habilita cuando del lado del cliente  usara las opciones sslmode=verify-ca o verify-full  y aumenta la seguridad 
-    ssl_ca_file = '/tmp/pki/CA/combined.crt'
+    ssl_ca_file = '/tmp/pki/CA/combined.crt' # Incluye Root + Intermedia
    ```
    
-8. Validar si configuramos el archivo  `postgresql.conf y pg_hba.conf`
+9. Validar si configuramos el archivo  `postgresql.conf y pg_hba.conf`
    ```sql
      # En caso de arrojar algun registro , es porque algo esta mal configurado
     select * from pg_catalog.pg_file_settings where error is not null; -- postgresql.conf
@@ -157,7 +182,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
  
  
 
-9. Recargar archivo de configuración 
+10. Recargar archivo de configuración 
    ```sql
    /usr/pgsql-16/bin/pg_ctl reload -D /sysx/data
    ```
@@ -400,7 +425,55 @@ Abrir otra terminal #2 y Ejecuta el siguiente comando para capturar el tráfico 
 
 ### Mensajes de Error 
 ```markdown
+#1 El error del cliente **`tlsv1 alert unknown ca`** 
+indica que el servidor PostgreSQL no reconoce la CA (Autoridad de Certificación) que emitió el certificado del cliente. Esto suele ocurrir cuando la cadena de confianza no está correctamente configurada. Aquí está la solución paso a paso:
+ 
 
+### **1. Verificar la cadena de certificados (Root e Intermedia)**
+- **Error común**: Si tu servidor solo tiene el certificado de la **CA raíz** (`root.crt`) en `ssl_ca_file`, pero el certificado del cliente fue emitido por una **CA intermedia**, el servidor no reconocerá al cliente porque falta el certificado de la CA intermedia en su cadena de confianza.
+
+#### **Solución**:
+   - Crea un archivo que combine el certificado de la **CA raíz** y la **CA intermedia**:
+     ```bash
+     cat /tmp/pki/CA/root.crt /tmp/pki/CA/intermediate.crt > /tmp/pki/CA/combined.crt
+     ```
+   - Configura `ssl_ca_file` en `postgresql.conf` para usar este archivo combinado:
+     ```ini
+     ssl_ca_file = '/tmp/pki/CA/ca-chain.crt' # Incluye Root + Intermedia
+     ```
+
+ 
+#2 Error en log **`certificate verify failed at depth 1`**  
+ 
+En una arquitectura de PKI (Public Key Infrastructure) con CA intermedio, necesitas manejar la revocación en ambos niveles por una razón importante:
+
+
+1. Cuando usas un CA intermedio, tienes una cadena de confianza:
+   Root CA -> Intermediate CA -> Client/Server Certificates
+
+2. Cuando PostgreSQL verifica un certificado, verifica toda la cadena de confianza, y necesita comprobar:
+   - Que el certificado del cliente no está revocado (usando el CRL del CA intermedio)
+   - Que el certificado del CA intermedio no está revocado (usando el CRL del Root CA)
+
+
+Por eso ves el error "certificate verify failed at depth 1" - está fallando en el nivel del CA intermedio (depth 1), porque PostgreSQL está intentando verificar si el propio certificado intermedio está revocado.
+
+
+
+#3   **Error: "certificate verify failed"**
+- **Causa**: El cliente no reconoce la CA que firmó el certificado del servidor.  
+- **Solución**: Asegúrate de que el cliente tenga el `root.crt` correcto y que la ruta en `sslrootcert` sea válida.
+
+#4 **Error: "hostname does not match certificate"**
+- **Causa**: Te conectas usando un nombre (ej: IP) que no está en el certificado.  
+- **Solución**:  
+  - Conéctate usando el **hostname exacto** del certificado.  
+  - O emite un certificado con el nombre/IP correcto en el campo **SAN (Subject Alternative Name)**.
+
+	Validar que el nombre del servidor coincide**
+	- Asegúrate de que el **nombre del servidor** (hostname) al que te conectas (ej: `mi-servidor-postgres.com`) coincida exactamente con el **Common Name (CN)** o **Subject Alternative Names (SAN)** del certificado del servidor.  
+	  - Si el certificado está emitido para `mi-servidor-postgres.com`, pero te conectas usando la dirección IP (ej: `192.168.1.100`), la validación fallará.
+	
 
 
 ```
@@ -443,6 +516,11 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
 
 - **`verify-full`**: Obliga SSL, **valida la CA y el nombre del host** en el certificado. Máxima seguridad.
   - **Cuándo usar**: En entornos productivos (ej: servidores en la nube).
+	
+	1. **Verificación de la cadena de certificados**: El cliente verifica que el certificado del servidor esté firmado por una autoridad certificadora (CA) de confianza. Esto se hace utilizando el archivo especificado en `sslrootcert`, que contiene el certificado 	raíz de la CA. Esta verificación asegura que el certificado del servidor es auténtico y no ha sido emitido por una entidad no confiable.
+	
+	2. **Verificación del nombre del servidor**: El cliente también verifica que el nombre del servidor (hostname) al que se está conectando coincida con el nombre común (Common Name, CN) o uno de los nombres alternativos del sujeto (Subject Alternative Names, SAN) 	en el certificado del servidor. Esto asegura que el cliente se está conectando al servidor correcto y no a un servidor malicioso.
+
 ```
 
 
@@ -540,4 +618,11 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
  	select ssl_cipher(): Proporciona el nombre del cifrado utilizado (por ejemplo, DHE-RSA-AES256-SHA).
  	select ssl_issuer_dn(): Retorna el nombre completo del emisor del certificado del cliente.
  	select ssl_client_dn(): Ofrece el nombre completo del sujeto del certificado del cliente.
+```
+
+# Configuración extra en postgresql
+En caso de que la llave privada este protegida con una contraseña , es necesario que cuando reinicien el servidor el administrador tenga que colocar la contraseña , por lo que esto puede ser algo tedioso cuando se administran varios servidores por lo que se pueden habilitar estos parametros para que obtenga la contraseña de alguna parte segura como un la coloque de ser necesario.
+```
+	ssl_passphrase_command_supports_reload = on
+	ssl_passphrase_command = '/path/to/get_passphrase.sh'	
 ```
