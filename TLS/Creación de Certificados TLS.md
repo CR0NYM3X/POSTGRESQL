@@ -373,7 +373,7 @@ certificatePolicies = 2.23.140.1.2.2
  
 **Comando:**
 ```sh
-openssl s_client -connect 172.10.10.100:5432 -starttls postgres -tls1_2
+openssl s_client -connect 172.10.10.100:5432 -starttls postgres -tls1_2  -tlsextdebug -status
 openssl s_client -connect 127.0.0.1:5416 -starttls postgres -tls1_2 -cert /tmp/pki/certs/client_new.crt -key /tmp/pki/private/client_new.key -CAfile /tmp/pki/CA/ca-chain.crt
 
 ```
