@@ -425,6 +425,30 @@ Abrir otra terminal #2 y Ejecuta el siguiente comando para capturar el tráfico 
  	7.- conclusion con el TLS activo no podemos ver la comunicación entre el cliente y servidor en texto plano
    ```
 
+5.- Pruebas de cambio de certificado sin hacer reload 
+   ```bash
+	### Cambios de nuevo Certificado 
+	mv /tmp/pki/certs/server.crt  /tmp/pki/certs/server_ant.crt 
+	mv /tmp/pki/private/server.key  /tmp/pki/private/server_ant.key
+	  
+	mv /tmp/pki/certs/server2.crt  /tmp/pki/certs/server.crt 
+	mv /tmp/pki/private/server2.key  /tmp/pki/private/server.key
+	
+	psql "host=10.28.230.123  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/intermediate_root.crt  sslcert=/tmp/pki/certs/client_new.crt sslkey=/tmp/pki/private/client_new.key"
+	
+	
+	
+	### Regresando como estaba
+	mv /tmp/pki/certs/server.crt  /tmp/pki/certs/server2.crt 
+	mv /tmp/pki/private/server.key  /tmp/pki/private/server2.key
+	
+	mv /tmp/pki/certs/server_ant.crt  /tmp/pki/certs/server.crt 
+	mv /tmp/pki/private/server_ant.key  /tmp/pki/private/server.key
+	 
+	psql "host=10.28.230.123  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/intermediate_root.crt  sslcert=/tmp/pki/certs/client_new.crt sslkey=/tmp/pki/private/client_new.key"
+   ```
+
+
 
 # Conceptos información extra
 
