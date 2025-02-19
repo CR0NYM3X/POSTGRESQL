@@ -427,16 +427,20 @@ Abrir otra terminal #2 y Ejecuta el siguiente comando para capturar el tráfico 
 
 5.- Pruebas de cambio de certificado sin hacer reload 
    ```bash
+	pg_ctl reload -D $PGDATA16
+	
 	### Cambios de nuevo Certificado 
 	mv /tmp/pki/certs/server.crt  /tmp/pki/certs/server_ant.crt 
 	mv /tmp/pki/private/server.key  /tmp/pki/private/server_ant.key
-	  
+	
 	mv /tmp/pki/certs/server2.crt  /tmp/pki/certs/server.crt 
 	mv /tmp/pki/private/server2.key  /tmp/pki/private/server.key
 	
 	psql "host=127.0.0.1  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/intermediate_root.crt  sslcert=/tmp/pki/certs/client_new.crt sslkey=/tmp/pki/private/client_new.key"
 	
 	
+	
+	pg_ctl reload -D $PGDATA16
 	
 	### Regresando como estaba
 	mv /tmp/pki/certs/server.crt  /tmp/pki/certs/server2.crt 
@@ -446,6 +450,7 @@ Abrir otra terminal #2 y Ejecuta el siguiente comando para capturar el tráfico 
 	mv /tmp/pki/private/server_ant.key  /tmp/pki/private/server.key
 	 
 	psql "host=127.0.0.1  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/intermediate_root.crt  sslcert=/tmp/pki/certs/client_new.crt sslkey=/tmp/pki/private/client_new.key"
+
    ```
 
 
