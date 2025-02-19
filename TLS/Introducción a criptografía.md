@@ -116,6 +116,15 @@ Los protocolos criptográficos son fundamentales para garantizar la seguridad en
 
 
 
+# PKCS (Public Key Cryptography Standards)
+es un conjunto de estándares de criptografía de clave pública desarrollados por RSA Security LLC a principios de los años 90. Estos estándares están diseñados para promover el uso de técnicas criptográficas, como el algoritmo RSA, y garantizar la seguridad en la comunicación y el intercambio de datos.
 
+Algunos de los estándares PKCS más conocidos incluyen:
 
+- **PKCS #1**: Define las propiedades matemáticas y el formato de las claves públicas y privadas RSA, así como los algoritmos básicos para realizar cifrado y descifrado RSA.
+- **PKCS #7**: También conocido como Cryptographic Message Syntax (CMS), se utiliza para firmar y/o cifrar mensajes bajo una infraestructura de clave pública (PKI). Es la base de S/MIME, que se usa para el correo electrónico seguro.
+- **PKCS #11**: Define una interfaz de programación en C para crear y manipular tokens criptográficos que pueden contener claves secretas. Se utiliza a menudo para comunicarse con módulos de seguridad de hardware o tarjetas inteligentes.
  
+ 
+
+
