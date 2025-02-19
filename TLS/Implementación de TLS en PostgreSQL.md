@@ -121,14 +121,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    ```
 
 
-3. **Segunda capa de seguridad nivel configuración ( Establecer version Minima y Máximo de TLS en  `postgresql.conf`)**
-
-   ```Markdown
-    ssl_min_protocol_version = 'TLSv1.2'
-    ssl_max_protocol_version = 'TLSv1.3'   
-   ```
-
-4. **Tercera capa de seguridad nivel configuración ( forzar el uso de TLS en  `pg_hba.conf` )** 
+3. **Segunda capa de seguridad nivel configuración ( forzar el uso de TLS en  `pg_hba.conf` )** 
    ```Markdown
 
    ## Parámetros de configuración en `pg_hba.conf`
@@ -148,6 +141,12 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    
    ```
 
+
+4. **Tercera capa de seguridad nivel configuración ( Establecer version Minima y Máximo de TLS en  `postgresql.conf`)**
+   ```Markdown
+    ssl_min_protocol_version = 'TLSv1.2'
+    ssl_max_protocol_version = 'TLSv1.3'   
+   ```
 
 
 5. **Cuarta capa de seguridad nivel configuración ( Restringir los cifrados inseguros en  `postgresql.conf`)**
