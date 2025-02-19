@@ -434,7 +434,7 @@ Abrir otra terminal #2 y Ejecuta el siguiente comando para capturar el tráfico 
 	mv /tmp/pki/certs/server2.crt  /tmp/pki/certs/server.crt 
 	mv /tmp/pki/private/server2.key  /tmp/pki/private/server.key
 	
-	psql "host=10.28.230.123  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/intermediate_root.crt  sslcert=/tmp/pki/certs/client_new.crt sslkey=/tmp/pki/private/client_new.key"
+	psql "host=127.0.0.1  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/intermediate_root.crt  sslcert=/tmp/pki/certs/client_new.crt sslkey=/tmp/pki/private/client_new.key"
 	
 	
 	
@@ -445,7 +445,7 @@ Abrir otra terminal #2 y Ejecuta el siguiente comando para capturar el tráfico 
 	mv /tmp/pki/certs/server_ant.crt  /tmp/pki/certs/server.crt 
 	mv /tmp/pki/private/server_ant.key  /tmp/pki/private/server.key
 	 
-	psql "host=10.28.230.123  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/intermediate_root.crt  sslcert=/tmp/pki/certs/client_new.crt sslkey=/tmp/pki/private/client_new.key"
+	psql "host=127.0.0.1  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/intermediate_root.crt  sslcert=/tmp/pki/certs/client_new.crt sslkey=/tmp/pki/private/client_new.key"
    ```
 
 
