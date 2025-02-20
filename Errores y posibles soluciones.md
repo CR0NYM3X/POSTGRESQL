@@ -232,6 +232,47 @@ Si intentas iniciar otra instancia de PostgreSQL que intente usar el mismo puert
 sudo rm /var/run/postgresql/.s.PGSQL.5432.lock
 ```
 
+# Error #4 PQgetCurrentTimeUSec
+Esto ocurre porque estas ejecutando el psql con librerias de una version antigua y la funcion PQgetCurrentTimeUSec es nueva en la lib libpq
+
+```markdown
+
+# 1 - Nos conectamos a psql 17 
+[postgres@server_test ~]$ $PGBIN17/psql -p 5417
+
+ 🐘 Current Host Server Date Time : Thu Feb 20 14:37:00 MST 2025
+
+psql (17.2)
+Type "help" for help.
+
+postgres@postgres#  \c test 
+/usr/pgsql-17/bin/psql: symbol lookup error: /usr/pgsql-17/bin/psql: undefined symbol: PQgetCurrentTimeUSec
+[postgres@server_test ~]$
+
+
+
+# 2 - Revisamos dependencias 
+[postgres@server_test ~]$ ldd  /usr/pgsql-17/bin/psql | grep libpq
+        libpq.so.5 => /usr/pgsql-16/lib/libpq.so.5 (0x00007f325f928000)
+
+#  Quí esta el problema el binario de psql  esta intentando cargar libreria libpq.so de la version 16 "/usr/pgsql-16/lib/libpq.so.5"
+
+
+
+# 3 -  Revisamos la variable de entorno donde indica las librerias/bibliotecas compartidas .so a linux 
+[postgres@server_test ~]$ echo $LD_LIBRARY_PATH
+:/usr/pgsql-16/lib
+
+
+
+# 4 -  Modificamos las variables de entorno 
+vim /home/postgres/.bash_profile
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/pgsql-17/lib
+	export PATH=/usr/pgsql-16/bin:$PATH
+	
+
+# 5 - Con esto ya debe de quedar 
+```
 
 
 
