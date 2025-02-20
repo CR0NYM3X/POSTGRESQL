@@ -160,107 +160,460 @@ Para burlar `verify-full`, el atacante necesitaría:
 
 
 
-
-### **Mejores prácticas para prevenir MITM**
-1. Usar `sslmode=verify-full` en el cliente.  
-2. Emplear certificados SSL/TLS emitidos por CAs reconocidas o internamente gestionadas (no autofirmados).  
-3. Rotar y proteger las claves privadas del servidor.  
-4. Monitorizar el tráfico de red para detectar anomalías (p.ej., uso de herramientas como IDS/IPS).  
-5. Educar a los usuarios para que no ignoren advertencias de certificados.  
-
-
-### **Ejemplo de ataque MITM en modo `require`**
-1. Te conectas a `servidor.com` con `sslmode=require`.  
-2. Un atacante redirige tu conexión a su propio servidor.  
-3. El atacante presenta un certificado SSL auto-firmado.  
-4. Como no hay validación, el cliente acepta el certificado.  
-5. **Resultado**: La conexión está cifrada, pero **entre tú y el atacante**, no con el servidor real.
-
  
   ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
   
-  
-### **Ejemplo de flujo**
-1. **Servidor** envía su certificado SSL al cliente.
-2. **Cliente** verifica:
-   - Que el certificado del servidor esté firmado por una CA presente en su `sslrootcert`.
-   - Que el certificado no esté caducado o revocado (si se realiza validación CRL/OCSP).
-3. **Si el servidor valida clientes**, entonces:
-   - El cliente envía su certificado.
-   - El servidor verifica el certificado del cliente usando su `ssl_ca_file`.
+# Negociaciones 
+
+
+```markdown
+
+
+******************************************************************************************************************************** 
+****************************           EXPLICACIÓN  BÁSICA DE  NEGOCIACIÓN TLS                    ********************************** 
+********************************************************************************************************************************
+
+
+###  Conexión de una Aplicación Cliente a PostgreSQL con TLS
+**Audiencia:** Personal sin conocimientos tecnicos 
+
+
+#### **¿Cómo funciona?**
+1. **Solicitud de Conexión Segura**  
+   - La aplicación cliente (ejemplo: un software interno) envía una solicitud a la base de datos PostgreSQL y exige una conexión segura.  
+   - Es como pedir una reunión en una sala blindada en lugar de una cafetería pública.
+
+2. **Autenticación del Servidor (PostgreSQL)**  
+   - PostgreSQL responde enviando un **certificado digital**, que funciona como un "DNI electrónico" que prueba su identidad.  
+   - Este certificado es emitido por una **Autoridad Certificadora (CA)** confiable (ejemplo: DigiCert, Let’s Encrypt), que actúa como un notario digital para validar la autenticidad.
+
+3. **Verificación del Certificado**  
+   - La aplicación cliente verifica que el certificado:  
+     a) Esté emitido por una CA de confianza.  
+     b) No haya expirado.  
+     c) Corresponde al servidor correcto (ejemplo: `bd.empresa.com`).  
+   - Si algo falla, la conexión se bloquea (como un guardia de seguridad que rechaza una credencial falsa).
+
+4. **Establecimiento del "Túnel Seguro"**  
+   - Si el certificado es válido, cliente y servidor acuerdan un método de cifrado (ejemplo: AES-256) para encriptar los datos.  
+   - A partir de aquí, toda comunicación (consultas, resultados) viaja cifrada, imposible de leer por terceros.
+
+
+
+
+#### **Diagrama: Establecimiento de una Comunicación TLS Basica #1**
+https://app.diagrams.net/
  
  
- ### **¿Cómo funciona la negociación TLS?**
-El proceso de negociación entre cliente y servidor sigue estos pasos:
-1. **Cliente**: Envía un `ClientHello` indicando la versión más alta de TLS que soporta (p.ej., TLS 1.3).
-2. **Servidor PostgreSQL**:
-   - Verifica si la versión propuesta por el cliente es igual o superior a `ssl_min_protocol_version`.
-   - Si la versión del cliente es compatible y cumple con el mínimo configurado, elige la **versión más alta comúnmente soportada**.
-   - Si el cliente propone una versión inferior al mínimo configurado, rechaza la conexión.
+@startuml
+title **Conexión Segura Aplicación-Cliente → PostgreSQL con TLS**
 
-**Ejemplo**:
-- Servidor: Soporta TLS 1.3 y tiene `ssl_min_protocol_version = TLSv1.2`.
-- Cliente A: Soporta TLS 1.3 → **Se usa TLS 1.3**.
-- Cliente B: Soporta solo TLS 1.2 → **Se usa TLS 1.2**.
-- Cliente C: Soporta TLS 1.1 → **Conexión rechazada**.
+participant "Aplicación Cliente" as Cliente
+participant "Servidor PostgreSQL" as Servidor
+database "Certificado TLS" as Certificado
+entity "Autoridad Certificadora (CA)" as CA
 
-  
-  
-  
-  
-La negociación TLS entre un cliente y un servidor PostgreSQL que utiliza certificados X.509 (como `root.crt`, `intermedio.crt`, `server.crt` y `server.key`) sigue un flujo técnico basado en el protocolo **TLS Handshake**, adaptado a la configuración específica de PostgreSQL. Aquí está el proceso detallado:
+Cliente -> Servidor: "Solicitud de conexión segura (TLS)"
+Servidor -> Cliente: Envía **Certificado TLS**
+Cliente -> CA: "¿Es válido este certificado?"
+CA --> Cliente: "Confirmación (válido/no válido)"
+
+group Si el certificado es válido [Cifrado]
+  Cliente -> Servidor: Clave de cifrado (Ej: AES-256)
+  Servidor -> Cliente: Confirmación de cifrado
+  Cliente -[#green]> Servidor: **Datos Encriptados**\n(Consultas, respuestas)
+else Si el certificado no es válido
+  Cliente -[#red]>x Servidor: **Conexión bloqueada**
+end
+@enduml
 
 
-### **2. Proceso de Negociación TLS (Handshake)**
 
-#### **Paso 1: Inicio de la conexión (ClientHello)**  
-El cliente inicia la conexión al servidor PostgreSQL en el puerto 5432 (o el configurado) y envía un mensaje `ClientHello` con:
-- Versiones de TLS soportadas (ej: TLS 1.2 o 1.3).
-- Cipher suites soportadas (ej: `ECDHE-RSA-AES256-GCM-SHA384`).
-- Un número aleatorio (_Client Random_).
+#### **Diagrama: Establecimiento de una Comunicación TLS Basica #2**
+https://www.websequencediagrams.com/
 
-#### **Paso 2: Respuesta del servidor (ServerHello)**  
-El servidor responde con un mensaje `ServerHello` que incluye:
-- La versión de TLS seleccionada (ej: TLS 1.2).
-- El cipher suite acordado.
-- Un número aleatorio (_Server Random_).
+sequenceDiagram
 
-#### **Paso 3: Envío del certificado del servidor (Certificate)**  
-El servidor envía su certificado (`server.crt`) y **toda la cadena de certificados necesaria** para que el cliente valide la confianza:
-   - `server.crt` → `intermedio.crt` → `root.crt` (si el cliente ya tiene `root.crt`).
+    participant App as Aplicación Cliente
+    participant TLS as Capa de Seguridad TLS
+    participant DB as PostgreSQL Database
 
-#### **Paso 4: Validación del certificado por el cliente**  
-El cliente verifica:
-   - Que el certificado `server.crt` está firmado por `intermedio.crt`.
-   - Que `intermedio.crt` está firmado por `root.crt` (previamente confiable en el cliente).
-   - Que el nombre del servidor (CN/SAN) coincide con el host de conexión.
-   - Que el certificado no está expirado ni revocado (si se usa CRL/OCSP).
-
-#### **Paso 5: Autenticación del servidor (ServerKeyExchange)**  
-El servidor demuestra posesión de `server.key` mediante:
-   - **Firma digital**: Usa `server.key` para firmar un hash de los mensajes anteriores (_Client Random_ + _Server Random_).
-   - En TLS 1.3, esto se combina con el proceso de intercambio de claves (ej: ECDHE).
-
-#### **Paso 6: Intercambio de claves (Key Exchange)**  
-Según el cipher suite:
-- **RSA**: El cliente genera una clave pre-maestra (pre-master secret), la cifra con la clave pública del servidor (extraída de `server.crt`) y la envía.
-- **ECDHE**: El servidor envía parámetros Diffie-Hellman firmados con `server.key`, y ambos lados calculan una clave compartida.
-
-#### **Paso 7: Finalización del Handshake (Finished)**  
-Ambas partes derivan las claves de sesión para cifrado simétrico (ej: AES-GCM) y envían mensajes `Finished` cifrados para confirmar que el handshake fue exitoso.
+    Note over App,DB: Fase 1: Establecimiento de Conexión Segura
 
    
+    App->>DB: Solicitud de conexión
+    DB->>App: Envía certificado digital
 
-### **Diagrama del Flujo TLS en PostgreSQL**
-```
-Cliente Servidor PostgreSQL
------- -------------------
-ClientHello (TLS versiones, ciphers)
-                                ---> ServerHello (TLS 1.3, cipher)
-                                <--- Certificate (server.crt + intermedio.crt)
-                                <--- ServerKeyExchange (firma con server.key)
-ClientKeyExchange (clave pre-maestra)
-[Finished] ---> [Finished]
-Conexión cifrada (AES-GCM) <--> Datos cifrados
-```
+    Note over App: Verifica certificado
+
+
+    App->>DB: Confirma certificado válido
+
+    Note over App,DB: Fase 2: Establecimiento del Túnel Seguro
+
+    App->>TLS: Inicia cifrado
+    TLS->>DB: Establece túnel seguro
+
+
+    Note over App,DB: Fase 3: Comunicación Segura
+   
+    App->>DB: Consultas cifradas
+    DB->>App: Respuestas cifradas
+
+   
+    Note over App,DB: Los datos viajan cifradosen ambas direcciones
+
+
+
+
+#### **Diagrama: Establecimiento de una Comunicación TLS (Basica Mas entendible)**
+
+
+
+@startuml
+title **Establecimiento de una Comunicación Segura (TLS)**
+
+participant "Aplicación Cliente" as Cliente
+participant "Servidor PostgreSQL" as Servidor
+database "Certificado TLS" as Certificado
+entity "Autoridad Certificadora (CA)" as CA
+
+== Fase 1: Solicitud de Conexión Segura ==
+Cliente -> Servidor: "Hola, quiero conectarme de forma segura"
+
+== Fase 2: Envío del Certificado ==
+Servidor -> Cliente: "Aquí está mi certificado de identidad"
+note right: El certificado es como un "DNI electrónico" del servidor
+
+== Fase 3: Verificación del Certificado ==
+Cliente -> CA: "¿Este certificado es válido?"
+CA --> Cliente: "Sí, este certificado es válido y confiable"
+
+== Fase 4: Establecimiento del "Túnel Seguro" ==
+Cliente -> Servidor: "Vamos a cifrar la comunicación"
+Servidor -> Cliente: "De acuerdo, usaremos un cifrado fuerte"
+
+== Fase 5: Comunicación Segura ==
+Cliente -[#green]> Servidor: **Datos Cifrados**\n(consultas, respuestas, información confidencial)
+Servidor -[#green]> Cliente: **Respuestas Cifradas**
+
+== Beneficios ==
+note right: - **Confidencialidad**: Nadie puede leer los datos\n- **Autenticidad**: El servidor es quien dice ser\n- **Integridad**: Los datos no pueden ser modificados
+@enduml
+
  
+
+
+******************************************************************************************************************************** 
+****************************           EXPLICACIÓN  AVANZADA  DE NEGOCIACION TLS                   ***************************** 
+********************************************************************************************************************************
+
+
+
+### Explicación Técnica Avanzada: Conexión TLS entre Cliente y PostgreSQL  
+**Audiencia:** Expertos en Seguridad y Tecnología  
+
+---
+
+#### **1. Protocolo TLS 1.3+ en PostgreSQL: Arquitectura y Fases**  
+PostgreSQL soporta TLS 1.2/1.3 para cifrado en tránsito. El flujo detallado incluye:  
+
+##### **a) Handshake Inicial (Full Handshake)**  
+1. **ClientHello**:  
+   - El cliente envía:  
+     - Versión TLS (1.3).  
+     - Cipher suites soportados (e.g., `TLS_AES_256_GCM_SHA384`).  
+     - Parámetros de curva elíptica (X25519, secp521r1).  
+     - SNI (*Server Name Indication*) para hosts virtuales.  
+	 
+2. **ServerHello**:  
+   - PostgreSQL responde con:  
+     - Cipher suite seleccionado (priorizando Forward Secrecy).  
+     - Certificado TLS (X.509 v3) firmado por una CA (pública o privada).  
+     - Clave pública para ECDHE (*Elliptic-Curve Diffie-Hellman Ephemeral*).  
+
+
+##### **b) Autenticación Mutua (Opcional con TLS)**  
+- **Client Certificate Request**:  
+  - PostgreSQL puede exigir un certificado cliente (configuración `ssl=on` + `ssl_ca_file`).  
+  - Validación CRL/OCSP para revocación (RFC 5280).  
+
+
+##### **c) Key Exchange y Derivación de Claves**  
+- **ECDHE Key Share**:  
+  - Cliente/servidor intercambian parámetros de curva para calcular el *pre-master secret*.  
+  - Derivan claves mediante HKDF (*HMAC-based Key Derivation Function*).  
+  - Claves efímeras garantizan **Perfect Forward Secrecy (PFS)**.  
+
+
+##### **d) Cifrado de Datos**  
+- Se activan los AEAD (*Authenticated Encryption with Associated Data*) como AES-256-GCM.  
+- Cada paquete incluye un nonce y un tag de autenticación para mitigar ataques (e.g., BEAST, Lucky13).  
+
+
+
+#### **4. Diagrama Técnico (PlantUML)**  
+
+https://app.diagrams.net/
+
+  
+@startuml  
+title **Flujo Detallado TLS 1.3 entre Cliente y PostgreSQL**  
+
+participant "Cliente" as Client  
+participant "Servidor PostgreSQL" as Server  
+participant "Autoridad Certificadora (CA)" as CA  
+
+== Fase 1: Handshake Inicial ==  
+Client -> Server: ClientHello (TLS 1.3, Cipher Suites, SNI)  
+Server -> Client: ServerHello (Cipher Suite: TLS_AES_256_GCM_SHA384)  
+Server -> Client: Certificate (X.509v3 + Chain)  
+Server -> Client: ServerKeyShare (ECDHE, X25519)  
+
+== Fase 2: Autenticación y Key Exchange ==  
+alt Autenticación Mutua (mTLS)  
+  Server -> Client: CertificateRequest  
+  Client -> Server: Certificate (Cliente)  
+  Client -> Server: ClientKeyShare (ECDHE Params)  
+else Autenticación Unidireccional  
+  Client -> Server: ClientKeyShare (ECDHE Params)  
+end  
+
+== Fase 3: Establecimiento de Claves ==  
+Client -> Server: Finished (HMAC cifrado)  
+Server -> Client: Finished (HMAC cifrado)  
+
+== Fase 4: Canal Seguro ==  
+Client -[#green]> Server: Datos cifrados (AES-256-GCM)  
+Server -[#green]> Client: Respuestas cifradas (AEAD)  
+
+== Auditoría Post-Conexión ==  
+Server -> CA: OCSP Stapling Check  
+CA --> Server: Certificado Válido (200 OK)  
+@enduml  
+
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@ DIAGRAMA AVAZADO @@@@@@@@@@@@@@@@@@@@@
+
+https://www.websequencediagrams.com/
+
+
+sequenceDiagram
+
+    participant C as Client Application
+    participant TLS as TLS Layer
+    participant P as PostgreSQL Server
+  
+
+    Note over C,P: TLS Handshake Phase
+    C->>P: ClientHello (TLS version, cipher suites, client random)
+    P->>C: ServerHello (selected cipher suite, server random)
+    P->>C: Server Certificate (X.509)
+    P->>C: ServerKeyExchange (ECDHE parameters)
+    P->>C: ServerHelloDone
+
+    Note over C: Certificate Validation
+    C->>C: Verify Certificate Chain
+    C->>C: Check Certificate Revocation
+    C->>C: Validate Server Identity
+    C->>P: ClientKeyExchange (ECDHE public key)
+
+ 
+    Note over C,P: Key Generation
+    C->>C: Generate Pre-Master Secret
+    C->>C: Derive Master Secret
+    C->>C: Generate Session Keys
+    C->>P: ChangeCipherSpec
+    C->>P: Finished (encrypted with session keys)
+    P->>C: ChangeCipherSpec
+    P->>C: Finished (encrypted with session keys)
+
+    Note over C,P: Secure Communication Established
+    C->>P: PostgreSQL Startup Message (encrypted)
+    P->>C: Authentication Request (encrypted)
+    C->>P: Password/SCRAM Authentication (encrypted)
+    P->>C: Authentication OK + Backend Key Data (encrypted)
+
+
+ 
+
+
+
+
+******************************************************************************************************************************** 
+****************************           EXPLICACIÓN BÁSICA Man-in-the-Middle  CON SSLMODE = REQUIRE                     ********* 
+********************************************************************************************************************************
+
+
+ 
+### Conexión  `sslmode=require`  Ataque Man-in-the-Middle (MITM) con Configuración Débil
+
+#### **Flujo del Ataque MITM**
+
+1. **Interceptación del Tráfico**:  
+   - El atacante se posiciona entre el cliente y el servidor (por ejemplo, en una red Wi-Fi pública o mediante ARP spoofing).  
+
+2. **Suplantación del Servidor**:  
+   - El atacante genera un certificado falso y se hace pasar por el servidor PostgreSQL.  
+
+
+3. **Conexión del Cliente**:  
+   - El cliente intenta conectarse al servidor real, pero es redirigido al atacante debido a la falta de validación del certificado.  
+
+4. **Establecimiento de Conexión Cifrada (pero Insegura)**:  
+
+   - El cliente acepta el certificado falso porque `sslmode=require` no verifica la autenticidad del servidor.  
+   - El atacante establece una conexión cifrada con el cliente y otra con el servidor real, actuando como un "puente" entre ambos.  
+
+5. **Interceptación y Modificación de Datos**:  
+   - El atacante puede leer, modificar o robar los datos transmitidos entre el cliente y el servidor.  
+
+
+
+#### **Diagrama de Flujo (PlantUML)**
+
+
+@startuml
+title **Ataque Man-in-the-Middle (MITM) con Configuración Débil**
+
+participant "Aplicación Cliente" as Cliente
+participant "Atacante (MITM)" as Atacante
+participant "Servidor PostgreSQL" as Servidor
+
+== Fase 1: Interceptación ==
+Cliente -> Atacante: Solicitud de conexión (sslmode=require)
+Atacante -> Servidor: Redirige la solicitud al servidor real
+
+== Fase 2: Suplantación ==
+Atacante -> Cliente: Envía certificado falso
+note right: Cliente acepta el certificado porque no lo valida
+
+== Fase 3: Conexión Cifrada (pero Insegura) ==
+Cliente -[#red]> Atacante: Datos cifrados (creyendo que es el servidor)
+Atacante -[#red]> Servidor: Reenvía los datos al servidor real
+
+== Fase 4: Interceptación y Modificación ==
+Atacante -> Cliente: Lee y/o modifica los datos
+Atacante -> Servidor: Lee y/o modifica los datos
+
+== Resultado ==
+note right: El atacante tiene acceso completo a los datos transmitidos
+@enduml
+
+
+ 
+ 
+ 
+******************************************************************************************************************************** 
+****************************           EXPLICACIÓN BÁSICA Man-in-the-Middle  CON SSLMODE = VERIFY-CA                     ******* 
+********************************************************************************************************************************
+
+### **Explicación del Diagrama**
+1. **Solicitud de Conexión Segura**:  
+   - La aplicación cliente intenta conectarse al servidor PostgreSQL de forma segura, pero el atacante intercepta la solicitud.  
+
+2. **Suplantación del Servidor**:  
+   - El atacante envía un certificado falso al cliente, que está firmado por la misma CA de confianza.  
+
+3. **Verificación del Certificado**:  
+   - El cliente verifica que el certificado es válido (firmado por una CA de confianza), pero **no verifica el nombre del servidor** (debido a `sslmode=verify-ca`).  
+
+4. **Establecimiento del "Túnel Seguro"**:  
+   - El cliente y el atacante establecen una conexión cifrada, creyendo que es segura.  
+
+5. **Comunicación Cifrada (pero Insegura)**:  
+   - El atacante intercepta y reenvía los datos al servidor real, teniendo acceso completo a la información.  
+
+6. **Interceptación y Modificación**:  
+   - El atacante puede leer, modificar o robar los datos transmitidos entre el cliente y el servidor.  
+
+ 
+ #### **Diagrama: Comunicación TLS con PostgreSQL y Riesgo de MITM**
+
+
+@startuml
+title **Comunicación Segura con PostgreSQL y Riesgo de MITM**
+
+participant "Aplicación Cliente" as Cliente
+participant "Atacante (Intermediario)" as Atacante
+participant "Servidor PostgreSQL" as Servidor
+database "Certificado TLS" as Certificado
+entity "Autoridad Certificadora (CA)" as CA
+
+== Fase 1: Solicitud de Conexión Segura ==
+Cliente -> Atacante: "Hola, quiero conectarme de forma segura"
+note right: El atacante intercepta la solicitud
+
+== Fase 2: Suplantación del Servidor ==
+Atacante -> Cliente: "Aquí está mi certificado de identidad"
+note right: El atacante envía un certificado falso\n(firmado por la misma CA)
+
+== Fase 3: Verificación del Certificado ==
+Cliente -> CA: "¿Este certificado es válido?"
+CA --> Cliente: "Sí, este certificado es válido y confiable"
+note right: El cliente no verifica el nombre del servidor\n(sslmode=verify-ca)
+
+== Fase 4: Establecimiento del "Túnel Seguro" ==
+Cliente -> Atacante: "Vamos a cifrar la comunicación"
+Atacante -> Servidor: Redirige la solicitud al servidor real
+
+== Fase 5: Comunicación Cifrada (pero Insegura) ==
+Cliente -[#red]> Atacante: **Datos Cifrados**\n(creyendo que es el servidor)
+Atacante -[#red]> Servidor: Reenvía los datos al servidor real
+
+== Fase 6: Interceptación y Modificación ==
+Atacante -> Cliente: Lee y/o modifica los datos
+Atacante -> Servidor: Lee y/o modifica los datos
+
+== Riesgo ==
+note right: El atacante tiene acceso completo a los datos transmitidos\naunque la comunicación está cifrada
+@enduml
+
+
+ 
+ 
+ 
+ 
+******************************************************************************************************************************** 
+****************************           EXPLICACIÓN BÁSICA Man-in-the-Middle  CON SSLMODE = VERIFY-FULL                     ******* 
+********************************************************************************************************************************
+
+
+
+
+
+ 
+
+
+******************************************************************************************************************************** 
+****************************          DIAGRAMAS EXTRAS                     ******************* 
+********************************************************************************************************************************
+
+  
+@@@@@@@@@@@@@@@@@@@ RECOMENDACIONES @@@@@@@@@@@@@@@@@@@@@
+
+ 
+#### ** Auditoría y Mitigación de Riesgos**  
+- **Revocación de Certificados**:  
+  - Uso de OCSP Stapling para verificar estado sin exponer metadatos.  
+  - CRL (*Certificate Revocation List*) actualizada periódicamente.  
+- **Post-Quantum Readiness**:  
+  - Preparación para algoritmos resistentes a cuánticos (e.g., Kyber, Dilithium) en TLS 1.3.  
+ 
+
+#### ** Herramientas de Validación**  
+- **OpenSSL Testing**:  
+ 
+  openssl s_client -connect bd.empresa.com:5432 -starttls postgres -tlsextdebug -status  
+
+- **Wireshark Analysis**:  
+  - Filtrado de paquetes TLS (`tls.handshake.type == 1`) para inspección de handshake.  
+
+
+
+```
+
