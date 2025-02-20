@@ -584,6 +584,85 @@ note right: El atacante tiene acceso completo a los datos transmitidos\naunque l
 
 
 
+### **Explicación del Diagrama**
+1. **Solicitud de Conexión Segura**:  
+   - La aplicación cliente intenta conectarse al servidor PostgreSQL de forma segura, pero el atacante intercepta la solicitud.  
+
+2. **Suplantación del Servidor**:  
+   - El atacante envía un certificado falso al cliente, que está firmado por la misma CA de confianza.  
+
+3. **Verificación del Certificado**:  
+   - El cliente verifica que el certificado es válido (firmado por una CA de confianza).  
+
+4. **Verificación del Nombre del Servidor**:  
+   - El cliente verifica que el nombre del servidor en el certificado coincida con el nombre al que se está conectando.  
+   - **Bloqueo de la Conexión**: Como el nombre no coincide, el cliente bloquea la conexión.  
+
+5. **Conexión Directa y Segura**:  
+   - El cliente se conecta directamente al servidor real y verifica tanto la CA como el nombre del servidor.  
+
+6. **Establecimiento del "Túnel Seguro"**:  
+   - El cliente y el servidor establecen una conexión cifrada utilizando un método de cifrado fuerte.  
+
+7. **Comunicación Segura**:  
+   - Todos los datos (consultas, respuestas, información confidencial) viajan cifrados, lo que garantiza que nadie pueda leerlos o modificarlos.  
+
+ 
+
+#### **Diagrama: Comunicación TLS con PostgreSQL y Protección contra MITM**
+
+
+@startuml
+title **Comunicación Segura con PostgreSQL (sslmode=verify-full)**
+
+participant "Aplicación Cliente" as Cliente
+participant "Atacante (Intermediario)" as Atacante
+participant "Servidor PostgreSQL" as Servidor
+database "Certificado TLS" as Certificado
+entity "Autoridad Certificadora (CA)" as CA
+
+== Fase 1: Solicitud de Conexión Segura ==
+Cliente -> Atacante: "Hola, quiero conectarme de forma segura"
+note right: El atacante intercepta la solicitud
+
+== Fase 2: Suplantación del Servidor ==
+Atacante -> Cliente: "Aquí está mi certificado de identidad"
+note right: El atacante envía un certificado falso\n(firmado por la misma CA)
+
+== Fase 3: Verificación del Certificado ==
+Cliente -> CA: "¿Este certificado es válido?"
+CA --> Cliente: "Sí, este certificado es válido y confiable"
+
+== Fase 4: Verificación del Nombre del Servidor ==
+Cliente -> Cliente: "¿El nombre del servidor coincide con el certificado?"
+note right: El cliente verifica el nombre del servidor\n(sslmode=verify-full)
+
+== Fase 5: Bloqueo de la Conexión ==
+Cliente -[#red]>x Atacante: **Conexión bloqueada**\n(nombre del servidor no coincide)
+note right: El atacante no puede suplantar al servidor
+
+== Fase 6: Conexión Directa y Segura ==
+Cliente -> Servidor: "Hola, quiero conectarme de forma segura"
+Servidor -> Cliente: "Aquí está mi certificado de identidad"
+Cliente -> CA: "¿Este certificado es válido?"
+CA --> Cliente: "Sí, este certificado es válido y confiable"
+Cliente -> Cliente: "¿El nombre del servidor coincide con el certificado?"
+note right: El nombre del servidor coincide
+
+== Fase 7: Establecimiento del "Túnel Seguro" ==
+Cliente -> Servidor: "Vamos a cifrar la comunicación"
+Servidor -> Cliente: "De acuerdo, usaremos un cifrado fuerte"
+
+== Fase 8: Comunicación Segura ==
+Cliente -[#green]> Servidor: **Datos Cifrados**\n(consultas, respuestas, información confidencial)
+Servidor -[#green]> Cliente: **Respuestas Cifradas**
+
+== Beneficios ==
+note right: - **Confidencialidad**: Nadie puede leer los datos\n- **Autenticidad**: El servidor es quien dice ser\n- **Integridad**: Los datos no pueden ser modificados
+ 
+
+ 
+
 
 
  
