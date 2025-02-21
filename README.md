@@ -31,11 +31,7 @@
 
  
 -> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
- 
--> aprender sobre el particionamiento
--> aprender sobre la compresion de la db
-
- 
+-> Mejorar temas de replica striming
 
 ```
 
