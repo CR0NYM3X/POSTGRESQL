@@ -98,10 +98,27 @@ Al instalar este archivo RPM, se configura tu sistema para acceder al repositori
  
 
 
-# Vulnerabilidades de seguridad 
+#   Vulnerabilidades de seguridad 
 ```
+########## Common Vulnerabilities and Exposures (CVE) ###########
+
 https://www.postgresql.org/support/security/
+
+https://www.cvedetails.com/vendor/336/
 https://www.cvedetails.com/vulnerability-list/vendor_id-336/product_id-575/Postgresql-Postgresql.html
+
+https://www.cve.org/CVERecord/SearchResults?query=postgresql
+https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=postgresql
+
+
+https://nvd.nist.gov/vuln/search/results?form_type=Basic&results_type=overview&query=postgres&search_type=all&isCpeNameSearch=false
+
+https://www.rapid7.com/db/?q=postgres&type=
+https://vuldb.com/?search
+
+https://www.exploit-db.com/
+https://0day.today/
+
 ```
 
 #  eXTRA 
