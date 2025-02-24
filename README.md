@@ -1,6 +1,6 @@
 
 ```
------------   FALTANTA POR APRENDER  -----------
+-----------  Reforzar temas  -----------
 
 -> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
 -> Mejorar temas de replica striming
