@@ -1,42 +1,13 @@
 
-# Temario
-
-.- **Conceptos básicos postgresql**<br>
-.- **Recoleccion de informacion de la base de datos y el servidor** <br>
-.- **Base de datos**<br>
-.- **Tablas**<br>
-.- **Esquemas**<br>
-.- **Funciones** <br>
-.- **PROCEDURE** <br>
-.- **Triggers** <br>
-.- **Type** <br>
-.- **View** <br>
-.- **Sequences** <br>
-.- index <br>
-.- **usuarios, accesos y  permisos** <br>
-.- **tablespace**<br>
-.- Logs<br>
-.- Aplicar Relgas en tablas <br>
-.- **Monitoreo, optimización y Alta Disponibilidad** <br>
-.- **Respaldo y Restauración** <br>
-.- Replica streaming <br>
-.- PITR (point-in-time recovery) <br>
-.- Seguridad<br>
-.- Migración de Datos y Actualizaciones<br>
-.- pgbouncer
-
-```sh
-
+```
 -----------   FALTANTA POR APRENDER  -----------
 
- 
 -> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
 -> Mejorar temas de replica striming
+ ```
 
-```
 
-
-# Páginas para aprender más de Postgresql
+# Páginas interesantes 
 ```
 medium.com
 https://p2d2.cz/
