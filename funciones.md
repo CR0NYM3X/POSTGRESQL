@@ -105,7 +105,7 @@ RETURNS: Define el tipo de dato que devuelve la función.
 COST: Estima el costo de ejecución de la función, lo que puede influir en el planificador de consultas.
 ROWS: Especifica el número estimado de filas que devuelve una función que retorna un conjunto.
 SET: Permite establecer parámetros de configuración específicos para la duración de la función.
-STRICT: La función no se llama si alguno de sus argumentos es nulo.
+STRICT: La función no se ejecuta  si alguno de sus valores/argumentos es nulo.
 RETURNS NULL ON NULL INPUT: Similar a STRICT, pero más explícito.
 
 LEAKPROOF: Indica que la función no revela información sobre sus argumentos a través de canales laterales.
@@ -129,7 +129,6 @@ mejor el costo relativo de la función en comparación con otras operaciones
 
 SET statement_timeout = '5min'; --- nos permite configurar parametros en la funcion
 
-STRICT = Una función estricta es aquella que automáticamente devuelve NULL si algun valor de cualquier parametro es nulo, sin siquiera ejecutar el cuerpo de la función. 
 ```
 
 
