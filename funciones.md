@@ -127,7 +127,9 @@ COST 100: El parámetro COST establece un costo estimado para la función, que e
  usa para decidir el plan de ejecución más eficiente. El valor por defecto es 100, pero puedes ajustarlo para reflejar
 mejor el costo relativo de la función en comparación con otras operaciones
 
-SET statement_timeout = '5min'; --- nos permite configurar parametros en la funcion 
+SET statement_timeout = '5min'; --- nos permite configurar parametros en la funcion
+
+STRICT = Una función estricta es aquella que automáticamente devuelve NULL si algun valor de cualquier parametro es nulo, sin siquiera ejecutar el cuerpo de la función. 
 ```
 
 
