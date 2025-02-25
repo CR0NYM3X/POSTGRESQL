@@ -319,9 +319,11 @@ https://www.initmax.cz/wp-content/uploads/2024/06/enterprise-solution-in-postgre
 https://h50146.www5.hpe.com/products/software/oe/linux/mainstream/support/lcc/pdf/PostgreSQL16Beta1_New_Features_en_20230528_1.pdf 
 https://postgresconf.org/system/events/document/000/000/183/pgconf_us_v4.pdf 
 
-
-
-
+ 
+Kerberos and Active Directory setup in pgAdmin 4  https://www.youtube.com/watch?v=Z2-V0THRyY0
+Kerberos Authentication Setup With Postgres on Linux https://www.youtube.com/watch?v=dvYkcZATY6k
+Beyond Trust - PostgreSQL Client Authentication   https://www.youtube.com/watch?v=RiEFy_jiU_c
+Michael Paquier: Authentication in PostgreSQL -- PGCon 2018   https://www.youtube.com/watch?v=aByfTbEs7cg
 
 
 ```
