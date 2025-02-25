@@ -288,7 +288,8 @@ Referencia:
 	https://www.postgresql.org/docs/current/encryption-options.html
 
 
-
+https://github.com/SamerBenMim/kerberos-postgres-auth-gssapi
+https://www.enterprisedb.com/blog/how-set-kerberos-authentication-using-active-directory-postgresql-database
 
 https://community.microstrategy.com/s/article/Use-case-for-Kerberos-against-PostgreSQL-on-MSTR?language=en_US
 
@@ -306,8 +307,8 @@ https://docs.redhat.com/en/documentation/red_hat_amq/2020.q4/html/using_amq_stre
 https://docs.redhat.com/es/documentation/red_hat_data_grid/6.6/html/security_guide/active_directory_authentication_using_kerberos_gssapi#Active_Directory_Authentication_Using_Kerberos_GSSAPI
 
 
-https://github.com/SamerBenMim/kerberos-postgres-auth-gssapi
-https://www.enterprisedb.com/blog/how-set-kerberos-authentication-using-active-directory-postgresql-database
+
+
 https://www.percona.com/blog/postgresql-database-security-external-server-based-authentication/
 https://docs.vmware.com/en/VMware-Greenplum/7/greenplum-database/admin_guide-kerberos.html
 https://www.cockroachlabs.com/docs/stable/gssapi_authentication
