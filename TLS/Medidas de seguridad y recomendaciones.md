@@ -1,5 +1,9 @@
 
 
+
+
+
+
 | Modo TLS en el cliente | Num nivel de seguridad | Recomendado | Entornos aplicables | Impacto en Rendimiento | Complejidad de Configuración | Función | Compatible con HOST en pg_hba | Compatible con HOSTSSL en pg_hba | Parámetros necesarios en postgresql.conf | Parámetros necesarios en el cliente/App | Vulnerable a MITM (Man-in-the-Middle) |
 |------------------------|------------------------|-------------|---------------------|------------------------|-----------------------------|---------|-------------------------------|----------------------------------|-------------------------------------------|--------------------------------------|-----------------------------------------|
 | disable                | 0 - Crítico            | No          | Redes locales aisladas como desarrollo | Ninguno                    | Muy Baja                        | Desactiva la negociación SSL/TLS | Sí                               | No                               | Ninguno                                   | Ninguno                              | Sí                                     |
@@ -231,39 +235,28 @@ end
 
 #### **Diagrama: Establecimiento de una Comunicación TLS Basica #2**
 https://www.websequencediagrams.com/
+```
 
+```mermaid
 sequenceDiagram
-
     participant App as Aplicación Cliente
     participant TLS as Capa de Seguridad TLS
     participant DB as PostgreSQL Database
-
     Note over App,DB: Fase 1: Establecimiento de Conexión Segura
-
-   
     App->>DB: Solicitud de conexión
     DB->>App: Envía certificado digital
-
     Note over App: Verifica certificado
-
-
     App->>DB: Confirma certificado válido
-
     Note over App,DB: Fase 2: Establecimiento del Túnel Seguro
-
     App->>TLS: Inicia cifrado
     TLS->>DB: Establece túnel seguro
-
-
-    Note over App,DB: Fase 3: Comunicación Segura
-   
+    Note over App,DB: Fase 3: Comunicación Segura   
     App->>DB: Consultas cifradas
     DB->>App: Respuestas cifradas
-
-   
     Note over App,DB: Los datos viajan cifradosen ambas direcciones
+```
 
-
+```
 
 
 #### **Diagrama: Establecimiento de una Comunicación TLS (Basica Mas entendible)**
@@ -402,6 +395,10 @@ CA --> Server: Certificado Válido (200 OK)
 https://www.websequencediagrams.com/
 
 
+```
+
+```mermaid
+
 sequenceDiagram
 
     participant C as Client Application
@@ -439,6 +436,9 @@ sequenceDiagram
     P->>C: Authentication OK + Backend Key Data (encrypted)
 
 
+```
+
+```
  
 
 
