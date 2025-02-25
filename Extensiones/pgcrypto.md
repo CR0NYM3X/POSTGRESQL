@@ -1,5 +1,7 @@
 
 
+https://www.postgresql.org/docs/current/encryption-options.html
+
 
 ######## Ejemplo de encriptación con encriptado simétrico ########
 
