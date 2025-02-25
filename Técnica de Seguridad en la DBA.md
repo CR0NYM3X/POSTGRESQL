@@ -333,34 +333,95 @@ select quote_ident(E'holaaa \' Mundo'); ---> "holaaa ' Mundo"
 
 ```
  
-### Validar las funciones que tienen SECURITY DEFINER, LEAKPROOF , PROCONFIG: 
+### Validar funciones que tienen caracteristicas criticas 
+Estas funciones pueden afectar la administración de postgresql y deben de revisarse antes de ortogar los permisos 
 ```SQL
 
-SELECT 
-	c.routine_type ,
-	nspname as schema_name, 
-	proname, 
-	pg_catalog.pg_get_function_arguments(p.oid) AS arguments,
-	prosecdef as "SECURITY DEFINER", 
-	p.proleakproof as "LEAKPROOF" , 
-	rolname as "OWNER", 
-	proconfig AS "PARAMETERS SETTING" ,
-	case when privilege_type is null then FALSE ELSE TRUE END as public_role_can_execute
+select 
+	routine_type
+	,schema_name
+	,proname
+	,arguments
+	,security_definer
+	,leakproof
+	,owner
+	,parameters_setting
+	,public_role_can_execute
+	--,prosrc
 	
+	-- DDL 
+	,regexp_count(prosrc, 'CREATE ') AS _CREATE
+	,regexp_count(prosrc, 'DROP ') AS _DROP
+	,regexp_count(prosrc, 'ALTER ') AS _ALTER
+	
+	-- DML
+	,regexp_count(prosrc, 'INSERT ') AS _INSERT
+	,regexp_count(prosrc, 'UPDATE ') AS _UPDATE
+	,regexp_count(prosrc, 'DELETE ') AS _DELETE
+	,regexp_count(prosrc, 'TRUNCATE ') AS _TRUNCATE
+	
+	-- DCL 
+	,regexp_count(prosrc, 'GRANT ') AS _GRANT
+	,regexp_count(prosrc, 'REVOKE ') AS _REVOKE
+	
+	--- Comandos de Mantenimientos
+	,regexp_count(prosrc, 'VACUUM ') AS _VACUUM
+	,regexp_count(prosrc, 'ANALYZE ') AS _ANALYZE
+	,regexp_count(prosrc, 'REINDEX ') AS _REINDEX
+	,regexp_count(prosrc, 'CLUSTER ') AS _CLUSTER
+	,regexp_count(prosrc, 'CHECKPOINT ') AS _CHECKPOINT
+	
+	-- lista de funciones y comandos Criticos que pueden afectar el comportamiento de PostgreSQL
+	,regexp_count(prosrc, 'COPY ') AS _COPY
+	,regexp_count(prosrc, 'pg_reload_conf') AS _pg_reload_conf
+	,regexp_count(prosrc, 'pg_read_file') AS _pg_read_file
+	,regexp_count(prosrc, 'pg_write_file') AS _pg_write_file
+	,regexp_count(prosrc, 'pg_backup_start') AS _pg_backup_start
+	,regexp_count(prosrc, 'pg_backup_stop') AS _pg_backup_stop
+	,regexp_count(prosrc, 'set_config') AS _set_config
+	,regexp_count(prosrc, 'pg_terminate_backend') AS _pg_terminate_backend
+	,regexp_count(prosrc, 'pg_cancel_backend') AS _pg_cancel_backend
+	,regexp_count(prosrc, 'pg_promote') AS _pg_promote
+from
+(SELECT 
+	CASE p.prokind
+            WHEN 'f'::"char" THEN 'FUNCTION'::text
+            WHEN 'p'::"char" THEN 'PROCEDURE'::text
+            ELSE NULL::text
+    END   AS routine_type
+	,nspname as schema_name
+	,proname
+	,pg_catalog.pg_get_function_arguments(p.oid) AS arguments
+	,prosecdef as SECURITY_DEFINER
+	,p.proleakproof as LEAKPROOF
+	,rolname as OWNER
+	,proconfig AS PARAMETERS_SETTING 
+	,case when privilege_type is null then FALSE ELSE TRUE END as public_role_can_execute
+	,upper(prosrc) as prosrc
 FROM pg_proc p 
 	LEFT JOIN pg_namespace as n 
 		ON p.pronamespace = n.oid 
 	LEFT JOIN pg_authid as a 
 		ON a.oid = p.proowner 
-	LEFT JOIN information_schema.routines as c
-		ON  n.nspname = c.routine_schema and c.routine_name = p.proname
 	LEFT JOIN (select  routine_schema, routine_name, grantee, privilege_type from information_schema.routine_privileges  where grantee= 'PUBLIC') as z	
 		ON n.nspname = z.routine_schema and z.routine_name = p.proname
-		
-WHERE 	NOT  nspname IN ('information_schema', 'pg_catalog') 
-	AND (prosecdef OR NOT proconfig IS NULL OR proleakproof = true)
-	order by nspname,c.routine_type, proname ;
-
+WHERE 		 
+	-- lista de funciones criticas que pueden afectar el comportamiento de PostgreSQL
+	(p.proname  in('pg_reload_conf','pg_read_file','pg_write_file','pg_backup_start','pg_backup_stop','set_config','pg_terminate_backend','pg_cancel_backend','pg_promote')
+		OR n.nspname not in('information_schema', 'pg_catalog') )
+	AND 
+	(
+	((prosrc ~* 'CREATE |DROP |ALTER |INSERT |UPDATE |DELETE |TRUNCATE |GRANT |REVOKE |VACUUM|ANALYZE|REINDEX|CLUSTER|CHECKPOINT|COPY '
+		OR proname  in('pg_reload_conf','pg_read_file','pg_write_file','pg_backup_start','pg_backup_stop','set_config','pg_terminate_backend','pg_cancel_backend','pg_promote'))
+	AND 
+		privilege_type IS NOT NULL )
+	OR 
+		(prosecdef OR NOT proconfig IS NULL OR proleakproof = true )
+	)
+ )as a 
+	 order by  security_definer desc ,public_role_can_execute desc , _create desc , _drop desc , _alter desc 
+ 
+ 
 ```
 
 
