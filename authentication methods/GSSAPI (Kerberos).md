@@ -314,10 +314,10 @@ https://www.cockroachlabs.com/docs/stable/gssapi_authentication
 https://stackoverflow.com/questions/63469679/log-connection-failed-during-start-up-processing-user-database-fatal-gssapi
 
 
-https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.initmax.cz/wp-content/uploads/2024/06/enterprise-solution-in-postgresql_efficient-and-flexible-access-management.pdf&ved=2ahUKEwjgv7LW0c6JAxU44ckDHV0AMB04FBAWegQIDhAB&usg=AOvVaw2iinqg22Cj0OtAul2x5asI
+https://www.initmax.cz/wp-content/uploads/2024/06/enterprise-solution-in-postgresql_efficient-and-flexible-access-management.pdf
+https://h50146.www5.hpe.com/products/software/oe/linux/mainstream/support/lcc/pdf/PostgreSQL16Beta1_New_Features_en_20230528_1.pdf 
+https://postgresconf.org/system/events/document/000/000/183/pgconf_us_v4.pdf 
 
-https://www.google.com/urlsa=t&source=web&rct=j&opi=89978449&url=https://h50146.www5.hpe.com/products/software/oe/linux/mainstream/support/lcc/pdf/PostgreSQL16Beta1_New_Features_en_20230528_1.pdf&ved=2ahUKEwjgv7LW0c6JAxU44ckDHV0AMB04FBAWegQIEBAB&usg=AOvVaw2uE9LdDvwbLsVjo3oLjyiw
-https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://postgresconf.org/system/events/document/000/000/183/pgconf_us_v4.pdf&ved=2ahUKEwjrx-Pxyc6JAxUa_8kDHRBNAZgQFnoECBAQAQ&usg=AOvVaw3vBedmi7_ltyjwuVVAgYt-
 
 
 
