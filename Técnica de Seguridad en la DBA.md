@@ -337,7 +337,8 @@ select quote_ident(E'holaaa \' Mundo'); ---> "holaaa ' Mundo"
 Estas funciones pueden afectar la administración de postgresql y deben de revisarse antes de ortogar los permisos 
 ```SQL
 
-select 
+ 
+ select 
 	routine_type
 	,schema_name
 	,proname
@@ -381,6 +382,7 @@ select
 	,regexp_count(prosrc, 'set_config') AS _set_config
 	,regexp_count(prosrc, 'pg_terminate_backend') AS _pg_terminate_backend
 	,regexp_count(prosrc, 'pg_cancel_backend') AS _pg_cancel_backend
+	,regexp_count(prosrc, 'pg_backend_pid') AS _pg_backend_pid
 	,regexp_count(prosrc, 'pg_promote') AS _pg_promote
 from
 (SELECT 
@@ -420,7 +422,6 @@ WHERE
 	)
  )as a 
 	 order by  security_definer desc ,public_role_can_execute desc , _create desc , _drop desc , _alter desc 
- 
  
 ```
 
