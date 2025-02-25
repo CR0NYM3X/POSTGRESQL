@@ -1,3 +1,31 @@
+
+
+
+
+### Cifrado GSSAPI vs. Cifrado SSL
+
+1. **Cifrado GSSAPI**:
+   - **GSSAPI (Generic Security Services Application Program Interface)** es una interfaz que permite a las aplicaciones utilizar mecanismos de seguridad como Kerberos para autenticación y cifrado.
+   - Cuando PostgreSQL detecta que el cifrado GSSAPI está disponible, lo utilizará automáticamente para cifrar las comunicaciones entre el cliente y el servidor. Esto incluye tanto la autenticación como la transmisión de datos.
+
+2. **Cifrado SSL**:
+   - **SSL (Secure Sockets Layer)** es un protocolo estándar para cifrar conexiones a través de redes. PostgreSQL también soporta conexiones cifradas con SSL para proteger la transmisión de datos.
+
+
+### Configuración de `sslmode` y `gssencmode`
+
+- **`sslmode`**: Este parámetro en PostgreSQL define cómo se debe manejar el cifrado SSL. Puede tener valores como `disable`, `allow`, `prefer`, `require`, `verify-ca`, y `verify-full`.
+- **`gssencmode`**: Similar a `sslmode`, este parámetro controla el uso del cifrado GSSAPI. Los valores posibles incluyen `disable`, `allow`, `prefer`, y `require`.
+
+### Interacción entre `sslmode` y `gssencmode`
+
+- **Prioridad del cifrado GSSAPI**: Si el cifrado GSSAPI está disponible, PostgreSQL lo utilizará en lugar del cifrado SSL, sin importar el valor de `sslmode`.
+- **Forzar el uso de SSL**: Si deseas forzar el uso del cifrado SSL en un entorno donde GSSAPI está disponible (por ejemplo, en un servidor Kerberos), debes configurar `gssencmode` a `disable`. Esto deshabilitará el cifrado GSSAPI y permitirá que el cifrado SSL se utilice según lo especificado por `sslmode`.
+
+
+
+
+
 # Beneficios kerberos GSSAPI 
 
 Si estás utilizando Active Directory en tu entorno y quieres proporcionar autenticación de usuarios de forma segura y eficiente en PostgreSQL, te recomendaría utilizar la autenticación Kerberos (GSSAPI) en lugar de LDAP. Aquí hay algunas razones para considerar la autenticación Kerberos:
@@ -95,6 +123,18 @@ krb_server_keyfile = '/var/lib/postgresql/15/main/postgres.keytab'
 ssl = on
 ssl_cert_file = '/etc/postgresql/14/main/server.crt'
 ssl_key_file = '/etc/postgresql/14/main/server.key'
+
+
+postgres@postgres# select name,setting from pg_settings where name ~* 'krb|gss';
++-----------------------+---------------------------------------+
+|         name          |                setting                |
++-----------------------+---------------------------------------+
+| gss_accept_delegation | off                                   |
+| krb_caseins_users     | off                                   |
+| krb_server_keyfile    | FILE:/etc/sysconfig/pgsql/krb5.keytab |
++-----------------------+---------------------------------------+
+(3 rows)
+
 ```
 
 7. Configurar la autenticación (pg_hba.conf):
@@ -239,6 +279,17 @@ sudo systemctl status krb*
 
 # Bibliogradías 
 ```
+
+Referencia: 
+	https://www.postgresql.org/docs/current/gssapi-enc.html
+	https://www.postgresql.org/docs/current/gssapi-auth.html
+	https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-SSLMODE
+	https://www.postgresql.org/docs/current/auth-pg-hba-conf.html
+	https://www.postgresql.org/docs/current/encryption-options.html
+
+
+
+
 https://community.microstrategy.com/s/article/Use-case-for-Kerberos-against-PostgreSQL-on-MSTR?language=en_US
 
 https://www.crunchydata.com/blog/windows-active-directory-postgresql-gssapi-kerberos-authentication
