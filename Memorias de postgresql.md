@@ -146,3 +146,25 @@ SELECT * FROM pg_buffercache_summary();
 --- 
 select * from  public.pg_buffercache_usage_counts()
 ```
+
+
+
+ 
+1. **`select * from pg_stat_io;`**
+   - **Descripción:** Esta vista ofrece estadísticas sobre las operaciones de entrada/salida (I/O) realizadas por las consultas en la base de datos. Te permite monitorear el rendimiento de las consultas en términos de I/O.
+
+2. **`select * from pg_stat_archiver;`**
+   - **Descripción:** Esta vista proporciona información sobre la actividad del proceso de archivado en PostgreSQL. Te permite monitorear el estado del archiver, como la cantidad de archivos de WAL archivados y cualquier error que haya ocurrido durante el proceso de archivado.
+
+3. **`select * from pg_stat_bgwriter;`**
+   - **Descripción:** Esta vista ofrece estadísticas sobre la actividad del proceso de escritura en segundo plano (background writer). Te permite monitorear el rendimiento del escritor en segundo plano, como la cantidad de buffers escritos, el tiempo dedicado a escribir, y otros aspectos relacionados.
+
+4. **`select * from pg_backend_memory_contexts;`**
+   - **Descripción:** Esta vista proporciona información sobre el uso de memoria por parte de los procesos en segundo plano de PostgreSQL. Te permite monitorear cómo se está utilizando la memoria y detectar posibles problemas de memoria en la base de datos.
+
+5. **`select * from pg_shmem_allocations;`**
+   - **Descripción:** Esta vista ofrece información sobre las asignaciones de memoria compartida en PostgreSQL. Te permite monitorear cómo se está utilizando la memoria compartida y asegurarte de que los recursos de memoria se están gestionando adecuadamente.
+
+
+
+ 
