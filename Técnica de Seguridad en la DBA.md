@@ -3,6 +3,7 @@
 
 # Tecnicas de Hardening 
 es el proceso de fortalecer la seguridad de una base de datos para protegerla contra amenazas y ataques cibernéticos. Este proceso implica aplicar una serie de medidas y prácticas para minimizar las vulnerabilidades y reducir la superficie de ataque
+, se puede instalar la extension de segruidad [pgdsat](https://github.com/HexaCluster/pgdsat/tree/main) para hacer un reporte de la seguridad de tu servidor
 
 
 # Quitar permisos en eschema public por seguridad 
