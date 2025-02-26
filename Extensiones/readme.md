@@ -376,6 +376,8 @@ https://github.com/citusdata/cstore_fdw
 
 ## Blibliografía
 ```SQL
+
+Software Catalogue - Product Categories  https://www.postgresql.org/download/product-categories/
 ---- https://www.postgresql.org/ftp/projects/ 
 
 https://www.timescale.com/blog/top-8-postgresql-extensions/
@@ -384,7 +386,7 @@ https://www.timescale.com/blog/top-8-postgresql-extensions/
 https://postgres.ai/docs/database-lab/supported-databases
 https://github.com/dhamaniasad/awesome-postgres
 
-https://www.postgresql.org/download/products/6-postgresql-extensions/
+
 https://www.timescale.com/blog/top-8-postgresql-extensions/
 
 --- Forma de hacer un trigger para login
