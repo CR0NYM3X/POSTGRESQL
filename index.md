@@ -19,9 +19,12 @@ Un índice es una estructura de datos que almacena una referencia a los datos en
 1. **Índices Necesarios**: Crea solo los índices que realmente necesitas para mejorar el rendimiento de tus consultas más frecuentes.
 2. **Índices Diferidos**: Si estás realizando una gran cantidad de inserciones, considera deshabilitar temporalmente los índices y reconstruirlos después de completar las inserciones masivas.
 3. **Monitoreo y Ajuste**: Usa herramientas como `EXPLAIN` y `ANALYZE` para monitorear el rendimiento de tus consultas y ajustar los índices según sea necesario.
- 
 
- 
+# Ver cuando se crean un index
+```SQL
+select * from pg_stat_progress_create_index;
+```
+
 # Tipos de índices en PostgreSQL:
 ```SQL
 
