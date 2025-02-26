@@ -296,9 +296,27 @@ SELECT * FROM information_schema.usage_privileges where not grantee in('PUBLIC',
 SELECT  has_schema_privilege('user_Test', 'public', 'CREATE') AS tiene_permiso; -- para esquemas 
 SELECT has_sequence_privilege('tipo_personal', 'select'); --  para secuencias 
 SELECT has_type_privilege('tipo_personal', 'select'); --  para los permisos granulares
-has_database_privilege
-has_function_privilege
-has_table_privilege
+
+
+postgres@postgres# select distinct  proname from pg_proc where proname  ilike 'has\_%' order by  proname ;
++------------------------------------+
+|              proname               |
++------------------------------------+
+| has_any_column_privilege           |
+| has_column_privilege               |
+| has_database_privilege             |
+| has_foreign_data_wrapper_privilege |
+| has_function_privilege             |
+| has_language_privilege             |
+| has_parameter_privilege            |
+| has_schema_privilege               |
+| has_sequence_privilege             |
+| has_server_privilege               |
+| has_table_privilege                |
+| has_tablespace_privilege           |
+| has_type_privilege                 |
++------------------------------------+
+
 
 # Permisos de esquemas
 SELECT r.rolname AS grantor,
