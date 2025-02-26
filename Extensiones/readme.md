@@ -407,5 +407,7 @@ PostgreSQL Anonymizer --- postgresql_anonymizer_16.x86_64  Enmascaramiento en po
 ---- crear extensiones: https://postgresconf.org/system/events/document/000/001/158/pg-extensions.pdf 
 
 
+Extension List https://autobase.tech/docs/extensions/list
+
 
 ```
