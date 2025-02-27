@@ -579,7 +579,28 @@ tu puedes decidir que permiso se otrogará mofidicando el grant  */
 ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuario;
 
 # VER LOS DEFAULT 
-SELECT * FROM pg_default_acl;
+	SELECT
+	    nsp.nspname AS schema,
+	    CASE defacl.defaclobjtype
+	        WHEN 'r' THEN 'Tabla'
+	        WHEN 'S' THEN 'Secuencia'
+	        WHEN 'f' THEN 'Función'
+	        ELSE 'Otro'
+	    END AS "Tipo de object",
+		r.rolname AS grantor,
+		e.rolname AS grantee,
+	    acl.privilege_type AS privilege
+	FROM
+	    pg_default_acl defacl
+	JOIN LATERAL (SELECT *
+	FROM aclexplode(defacl.defaclacl) AS x) as   acl
+	  ON true
+	JOIN pg_authid e
+	  ON acl.grantee = e.oid
+	JOIN pg_authid r
+	  ON acl.grantor = r.oid 
+	JOIN
+	    pg_namespace nsp ON defacl.defaclnamespace = nsp.oid;
 
 # DATABASE: [Nota] - el create te permite crear indices, y crear los objetoso solo de ese indice
   GRANT CONNECT,CREATE, TEMPORARY ON DATABASE "tu_base_de_datos" TO "testuserdba";
