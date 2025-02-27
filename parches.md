@@ -104,6 +104,9 @@ Al instalar este archivo RPM, se configura tu sistema para acceder al repositori
 
 https://www.postgresql.org/support/security/
 
+
+https://access.redhat.com/security/security-updates/cve?q=postgres&p=1&sort=cve_publicDate+desc,allTitle+desc&rows=10&documentKind=Cve
+
 https://www.cvedetails.com/vendor/336/
 https://www.cvedetails.com/vulnerability-list/vendor_id-336/product_id-575/Postgresql-Postgresql.html
 
@@ -115,6 +118,8 @@ https://nvd.nist.gov/vuln/search/results?form_type=Basic&results_type=overview&q
 
 https://www.rapid7.com/db/?q=postgres&type=
 https://vuldb.com/?search
+
+https://www.enterprisedb.com/docs/security/assessments/
 
 https://www.exploit-db.com/
 https://0day.today/
