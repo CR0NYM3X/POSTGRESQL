@@ -466,6 +466,9 @@ Algunos de los competidores de Tanium en el mercado de gestión y seguridad de e
 
 
 # Permisos por default peligrosos del ROL PUBLIC
+ **Vulnerabilidad CVE-2018-1058** esta realacionada con este tema , aunque en la vulnerabilidad habla mas sobre como un atacante en ciertas versiones podia aprovechar de la mala configuracion de search_path para ejecutar código que requiere permisos elevados 
+
+
 **Privilegio CREATE** Se realizo una investigación y desde la versión <= 14 el ROL PUBLIC tiene permisos por default de USAGE y CREATE en el esquema PUBLIC 
 para remediar esto se recomienda hacer el revoke en los template1 para cuando se creen nuevas Base de datos ya tengan el revoke y para las Base de datos 
 que ya existen es necesario realizar el revoke create <br>
@@ -475,6 +478,8 @@ cree una funcion realizar el revoke execute a las funciones mas cuando la funcio
 
 **Riesgo**  cualquier usuario creado desde la version <= 14 si no le hicieron el revoke create al esquema public y revoke execute las funciones, entonces este usuario podria crear 
 una funcion con "securitydefiner" con un owner como el postgres y colocar en su estructura comandos que requieren de altos privilegios y despues ejecutar esa funcion esto presenta riesgos. 
+
+https://wiki.postgresql.org/wiki/A_Guide_to_CVE-2018-1058%3A_Protect_Your_Search_Path
 
 ```sql
 
