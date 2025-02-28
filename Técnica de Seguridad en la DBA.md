@@ -5,7 +5,10 @@
 es el proceso de fortalecer la seguridad de una base de datos para protegerla contra amenazas y ataques cibernéticos. Este proceso implica aplicar una serie de medidas y prácticas para minimizar las vulnerabilidades y reducir la superficie de ataque
 , se puede instalar la extension de seguridad [pgdsat](https://github.com/HexaCluster/pgdsat/tree/main) para hacer un reporte de la seguridad de tu servidor
 
+# Owner  de objetos tiene autoridad completa sobre el objeto.
+el owner del objeto tambien puede hacer grant y revoke ante los objetos que es owner , para esto trata de colocar todos los objetos con owner del administrador como postgres excepto hay que tener cuidado con funciones que tienen como parametro "SECURITY DEFINER" para esos hay que validar si es seguro o no 
 
+ 
 # Quitar permisos en eschema public por seguridad 
 **PUBLIC** es un ROL que se utiliza para otorgarle permisos  por defecto que se aplican a todos los usuarios y de manera automática, lo unico que puedes hacerle al ROL es  ROKOVE o GRANT
 Por ejemplo, si otorgas un nuevo permiso a PUBLIC, cualquier usuario, presente o futuro, tendrá ese permiso.
