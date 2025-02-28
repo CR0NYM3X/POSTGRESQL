@@ -465,8 +465,16 @@ Algunos de los competidores de Tanium en el mercado de gestión y seguridad de e
 
 
 
-# Ejemplo de permisos del ROL PUBLIC
+# Permisos por default peligrosos del ROL PUBLIC
+**Privilegio CREATE** Se realizo una investigación y desde la versión <= 14 el ROL PUBLIC tiene permisos por default de USAGE y CREATE en el esquema PUBLIC 
+para remediar esto se recomienda hacer el revoke en los template1 para cuando se creen nuevas Base de datos ya tengan el revoke y para las Base de datos 
+que ya existen es necesario realizar el revoke create <br>
 
+**Privilegio Execute** en todas las versiones de postgresql el ROL PUBLIC tiene permiso de execute para las nuevas funciones creadas, para remediar esto siempre que se 
+cree una funcion realizar el revoke execute a las funciones mas cuando la funcion tiene "security definer" y aplicar este revoke en el template
+
+**Riesgo**  cualquier usuario creado desde la version <= 14 si no le hicieron el revoke create al esquema public y revoke execute las funciones, entonces este usuario podria crear 
+una funcion con "securitydefiner" con un owner como el postgres y colocar en su estructura comandos que requieren de altos privilegios y despues ejecutar esa funcion esto presenta riesgos. 
 
 ```sql
 
@@ -612,7 +620,7 @@ select public.fun_cleeantable('empleados',2);
 https://www.postgresql.org/docs/current/sql-createfunction.html
 Another point to keep in mind is that by default, execute privilege is granted to PUBLIC for newly created functions (see Section 5.8 for more information). Frequently you will wish to restrict use of a security definer function to only some users. To do that, you must revoke the default PUBLIC privileges and then grant execute privilege selectively. 
  
-Default PUBLIC Privileges : https://www.postgresql.org/docs/current/ddl-priv.html
+Default PUBLIC Privileges : https://www.postgresql.org/docs/current/ddl-priv.html#PRIVILEGES-SUMMARY-TABLE
 
 
  
