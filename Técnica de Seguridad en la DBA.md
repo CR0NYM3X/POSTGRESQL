@@ -57,6 +57,11 @@ REVOKE usage ON SCHEMA pg_catalog FROM PUBLIC;
 REVOKE usage ON SCHEMA information_schema FROM PUBLIC;
 
 
+Buscar objetos que no deberian de terner permisos los usuarios personalizados o normales :
+select distinct  proname from pg_proc where proname ~* 'privilege|setting|conf' order by proname;
+select schemaname,viewname from pg_views where viewname ~* 'privilege|setting|conf' order by schemaname,viewname;
+select table_schema,table_name from information_schema.tables where table_name ~* 'privilege|setting|conf' order by  table_schema,table_name;
+
 
 https://www.qualoom.es/blog/administracion-usuarios-roles-postgresql/
 
