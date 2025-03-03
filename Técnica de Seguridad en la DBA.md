@@ -832,7 +832,9 @@ SELECT usename, useconfig FROM pg_shadow WHERE usename = 'user_evil';
 
 
 --------- Recomendaciones Adicionales:
+
 Revocar el Permiso CREATE en el Esquema public del Rol public: Esta acción ayudará a fortalecer la seguridad de tu base de datos al evitar que usuarios no autorizados creen objetos en el esquema público.
+Tema de usuarios:  al realizar el revoke para no cometer incidencias con los usuarios, se tiene que otorgar permisos de create a las cuentas de servicio y las cuentas personalizadas dejarlas como estan.
 
 Monitoreo y Registro: Implementa un sistema de monitoreo y registro para rastrear todas las actividades de los usuarios en la base de datos. Esto puede ayudar a identificar acciones sospechosas y responder rápidamente a posibles ataques.
 
