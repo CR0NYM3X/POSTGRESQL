@@ -2173,3 +2173,6 @@ Esta cláusula indica que la nueva tabla debe ser creada con una estructura idé
 CREATE TABLE partman_test.time_taptest_table_template (LIKE partman_test.time_taptest_table);
 ```
 
+
+
+ 
