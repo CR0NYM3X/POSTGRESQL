@@ -14,29 +14,47 @@ Estos son los tipos que existen <br>
 
 
 
-1. **Tipo compuesto (Composite Type)**:
-   - Un tipo compuesto es similar al tipo de fila de una tabla. Puedes especificar una lista de nombres de atributos y sus tipos de datos. Por ejemplo:
-     ```sql
-     CREATE TYPE mi_tipo AS (
-         columna1 integer,
-         columna2 text
-     );
-     ``` 
+1. **Tipo Compuesto**:
+   Los tipos compuestos permiten agrupar varios campos de diferentes tipos de datos en una sola entidad.
 
-2. **Tipo enumerado (Enum Type)**:
-   - Los tipos enumerados son útiles cuando deseas limitar los valores posibles de una columna a un conjunto específico. Por ejemplo:
-     ```sql
-     CREATE TYPE estado_civil AS ENUM ('Soltero', 'Casado', 'Divorciado');
-     ``` 
+   ```sql
+   CREATE TYPE my_type AS (
+       x int,
+       y int
+   );
+   ```
 
-3. **Tipo de rango (Range Type)**:
-   - Los tipos de rango representan un rango de valores. Puedes crear uno especificando un subtipo y, opcionalmente, una clase de operadores. Por ejemplo:
-     ```sql
-     CREATE TYPE rango_edades AS RANGE (
-         SUBTYPE = integer,
-         SUBTYPE_OPCLASS = int4range_ops
-     );
-     ```
+2. **Tipo de Enumeración**:
+   Los tipos de enumeración (ENUM) permiten definir un conjunto de valores constantes.
+
+   ```sql
+   CREATE TYPE mood AS ENUM ('happy', 'sad', 'neutral');
+   ```
+
+3. **Tipo de Rango**:
+   Los tipos de rango permiten definir un intervalo de valores.
+
+   ```sql
+   CREATE TYPE int4range AS RANGE (
+       subtype = int4
+   );
+   ```
+
+4. **Tipo de Array**:
+   Puedes definir un tipo que sea un array de otro tipo. Por ejemplo, un array de enteros.
+
+   ```sql
+   CREATE TYPE int_array AS int[];
+   ```
+
+5. **Tipo Basado en Dominio**:
+   Los dominios te permiten crear tipos basados en restricciones específicas.
+
+   ```sql
+   CREATE DOMAIN positive_integer AS int
+   CHECK (VALUE > 0);
+   ```
+ 
 
 
   
