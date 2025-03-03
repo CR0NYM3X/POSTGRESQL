@@ -12,48 +12,44 @@ Estos son los tipos que existen <br>
 
 # Ejemplos de uso:
 
-
-
+ 
 1. **Tipo Compuesto**:
-   Los tipos compuestos permiten agrupar varios campos de diferentes tipos de datos en una sola entidad.
-
    ```sql
-   CREATE TYPE my_type AS (
-       x int,
-       y int
-   );
+   -- Crear el tipo compuesto
+   CREATE TYPE my_type AS (x int, y int);
+
+   -- Uso del tipo compuesto con `::`
+   SELECT ROW(1, 2)::my_type;
    ```
 
 2. **Tipo de Enumeración**:
-   Los tipos de enumeración (ENUM) permiten definir un conjunto de valores constantes.
-
    ```sql
+   -- Crear el tipo de enumeración
    CREATE TYPE mood AS ENUM ('happy', 'sad', 'neutral');
+
+   -- Uso del tipo de enumeración con `::`
+   SELECT 'happy'::mood;
    ```
 
 3. **Tipo de Rango**:
-   Los tipos de rango permiten definir un intervalo de valores.
-
    ```sql
+   -- Crear el tipo de rango
    CREATE TYPE int4range AS RANGE (
        subtype = int4
    );
+
+   -- Uso del tipo de rango con `::`
+   SELECT '[1,10]'::int4range;
    ```
 
 4. **Tipo de Array**:
-   Puedes definir un tipo que sea un array de otro tipo. Por ejemplo, un array de enteros.
-
    ```sql
-   CREATE TYPE int_array AS int[];
+   -- Crear el tipo de array (no es necesario crear explícitamente)
+   -- Uso del tipo de array con `::`
+   SELECT ARRAY[1, 2, 3]::int[];
    ```
+ 
 
-5. **Tipo Basado en Dominio**:
-   Los dominios te permiten crear tipos basados en restricciones específicas.
-
-   ```sql
-   CREATE DOMAIN positive_integer AS int
-   CHECK (VALUE > 0);
-   ```
  
 
 
