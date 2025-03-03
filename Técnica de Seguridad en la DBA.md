@@ -840,4 +840,9 @@ Capacitación en Seguridad: Proporciona capacitación en seguridad para todos lo
 
 Actualizar y Parchear: Mantén el sistema de gestión de bases de datos actualizado con los últimos parches de seguridad y versiones. Las actualizaciones a menudo incluyen correcciones para vulnerabilidades conocidas.
 
+deshabilitar el autocompletado  utilizado por el software de lectura de líneas (readline)
+nano ~/.inputrc
+set disable-completion on
+
+
 ```
