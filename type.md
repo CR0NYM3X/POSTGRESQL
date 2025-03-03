@@ -645,3 +645,84 @@ GRANT USAGE ON DOMAIN phone_number TO app_user;
 
 
 ```
+
+
+
+### Ejemplos de cast y dominios 
+```
+---************************ EJEMPLO DE CREACION DE CAST ************************
+
+-- la FUNCION ROW ES  COMO UN TIPO DE DATO record
+
+
+begin ; 
+
+-- Definir un tipo de dato compuesto
+CREATE TYPE my_type AS (x int, y int);
+
+-- Crear una función de conversión
+ 
+CREATE OR REPLACE FUNCTION my_type_to_text(my_type) RETURNS text AS $$
+BEGIN
+    RETURN '(' || $1.x || ',' || $1.y || ') XXXXXXXXXXXXXXXX';
+END; $$ LANGUAGE plpgsql;
+
+-- Crear un CAST que utilice la función de conversión
+CREATE CAST (my_type AS text) WITH FUNCTION my_type_to_text(my_type);
+ 
+ 
+
+CREATE TABLE my_table (
+    id serial,
+    data my_type
+);
+
+
+INSERT INTO my_table (data) VALUES (ROW(1, 2));
+
+
+SELECT (data).x, (data).y , CAST(data AS text) as dato_cast , data  FROM my_table;
+
+ 
+SELECT CAST(ROW(1, 2)::my_type AS text);
+
+
+DROP TYPE my_type;
+DROP FUNCTION my_type_to_text(my_type);
+DROP CAST (my_type AS text);
+
+rollback ; 
+
+
+
+---************************ EJEMPLO DE CREACION DE DOMINIOS ************************
+un tipo de dato personalizado que te permite aplicar restricciones y reglas específicas.
+
+begin ; 
+
+CREATE DOMAIN positive_integer AS int
+CHECK (VALUE > 0);
+
+
+CREATE TABLE my_table_dominio (
+    id serial PRIMARY KEY,
+    positive_value positive_integer
+);
+
+
+-- Insertar un valor válido
+INSERT INTO my_table_dominio (positive_value) VALUES (10);
+
+-- Intentar insertar un valor no válido
+INSERT INTO my_table_dominio (positive_value) VALUES (-5);
+-- Esto dará un error: ERROR:  value for domain positive_integer violates check constraint
+
+
+ALTER DOMAIN positive_integer ADD CONSTRAINT value_less_than_hundred CHECK (VALUE < 100);
+
+
+DROP DOMAIN positive_integer;
+
+
+rollback ; 
+```
