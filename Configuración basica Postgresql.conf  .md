@@ -847,7 +847,62 @@ https://www.postgresql.org/docs/11/libpq-envars.html
   ```
 
 # inicializar y reinicios del servicio 
+
+
+
   ```sql
+Comandos para aplicar reload : 
+	pg_ctl reload -D /sysx/data16
+	SELECT pg_reload_conf();
+
+Querys para validar el ultimo reload : 
+	select pg_postmaster_start_time()::timestamp AS uptime_psql ,pg_conf_load_time()::timestamp as last_time_reload;
+
+Archivo : postgresql.conf 
+
+	Escenario : 
+		Se modifican dos parámetros en el archivo postgresql.conf uno correctamente y el otro se deja algo mal y se realiza un reload.
+		
+	Comportamiento: 
+		postgresql realizara los cambios de los parametros que no marcan error y deja mensaje del cambio en el log, de los parametros que marcan error no aplica los cambios y deja mensaje en el log
+	
+	Mensaje de logs: 
+
+		Señal recibida de reload: 
+			<2025-03-03 15:50:08 MST     1346779 67aa5411.148cdb >LOG:  received SIGHUP, reloading configuration files
+
+		Modificacion correcta : 
+			<2025-03-03 15:42:09 MST     1346779 67aa5411.148cdb >LOG:  parameter "password_encryption" changed to "md5"
+
+		Modificacion erronea : 
+			<2025-03-03 15:48:21 MST     1346779 67aa5411.148cdb >LOG:  invalid value for parameter "max_connections": "100p"
+			
+		Mensaje final:
+			<2025-03-03 14:42:48 MST     1346779 67aa5411.148cdb >LOG:  configuration file "/sysx/data14/postgresql.conf" contains errors; unaffected changes were applied
+
+
+Archivo : pg_hba.conf
+	Escenario : 
+		Se modifican dos parámetros en el archivo ph_hba.conf uno correctamente y el otro se deja algo mal y se realiza un reload.
+		
+	Comportamiento:
+		postgresql no aplica ningun cambio y deja mensaje en el log.
+		
+	Mensaje de logs:
+	
+		Señal recibida de reload: 
+			<2025-03-03 15:50:08 MST     1346779 67aa5411.148cdb >LOG:  received SIGHUP, reloading configuration files
+
+		Modificacion correcta : No deja  mensaje de cambios correctos. 
+
+		Modificacion erronea : 
+			<2025-03-03 15:42:09 MST     1346779 67aa5411.148cdb >CONTEXT:  line 93 of configuration file "/sysx/data14/pg_hba.conf"
+			
+		Mensaje final:
+			<2025-03-03 14:46:30 MST     1346779 67aa5411.148cdb >LOG:  pg_hba.conf was not reloaded
+
+
+
 # Inicializar o crear los archivos data 
 initdb -D $PGDATA -U postgres >/dev/null 2>&1
 
