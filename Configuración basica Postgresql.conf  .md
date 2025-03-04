@@ -825,27 +825,7 @@ include_if_exists = '/ruta/a/tu/archivo.conf'
 ----- crear la extension --------
  create extension pg_stat_statements;
 ```
-
-## Variables: 
-  ```sql
-export PGPORT=5432
-export PGDATA= /sysx/data
-export PGDATABASE=postgres
-export PGUSER=postgres
-export PGLOG= /pglog
-export PATH=$PATH:/usr/pgsql-15/bin
-
-https://www.postgresql.org/docs/11/libpq-envars.html
-1. PGHOST: Especifica el nombre de host de la máquina donde se ejecuta el servidor de PostgreSQL.
-2. PGPORT: Especifica el número de puerto en el que el servidor PostgreSQL está escuchando para las conexiones entrantes.
-3. PGUSER: Especifica el nombre del usuario de PostgreSQL que se utilizará para conectarse al servidor.
-4. PGPASSWORD: Utilizado para especificar la contraseña del usuario de PostgreSQL al conectar desde herramientas o scripts.
-5. PGDATABASE: Especifica el nombre de la base de datos a la que se conectará el cliente.
-6. PGCLIENTENCODING: Define la codificación de caracteres que se utilizará en las conexiones del cliente.
-7. PGSERVICE: Utilizado para especificar el nombre de un servicio definido en el archivo pg_service.conf.
-8. PGSSLMODE: Define si se deben usar conexiones SSL para cifrar la comunicación entre el cliente y el servidor.
-  ```
-
+ 
 # inicializar y reinicios del servicio 
 
 
@@ -1091,12 +1071,27 @@ ls -lhtra /home/postgres
 
 
 # bash_profile Ejemplo de variables de entorno , cambiar rutas 
-PATH=$PATH:$HOME/bin
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/pgsql/lib64:/usr/local/pgsql/lib
-export PATH=$PATH:/usr/local/pgsql/bin
-export MANPATH=$MANPATH:/usr/local/pgsql/man
+
+LD_LIBRARY_PATH=/usr/pgsql-17/lib:$LD_LIBRARY_PATH
+export PATH=/usr/pgsql-16/bin:$PATH
+
+export PGPORT=5432
 export PGDATA=/sysx/data
+export MANPATH=$MANPATH:/usr/local/pgsql/man
+export PGDATABASE=postgres
+export PGUSER=postgres
+export PGLOG=/pglog
 export LD_LIBRARY_PATH
+
+https://www.postgresql.org/docs/11/libpq-envars.html
+1. PGHOST: Especifica el nombre de host de la máquina donde se ejecuta el servidor de PostgreSQL.
+2. PGPORT: Especifica el número de puerto en el que el servidor PostgreSQL está escuchando para las conexiones entrantes.
+3. PGUSER: Especifica el nombre del usuario de PostgreSQL que se utilizará para conectarse al servidor.
+4. PGPASSWORD: Utilizado para especificar la contraseña del usuario de PostgreSQL al conectar desde herramientas o scripts.
+5. PGDATABASE: Especifica el nombre de la base de datos a la que se conectará el cliente.
+6. PGCLIENTENCODING: Define la codificación de caracteres que se utilizará en las conexiones del cliente.
+7. PGSERVICE: Utilizado para especificar el nombre de un servicio definido en el archivo pg_service.conf.
+8. PGSSLMODE: Define si se deben usar conexiones SSL para cifrar la comunicación entre el cliente y el servidor.
 
 
 /************ RECARGAR EL ARCHIVO SIN NECESIDAD DE CERRAR LA TERMINAL ***********\
