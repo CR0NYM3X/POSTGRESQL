@@ -669,7 +669,7 @@ SELECT * FROM mi_tabla WHERE 'perro' = ANY(ARRAY['MySQL', 'Oracle','PostgreSQL']
 
 
 ### Trabajando con strings
-
+https://www.postgresql.org/docs/current/functions-string.html
 ```SQL
 
 
