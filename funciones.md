@@ -691,8 +691,7 @@ SELECT add_numbers(3, 5);  -- Resultado: 8
  
 ****************** Parámetros `OUT` ******************
 
-Los parámetros `OUT` no necesitas utilizar RETURN, se utilizan para devolver valores desde la función.
- No necesitas usar una cláusula `RETURN` en la función, ya que los parámetros `OUT` definen los valores de retorno.
+Los parámetros `OUT` no necesitas utilizar RETURN dentro del codigo de la función, ya que los parámetros `OUT` definen los valores de retorno.
 
 
  
