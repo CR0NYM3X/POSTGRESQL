@@ -181,7 +181,7 @@ https://gist.github.com/achesco/b893fb55b90651cf5f4cc803b78e19fd
 32.1. Database Connection Control Functions https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-SSLMODE
 20.12. Certificate Authentication https://www.postgresql.org/docs/current/auth-cert.html
 20.1. The pg_hba.conf File  https://www.postgresql.org/docs/current/auth-pg-hba-conf.html
-
+GRANT https://www.postgresql.org/docs/current/sql-grant.html
 
 
 
