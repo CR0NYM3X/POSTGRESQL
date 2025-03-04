@@ -557,6 +557,8 @@ string_agg(columnsname,',')
 ```
 
 ### Arrays 
+
+https://www.postgresql.org/docs/9.2/functions-array.html
 ```sql
 
 
