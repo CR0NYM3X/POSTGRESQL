@@ -696,14 +696,26 @@ Los parámetros `OUT` no necesitas utilizar RETURN, se utilizan para devolver va
 
 
  
-CREATE OR REPLACE FUNCTION get_square(p_in INT, OUT p_out INT) AS $$
+CREATE OR REPLACE FUNCTION ejemplo_funcion(
+    IN parametro_entrada INTEGER,
+    OUT resultado1 INTEGER,
+    OUT resultado2 TEXT
+)
+RETURNS RECORD AS $$
 BEGIN
-    p_out := p_in * p_in;
+    -- Aquí puedes realizar las operaciones que necesites
+    resultado1 := parametro_entrada * 2;
+    resultado2 := 'El doble es ' || resultado1;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Llamada a la función
-SELECT get_square(4);  -- Resultado: 16
+SELECT * FROM ejemplo_funcion(5); -->	+------------+----------------+
+					| resultado1 |   resultado2   |
+					+------------+----------------+
+					|         10 | El doble es 10 |
+					+------------+----------------+
+
  
 
 
