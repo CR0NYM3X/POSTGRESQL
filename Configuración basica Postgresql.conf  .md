@@ -1,5 +1,6 @@
 ------- AQUI PODRAS ENCONTRAR TODOS LOS  PARAMETRO
-https://pgpedia.info/
+https://pgpedia.info/ <br>
+https://postgresqlco.nf/doc/en/param/?q=password_encryption#
 
 Doc Man: 
 /usr/pgsql-16/share/man/man1/psql.1
@@ -1177,7 +1178,7 @@ https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Configuration.pdf
 https://pgdash.io/blog/postgres-configuration-cheatsheet.html
 https://helpcenter.netwrix.com/bundle/StealthDEFEND_2.7/page/Content/StealthDEFEND/Installation_Guide/Configure_the_Postgres.conf_File/Configure_the_Postgres.conf_File.htm
 
-https://postgresqlco.nf/doc/en/param/autovacuum_max_workers/
+
 
   --------->  PDF SECURITY - PSQL   <--------------
   [LVL recomendación 1 ] https://repository.unad.edu.co/bitstream/handle/10596/36746/ilovepdf_merged.pdf?sequence=3&isAllowed=y
