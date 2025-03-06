@@ -27,13 +27,6 @@ Grafana
 ### Herramientas de Seguridad para PostgreSQL
 
 
-1. Auditoría y Monitorización
-
-	pgAudit: Registra operaciones sensibles como DDL y DML.
-	pgBadger: Genera reportes visuales de logs y detecta intentos fallidos.
-	Zabbix: Monitorea conexiones y recursos en tiempo real.
-	Prometheus + Grafana: Visualiza métricas y genera alertas configurables.
-
 
 2. Protección Contra Ataques
 
@@ -165,10 +158,19 @@ SE-PostgreSQL: Implementa políticas de seguridad obligatoria (MAC) basadas en S
 
 pg_proctab ---> https://github.com/markwkm/pg_proctab/tree/main
 
-- **pgBadger:** Una herramienta externa que analiza los logs de PostgreSQL para generar informes detallados de rendimiento. Es especialmente útil para entender cómo las consultas y la actividad del sistema afectan el rendimiento a lo largo del tiempo.
-pganalyze: Herramienta especializada en el análisis y monitoreo de PostgreSQL
-PgDash: Proporciona paneles de control y alertas para el monitoreo de PostgreSQL
+
+pgAudit: Registra operaciones sensibles como DDL y DML.
+pganalyze-> Monitoreo de Rendimiento: ,Análisis de Consultas ,Asesor de Índices: ,Asesor de VACUUM ,Alertas y Notificaciones ,Visualización de Datos 
+pgDash -> es una solución de monitoreo integral diseñada específicamente para despliegues de PostgreSQL. (Monitoreo en Profundidad,Informes y Visualización ,Alertas ,Monitoreo de Replicación ,Integraciones)
+pgBadger -> es una herramienta de análisis de logs para PostgreSQL que genera informes detallados y gráficos a partir de los archivos de log de PostgreSQL
+Prometheus ->  Prometheus es una herramienta de monitoreo de código abierto que se centra en la recopilación y el análisis de datos basados en series de tiempo.
+Zabbix -> es una herramienta de monitoreo de código abierto que ofrece una amplia gama de características, incluyendo la supervisión de bases de datos PostgreSQL.
+Nagios -> Con plugins específicos para PostgreSQL, Nagios puede monitorear el rendimiento y la seguridad de tu base de datos
+Grafana -> Aunque se utiliza principalmente para la visualización de datos, Grafana se puede integrar con Prometheus y otras herramientas para proporcionar un monitoreo completo de PostgreSQL
+Checkmk ->  herramienta de monitoreo de código abierto que ofrece monitoreo integral para bases de datos PostgreSQ
+
 SIEM  detección de amenazas
+Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia gama de funcionalidades para la detección de amenazas, el monitoreo de integridad y la respuesta a incidente
 
 ************ MONITOREO EN CONSULTAS ************
 - **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
