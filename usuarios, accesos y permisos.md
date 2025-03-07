@@ -67,7 +67,7 @@ SELECT session_user;
 SELECT current_user;
 
 /* Sirve para cambiar de usuario */
----  Permite al usuario ejecutar querys temporalmente con los permisos de otro rol (solo ocupas ser miembro del role)
+---  Permite al usuario ejecutar querys temporalmente con todos permisos nivel servidor como granulares de otro rol  (solo ocupas ser miembro del role)
  SET ROLE test_user;
 
 -- regresarme al rol original; 
