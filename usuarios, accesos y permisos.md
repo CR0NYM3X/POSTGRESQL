@@ -67,14 +67,14 @@ SELECT session_user;
 SELECT current_user;
 
 /* Sirve para cambiar de usuario */
----  Permite al usuario ejecutar querys temporalmente con los permisos de otro rol 
+---  Permite al usuario ejecutar querys temporalmente con los permisos de otro rol (solo ocupas ser miembro del role)
  SET ROLE test_user;
 
 -- regresarme al rol original; 
 RESET ROLE; 
 
 /* Cambiar de session  */
---> Permite al usuario cambiar temporalmente de usuario /identidad en la session 
+--> Permite al usuario cambiar temporalmente de usuario /identidad en la session  (solo los superusuarios)
 SET SESSION AUTHORIZATION user_local; 
 
 --- Regresar al usuario original (solo superusuario puede hacerlo)
