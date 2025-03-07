@@ -549,21 +549,6 @@ ALTER USER "sysutileria" WITH NOSUPERUSER;
 <br> [**Regresar al Índice**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/usuarios%2C%20accesos%20y%20permisos.md#%C3%ADndice)
 
 
-### Asignarle un rol a un usuario
-Este es un ejemplo de un rol para crear tablas;
-```SQL
-CREATE ROLE tabla_creator;
-GRANT CREATE ON SCHEMA public TO tabla_creator;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO tabla_creator;
-
-ALTER USER mi_user2 SET ROLE tabla_creator;
-GRANT rol_name1 TO user12;
-GRANT tabla_creator TO my_usuario2;
-
-grant test_role to USER_TEST WITH ADMIN OPTION; --- ES COMO EL WITH GRANT OPTION, LE CONCEDE AL USUARIO TAMBIEN OTORGAR ESTE PERMISO A OTROS USUARIOS 
-
-REVOKE role_a, role_b FROM my_user;
-```
 ### Ejecutar los permisos en todas las base de datos 
 psql -tAc "select '\c ' || datname ||  CHR(10) || '**GRANT SELECT  ON ALL TABLES IN SCHEMA public TO \\"myuser\\";**' from pg_database where not datname in('postgres','template1','template0')"  | sed -e 's/\+//g' | psql 
 
@@ -791,9 +776,22 @@ SELECT * FROM pg_group;
 CREATE GROUP mi_grupo;
 ```
     
-### Agregar  un usuario a un grupo
-```sql
-  GRANT mi_grupo TO mi_usuario;
+
+
+### Asignarle un rol o grupo  a un usuario
+Este es un ejemplo de un rol para crear tablas;
+```SQL
+CREATE ROLE tabla_creator;
+GRANT CREATE ON SCHEMA public TO tabla_creator;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO tabla_creator;
+ 
+
+-- Agregar al usuario al grupo 
+GRANT tabla_creator TO my_usuario2;
+
+grant test_role to USER_TEST WITH ADMIN OPTION; --- ES COMO EL WITH GRANT OPTION, LE CONCEDE AL USUARIO TAMBIEN OTORGAR ESTE PERMISO A OTROS USUARIOS
+ 
+ 
 ```
   
 ### Eliminar un grupo 
@@ -806,15 +804,16 @@ La tabla pg_auth_members sirve para mostrar si un usuario esta en un grupo o rol
 ```sql
 select  roleid::regrole AS group_name, member::regrole AS member_name,grantor::regrole   FROM pg_auth_members WHERE roleid = 'mi_grupo';
 
-
 select usename, rolname from pg_user join pg_auth_members on (pg_user.usesysid=pg_auth_members.member) 
 join pg_roles on (pg_roles.oid=pg_auth_members.roleid) 
 ```
 
+
+
 ### retirarle los permisos a un usuario de un grupo o role
 ```
 --- Si no funciona esta opcion utilizas la otra query
-REVOKE user12 FROM rol_name1;
+REVOKE role_a, role_b FROM my_user;
 
 delete from  pg_auth_members where member= 33303009 /*pg_user.usesysid*/ and roleid=33445429 /*pg_roles.oid*/;
 ```
