@@ -413,4 +413,7 @@ Extension List https://autobase.tech/docs/extensions/list
 
 https://www.postgresql.org/ftp/projects/
 
+-- Mas de 1000 extensiones para postgresql
+https://gist.github.com/joelonsql/e5aa27f8cc9bd22b8999b7de8aee9d47
+
 ```
