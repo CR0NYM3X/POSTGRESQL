@@ -9,6 +9,14 @@
 
 # Páginas interesantes 
 ```
+https://www.postgresql.org/list/
+https://lists.postgresql.org/
+
+https://www.postgresql.org/about/contact/
+https://www.postgresql.org/account/submitbug/
+
+
+
 medium.com
 https://p2d2.cz/
 
