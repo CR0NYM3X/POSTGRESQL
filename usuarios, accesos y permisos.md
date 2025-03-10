@@ -1444,3 +1444,134 @@ GRANT USAGE ON DOMAIN phone_number TO app_user;
 
 https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf
 <br>https://www.postgresql.org/docs/current/sql-grant.html
+
+
+
+
+
+
+## Formas de usar INHERIT 
+
+```
+
+### Paso 1: Crear la base de datos y las tablas
+Primero, creamos una base de datos y una tabla simple para nuestros ejemplos:
+
+CREATE DATABASE ejemplo_inherit;
+\c ejemplo_inherit
+
+CREATE TABLE datos (
+    id SERIAL PRIMARY KEY,
+    info TEXT
+);
+
+INSERT INTO datos (info) VALUES ('Registro 1'), ('Registro 2'), ('Registro 3');
+
+
+### Paso 2: Crear roles y usuarios
+Creamos varios roles y usuarios con diferentes configuraciones de `INHERIT`:
+
+-- Crear roles
+CREATE ROLE rol_inherit INHERIT;
+CREATE ROLE rol_noinherit NOINHERIT;
+CREATE ROLE rol_inherit_false;
+CREATE ROLE rol_set_true;
+CREATE ROLE rol_set_false;
+
+-- Crear usuarios
+CREATE ROLE usuario_inherit LOGIN INHERIT;
+CREATE ROLE usuario_noinherit LOGIN NOINHERIT;
+CREATE ROLE usuario_inherit_false LOGIN NOINHERIT;
+CREATE ROLE usuario_set_true LOGIN NOINHERIT;
+CREATE ROLE usuario_set_false LOGIN NOINHERIT;
+
+
+### Paso 3: Otorgar permisos y roles
+Otorgamos permisos y roles a los usuarios con diferentes configuraciones:
+
+-- Otorgar permisos a los roles
+GRANT SELECT ON datos TO rol_inherit;
+GRANT SELECT ON datos TO rol_noinherit;
+GRANT SELECT ON datos TO rol_inherit_false;
+GRANT SELECT ON datos TO rol_set_true;
+GRANT SELECT ON datos TO rol_set_false;
+
+-- Otorgar roles a los usuarios
+GRANT rol_inherit TO usuario_inherit;
+GRANT rol_noinherit TO usuario_noinherit;
+GRANT rol_inherit_false TO usuario_inherit_false WITH INHERIT FALSE;
+GRANT rol_set_true TO usuario_set_true WITH INHERIT FALSE SET TRUE;
+GRANT rol_set_false TO usuario_set_false WITH INHERIT FALSE SET FALSE;
+
+
+### Paso 4: Verificar los privilegios
+Ahora verificamos cómo afectan estas configuraciones a los privilegios de los usuarios.
+
+#### Usuario con `INHERIT`
+
+\c - usuario_inherit
+SELECT * FROM datos;  -- Debería funcionar porque hereda los privilegios de rol_inherit
+
+
+#### Usuario con `NOINHERIT`
+
+\c - usuario_noinherit
+SELECT * FROM datos;  -- No debería funcionar porque no hereda los privilegios de rol_noinherit
+
+
+#### Usuario con `WITH INHERIT FALSE`
+
+\c - usuario_inherit_false
+SELECT * FROM datos;  -- No debería funcionar porque no hereda los privilegios de rol_inherit_false
+
+
+#### Usuario con `WITH INHERIT FALSE SET TRUE`
+
+\c - usuario_set_true
+SELECT * FROM datos;  -- No debería funcionar porque no hereda los privilegios de rol_set_true
+
+SET ROLE rol_set_true;
+SELECT * FROM datos;  -- Debería funcionar porque ahora tiene los privilegios de rol_set_true
+
+
+#### Usuario con `WITH INHERIT FALSE SET FALSE`
+
+\c - usuario_set_false
+SELECT * FROM datos;  -- No debería funcionar porque no hereda los privilegios de rol_set_false
+
+SET ROLE rol_set_false;
+SELECT * FROM datos;  -- No debería funcionar porque no puede usar SET ROLE para adquirir los privilegios de rol_set_false
+
+
+### Resumen
+- **usuario_inherit**: Hereda automáticamente los privilegios de `rol_inherit`.
+- **usuario_noinherit**: No hereda automáticamente los privilegios de `rol_noinherit`.
+- **usuario_inherit_false**: No hereda automáticamente los privilegios de `rol_inherit_false`.
+- **usuario_set_true**: No hereda automáticamente los privilegios de `rol_set_true`, pero puede usar `SET ROLE` para adquirirlos.
+- **usuario_set_false**: No hereda automáticamente los privilegios de `rol_set_false` y no puede usar `SET ROLE` para adquirirlos.
+
+
+
+
+SELECT 
+    r.rolname AS role_name,
+    m.member AS member_oid,
+    u.rolname AS member_name,
+    m.admin_option,
+    m.inherit_option,
+    m.set_option
+FROM 
+    pg_auth_members m
+JOIN 
+    pg_roles r ON m.roleid = r.oid
+JOIN 
+    pg_roles u ON m.member = u.oid
+	
+
+
+- **admin_option**: Indica si el miembro tiene la opción de administrador.
+- **inherit_option**: Indica si el miembro hereda automáticamente los privilegios del rol.
+- **set_option**: Indica si el miembro puede usar `SET ROLE` para adquirir los privilegios del rol .
+
+
+```
