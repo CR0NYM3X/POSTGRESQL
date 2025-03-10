@@ -1216,3 +1216,69 @@ postgresql-contrib	additional supplied modules
 postgresql-devel	libraries and headers for C language development
 
 ```
+
+### Conexto de cada parámetro 
+```
+new_postgres@template1# select distinct context from pg_settings ;
++-------------------+
+|      context      |
++-------------------+
+| postmaster        |
+| superuser-backend |
+| user              |
+| internal          |
+| backend           |
+| sighup            |
+| superuser         |
++-------------------+
+(7 rows)
+
+
+
+La columna `context` en la tabla `pg_settings` de PostgreSQL indica el contexto necesario para cambiar el valor de un parámetro de configuración.
+
+
+1. **internal**: Estos parámetros no pueden ser cambiados directamente; reflejan valores determinados internamente. Algunos pueden ajustarse recompilando el servidor con diferentes opciones de configuración o cambiando opciones suministradas a `initdb`.
+
+2. **postmaster**:(Restart) Estos parámetros solo pueden aplicarse cuando el servidor se inicia, por lo que cualquier cambio requiere reiniciar el servidor. Los valores para estos parámetros suelen almacenarse en el archivo `postgresql.conf` o pasarse en la línea de comandos al iniciar el servidor.
+
+3. **sighup**: (Reload) Los cambios en estos parámetros pueden hacerse en `postgresql.conf` sin necesidad de reiniciar el servidor, pero requieren enviar una señal SIGHUP al proceso postmaster para que los cambios surtan efecto.
+
+4. **backend**: Estos parámetros pueden ser cambiados en cualquier momento por cualquier sesión de backend, pero el cambio solo afecta a la sesión que lo realiza.
+
+5. **superuser**: Solo los superusuarios pueden cambiar estos parámetros.
+
+6. **superuser-backend**: (neceista restart) Estos parámetros pueden ser cambiados en cualquier momento, pero solo por superusuarios y solo afectan a la sesión que realiza el cambio.
+
+7. **user**: Cualquier usuario puede cambiar estos parámetros en cualquier momento, y los cambios solo afectan a la sesión que realiza el cambio.
+
+
+
+https://www.postgresql.org/docs/current/sql-set-role.html
+https://www.postgresql.org/docs/current/view-pg-settings.html
+https://www.enterprisedb.com/blog/understanding-postgres-parameter-context
+
+
+
+
+ 
+---> Solo se puede de la version 15 en adeltante 
+
+DO $$
+DECLARE
+    param_name text;
+BEGIN
+    FOR param_name IN 
+        SELECT name 
+        FROM pg_settings 
+        WHERE context = 'user' -- Parámetros modificables por usuarios
+    LOOP
+        EXECUTE format('REVOKE SET ON PARAMETER %I FROM test', param_name);
+    END LOOP;
+END $$;
+
+ 
+  
+```
+
+
