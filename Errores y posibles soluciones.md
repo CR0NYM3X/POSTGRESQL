@@ -236,7 +236,7 @@ sudo rm /var/run/postgresql/.s.PGSQL.5432.lock
 Esto ocurre porque estas ejecutando el psql con librerias de una version antigua y la funcion PQgetCurrentTimeUSec es nueva en la lib libpq
 
 ```markdown
-# 0 - Nos conectamos a psql 17 
+# 0 - Ver la ruta de donde se ejecuta el binario
 [postgres@server_test ~]$ which  psql
 /usr/pgsql-17/bin/psql
 
