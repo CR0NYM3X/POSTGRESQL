@@ -104,6 +104,20 @@ postgres@postgres# select  *  from fdw_log_postgres where command_tag ilike '%er
 
 ```
 
+
+
+# Filtros 
+```sql
+# El parametro tiene que estar configurado de esta forma
+log_line_prefix  = <%t %r %a %d %u %p %c %i>
+
+
+************ CANTIDAD DE INTENTOS FALLIDOS POR CONTRASEÑAS ************
+cat  postgresql-250312.log   | grep -Ei failed | grep -Ei password  | awk '{print "IP: " $4 " DB:" $6 " User:" $7}'   | sed 's/(.*)//g' | sort  | uniq -c
+
+
+```
+
 Auditorias:
  https://github.com/pgaudit/pgaudit/tree/master
  https://www.crunchydata.com/blog/pgaudit-auditing-database-operations-part-1
