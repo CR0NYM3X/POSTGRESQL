@@ -1,3 +1,6 @@
+
+
+
 ------- AQUI PODRAS ENCONTRAR TODOS LOS  PARAMETRO
 https://pgpedia.info/ <br>
 https://postgresqlco.nf/doc/en/param/?q=password_encryption#
@@ -10,6 +13,37 @@ Doc Man:
 /usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data
 ``` 
 
+### Postmaster 
+``` 
+Objetivo del Postmaster
+El postmaster es responsable de:
+
+Iniciar el servidor: Es el primer proceso que se ejecuta al iniciar PostgreSQL.
+Gestionar conexiones: Escucha las conexiones entrantes y crea un nuevo proceso de servidor (llamado postgres) para cada conexión2.
+Supervisar procesos: Monitorea los procesos del servidor y toma medidas si alguno falla.
+
+https://dba.stackexchange.com/questions/345601/what-does-postmaster-do-in-postgresql
+
+[postgres@server_test ~]$ $PGBIN16/pg_ctl status -D $PGDATA16
+pg_ctl: server is running (PID: 587297)
+/usr/pgsql-16/bin/postgres "-D" "/sysx/data16"
+
+
+
+[postgres@server_test ~]$ cat  /sysx/data16/postmaster.pid
+587297 --> El PID (Process ID) del proceso postmaster.
+/sysx/data16 -->  El directorio de datos de PostgreSQL.
+1741823615 --> El ID de la instancia de PostgreSQL.
+5416 --> El puerto en el que PostgreSQL está escuchando  .
+/run/postgresql -->  El directorio donde se almacenan los archivos de socket.
+*   -->  Indica que no hay un archivo de socket específico.
+18446744071562068402     65594  -->  Información adicional sobre el sistema operativo y el tiempo de inicio.
+ready   --> Estado actual del servidor, indicando que está listo para aceptar conexiones.
+``` 
+ 
+
+
+
 
 ## VER LAS CONFIGURACIONES DESDE LA DB
 ```sql
@@ -18,7 +52,14 @@ select * from pg_config --- Ver rutas de binarios
 select current_setting('search_path'); --- ver configuraciones 
 show statement_timeout; --- ver parametros  individual
 SHOW ALL-- Ver todos los  parametros
-select name,setting from pg_settings where name = 'statement_timeout'; -- ver todos los parametros pero aqui estoy filtrando 
+
+select  name,setting,boot_val,reset_val,context  from pg_settings  where name = 'statement_timeout'; -- ver todos los parametros pero aqui estoy filtrando
+	name: El nombre del parámetro de configuración.
+	setting: El valor actual del parámetro.
+	boot_val: El valor predeterminado del parámetro al iniciar el servidor por primera vez.
+	reset_val: El valor al que se restablece el parámetro si se usa el comando RESET.
+	context: El contexto en el que se puede cambiar el parámetro (por ejemplo, postmaster, sighup, backend, superuser).
+
 ``` 
 
 
@@ -1219,6 +1260,8 @@ postgresql-devel	libraries and headers for C language development
 
 ### Conexto de cada parámetro 
 ```
+
+
 new_postgres@template1# select distinct context from pg_settings ;
 +-------------------+
 |      context      |
@@ -1234,23 +1277,29 @@ new_postgres@template1# select distinct context from pg_settings ;
 (7 rows)
 
 
+ 
 
-La columna `context` en la tabla `pg_settings` de PostgreSQL indica el contexto necesario para cambiar el valor de un parámetro de configuración.
-
-
+select name,setting,context from pg_settings  where context  = 'internal';
 1. **internal**: Estos parámetros no pueden ser cambiados directamente; reflejan valores determinados internamente. Algunos pueden ajustarse recompilando el servidor con diferentes opciones de configuración o cambiando opciones suministradas a `initdb`.
 
+select name,setting,context from pg_settings  where context  = 'postmaster';
 2. **postmaster**:(Restart) Estos parámetros solo pueden aplicarse cuando el servidor se inicia, por lo que cualquier cambio requiere reiniciar el servidor. Los valores para estos parámetros suelen almacenarse en el archivo `postgresql.conf` o pasarse en la línea de comandos al iniciar el servidor.
 
-3. **sighup**: (Reload) Los cambios en estos parámetros pueden hacerse en `postgresql.conf` sin necesidad de reiniciar el servidor, pero requieren enviar una señal SIGHUP al proceso postmaster para que los cambios surtan efecto.
 
+select name,setting,context from pg_settings  where context  = 'sighup';
+3. **sighup**: (Reload ) Los cambios en estos parámetros pueden hacerse en `postgresql.conf` sin necesidad de reiniciar el servidor, pero requieren enviar una señal SIGHUP al proceso postmaster para que los cambios surtan efecto.
+
+select name,setting,context from pg_settings  where context  = 'backend';
 4. **backend**: Estos parámetros pueden ser cambiados en cualquier momento por cualquier sesión de backend, pero el cambio solo afecta a la sesión que lo realiza.
 
-5. **superuser**: Solo los superusuarios pueden cambiar estos parámetros.
+select name,setting,context from pg_settings  where context  = 'superuser';
+5. **superuser**  (Reload, Transaccion): Solo los superusuarios pueden cambiar estos parámetros.
 
+select name,setting,context from pg_settings  where context  = 'superuser-backend';
 6. **superuser-backend**: (neceista restart) Estos parámetros pueden ser cambiados en cualquier momento, pero solo por superusuarios y solo afectan a la sesión que realiza el cambio.
 
-7. **user**: Cualquier usuario puede cambiar estos parámetros en cualquier momento, y los cambios solo afectan a la sesión que realiza el cambio.
+select name,setting,context from pg_settings  where context  = 'user';
+7. **user** (Reload, Transaccion): Cualquier usuario puede cambiar estos parámetros en cualquier momento, y los cambios solo afectan a la sesión que realiza el cambio.
 
 
 
