@@ -806,6 +806,25 @@ select * from mi_funcion_ejemplo();
 ```
 
 
+#  FOR UPDATE y SKIP LOCKED
+Combinación de cola poderosa para manejar escenarios de concurrencia en bases de datos, permitiendo que múltiples transacciones trabajen en paralelo sin interferir entre sí. [[1]](https://medium.com/@oscarfpires/postgresql-as-a-message-broker-pgqueue-1eda6ca7c954)
+```
+FOR UPDATE: Bloquea la fila seleccionada para que otras transacciones no puedan modificarla hasta que la transacción actual termine.
+
+SKIP LOCKED: Si la fila que se intenta bloquear ya está bloqueada por otra transacción, simplemente la omite y no la selecciona.
+
+-- Ejemplo : 
+SELECT "id", "channel", "message", "created_at", "created_at"
+INTO var_id, var_channel, var_message, var_created_at, var_created_at_ts
+FROM message_queued
+WHERE channel = channel_par
+ORDER BY id 
+LIMIT 1
+FOR UPDATE  
+SKIP LOCKED;
+```
+
+
 https://postgresconf.org/system/events/document/000/001/086/plpgsql.pdf
 <br> https://www.postgresql.org/docs/current/sql-createfunction.html
 
