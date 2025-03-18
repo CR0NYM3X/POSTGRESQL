@@ -1565,7 +1565,7 @@ FROM
 JOIN 
     pg_roles r ON m.roleid = r.oid
 JOIN 
-    pg_roles u ON m.member = u.oid
+    pg_roles u ON m.member = u.oid;
 	
 
 
