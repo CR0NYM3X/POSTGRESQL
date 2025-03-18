@@ -1569,7 +1569,7 @@ JOIN
 	
 
 
-- **admin_option**: Indica si el miembro tiene la opción de administrador.
+- **admin_option**: Le otorga el permiso al miembro poder hacer grant o revoke sobre el rol.
 - **inherit_option**: Indica si el miembro hereda automáticamente los privilegios del rol.
 - **set_option**: Indica si el miembro puede usar `SET ROLE` para adquirir los privilegios del rol .
 
