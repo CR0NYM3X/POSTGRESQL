@@ -634,7 +634,8 @@ select array_replace( '{server=10.10.10.12,version=1.1}'::text[], 'version=1.1',
  SELECT ARRAY[1, 2, 3] && ARRAY[2, 4]; -- Resultado: true
 
 -- verificar si un valor individual es igual a cualquiera de los elementos de un array , esto es lo que hace un in()
-SELECT * FROM mi_tabla WHERE 'perro' = ANY(ARRAY['MySQL', 'Oracle','PostgreSQL']); 
+SELECT * FROM mi_tabla WHERE 'perro' = ANY(ARRAY['MySQL', 'Oracle','PostgreSQL']);
+SELECT * FROM mi_tabla WHERE 'perro' = ANY( '{MySQL,Oracle,PostgreSQL}'::text[] );
 
  **array_agg**: Agrega los valores de una columna en un array
  SELECT array_agg(column_name) FROM table_name;
