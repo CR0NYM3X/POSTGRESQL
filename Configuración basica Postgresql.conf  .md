@@ -1091,6 +1091,7 @@ local all all peer
 
 For ident auth, pg_hba.conf entry looks like the following:
 local db_clientes user_admin  ident map=my_ident_map
+local db_clientes user_admin  peer map=my_ident_map # Este es en el caso por ejemplo que se cambio el nombre del usuario postgres
 
 An $PGDATA/ident.conf file looks like the following:
 # MAPNAME 	SYSTEM-USERNAME 	PG-USERNAME
