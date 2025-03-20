@@ -132,7 +132,7 @@ Un certificado TLS contiene información técnica y metadatos que permiten auten
   **8. Extensiones (X.509 v3)**
    - Campos adicionales críticos para seguridad y funcionalidad:
      - **Subject Alternative Names (SAN)**: Lista de dominios cubiertos (ej: `DNS:example.com`, `DNS:www.example.com`).
-     - **Key Usage**: identificas  el propósito de un certificado.  (ej: `Digital Signature`, `Key Encipherment`).
+     - **Key Usage**: identificas  el propósito de un certificado.  (ej:  `Server Authentication`, `Digital Signature`, `Key Encipherment`). 
      - **Extended Key Usage**: Casos específicos (ej: `TLS Web Server Authentication`).
      - **Basic Constraints**: Indica si el certificado es de una CA (generalmente `CA:FALSE` para certificados de servidor).
      - **CRL Distribution Points**: URL para listas de revocación (CRL).
