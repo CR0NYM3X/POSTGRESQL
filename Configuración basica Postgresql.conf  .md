@@ -250,6 +250,7 @@ DATA: /var/lib/pgsql/16/data
 BINARIOS: /usr/local/pgsql/bin/
 BINARIOS: /usr/pgsql/bin/
 
+-- Socket unix
 /var/run/postgresql/ o /tmp/
 
 hba_file = '/config/pg_hba.conf'
