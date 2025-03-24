@@ -1,0 +1,178 @@
+##############################################################################################################
+##############################       INFORMACIÓN EXTRA                ######################################## 
+##############################################################################################################
+
+* [APROVADO] - Función plpgsql  
+	.- Comportamiento : Esta funcion entra a un bucle infinito, que valida las conexiones pg_admin  de la vista pg_stat_activity  y las cierra con la funcion pg_terminate_backend y registra la actividad en un archivo csv.
+	.- Ventaja :  facil de implementar y no llena los registros del log postgresql.
+	.- Desventaja :  permite consultas que sean rapida y no tarden igual o mas de 1 seg.
+
+
+* [DESCARTADO] - Extensión session_exec   
+	.- Comportamiento : Esta extensión   cada vez que hay un inicio de sesión ejecuta una funcion , la cual se encarga de cerrar las conexiones validando el application_name de quien ejecuto la funcion y en caso de detectar que es un pg_admin cierra la conexión con un RAISE EXCEPTION
+	.- Ventaja : Esta funcion se ejecuta cuando se inicia sesión y no permite hacer otra actividad sin primero pasar el filtro de la funcion validadora.  
+	.- Desventaja : Requiere instalación de extensión externa,  no se encuentra en repositorio de REDHAT y de otros paquetes lo que puede hacer la implementación un poco tediosa. 
+
+* [DESCARTADO] -  ARCHIVO BASH 
+	.- Comportamiento : (Valida conexiones pg_admin  de la vista pg_stat_activity y cierra las conexiones con kill)
+  .- Ventaja : Facil de implementar y ejecutar 
+	.- Desventaja : llena el log ya que si tiene activado los parámetros   log_connections , log_disconnections en "ON" estos registraran cada conexion y desconexion lo cual no es beneficioso para el servidor por el tema de espacio,  permite consultas que sean rapida y no tarden igual o mas de 1 seg.
+
+
+##############################################################################################################
+############################## 1.- CREACION DE TABLA                  ######################################## 
+##############################################################################################################
+
+-- ************************ CREAR EXTENSION EN DB:POSTGRES  ************************
+\c postgres 
+CREATE EXTENSION file_fdw;
+
+CREATE SERVER csv_server FOREIGN DATA WRAPPER file_fdw;
+
+
+-- ************************ CREAR TABLA ************************
+ -- Tabla de logs mejorada (si no existe)
+CREATE FOREIGN TABLE  IF NOT EXISTS connection_control_log (
+	terminate_backend boolean,
+	pid int,
+	ip_client inet,
+	port_client int,
+	application_name text,
+	db_name name,
+	use_name name,
+	--query TEXT,
+	connection_start_time timestamp with time zone,
+	query_start_time timestamp with time zone,
+	date_insert timestamp without time zone default (clock_timestamp())::timestamp without time zone
+	)
+SERVER csv_server
+OPTIONS (filename '/tmp/users_block.csv', format 'csv', header 'false');
+
+
+ 
+
+ 
+##############################################################################################################
+############################## 2.- CREACION DE FUNCION                ########################################
+##############################################################################################################
+
+-- ************************ CREANDO FUNCION ************************
+
+CREATE OR REPLACE FUNCTION manage_blocked_sessions(
+    p_check_interval INT DEFAULT 1
+	,p_notice boolean DEFAULT FALSE
+) RETURNS VOID AS $$
+DECLARE
+
+    v_filas_afectadas INT;
+
+BEGIN
+    LOOP
+        BEGIN
+			
+			COPY(
+				SELECT  
+					pg_terminate_backend(pid) as terminate_backend
+					,pid
+					,client_addr as ip_client
+					,client_port as port_client
+					,application_name
+					,datname as db_name
+					,usename as use_name 
+					--,query 
+					,backend_start as connection_start_time
+					,query_start  as query_start_time
+					,(clock_timestamp())::timestamp without time zone as date_insert
+				FROM pg_stat_activity 
+				WHERE
+					
+					-- Excluir session actual 
+					pid <> pg_backend_pid() 
+					AND
+					
+					--  APLICACIONES QUE QUIERES RESTRINGIR 
+					(
+							(application_name ilike  '%DB%' and application_name ilike  '%eaver%'  )  
+						OR	(application_name ilike  '%pg%' and application_name ilike  '%admin%'  )    
+					  --OR  (application_name ilike  '%psql%' )
+					)
+					AND
+					
+					-- USUARIOS A RESTRINGIR
+					(  
+						usename ~* '[0-9]{7}'
+					)
+				) TO PROGRAM 'cat >> /tmp/users_block.csv' WITH (FORMAT CSV, DELIMITER ',');
+			
+			GET DIAGNOSTICS v_filas_afectadas = ROW_COUNT;
+			
+			IF v_filas_afectadas <> 0 THEN
+				IF p_notice THEN	
+					RAISE NOTICE ' ¡¡ SE ENCONTRARON -> % <- CONEXIONES!! ', v_filas_afectadas;
+				END IF;
+			END IF;
+			
+
+            -- Intervalo configurable con manejo de errores
+            PERFORM pg_sleep(p_check_interval);
+			
+			PERFORM pg_stat_clear_snapshot();
+
+        EXCEPTION
+            WHEN OTHERS THEN
+                RAISE WARNING 'Error en control de conexiones: %', SQLERRM;
+                PERFORM pg_sleep(5);  -- Espera adicional en caso de error
+        END;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql  
+
+-- Configurar parámetros para que no genere logs y no tunve la funcion.
+SET client_min_messages = 'notice'
+SET log_statement  = 'none'  
+SET log_min_messages = 'panic' 
+SET log_min_error_statement  = 'panic'   
+SET log_duration = off
+SET log_error_verbosity = 'terse' 
+SET log_min_duration_statement = -1  
+SET statement_timeout = 0 
+SET idle_in_transaction_session_timeout = 0 
+SET idle_session_timeout = 0   
+;
+
+
+
+
+ 
+##############################################################################################################
+############################## 3.- EJECUTAR FUNCION SEGUNDO PLANO     ########################################
+##############################################################################################################
+
+ 
+psql -X -d postgres -p 5416 -U tantor -c "select * from manage_blocked_sessions();" & 
+ 
+
+ 
+##############################################################################################################
+############################## 4.- PROGRAMAR CRONTAB     ########################################
+##############################################################################################################
+
+
+
+echo "psql -X -d postgres -p 5416 -U tantor  -c \"select pg_terminate_backend(pid) from pg_stat_activity where query ilike '%manage_blocked_sessions%' and pid <> pg_backend_pid(); select * from manage_blocked_sessions();\" &" > monitor.sh && chmod 700 monitor.sh
+
+-- ************************ QUE SE EJECUTE CADA 5 HR ************************
+0 */5 * * * /sysx/data16/bash/monitor.sh
+
+
+##############################################################################################################
+############################## 5.- CONSULTA DATOS DE USUARIOS                ################################# 
+##############################################################################################################
+
+
+-- ************************ VALIDAR TABLAS DE CONEXIONES REALIZADAS ************************
+ select * from connection_control_log; --  /tmp/users_block.csv
+
+
+-- ************************ VALIDAR SI ESTA CORRIENDO EL PROCESO ************************
+ ps -fea | grep manage_blocked_sessions
