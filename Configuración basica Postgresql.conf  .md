@@ -1169,7 +1169,12 @@ export PS1="\[\e[38;5;196m\]\u\[\e[38;5;202m\]@\[\e[38;5;208m\]\h \[\e[38;5;220m
 # https://www.postgresql.org/message-id/CAB7nPqRaacwcaANOYY3Hxd3T0No5RdZXyqM5HB6fta%2BCoDLOEg%40mail.gmail.com
 # https://ascii.co.uk/art/elephant 
 # https://emojicombos.com/elephant-ascii-art
-# https://www.asciiart.eu/animals/elephants 
+# https://www.asciiart.eu/animals/elephants
+
+# https://www.asciiart.eu/image-to-ascii 
+# https://www.ascii-art-generator.org/es.html
+# https://www.creativefabrica.com/es/tools/ascii-art-generator/
+ 
 
 cat<<'EOF'
   +------------------------+
