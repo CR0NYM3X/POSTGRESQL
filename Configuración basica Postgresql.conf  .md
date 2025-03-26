@@ -1151,10 +1151,20 @@ set ignorecase
 
 
 ******************************************************************
+ 
+source ~/.bash_profile
 
 
 # https://robotmoon.com/bash-prompt-generator/
 export PS1="\[\e[38;5;196m\]\u\[\e[38;5;202m\]@\[\e[38;5;208m\]\h \[\e[38;5;220m\]\w \[\033[0m\]$ "
+
+# Alternativas 
+#PS1="\[\033[0;36m\]\u@\h:\w\$ \[\033[0m\]" #  Texto en cyan (azul claro) 
+#PS1="\[\033[1;33m\]\u@\h:\w\$ \[\033[0m\]" #  Texto en amarillo brillante 
+#PS1="\[\033[1;32;40m\]\u@\h:\w\$ \[\033[0m\]" #  Texto en verde con fondo negro 
+#PS1="\[\033[1;32m\]\u@\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\] \[\033[1;33m\]\$ \[\033[0m\]" #  Prompt con usuario@host en verde y ruta en azul, pero texto de entrada en amarillo
+#PS1="\[\033[1;32m\]\u@\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\] \$ \[\033[0;36m\]" #  `usuario@host` en **verde brillante**.   ruta` en **azul brillante* y El texto después del `$` será cyan (azul claro)
+#PS1="\[\033[1;32m\]\u@\h\[\033[0m\]:\[\033[38;5;11m\]\w\[\033[0m\] \$ \[\e[38;5;33m\] "
 
 # https://www.postgresql.org/message-id/CAB7nPqRaacwcaANOYY3Hxd3T0No5RdZXyqM5HB6fta%2BCoDLOEg%40mail.gmail.com
 # https://ascii.co.uk/art/elephant 
@@ -1196,6 +1206,7 @@ EOF
 # ⠀⠀⠀⠀⠁⢒⡒⠂⠈⠉⠞⠓⠚⠙⠴⠃
 # 
 # EOF
+
 
 
 
