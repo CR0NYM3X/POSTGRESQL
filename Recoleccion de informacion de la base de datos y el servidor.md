@@ -407,7 +407,7 @@ lsof -i -P -n | grep postgres
 Telnet 10.28.231.4 5432
 
 
-##### USANDO BASH #####
+##### USANDO sockets TCP de bash #####
 #!/bin/bash
 HOST="10.28.231.4"
 PORT=5433
