@@ -399,3 +399,44 @@ lsof -i -P -n | grep postgres
 
 
 
+# Validar conexiones 
+```sh
+
+
+##### USANDO TELNET #####
+Telnet 10.28.231.4 5432
+
+
+##### USANDO BASH #####
+#!/bin/bash
+HOST="10.28.231.4"
+PORT=5433
+
+# Intentar conectar con timeout y telnet
+if timeout 5 bash -c "echo > /dev/tcp/$HOST/$PORT" 2>/dev/null; then
+    echo "Conexión exitosa al servidor $HOST:$PORT"
+else
+    echo "No se pudo conectar al servidor $HOST:$PORT"
+fi
+
+
+
+##### USANDO NETCAT #####
+#!/bin/bash
+
+HOST="10.28.231.4"
+PORT=5433
+
+# Intentar conectar
+if nc -z -v -w5 $HOST $PORT 2>&1 | grep -q 'Connected'; then
+    echo "Conexión exitosa al servidor $HOST:$PORT"
+else
+    echo "No se pudo conectar al servidor $HOST:$PORT"
+fi
+
+
+
+
+```
+
+
