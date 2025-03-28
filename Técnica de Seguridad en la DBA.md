@@ -1,5 +1,24 @@
 
 
+# ¿Qué es el CIS Benchmark para PostgreSQL?
+El CIS (Center for Internet Security) Benchmark para PostgreSQL es un conjunto de mejores prácticas y configuraciones de seguridad diseñadas para proteger bases de datos PostgreSQL contra amenazas comunes. Es un estándar reconocido en la industria para auditorías de seguridad y cumplimiento normativo (como ISO 27001, PCI DSS, GDPR, etc.).
+
+
+### Objetivos principales
+✔ Reducir vulnerabilidades en la configuración de PostgreSQL. <br>
+✔ Prevenir accesos no autorizados a datos sensibles.<br>
+✔ Asegurar el cumplimiento de regulaciones de seguridad.<br>
+✔ Proporcionar una línea base para configuraciones seguras.
+
+### Beneficios de seguir el CIS Benchmark
+✅ Reduce riesgos de ataques (SQL injection, acceso no autorizado).<br>
+✅ Cumple con normativas (GDPR, HIPAA, PCI DSS).<br>
+✅ Mejora el rendimiento y estabilidad al eliminar configuraciones inseguras.
+
+https://downloads.cisecurity.org/#/<br>
+https://www.cisecurity.org/benchmark/postgresql
+
+
 
 # Tecnicas de Hardening 
 es el proceso de fortalecer la seguridad de una base de datos para protegerla contra amenazas y ataques cibernéticos. Este proceso implica aplicar una serie de medidas y prácticas para minimizar las vulnerabilidades y reducir la superficie de ataque
