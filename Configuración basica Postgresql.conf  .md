@@ -2,6 +2,7 @@
 
 
 ------- AQUI PODRAS ENCONTRAR TODOS LOS  PARAMETRO
+https://www.postgresql.org/docs/17/admin.html <br>
 https://pgpedia.info/ <br>
 https://postgresqlco.nf/doc/en/param/?q=password_encryption#
 
