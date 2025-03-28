@@ -2,6 +2,7 @@
 ```
 -----------  Reforzar temas  -----------
 
+-> Implementación de MFA/2FA con Google Authenticator en PostgreSQL
 -> aprender sobre  PITR (Punto de recuperacion con wal)  y usar pg_basebackup y pg_verifybackup 
 -> Mejorar temas de replica striming
  ```
