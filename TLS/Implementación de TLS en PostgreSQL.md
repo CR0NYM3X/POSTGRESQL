@@ -240,7 +240,8 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    
    ```
 
-1. **Tercera capa de seguridad nivel Usuario ( Usar Certificado para autenticarse )** 
+1. **Tercera capa de seguridad nivel Usuario ( Usar Certificado para autenticarse )**
+El Mutual Transport Layer Security (mTLS) es un protocolo de seguridad que extiende el TLS tradicional para requerir autenticación bidireccional
    ```sql
     # Se conectara directo  
    psql "host=127.0.0.1  port=5416  user=conssl dbname=postgres sslmode=verify-full  sslrootcert=/tmp/pki/CA/combined.crt  sslcert=/tmp/pki/certs/client.crt sslkey=/tmp/pki/private/client.key"
