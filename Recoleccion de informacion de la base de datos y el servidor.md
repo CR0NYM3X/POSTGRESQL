@@ -24,6 +24,7 @@ ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | head
 ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%mem | head
 ps -eo pid,user,comm,size --sort=-size | head -n 10
 ps aux --sort=-%cpu | head
+ps -C postgres -o pid=,%mem= --sort=-%mem | awk '{print $1","$2}'
 ps -p <PID> -o %cpu,%mem,cmd
 
 vmstat -S m 1 5
