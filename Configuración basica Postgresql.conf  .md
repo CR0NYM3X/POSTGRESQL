@@ -449,11 +449,11 @@ limitado por `max_parallel_workers`
 ```sql
 
 
-max_wal_size = 2GB
+max_wal_size = 2GB  # Tamaño máximo de WAL antes de forzar checkpoint.
 min_wal_size = 1GB
 
 
-checkpoint_timeout = 20min		# range 30s-1d
+checkpoint_timeout = 20min		# aseguran que los datos en memoria se escriban en disco
 checkpoint_completion_target = 0.9
 checkpoint_flush_after = 256kB		# measured in pages, 0 disables
 checkpoint_warning = 30s		# 0 disables
