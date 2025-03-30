@@ -40,6 +40,14 @@ Detectar index compuestos
 Índices Bloat (Fragmentados)
 ```
 
+
+
+# Querys más utilizadas 
+```sql
+
+
+```
+
 ### DISCARD Liberar recursos en session
 ```sql
 afectará únicamente a la sesión específica de PostgreSQL desde la cual se ejecuta el comando, y no tendrá ningún efecto en otras sesiones o conexiones activas en el servidor.
@@ -212,11 +220,7 @@ Puedes configurar el tiempo máximo que una conexión puede permanecer inactiva 
 
 `idle_in_transaction_session_timeout = 60000  # 60 segundos (valor en milisegundos)`
 
-2. Ver las conexiones **`activas`** y identificar cual esta generando bloques en base al tiempo que tiene ejecutandose, y cerrar la conexión con el PID:
-```sh
-select  query,pid,datname,usename,client_addr,query_start,state,application_name,CAST((now()-query_start) as varchar(8)) as time_run, state FROM pg_stat_activity
-WHERE query != '<IDLE>' AND TRIM(state)!='idle' and pid != pg_backend_pid()  ORDER BY query_start ASC;
-
+ 
 
 ```
 3. Ver las conexiones que tengan más de 5 minutos en postgresql 8
@@ -476,9 +480,12 @@ select  * from  pg_statio_user_sequences;
  select  * from   pg_stat_xact_user_function;
  
  ## Extras:
- select  * from  pg_stat_archiver;
- select  * from  pg_stat_bgwriter;
- select  * from  pg_stat_monitor;
+ select  * from  pg_stat_archiver; -- Monitorea el proceso que archiva los archivos WAL (Write-Ahead Logs) en un sistema de replicación o backup Verifica la salud del archivado: Detecta si hay retrasos o fallos. , Útil para replicación: Asegura que los réplicas estén al día. ,Muestra el último WAL archivado: Clave para recuperación ante desastres.
+
+
+ select  * from  pg_stat_bgwriter; -- Proporciona métricas sobre el proceso Background Writer, que escribe páginas de memoria ("buffers sucios") en disco para reducir la carga durante checkpoints. Optimiza , checkpoints: Ayuda a ajustar checkpoint_timeout y max_wal_size. ,Diagnostica presión de escritura: Si hay muchos buffers escritos durante checkpoints., Mejora estabilidad: Evita picos de I/O al distribuir escrituras.
+
+
  select  * from  pg_statistic;
  select  * from  pg_statistic_ext;
  select  * from  pg_stats;
