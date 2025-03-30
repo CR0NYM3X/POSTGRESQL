@@ -32,6 +32,17 @@ vmstat -S m 1 5
 
 Este comando muestra estadísticas del sistema, incluyendo el uso de CPU, cada segundo.
 vmstat 1
+
+
+### **Resumen de cómo separar memoria en componentes**  
+| **Componente**       | **Comando**                          | **Campo clave** |  
+|----------------------|--------------------------------------|----------------|  
+| Memoria Virtual (VSZ)| `ps -o size` o `/proc/[pid]/status`  | `VmSize`       |  
+| Memoria RAM (RSS)    | `ps -o rss` o `smem -c rss`         | `VmRSS`        |  
+| Memoria Swap         | `smem -c swap` o `/proc/[pid]/status` | `VmSwap`      |  
+| Bibliotecas mapeadas | `pmap -x [pid]`                     | Modo `r-x--`   |  
+ 
+
 ```
 
 ### recopilar información de archivos 
