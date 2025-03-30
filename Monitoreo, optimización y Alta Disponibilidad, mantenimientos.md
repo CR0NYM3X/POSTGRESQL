@@ -46,6 +46,144 @@ Detectar index compuestos
 ```sql
 
 
+ 
+-- ********* Query ver conexiones con alto consumo de CPU  *********
+ 
+
+
+# Obtener PIDs de procesos postgres y su % de memoria
+PG_PIDS=$(ps -C postgres -o pid=,%mem=,size=,%cpu= --sort=-%mem | awk '{print $1","$2","$3","$4}')
+
+# Generar lista de PIDs para la query SQL (ej: "1234,12.3;5678,5.6")
+PG_PIDS_LIST=$(echo "$PG_PIDS" | tr '\n' ';' | sed 's/;$//')
+
+# Ejecutar query en PostgreSQL con el % de memoria
+psql -p $(grep "port =" /sysx/data/postgresql.conf | awk '{print $3}') -U  postgres -c "
+WITH process_mem AS (
+  SELECT split_part(data, ',', 1)::int AS pid,
+         split_part(data, ',', 2)::float AS mem_percent,
+		 split_part(data, ',', 3)::float AS mem_kb,
+		 split_part(data, ',', 4)::float AS cpu_percent
+  FROM (SELECT unnest(string_to_array('$PG_PIDS_LIST', ';')) AS data) AS t
+)
+SELECT 
+  -- pg_terminate_backend(pid), -- Cerrar conexiones tener cuidado de tumbar procesos de prostgresql importantes
+  a.pid,
+  a.backend_type,
+  a.state,
+  a.usename,
+  -- a.datname,
+  a.client_addr,
+  a.backend_start,
+  --a.query_start,
+  NOW() - a.query_start AS duracion_exec,
+  -- a.application_name,
+  pm.mem_percent || '%' AS mem,
+  mem_kb || ' KB' AS mem_kb,
+  cpu_percent || '%' cpu
+  ----,query
+FROM pg_stat_activity a
+JOIN process_mem pm ON a.pid = pm.pid
+WHERE a.pid <> pg_backend_pid()  -- Excluir la propia conexión
+	-- AND backend_type = 'client backend' -- Excluir procesos inernos de postgres
+	-- AND state = 'idle' -- filtrar solo conexiones inactivas o zombies 
+ ORDER BY pm.mem_percent DESC, pm.cpu_percent DESC;
+-- ORDER BY pm.cpu_percent DESC;
+"
+
+
+-- ********* Query ver conexiones activas con altos tiempos de 5 min. *********
+
+select  
+	pid,
+	backend_type,
+	datname,
+	usename,
+	client_addr,
+	state,
+	--query_start,
+	application_name,
+	(now()- query_start)  as time_run, 
+	state
+	--,query
+FROM pg_stat_activity
+WHERE backend_type = 'client backend' 
+	  AND state ~* 'active'
+	  AND pid != pg_backend_pid()  
+	  AND (now() - query_start) > interval '5 minutes' 
+ORDER BY (now() - query_start) desc;
+
+
+ 
+-- ********* Query que pueden ayudar a monitorear la lectura y escritura en disco *********
+
+--- Opcion #1
+SELECT 
+    schemaname,
+    relname,
+    heap_blks_read,       -- Bloques leídos (desde disco)
+    heap_blks_hit,        -- Bloques en caché
+    idx_blks_read,        -- Bloques de índices leídos
+    idx_blks_hit
+FROM pg_statio_all_tables
+WHERE schemaname NOT LIKE 'pg_%'
+ORDER BY heap_blks_read DESC
+LIMIT 10;  -- Top 10 tablas con más I/O de lectura
+
+
+
+
+--- Opcion #2
+SELECT
+    queryid,
+    query,
+    (shared_blks_read + temp_blks_read) * current_setting('block_size')::int / 1024 AS total_read_kb,
+    (shared_blks_written + temp_blks_written) * current_setting('block_size')::int / 1024 AS total_write_kb
+FROM pg_stat_statements
+ORDER BY total_read_kb DESC -- Top 10 querys con más I/O de lectura
+LIMIT 10;
+
+
+--- Opcion #3
+SELECT
+    a.pid,
+    a.query,
+    a.query_start,
+    --pg_size_pretty(pg_temp_files_size(a.pid)) AS temp_files_size,
+    (pg_stat_statements.shared_blks_read * 8) || ' KB' AS read_io,
+    (pg_stat_statements.shared_blks_written * 8) || ' KB' AS write_io
+FROM pg_stat_activity a
+JOIN pg_stat_statements ON a.query_id = pg_stat_statements.queryid 
+order by pg_stat_statements.shared_blks_r
+
+
+
+
+
+
+-- ********* OTROSSSSSSS *********
+
+ SELECT 
+    checkpoints_timed,   -- Checkpoints iniciados por tiempo
+    checkpoints_req,     -- Checkpoints forzados por operaciones
+    buffers_checkpoint,  -- Buffers escritos durante checkpoints
+    buffers_clean       -- Buffers escritos por el Background Writer
+FROM pg_stat_bgwriter;
+
+
+SELECT 
+    archived_count,     -- Número de WAL archivados exitosamente
+    last_archived_wal,  -- Último archivo WAL archivado
+    last_failed_wal,    -- Último WAL que falló al archivarse
+    failed_count        -- Total de fallos de archivado
+FROM pg_stat_archiver;
+
+
+--- estadísticas detalladas sobre las operaciones de lectura/escritura (I/O) en PostgreSQL, desglosadas por tipo de operación (backend, checkpoints, autovacuum, etc.).
+SELECT * FROM pg_stat_io 
+WHERE reads > 0 OR writes > 0 
+ORDER BY reads DESC;
+
 ```
 
 ### DISCARD Liberar recursos en session
