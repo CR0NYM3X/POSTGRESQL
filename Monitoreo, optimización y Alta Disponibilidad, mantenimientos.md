@@ -48,7 +48,7 @@ Detectar index compuestos
 
  
 -- ********* Query ver conexiones con alto consumo de CPU  *********
-  
+
 # Obtener PIDs de procesos postgres y su % de memoria
 PG_PIDS=$(ps -C postgres -o pid=,%mem=,size=,%cpu= --sort=-%mem | awk '{print $1","$2","$3","$4}')
 
@@ -81,13 +81,16 @@ SELECT
   cpu_percent || '%' cpu
   ----,query
 FROM pg_stat_activity a
-JOIN process_mem pm ON a.pid = pm.pid
+LEFT JOIN process_mem pm ON a.pid = pm.pid
 WHERE a.pid <> pg_backend_pid()  -- Excluir la propia conexión
 	 AND backend_type = 'client backend' -- Excluir procesos inernos de postgres
-	--  AND state ~* 'idle' -- filtrar solo conexiones inactivas o zombies 
- ORDER BY pm.mem_percent DESC, pm.cpu_percent DESC;
+	 AND pm.mem_percent IS NOT NULL 
+	 -- AND state ~* 'idle' -- filtrar solo conexiones inactivas o zombies 
+ORDER BY pm.mem_percent DESC, pm.cpu_percent DESC;
 -- ORDER BY pm.cpu_percent DESC;
+-- ORDER BY  (NOW() - a.query_start) DESC
 "
+
 
 
 -- ********* Query ver conexiones activas con altos tiempos de 5 min. *********
