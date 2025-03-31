@@ -286,16 +286,24 @@ El Mutual Transport Layer Security (mTLS) es un protocolo de seguridad que extie
 
 	   2.- Validar que esten clientes conectados 
 	   select
-	   	datname
-	   	,pg_ssl.ssl
-	   	,pg_ssl.version
-	   	,pg_ssl.cipher
-	   	,pg_sa.backend_type
-	   	,pg_sa.usename
-	   	,pg_sa.client_addr
-	   	,application_name
-	   from pg_stat_ssl pg_ssl
-	   LEFT JOIN pg_stat_activity AS pg_sa ON pg_ssl.pid = pg_sa.pid;
+	        -- pg_sa.pid,
+			pg_sa.state 
+	    	,datname
+	    	,pg_ssl.ssl
+	    	,pg_ssl.version
+	    	,pg_ssl.cipher
+	    	--,pg_sa.backend_type
+	    	,pg_sa.usename
+	    	,pg_sa.client_addr
+	    	,application_name
+			--,backend_start
+			--,query_start
+	    from pg_stat_ssl pg_ssl
+	    LEFT JOIN pg_stat_activity AS pg_sa ON pg_ssl.pid = pg_sa.pid
+		where pg_sa.backend_type = 'client backend' 
+			  AND pg_sa.pid <> pg_backend_pid()
+			 --  AND ssl = false 
+		order by pg_ssl.ssl,pg_sa.usename;
 
 	+-------------+-----+---------+------------------------+----------------+----------+---------------+----------------------------+
 	|   datname   | ssl | version |         cipher         |  backend_type  | usename  |  client_addr  |      application_name      |
