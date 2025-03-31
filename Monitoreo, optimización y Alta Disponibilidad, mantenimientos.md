@@ -67,7 +67,7 @@ WITH process_mem AS (
 SELECT 
   -- pg_terminate_backend(pid), -- Cerrar conexiones tener cuidado de tumbar procesos de prostgresql importantes
   a.pid,
-  a.backend_type,
+  --a.backend_type,
   a.state,
   a.usename,
   -- a.datname,
