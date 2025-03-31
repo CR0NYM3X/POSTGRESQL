@@ -72,7 +72,7 @@ SELECT
   a.usename,
   -- a.datname,
   a.client_addr,
-  a.backend_start,
+  --a.backend_start,
   --a.query_start,
   NOW() - a.query_start AS duracion_exec,
   -- a.application_name,
