@@ -220,6 +220,34 @@ db_test=#  SELECT oid,relname AS table_name FROM pg_class WHERE relkind = 'r'   
 
 
 
+---------------
+
+DO $$
+DECLARE
+    rec RECORD;
+	query text;
+BEGIN
+	set client_min_messages = notice ; 
+	
+	query := E'select row_number() OVER () as row_number, * from cat_proveedor ' ;
+	
+    FOR rec IN execute query  LOOP
+        --row_number := row_number + 1;
+        BEGIN
+            -- Aquí puedes poner la lógica que podría causar un error
+            -- Por ejemplo, una conversión de codificación
+            PERFORM pg_catalog.convert_from(rec.direccion::bytea, 'UTF8');
+        EXCEPTION
+            WHEN OTHERS THEN
+				 RAISE NOTICE 'Error  fila %  -> select * from ( % ) as a where row_number = % ; ',   rec.row_number ,query ,   rec.row_number  ;
+	 
+        END;
+    END LOOP;
+ 
+END $$;
+
+
+
 
 ```
 
