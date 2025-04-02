@@ -921,6 +921,8 @@ PostgreSQL home page: <https://www.postgresql.org/>
 
 
 -------- BIBLIOGRAFÍAS ---------------
+Igual puedes usar pgingester  link referencias : https://medium.com/timescale/benchmarking-postgresql-batch-ingest-51fbe09174de
+
 https://www.postgresql.org/docs/current/pgbench.html
 https://medium.com/@c.ucanefe/pgbench-load-test-166bdfb5c75a
 https://juantrucupei.wordpress.com/2017/11/30/uso-de-pgbench-para-pruebas-stress-postgresql/
