@@ -16,8 +16,8 @@ El CIS (Center for Internet Security) Benchmark para PostgreSQL es un conjunto d
 ✅ Mejora el rendimiento y estabilidad al eliminar configuraciones inseguras.
 
 https://downloads.cisecurity.org/#/<br>
-https://www.cisecurity.org/benchmark/postgresql
-
+https://www.cisecurity.org/benchmark/postgresql <br>
+https://cheatsheetseries.owasp.org/IndexTopTen.html
 
 
 
