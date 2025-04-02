@@ -245,8 +245,11 @@ HAProxy --> es un balanceador de carga y proxy inverso de código abierto. Se ut
  
 
  
-### **7. Rendimiento y Optimización:**  
+### **7. Rendimiento y Optimización:**
 
+
+ pgbench : herramienta de benchmarking para probar el rendimiento de PostgreSQL. Ejecuta una serie de comandos SQL repetidamente en múltiples sesiones concurrentes y calcula la tasa promedio de transacciones (transacciones por segundo).
+ pgingester : herramienta de benchmarking para evaluar diferentes métodos de ingestión de datos en lotes en PostgreSQL2. Mide el rendimiento de métodos como INSERT, COPY, Binary COPY, y UNNEST en términos de filas por segundo y duración de la ingestión.
 - ** pg_partman:** Gestiona la partición de tablas de forma automática, lo cual es fundamental para mejorar el rendimiento en bases de datos con grandes volúmenes de datos, especialmente en tablas de series temporales.
 
 
@@ -307,7 +310,6 @@ rendimiento general de la base de datos.
 ### **8. Análisis y Ciencia de Datos:**
 - **MADlib:** Biblioteca de algoritmos de aprendizaje automático.
 - **cstore_fdw:** Soporte para almacenamiento en formato columna.
-- **timescaledb:** Extensión para manejo eficiente de series temporales.
 - **PL/R:** Permite ejecutar código R dentro de PostgreSQL para análisis estadístico.
 - **PL/Python:** Extensión para ejecutar funciones en Python dentro de PostgreSQL.
 - **cube:** Introduce un tipo de datos multidimensional que facilita el manejo y análisis de datos en múltiples dimensiones.
