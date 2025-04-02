@@ -4,6 +4,7 @@
 	- Doc oficiales 
 		* https://www.postgresql.org/docs/17/pgcrypto.html
 		* https://www.postgresql.org/docs/current/encryption-options.html
+  		* https://www.rfc-editor.org/rfc/rfc4880.html
 
 	- Doc apoyo
 		* https://stackoverflow.com/questions/29189154/issue-with-pgcrypto-pgp-pub-encrypt
