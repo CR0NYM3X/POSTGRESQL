@@ -104,10 +104,10 @@
 		gpg --list-secret-keys
 
 	- Exportar la clave publica
-	gpg -a --export KEYID > public.key
+	gpg  --armor --export KEYID > public.key
 	
 	- Exportar la clave privada 
-	gpg -a --export-secret-keys KEYID > secret.key
+	gpg  --armor --export-secret-keys KEYID > secret.key
 	
 
 
