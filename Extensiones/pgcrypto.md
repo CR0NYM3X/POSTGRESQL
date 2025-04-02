@@ -1,4 +1,211 @@
 
+## Referencias: 
+
+	- Doc oficiales 
+		* https://www.postgresql.org/docs/17/pgcrypto.html
+		* https://www.postgresql.org/docs/current/encryption-options.html
+
+	- Doc apoyo
+		* https://stackoverflow.com/questions/29189154/issue-with-pgcrypto-pgp-pub-encrypt
+		* https://docs.yugabyte.com/preview/secure/column-level-encryption/
+		* https://cheatsheetseries.owasp.org/cheatsheets/Key_Management_Cheat_Sheet.html
+ 
+
+### Notas Importantes
+
+- **Seguridad**: Las funciones de `pgcrypto` están diseñadas para ser seguras y confiables. Utilizan algoritmos criptográficos estándar y son consideradas "de confianza", lo que significa que pueden ser instaladas por usuarios no superusuarios que tengan privilegios de `CREATE` en la base de datos.
+- **Requisitos**: `pgcrypto` requiere OpenSSL. No se instalará si el soporte de OpenSSL no fue seleccionado al construir PostgreSQL.
+
+### Consideraciones
+
+
+### Ventajas
+
+- **Flexibilidad**: `pgcrypto` soporta una amplia gama de algoritmos criptográficos, lo que permite a los desarrolladores elegir el más adecuado para sus necesidades específicas.
+- **Seguridad Mejorada**: El uso de sal y la capacidad de ajustar la velocidad de los algoritmos proporciona una defensa robusta contra ataques de fuerza bruta y otros intentos de comprometer la seguridad.
+- **Integración Sencilla**: Las funciones de `pgcrypto` se integran fácilmente con PostgreSQL, permitiendo a los desarrolladores añadir capacidades criptográficas sin necesidad de herramientas externas.
+
+
+
+
+### Funciones de Hash General
+
+Estas funciones se utilizan para calcular hashes binarios de datos, lo cual es útil para verificar la integridad de los datos y para almacenar contraseñas de manera segura.
+
+Ventajas 
+	Los algoritmos de hash son rápidos y eficientes, lo que los hace ideales para aplicaciones que requieren procesamiento rápido de datos.
+
+Aplicaciones de los Hashes 
+	- Verificación de Integridad de Datos: Asegura que los datos no han sido alterados durante la transmisión o almacenamiento.
+    - Almacenamiento Seguro de Contraseñas:  Almacena contraseñas de manera segura en bases de datos. En lugar de guardar la contraseña en texto plano, se guarda su hash.
+	- Firma Digital: Verifica la autenticidad y la integridad de un mensaje o documento.
+
+
+1. **`digest(data, type)`**:
+   - **Casos de uso**: Calcula un hash binario del dato proporcionado.
+   - **Algoritmos**: `md5`, `sha1`, `sha224`, `sha256`, `sha384`, `sha512`.
+   
+   - **Ejemplo de uso**:
+     ```sql
+     SELECT digest('mi_dato', 'sha256');
+     ```
+   
+
+2. **`hmac(data, key, type)`**:
+   - **Casos de uso**: Calcula un HMAC (Hashed Message Authentication Code) de los datos, utilizando una clave unica.
+   - **Beneficio**: resistente a ataques de fuerza bruta y ataques de colisión, ya que utiliza una combinación de un hash criptográfico y una clave secreta.
+   - **Algoritmos**: `md5`, `sha1`, `sha224`, `sha256`, `sha384`, `sha512`.
+   - **Ejemplo de uso**:
+     ```sql
+     SELECT hmac('mi_dato', 'mi_clave', 'sha512');
+     ```
+   - **Nota adicional**: El HMAC es útil para asegurar que los datos no han sido alterados, ya que el hash solo puede ser recalculado conociendo la clave.
+
+
+
+### Funciones de Hash de Contraseñas
+
+Estas funciones están diseñadas específicamente para el hashing de contraseñas, proporcionando seguridad adicional mediante el uso de sal y algoritmos adaptativos.
+
+1. **`crypt(password, salt)`**:
+   - **Casos de uso**: Calcula un hash estilo `crypt(3)` de la contraseña.
+   - **Algoritmos**: `bf`, `md5`, `xdes`, `des`.
+   - 
+   - **Ejemplo de uso**:
+     ```sql
+     
+	 -- Generar HASH 
+	 SELECT crypt('mi_contraseña_segura', gen_salt('bf'));
+	 
+	 -- Validar un hash
+	 select (passwd = crypt('mi_contraseña_segura', passwd)) AS pswmatch , passwd from ( select crypt('mi_contraseña_segura', gen_salt('bf')) as passwd) as a ; 
+     ```
+   - **Nota adicional**: Utiliza un valor aleatorio llamado "salt" para asegurar que contraseñas iguales tengan hashes diferentes.
+   
+
+2. **`gen_salt(type)`**:
+   - **Casos de uso**: Genera parámetros de algoritmo para `crypt`.
+   - **Algoritmos**: `bf`, `md5`, `xdes`, `des`.
+   - **Ejemplo de uso**:
+     ```sql
+     SELECT gen_salt('bf', 6 );
+     ```
+   - **Nota adicional**:  el segundo parámetro especificar el número de iteraciones para los algoritmos que lo tienen. Cuanto mayor sea el número, más tiempo se tarda en generar el hash de la contraseña y, por lo tanto, más tiempo se tarda en descifrarla.
+ 
+
+
+### Funciones de Encriptación PGP (Simétrico)
+
+Estas funciones permiten encriptar y desencriptar datos utilizando el estándar PGP (Pretty Good Privacy).
+
+
+1. **`pgp_sym_encrypt(data, key)`**:
+   - **Casos de uso**: Encripta datos utilizando una clave simétrica.
+   - **Algoritmos**: bf, aes128, aes192, aes256, 3des, cast5
+   - **Ejemplo de uso**:
+     ```sql
+     SELECT pgp_sym_encrypt('mi_dato', 'mi_clave', 'cipher-algo=aes256');
+     ```
+   - **Nota adicional**: Puede comprimir los datos antes de encriptarlos si PostgreSQL fue compilado con soporte para zlib.
+
+
+
+2. **`pgp_sym_decrypt(data, key)`**:
+   - **Casos de uso**: Desencripta datos encriptados con una clave simétrica.
+   - **Algoritmos**: bf, aes128, aes192, aes256, 3des, cast5
+   - **Ejemplo de uso**:
+     ```sql
+     SELECT pgp_sym_decrypt(pgp_sym_encrypt('mi_dato', 'mi_clave', 'cipher-algo=aes256'), 'mi_clave', 'cipher-algo=aes256');
+     ```
+
+### Funciones de Encriptación PGP (Asimétrico)
+
+Aunque pgp_pub_encrypt utiliza algoritmos simétricos como AES para la encriptación de los datos, lo que la hace asimétrica es el uso de un par de claves (pública y privada) para la gestión de la encriptación y desencriptación.
+ 
+1.- Generamos las claves publica y privada como se enseño en este documento.
+
+```sql
+
+-- Crear tabla ejemplo
+-- drop table clientes;
+CREATE TABLE clientes(
+	id_cliente int,
+	telefono bytea
+);
+--  select * from clientes;
+
+
+
+-- Crear tabla para leer los datos 
+-- drop table pgp_keys;
+CREATE TABLE pgp_keys (
+    id uuid DEFAULT gen_random_uuid(),
+    name varchar(20),
+    value text, 
+    date timestamp without time zone DEFAULT clock_timestamp()::timestamp without time zone
+);
+-- select * from pgp_keys;
+
+-- importar clave publica
+insert into pgp_keys(name,value) 
+select 'public_key', '-----BEGIN PGP PUBLIC KEY BLOCK-----
+..
+..
+-----END PGP PUBLIC KEY BLOCK-----';
+
+-- importar clave privada
+insert into pgp_keys(name,value) 
+select 'private_key', '-----BEGIN PGP PRIVATE KEY BLOCK-----
+..
+..
+-----END PGP PRIVATE KEY BLOCK-----';
+
+
+-- Cifrar los datos 
+insert into clientes(id_cliente, telefono) select 123456, PGP_PUB_ENCRYPT('6672-65-98-46', (select dearmor(value) from pgp_keys where name = 'public_key') , 'cipher-algo=aes256' );
+
+-- Decifrar los datos 
+select id_cliente,PGP_PUB_DECRYPT( 
+	telefono::bytea,  
+	(select dearmor(value) from pgp_keys where name = 'private_key'),
+	'123qweqwe' , 
+	'cipher-algo=aes256'
+) as telefono from clientes	;
+```
+
+### Funciones de Encriptación Cruda
+
+Estas funciones permiten encriptar y desencriptar datos utilizando algoritmos específicos.
+
+1. **`encrypt(data, key, type)`**:
+   - **Casos de uso**: Encripta datos utilizando un algoritmo específico.
+   - **Algoritmos**: `aes`, `bf`, `des`.
+   - **Ejemplo de uso**:
+     ```sql
+     SELECT encrypt('mi_dato', 'mi_clave', 'aes');
+     ```
+
+2. **`decrypt(data, key, type)`**:
+   - **Casos de uso**: Desencripta datos encriptados.
+   - **Algoritmos**: Igual que `encrypt()`.
+   - **Ejemplo de uso**:
+     ```sql
+     SELECT convert_from(decrypt(encrypt('mi_dato_sensible', 'mi_clave', 'aes'), 'mi_clave', 'aes'), 'UTF8') AS texto_legible;
+     ```
+
+
+ 
+
+
+
+
+
+
+---
+---
+---
+
+
 
 # ¿Qué es GPG y para qué sirve?
 
@@ -186,208 +393,3 @@
 
 
  
-
---- 
---- 
---- 
-
- ### Encriptación en PostgreSQL
-
-#### Crear la Extensión `pgcrypto`
-
-```sql
-CREATE EXTENSION pgcrypto;
-```
-
-#### Crear una Tabla para Almacenar Información Encriptada
-
-```sql
-CREATE TABLE clientes (
-    id SERIAL PRIMARY KEY,
-    nombre_cliente TEXT,
-    NSS BYTEA
-);
-```
-
-#### Encriptar y Almacenar Datos en la Tabla
-
-```sql
-INSERT INTO clientes (nombre_cliente, NSS)
-VALUES 
-    ('Jose Rodriguez', pgp_sym_encrypt('123456', 'PASSWORD_PARA_ENCRIPTAR')),
-    ('Roberto Gomez', pgp_sym_encrypt('8989898', 'PASSWORD_PARA_ENCRIPTAR')),
-    ('Alberto Sanchez', pgp_sym_encrypt('456789', 'PASSWORD_PARA_ENCRIPTAR'));
-```
-
-#### Desencriptar Datos
-
-```sql
-SELECT id, nombre_cliente, pgp_sym_decrypt(NSS, 'PASSWORD_PARA_ENCRIPTAR') AS datos_desencriptados
-FROM clientes;
-```
-
-### Ejemplo de Encriptación Asimétrica
-
-El encriptado asimétrico ofrece una mayor seguridad debido a la utilización de un par de claves generadas con la herramienta OpenPGP. Se requiere de dos claves para poder desencriptar:
-
-- **Clave pública**: Sirve para cifrar los datos y se comparte con el cliente.
-- **Clave privada**: Está en posesión exclusiva del servidor y sirve para descifrar.
-- **Clave secreta/contraseña**: Ayuda a descifrar los datos.
-
-**Ventajas**:
-1. Mayor seguridad.
-2. No expone la contraseña ante terceras personas.
-
-**Desventaja**:
-- Mayor complejidad de implementación.
-
-#### Pasos para Implementar Encriptación Asimétrica
-
-1. **Crear la Extensión `pgcrypto`**
-
-    ```sql
-    CREATE EXTENSION pgcrypto;
-    ```
-
-2. **Crear la Tabla `clientes`**
-
-    ```sql
-    CREATE TABLE clientes (
-        id SERIAL PRIMARY KEY,
-        nombre_cliente TEXT,
-        NSS BYTEA
-    );
-    ```
-
-3. **Crear la Tabla `rsa_keys`**
-
-    ```sql
-    CREATE TABLE rsa_keys (
-        id SERIAL PRIMARY KEY,
-        public_key TEXT
-    );
-    ```
-
-4. **Generar Claves**
-
-    ```sh
-    mkdir /sysx/data/keys-psql
-    cd /sysx/data/keys-psql
-    gpg --gen-key
-    ```
-
-    - Identificación de usuario: `psql-encript-tabla-clientes`
-    - Correo: `test-encript-data@coppel.com`
-    - Clave secreta/contraseña: `test123123`
-
-5. **Validar Listado de Claves**
-
-    ```sh
-    gpg --list-secret-keys
-    ```
-
-6. **Exportar Clave Pública**
-
-    ```sh
-    gpg -a --export psql-encript-tabla-clientes > public.key
-    ```
-
-7. **Exportar Clave Privada**
-
-    ```sh
-    gpg -a --export-secret-keys psql-encript-tabla-clientes > secret.key
-    ```
-
-8. **Validar Claves**
-
-    ```sh
-    ls -lhtra
-    ```
-
-9. **Importar Clave Pública**
-
-    ```sql
-    COPY rsa_keys(public_key) FROM '/sysx/data/keys-psql/public.key';
-    ```
-
-10. **Encriptar Datos**
-
-    ```sql
-    SELECT pgp_pub_encrypt('sensitive data to encrypt', (SELECT dearmor(string_agg(public_key, E'\n')) FROM rsa_keys));
-    ```
-
-11. **Función para Encriptar**
-
-    ```sql
-    CREATE OR REPLACE FUNCTION public.fun_encrypt(texto text)
-    RETURNS bytea
-    LANGUAGE plpgsql
-    AS $function$
-    DECLARE
-        key text;
-        cifrado bytea;
-    BEGIN
-        SELECT string_agg(public_key, E'\n') INTO key FROM rsa_keys;
-        IF key IS NULL THEN
-            RAISE EXCEPTION 'No se encontraron claves públicas en la tabla rsa_keys';
-        END IF;
-        cifrado := pgp_pub_encrypt(texto, dearmor(key));
-        RETURN cifrado;
-    EXCEPTION
-        WHEN others THEN
-            RAISE EXCEPTION 'Error al cifrar el texto: %', SQLERRM;
-    END;
-    $function$;
-    ```
-
-12. **Desencriptar Datos**
-
-    ```sql
-    SELECT fun_decrypt((SELECT pgp_pub_encrypt('sensitive data to encrypt', (SELECT dearmor(string_agg(public_key, E'\n')) FROM rsa_keys))));
-    ```
-
-13. **Función para Desencriptar**
-
-    ```sql
-    CREATE OR REPLACE FUNCTION public.fun_decrypt(texto bytea, paswd text)
-    RETURNS text
-    LANGUAGE plpgsql
-    AS $function$
-    DECLARE
-        descifrado text;
-    BEGIN
-        descifrado := pgp_pub_decrypt(texto, dearmor(pg_read_file('/tmp/priv_test.txt')), paswd);
-        RETURN descifrado;
-    EXCEPTION
-        WHEN others THEN
-            RAISE EXCEPTION 'Error al descifrar el texto: %', SQLERRM;
-    END;
-    $function$;
-    ```
-
-    ```sql
-    SELECT fun_decrypt(fun_encrypt('hola mundo'), '/tmp/priv_test.txt', 'As123456');
-    ```
-
-### Pasos para Implementar en Producción
-
-**Fase #1: Recopilación de la Información y Análisis de la Base de Datos**
-- Validar la disponibilidad de la extensión.
-- Identificar tablas y columnas sensibles.
-- Validar y clasificar el nivel de criticidad de las columnas sensibles no encriptadas.
-- Identificar objetos que hacen uso de las tablas y sus columnas.
-- Analizar y clasificar el nivel de complejidad de cada objeto.
-
-**Fase #2: Evaluación del Impacto de la Encriptación en la Base de Datos**
-- Crear un documento donde se evalúe el impacto de la encriptación.
-
-**Fase #3: Implementación de la Encriptación en la Base de Datos**
-- Respaldo de las tablas y objetos.
-- Agregar columnas extras.
-- Pasar los datos sensibles a las nuevas columnas.
-- Realizar consultas de validación.
-- Eliminar las columnas sin encriptar.
-- Renombrar las columnas.
-- Modificar objetos con apoyo de desarrollo.
-- Realizar pruebas de los objetos.
-
