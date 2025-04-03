@@ -19,7 +19,15 @@ https://downloads.cisecurity.org/#/<br>
 https://www.cisecurity.org/benchmark/postgresql <br>
 https://cheatsheetseries.owasp.org/IndexTopTen.html
 
-
+##  Estandares de seguridad  : 
+   1. **PCI DSS**: El Consejo de Normas de Seguridad de la Industria de Tarjetas de Pago (PCI SSC) proporciona información sobre los requisitos de seguridad para proteger los datos de las cuentas de pago. Puedes visitar su sitio oficial  					(https://www.pcisecuritystandards.org/faq/articles/Frequently_Asked_Question/does-pci-dss-define-which-versions-of-tls-must-be-used/).
+	    
+	    2. **HIPAA**: El Departamento de Salud y Servicios Humanos de los Estados Unidos (HHS) ofrece información sobre la Ley de Portabilidad y Responsabilidad de Seguros de Salud (HIPAA), incluyendo las reglas de seguridad y privacidad. Puedes acceder a su sitio 			oficial https://www.hhs.gov/hipaa/for-professionals/breach-notification/guidance/index.html
+	    
+	    3. **NIST**: El Instituto Nacional de Estándares y Tecnología (NIST) desarrolla y mantiene estándares, incluyendo los relacionados con la ciberseguridad y el uso de TLS. Puedes visitar su sitio oficial 
+	    https://csrc.nist.gov/pubs/sp/800/52/r2/final
+	
+	    4. **GDPR**: El Reglamento General de Protección de Datos (GDPR, por sus siglas en inglés) es una ley de la Unión Europea que entró en vigor el 25 de mayo de 2018. Su objetivo principal es proteger los datos personales de los ciudadanos de la UE y 				garantizar su privacidad. El GDPR establece normas estrictas sobre cómo las organizaciones deben manejar y proteger los datos personales, y otorga a los individuos varios derechos sobre sus datos, como el derecho al acceso, rectificación, 				supresión y portabilidad     https://eur-lex.europa.eu/ES/legal-content/summary/general-data-protection-regulation-gdpr.html
 
 
 # Tecnicas de Hardening 
