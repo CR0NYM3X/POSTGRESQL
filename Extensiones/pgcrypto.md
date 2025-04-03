@@ -541,9 +541,27 @@ El algoritmo AES (Advanced Encryption Standard) no utiliza números primos. En c
 2. **Bloques de datos**: AES trabaja con bloques de datos y aplica varias rondas de transformación para asegurar la información.
  
 
+ 
+### NIST (National Institute of Standards and Technology)
+1. **Publicación Especial 800-57**: "Recommendation for Key Management" - Esta guía proporciona recomendaciones sobre la gestión de claves criptográficas, incluyendo la generación, distribución, almacenamiento y destrucción de claves. Puedes encontrarla en la sección de publicaciones del NIST
+2. **Publicación Especial 800-175B**: "Guide to Cryptographic Standards and Key Management" - Esta guía ofrece una visión general de los estándares criptográficos aceptados por NIST, incluyendo AES y otros algoritmos de cifrado. Disponible en la sección de publicaciones del NIST 
+ 
+ 
+ 
+### PCI DSS (Payment Card Industry Data Security Standard)
+1. **Requisito 3**: "Protect Stored Cardholder Data" - Este requisito detalla las prácticas recomendadas para el cifrado de datos almacenados, incluyendo el uso de algoritmos como AES y RSA. Puedes encontrarlo en el documento oficial de PCI DSS.
+2. **Requisito 4**: "Encrypt Transmission of Cardholder Data Across Open, Public Networks" - Este requisito especifica las recomendaciones para el cifrado de datos en tránsito, asegurando que los datos sensibles estén protegidos durante la transmisión. Disponible en el documento oficial de PCI DSS
+
+
+
+ 
 
 ## Referencias adicionales: 
 ```
+https://csrc.nist.gov/CSRC/media/Presentations/standards-research-and-applications-in-cryptograph/images-media/20191007-uchile--slides-nist-pec-pqc--rev-oct-14.pdf
+https://listings.pcisecuritystandards.org/documents/PCI-DSS-v4_0-LA.pdf
+https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175Br1.pdf
+
 https://www.reddit.com/r/PostgreSQL/comments/1fhz832/customer_asks_if_the_postgresql_database_can_be/?rdt=39185
 Alternativas pgsodium https://github.com/michelp/pgsodium/releases
 pg_tde (aún no está diseñada para producción.)   https://percona.github.io/pg_tde/main/ 
