@@ -887,6 +887,29 @@ set disable-completion on
 
 ```
 
+# Parámetros de seguridad en vistas 
+Antes de la versión 15, todas las vistas se ejecutaban como su propietario, lo que dificultaba la interacción con RLS. A partir de la versión 15, las vistas marcadas como security_invoker"se ejecutan" con los privilegios del usuario que las invoca, no del propietario de la vista. Esto simplifica el trabajo con las políticas de RLS.
+[security_invoker  y security_barrier ](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Aplicar%20reglas%20a%20tablas.md#security_barrier-en-vistas)
+
+Ejemplo problema de seguridad
+```
+--- drop VIEW phone_number; 
+CREATE VIEW phone_number WITH (security_barrier,security_invoker) AS
+    select * from pg_class;
+
+
+ALTER VIEW phone_number SET (security_invoker = on);
+
+https://www.postgresql.org/docs/current/sql-createview.html
+https://www.postgresql.org/docs/17/rules-privileges.html
+
+
+security_invoker    : https://www.cybertec-postgresql.com/en/view-permissions-and-row-level-security-in-postgresql/
+security_barrier  https://www.cybertec-postgresql.com/en/security-barriers-cheating-on-the-planner/
+
+```
+
+
 
 ## referencias
 ```
