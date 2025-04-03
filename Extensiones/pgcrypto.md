@@ -50,13 +50,11 @@
  
 
 ### **Desventajas de Encriptación Asimétrica**
-  -  **`Gestión de Claves`** Si las claves privadas son comprometidas o expiran, es necesario reencriptar todas las columnas que usaron esa clave, lo que es costoso en tiempo y recursos. Además, la gestión de múltiples claves puede ser complicada.
+  -  **`Gestión de Claves`** Si las claves privadas son comprometidas o expiran, es necesario reencriptar todas las columnas que usaron esa clave, lo que es costoso en tiempo y recursos. Además, la gestión de múltiples claves puede ser complicada.  Las claves deben ser almacenadas de manera segura y protegidas contra accesos no autorizados. y no se recomienda tenerlas dentro del mismo servidor , La pérdida o compromiso de la clave privada puede comprometer la seguridad de los datos. se pueden usar HashiCorp Vault o GnuPG gratuito , Microsoft Azure Key Vault: Ideal para la gestión de claves en la nube.
   -  **`Lentitud del Cifrado Asimétrico`** El cifrado asimétrico (como RSA) es más lento que el cifrado simétrico (como AES), lo que puede afectar el rendimiento de las operaciones de encriptación y desencriptación, especialmente en grandes volúmenes de datos.
   -  **`Complejidad de Implementación`** Implementar encriptación asimétrica puede ser más complejo que la encriptación simétrica, requiriendo más configuración y gestión de claves.
-  -  **`Complejidad de Implementación`** Mas propenso
   - **`Pérdida de la clave privada`**: Si pierdes la clave privada, no podrás descifrar los datos encriptados con la clave pública correspondiente. Esto puede resultar en la pérdida permanente de la información.
   - **`Corrupción de la clave privada`**: Si el archivo que contiene la clave privada se corrompe, también perderás acceso a los datos encriptados. Es crucial mantener copias de seguridad de las claves privadas en lugares seguros.
-  - **`Gestión de claves`**: La gestión de las claves privadas requiere cuidado y atención. Las claves deben ser almacenadas de manera segura y protegidas contra accesos no autorizados. La pérdida o compromiso de la clave privada puede comprometer la seguridad de los datos. se pueden usar  HashiCorp Vault o GnuPG   gratuito , Microsoft Azure Key Vault: Ideal para la gestión de claves en la nube.
 
 ### **Ventajas del Encriptado Simétrico**
  - **Velocidad**: Es generalmente más rápido que el encriptado asimétrico porque utiliza operaciones matemáticas menos complejas.
