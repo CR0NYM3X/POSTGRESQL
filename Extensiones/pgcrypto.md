@@ -572,6 +572,29 @@ El algoritmo AES (Advanced Encryption Standard) no utiliza números primos. En c
 
 
 
+--- 
+### Proceso de Cifrado PGP_PUB_ENCRYPT
+
+1. **Generación de la clave de sesión**:
+   - Se genera una clave de sesión aleatoria (clave simétrica) que se utilizará para cifrar los datos.
+
+2. **Cifrado de la clave de sesión**:
+   - La clave de sesión se cifra utilizando la clave pública del destinatario. Esto asegura que solo el destinatario con la clave privada correspondiente pueda descifrar la clave de sesión.
+
+3. **Cifrado de los datos**:
+   - Los datos reales se cifran utilizando la clave de sesión simétrica.
+
+4. **Creación del paquete de datos cifrados**:
+   - El paquete contiene la clave de sesión cifrada y los datos cifrados. Este paquete se almacena en la base de datos.
+ 
+### Proceso de Descifrado
+
+1. **Descifrado de la clave de sesión**:
+   - La clave privada del destinatario se utiliza para descifrar la clave de sesión que fue cifrada con la clave pública.
+
+2. **Descifrado de los datos**:
+   - Una vez que la clave de sesión ha sido descifrada, se utiliza para descifrar los datos reales que fueron cifrados con esta clave simétrica.
+ 
  
 
 ## Referencias adicionales: 
