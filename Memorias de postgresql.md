@@ -119,8 +119,7 @@ SELECT
     --,COUNT(*) * 8192 AS buffer_bytes                -- Tamaño en bytes
     ,pg_size_pretty(pg_relation_size(c.oid)) AS total_size_on_disk -- Tamaño en disco (legible)
     --,pg_relation_size(c.oid) AS total_bytes_on_disk  -- Tamaño en bytes
-	--,ROUND((COUNT(*) * 8192 * 100.0) / pg_relation_size(c.oid), 2) AS cache_percent  -- porcentaje de la tabla en caché
-	
+    --,ROUND((COUNT(*) * 8192 * 100.0) / pg_relation_size(c.oid), 2) AS cache_percent  -- porcentaje de la tabla en caché
 FROM
     pg_buffercache b
 JOIN pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
@@ -131,7 +130,7 @@ WHERE
 GROUP BY
     n.nspname, c.relname, c.oid
 ORDER BY
-    buffer_bytes DESC
+    pg_relation_size(c.oid) DESC
 	limit 10;
 	
 	
