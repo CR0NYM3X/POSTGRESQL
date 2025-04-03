@@ -46,7 +46,8 @@ https://www.sqlservercentral.com/articles/rules-in-postgresql
 https://www.cybertec-postgresql.com/en/blog/
 
 --- Documentacion postgresql <br>
-https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf <br>
+https://runebook.dev/es/docs/postgresql/-index-
+https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf  
 https://wiki.postgresql.org/wiki/Main_Page/es
 https://doxygen.postgresql.org/index.html
 https://www.docs4dev.com/docs/en/postgre-sql/10.7/reference/pgarchivecleanup.html
