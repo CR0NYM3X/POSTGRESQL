@@ -1,6 +1,11 @@
+### Conceptos : 
+**`La caché`** es un área de almacenamiento temporal que se utiliza para guardar datos que se acceden con frecuencia. Su objetivo principal es mejorar la velocidad y eficiencia del acceso a esos datos. Al almacenar información en la caché, los sistemas pueden recuperar datos rápidamente sin tener que acceder a la fuente original, que puede ser más lenta.
+
+
+
 ### **1. ¿Cómo funciona el caché en PostgreSQL?**
 PostgreSQL usa dos capas de caché:
-- **Buffer cache de PostgreSQL (`shared_buffers`)**: Memoria reservada para almacenar bloques de datos e índices.
+- **Buffer cache de PostgreSQL (`shared_buffers`)**: Memoria RAM reservada para almacenar bloques de datos e índices.
 - **Caché del sistema operativo (OS cache)**: Memoria que el SO usa para almacenar archivos accedidos recientemente, incluyendo los archivos de datos de PostgreSQL.
 
 Cuando ejecutas una consulta:
@@ -17,14 +22,14 @@ Cuando ejecutas una consulta:
    - **Cache de disco (Page Cache):** Cuando se accede a datos por primera vez, el sistema operativo tiene que leerlos desde el disco, lo cual es un proceso lento. Sin embargo, una vez que esos datos se han leído, el sistema operativo suele mantenerlos en la memoria (`page cache`), de modo que las subsecuentes lecturas de los mismos datos no requieren acceso a disco y son mucho más rápidas. Este es uno de los factores clave que hace que las consultas repetidas sean más rápidas.
 
 ### 2. **Cache de PostgreSQL**
-   - **Shared Buffers:** PostgreSQL tiene su propia memoria de caché interna llamada "shared buffers". Cuando ejecutas una consulta, PostgreSQL almacena en esta caché las páginas de datos y los índices que ha utilizado. En las ejecuciones posteriores de la consulta, si los datos ya están en `shared buffers`, se pueden acceder directamente desde la memoria, sin necesidad de realizar costosas operaciones de lectura de disco.
+   - **Shared Buffers:** PostgreSQL tiene su propia memoria RAM de caché interna llamada "shared buffers". Cuando ejecutas una consulta, PostgreSQL almacena en esta caché las páginas de datos y los índices que ha utilizado. En las ejecuciones posteriores de la consulta, si los datos ya están en `shared buffers`, se pueden acceder directamente desde la memoria, sin necesidad de realizar costosas operaciones de lectura de disco.
    - **Cache de planificación:** PostgreSQL también puede almacenar en caché ciertos planes de ejecución para consultas preparadas o consultas parametrizadas. Si una consulta idéntica se ejecuta nuevamente, PostgreSQL puede reutilizar el plan de ejecución almacenado en caché, evitando la necesidad de recompilarlo, lo cual ahorra tiempo.
 
 ```SQL
 ### Usos de la Memoria Compartida en PostgreSQL
 
 1. **Buffers Compartidos (shared_buffers)**:
-   - **Objetivo**: Almacenar en caché los datos más frecuentemente accedidos para reducir el número de lecturas y escrituras en disco.
+   - **Objetivo**: Almacenar en memoria RAM en caché los datos más frecuentemente accedidos para reducir el número de lecturas y escrituras en disco.
    - **Beneficio**: Mejora el rendimiento al disminuir la latencia de acceso a los datos.
 
 2. **Memoria para Locks (lock tables)**:
@@ -63,7 +68,7 @@ Cuando ejecutas una consulta:
 PostgreSQL utiliza varios tipos de memoria para diferentes propósitos a lo largo de su funcionamiento. Cada tipo de memoria está diseñada para manejar distintos aspectos del procesamiento de consultas, manejo de datos, y optimización del rendimiento. Aquí te detallo los principales tipos de memoria utilizados por PostgreSQL y cuándo se usan:
 
 ### 1. **Shared Buffers**
-   - **Descripción:** Es la memoria compartida donde PostgreSQL almacena las páginas de datos e índices que se utilizan con frecuencia. Esta memoria es común para todas las conexiones y es gestionada de manera centralizada.
+   - **Descripción:** Es la memoria RAM compartida donde PostgreSQL almacena las páginas de datos e índices que se utilizan con frecuencia. Esta memoria es común para todas las conexiones y es gestionada de manera centralizada.
    - **Uso:** Cuando una consulta accede a datos de una tabla o un índice, PostgreSQL primero busca esos datos en los `shared buffers`. Si los datos no están allí, se leen desde el disco y se almacenan en los `shared buffers` para futuras consultas. Esto reduce el tiempo de acceso a disco en operaciones subsecuentes.
 
 ### 2. **WAL Buffers**
@@ -145,6 +150,24 @@ SELECT * FROM pg_buffercache_summary();
 
 --- 
 select * from  public.pg_buffercache_usage_counts()
+
+
+----
+SELECT current_database() as db_name, n.nspname, c.relname, count(*) AS buffers
+             FROM pg_buffercache b JOIN pg_class c
+             ON b.relfilenode = pg_relation_filenode(c.oid) AND
+                b.reldatabase IN (0, (SELECT oid FROM pg_database
+                                      WHERE datname = current_database()))
+             JOIN pg_namespace n ON n.oid = c.relnamespace and n.nspname ='public'
+             GROUP BY n.nspname, c.relname
+             ORDER BY 4 DESC
+             LIMIT 10;
+ 
+			 
+https://medium.com/@dmitry.romanoff/optimizing-postgresql-buffer-cache-automating-analysis-with-a-bash-script-2afd7b9da508
+
+
+
 ```
 
 
