@@ -29,6 +29,15 @@ https://cheatsheetseries.owasp.org/IndexTopTen.html
 4. **GDPR**: El Reglamento General de Protección de Datos (GDPR, por sus siglas en inglés) es una ley de la Unión Europea que entró en vigor el 25 de mayo de 2018. Su objetivo principal es proteger los datos personales de los ciudadanos de la UE y garantizar su privacidad. El GDPR establece normas estrictas sobre cómo las organizaciones deben manejar y proteger los datos personales, y otorga a los individuos varios derechos sobre sus datos, como el derecho al acceso, rectificación, supresión y portabilidad  [Reglamento general de protección de datos (GDPR)](https://eur-lex.europa.eu/ES/legal-content/summary/general-data-protection-regulation-gdpr.html).
 
 
+5. **ISO/IEC 27001**: [REF](https://www.eternitylaw.com/es/noticias/5-estandares-basicos-de-procesamiento-de-pagos-mejores-practicas-de-cumplimiento-de-estandares-2025/)
+   - **Propósito**: Establece un sistema de gestión de seguridad de la información (SGSI) para proteger datos sensibles, incluyendo datos de pago.
+   - **Aplicabilidad**: Es un estándar internacional aplicable a cualquier tipo de organización.
+
+6. **FIPS (Federal Information Processing Standards)**:
+   - **Propósito**: Establece requisitos de seguridad para sistemas informáticos utilizados por el gobierno de los Estados Unido.
+   - **Aplicabilidad**: Incluye estándares para el cifrado y la protección de datos de pago.
+ 
+
 
 # Tecnicas de Hardening 
 es el proceso de fortalecer la seguridad de una base de datos para protegerla contra amenazas y ataques cibernéticos. Este proceso implica aplicar una serie de medidas y prácticas para minimizar las vulnerabilidades y reducir la superficie de ataque
