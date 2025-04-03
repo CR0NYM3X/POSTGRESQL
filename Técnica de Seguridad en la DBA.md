@@ -18,7 +18,11 @@ El CIS (Center for Internet Security) Benchmark para PostgreSQL es un conjunto d
 https://downloads.cisecurity.org/#/<br>
 https://www.cisecurity.org/benchmark/postgresql <br>
 https://cheatsheetseries.owasp.org/IndexTopTen.html <br>
-https://www.percona.com/blog/postgresql-database-security-best-practices/
+https://www.percona.com/blog/postgresql-database-security-best-practices/ <br>
+https://csrc.nist.gov/CSRC/media/Presentations/standards-research-and-applications-in-cryptograph/images-media/20191007-uchile--slides-nist-pec-pqc--rev-oct-14.pdf <br>
+https://listings.pcisecuritystandards.org/documents/PCI-DSS-v4_0-LA.pdf
+
+ 
 
 ##  Estandares de seguridad  : 
 1. **PCI DSS**: El Consejo de Normas de Seguridad de la Industria de Tarjetas de Pago (PCI SSC) proporciona información sobre los requisitos de seguridad para proteger los datos de las cuentas de pago. Puedes visitar su sitio oficial [aquí](https://www.pcisecuritystandards.org/faq/articles/Frequently_Asked_Question/does-pci-dss-define-which-versions-of-tls-must-be-used/).
