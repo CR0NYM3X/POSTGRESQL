@@ -15,6 +15,38 @@ Un **protocolo** es un conjunto de reglas y convenciones que permiten la comunic
 - **Seguridad**: Algunos protocolos incorporan medidas para proteger la confidencialidad e integridad de los datos.
 
 
+## Números primos
+un número primo es un número natural mayor que 1 que tiene únicamente dos divisores positivos y solo es divisible entre 1 y sí mismo Los primos son la base de algoritmos como **RSA** (cifrado asimétrico). 
+ 
+### **¿Por qué son importantes en criptografía?**  
+Imagina que los números primos son como **candados únicos**:  
+1. Si multiplicas dos primos grandes (ej. `61 × 53 = 3233`), es fácil calcular el resultado.  
+2. Pero si solo te dan el **resultado (3233)**, es muy difícil adivinar los primos originales (61 y 53).  
+
+🔐 **Así funciona el cifrado (ej. RSA):**  
+- La **clave pública** usa el resultado (`3233`).  
+- La **clave privada** necesita los primos originales (`61` y `53`).  
+- Sin los primos, **no se puede descifrar el mensaje**.  
+
+
+⚠️ **Sin los primos originales**, nadie puede abrir el candado fácilmente (¡incluso si saben que `n = 15`!).  
+
+### **¿Por qué usamos primos ENORMES en criptografía?**  
+- **Ejemplo con primos pequeños**:  
+  - Si `n = 15`, es fácil adivinar que `p = 3` y `q = 5`.  
+- **Ejemplo con primos gigantes**:  
+  - Si `n = 2,048 bits` (un número de **617 dígitos**), ¡ni las supercomputadoras pueden factorizarlo en años!  
+
+
+### Criptografía Simétrica (AES)
+El algoritmo AES (Advanced Encryption Standard) no utiliza números primos. En cambio, AES utiliza una única clave para cifrar y descifrar datos:
+1. **Clave única**: Se utiliza la misma clave para cifrar y descifrar la información.
+2. **Bloques de datos**: AES trabaja con bloques de datos y aplica varias rondas de transformación para asegurar la información.
+ 
+
+
+
+
 ## Diferencia entre un **algoritmo de cifrado** y un **algoritmo criptográfico** 
 Todos los algoritmos de cifrado son algoritmos criptográficos, pero no todos los algoritmos criptográficos son algoritmos de cifrado. Los algoritmos criptográficos incluyen una gama más amplia de funciones y aplicaciones dentro de la seguridad de la información.
  
