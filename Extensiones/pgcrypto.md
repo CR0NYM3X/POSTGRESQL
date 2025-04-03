@@ -1,6 +1,6 @@
 
 ## Referencias: 
-
+```
 	- Doc oficiales 
 		* https://www.postgresql.org/docs/17/pgcrypto.html
 		* https://www.postgresql.org/docs/current/encryption-options.html
@@ -10,6 +10,13 @@
 		* https://stackoverflow.com/questions/29189154/issue-with-pgcrypto-pgp-pub-encrypt
 		* https://docs.yugabyte.com/preview/secure/column-level-encryption/
 		* https://cheatsheetseries.owasp.org/cheatsheets/Key_Management_Cheat_Sheet.html
+  
+	- **NIST SP 800-57**: Recomienda el uso de **HSMs** para proteger claves criptográficas (Sección 5.6.1) .  
+	- **PCI DSS v4.0**: Requiere que las claves privadas estén en **HSMs o dispositivos certificados** (Req. 3.5.1)  .  
+	- **OWASP Key Management**: Advierte sobre riesgos de claves en código o bases de datos .  
+```
+    
+
  
 
 ### Notas Importantes
@@ -18,16 +25,34 @@
 - **Requisitos**: `pgcrypto` requiere OpenSSL. No se instalará si el soporte de OpenSSL no fue seleccionado al construir PostgreSQL.
 
 ### Consideraciones
-
-
+  - Las claves privadas RSA deben almacenarse en un [HSM](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Extensiones/pgcrypto.md#1-qu%C3%A9-es-un-hardware-security-module-hsm). Las claves públicas pueden estar en archivos restringidos, pero nunca en la BD o código.
+  - Opciones de Almacenamiento de Claves.
 ### Ventajas
 
 - **Flexibilidad**: `pgcrypto` soporta una amplia gama de algoritmos criptográficos, lo que permite a los desarrolladores elegir el más adecuado para sus necesidades específicas.
 - **Seguridad Mejorada**: El uso de sal y la capacidad de ajustar la velocidad de los algoritmos proporciona una defensa robusta contra ataques de fuerza bruta y otros intentos de comprometer la seguridad.
 - **Integración Sencilla**: Las funciones de `pgcrypto` se integran fácilmente con PostgreSQL, permitiendo a los desarrolladores añadir capacidades criptográficas sin necesidad de herramientas externas.
+ 
+### **Desventajas de Encriptar en PostgreSQL**
+  -  **`Revisión de Índices`** Las columnas cifradas pueden afectar los índices existentes, requiriendo una revisión y posible reconfiguración para mantener el rendimiento de las consultas. Esto puede ser complejo y consumir tiempo.
+  -  **`Restricciones de Foreign Keys`** No se pueden establecer claves foráneas en columnas cifradas, lo que limita la integridad referencial y las relaciones entre tablas. Esto puede complicar la estructura de la base de datos.
+  -  **`Modificación de querys`** Las consultas que utilizan columnas cifradas en sus cláusulas `WHERE` deben ser modificadas para manejar la encriptación, lo que puede complicar el desarrollo y mantenimiento de la aplicación.
+  -  **`Modificación de Objetos`** Los objetos de la base de datos que retornan columnas cifradas en sus consultas deben ser ajustados para manejar la desencriptación, es un proceso extenso .
+  -  **`Aumento del Tamaño en Disco`** Los datos cifrados ocupan más espacio en disco que los datos sin cifrar, lo que puede aumentar los costos de almacenamiento y requerir más capacidad de disco.
+  -  **`Rendimiento y Escalabilidad`** La encriptación puede afectar el rendimiento y la escalabilidad de la base de datos, especialmente en sistemas con alto volumen de transacciones. Esto puede llevar a tiempos de respuesta más lentos y mayor carga en el servidor.
+  -  **`Complejidad de Backup y Restore`** Realizar copias de seguridad y restauraciones de datos cifrados puede ser más complejo y requerir procedimientos adicionales para asegurar que los datos se mantengan seguros durante estos procesos.
+
+### **Desventajas de Encriptación Asimétrica**
+  -  **`Gestión de Claves`** Si las claves privadas son comprometidas o expiran, es necesario reencriptar todas las columnas que usaron esa clave, lo que es costoso en tiempo y recursos. Además, la gestión de múltiples claves puede ser complicada.
+  -  **`Lentitud del Cifrado Asimétrico`** El cifrado asimétrico (como RSA) es más lento que el cifrado simétrico (como AES), lo que puede afectar el rendimiento de las operaciones de encriptación y desencriptación, especialmente en grandes volúmenes de datos.
+  -  **`Complejidad de Implementación`** Implementar encriptación asimétrica puede ser más complejo que la encriptación simétrica, requiriendo más configuración y gestión de claves.
+
+### **Desventajas del Encriptado Simétrico**
+  -  **`Gestión de Claves`** La gestión de claves puede ser complicada, especialmente en entornos distribuidos. Mantener la seguridad de las claves y asegurarse de que solo las partes autorizadas tengan acceso puede ser un desafío.
+  -  **`Seguridad`** La seguridad del cifrado simétrico depende completamente de la protección de la clave. Si la clave se revela, cualquier persona puede descifrar los datos, lo que representa un riesgo significativo.
 
 
-
+# Funciones de PGCRYPTO
 
 ### Funciones de Hash General
 
@@ -393,4 +418,107 @@ Estas funciones permiten encriptar y desencriptar datos utilizando algoritmos es
 	
 
 
+# Extra info  
+
+
+
+
+## **Opciones de Almacenamiento de Claves**
+
+
  
+#### **Opción 1: Mejor Opción HSM o Servicio de Gestión de Claves (✅✅✅ Ideal)**
+**Ejemplo con AWS KMS + PostgreSQL**:  
+1. **Generar clave maestra (CMK)** en AWS KMS.  
+2. **Integrar con PostgreSQL** usando extensiones como `pg_kmip` o middleware de la aplicación.  
+
+```sql
+-- Ejemplo teórico (AWS KMS)
+SELECT PGP_PUB_ENCRYPT(
+   '6672-65-98-46',
+   aws_kms_get_public_key('alias/mi-clave'),  -- Función hipotética
+   'cipher-algo=aes256'
+);
+```
+**Ventajas**:  
+- Las claves **nunca salen del HSM** (ni en memoria).  
+- **Rotación automática** sin impacto en la BD.  
+- **Auditoría centralizada** (ej: AWS CloudTrail).
+
+### **1. ¿Qué es un Hardware Security Module (HSM)?`**  
+Un **HSM`** es un dispositivo físico o servicio en la nube diseñado para **manejar claves criptográficas de forma segura**. Proporciona:  
+- **Almacenamiento protegido**: Las claves nunca salen del HSM en texto plano.  
+- **Operaciones criptográficas**: Encriptación/desencriptación se realizan dentro del HSM, evitando exposiciones en memoria.  
+- **Certificaciones de cumplimiento**: Cumple con estándares como FIPS 140-2, PCI DSS, etc.  
+
+**Uso con PostgreSQL**:  
+- Puedes integrar un HSM (ej: AWS CloudHSM, Azure Key Vault) para gestionar las claves maestras usadas por `pgcrypto`.  
+- **Ventaja**: Reduce el riesgo de robo de claves privadas, crítico cuando usas `PGP_PUB_DECRYPT`. 
+
+
+
+#### **Opción 2: Claves dentro de funciones de PostgreSQL (❌ NO recomendado)**
+```sql
+-- Función de ejemplo (¡Insegura!)
+CREATE OR REPLACE FUNCTION fun_encrypt(texto TEXT) RETURNS BYTEA AS $$
+DECLARE
+   clave_publica TEXT := '-----BEGIN PGP PUBLIC KEY BLOCK-----...';
+BEGIN
+   RETURN PGP_PUB_ENCRYPT(texto, dearmor(clave_publica), 'cipher-algo=aes256');
+END;
+$$ LANGUAGE plpgsql;
+```
+**Problemas**:  
+- La clave pública/privada queda expuesta en texto plano en la definición de la función.  
+- Cualquier usuario con acceso a `pg_proc` o permisos de lectura en la BD puede extraerla.  
+- **Imposible rotar claves** sin modificar la función (riesgo en tablas con billones de registros).  
+
+---
+
+#### **Opción 3: Claves en el código de la aplicación (⚠️ Riesgoso)**
+```python
+# Ejemplo en Python (clave en variable)
+clave_publica = """-----BEGIN PGP PUBLIC KEY BLOCK-----..."""
+query = f"INSERT INTO tabla (secreto) VALUES (PGP_PUB_ENCRYPT('{dato}', dearmor('{clave_publica}')));"
+```
+**Problemas**:  
+- Las claves quedan en repositorios de código, logs, o memoria durante la ejecución.  
+- **Rotación de claves requiere redeploys**, lo que es inviable a gran escala.  
+
+---
+
+#### **Opción 4: Claves en archivos del servidor (✅ Recomendado con ajustes)**
+```sql
+-- Encriptación usando pg_read_file
+SELECT PGP_PUB_ENCRYPT(
+   '6672-65-98-46',
+   dearmor(pg_read_file('/ruta/segura/clave_publica.asc')),
+   'cipher-algo=aes256'
+);
+```
+**Configuración necesaria**:  
+1. **Permisos de archivo**: Solo el usuario de PostgreSQL debe tener acceso al directorio.  
+   ```bash
+   chmod 700 /ruta/segura
+   chown postgres:postgres /ruta/segura/clave_publica.asc
+   ```
+2. **PostgreSQL**: Habilitar `pg_read_file` solo para rutas específicas (configura `data_directory` en `postgresql.conf`).  
+
+**Ventajas**:  
+- Las claves no están en la BD ni en el código.  
+- Rotación de claves es más fácil (reemplazar archivos).  
+
+**Riesgos**:  
+- Si el servidor es comprometido, las claves pueden ser robadas.  
+
+
+
+
+
+## Referencias adicionales: 
+```
+https://www.reddit.com/r/PostgreSQL/comments/1fhz832/customer_asks_if_the_postgresql_database_can_be/?rdt=39185
+Alternativas pgsodium https://github.com/michelp/pgsodium/releases
+pg_tde (aún no está diseñada para producción.)   https://percona.github.io/pg_tde/main/ 
+https://www.cybertec-postgresql.com/en/products/postgresql-transparent-data-encryption/
+```
