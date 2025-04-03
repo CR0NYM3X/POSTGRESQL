@@ -133,7 +133,7 @@ Estas funciones están diseñadas específicamente para el hashing de contraseñ
      ```sql
      SELECT gen_salt('bf', 6 );
      ```
-   - **Nota adicional**:  el segundo parámetro especificar el número de iteraciones para los algoritmos que lo tienen. Cuanto mayor sea el número, más tiempo se tarda en generar el hash de la contraseña y, por lo tanto, más tiempo se tarda en descifrarla.
+   - **Nota adicional**:  ofrece mayor seguridad ya que el segundo parámetro especificar el número de iteraciones para los algoritmos que lo tienen. Cuanto mayor sea el número, más tiempo se tarda en generar el hash de la contraseña y, por lo tanto, más tiempo se tarda en descifrarla.
  
 
 
