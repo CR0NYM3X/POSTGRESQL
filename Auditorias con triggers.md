@@ -453,6 +453,7 @@ Time: 0.809 ms
 
 ```SQL
 También existe ( select ctid,* from clientes) :  indica la ubicación física de la fila en el disco.
+ejemplo (126,3)  126 → La fila se almacena en la página 126 del archivo de tabla. y 3 → Es la tercera entrada en esa página.
 
 # Parametros para auditorias 
 track_commit_timestamp = on --- Para auditar cuándo exactamente se confirmó una transacción específica, a nivel fila . 
