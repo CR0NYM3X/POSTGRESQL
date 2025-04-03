@@ -26,7 +26,7 @@ https://www.postgresql.org/account/submitbug/
 
 medium.com
 https://p2d2.cz/
-
+https://www.mydbops.com/blog
 https://blog.unixpad.com/
 https://hexacluster.ai/blog/
 https://www.crunchydata.com/postgres-tips
@@ -35,7 +35,7 @@ https://access.crunchydata.com/documentation/
 https://dbasinapuros.com/
 https://ongres.com/blog/
 
----- página recomendada para aprender cosas avanzadas de postgresql  
+---- página recomendada para aprender cosas avanzadas de postgresql
 https://www.tutorialdba.com/ <br>
 https://www.todopostgresql.com/
 https://it-inzhener.com/en/articles/category/name=postgresql
