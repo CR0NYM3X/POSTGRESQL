@@ -452,6 +452,8 @@ Time: 0.809 ms
 
 
 ```SQL
+También existe ( select ctid,* from clientes) :  indica la ubicación física de la fila en el disco.
+
 # Parametros para auditorias 
 track_commit_timestamp = on --- Para auditar cuándo exactamente se confirmó una transacción específica, a nivel fila . 
 track_activities = 'on' --->  Permite ver qué consultas están en ejecución en la tabla  pg_stat_activity
