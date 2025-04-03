@@ -109,6 +109,33 @@ La caché de búfer almacena datos en la memoria para acelerar las consultas. Si
 
 ```SQL
 
+--- consulta para obtener las tablas con mayor uso de la buffer cache, junto con su tamaño en caché y su tamaño total en disco
+--- 3. **Bloques de 8 kB**: PostgreSQL divide los datos en bloques de 8 kB. `COUNT(*) * 8192` calcula el espacio usado en la caché.
+
+SELECT
+    n.nspname AS schema_name
+    ,c.relname AS table_name
+    ,pg_size_pretty(COUNT(*) * 8192) AS buffer_size -- Tamaño en caché (legible)
+    --,COUNT(*) * 8192 AS buffer_bytes                -- Tamaño en bytes
+    ,pg_size_pretty(pg_relation_size(c.oid)) AS total_size_on_disk -- Tamaño en disco (legible)
+    --,pg_relation_size(c.oid) AS total_bytes_on_disk  -- Tamaño en bytes
+	--,ROUND((COUNT(*) * 8192 * 100.0) / pg_relation_size(c.oid), 2) AS cache_percent  -- porcentaje de la tabla en caché
+	
+FROM
+    pg_buffercache b
+JOIN pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
+JOIN pg_namespace n ON c.relnamespace = n.oid
+WHERE
+    b.reldatabase = (SELECT oid FROM pg_database WHERE datname = current_database())
+    AND c.relkind = 'r' -- Solo tablas (excluye índices, vistas, etc.)
+GROUP BY
+    n.nspname, c.relname, c.oid
+ORDER BY
+    buffer_bytes DESC
+	limit 10;
+	
+	
+ ----------------------------------------------------
 
 bufferid: ID del búfer.
 relfilenode: Número de nodo de archivo de la relación.
