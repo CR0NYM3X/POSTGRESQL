@@ -41,10 +41,30 @@
   -  **`Rendimiento y Escalabilidad`** La encriptación puede afectar el rendimiento y la escalabilidad de la base de datos, especialmente en sistemas con alto volumen de transacciones. Esto puede llevar a tiempos de respuesta más lentos y mayor carga en el servidor.
   -  **`Complejidad de Backup y Restore`** Realizar copias de seguridad y restauraciones de datos cifrados puede ser más complejo y requerir procedimientos adicionales para asegurar que los datos se mantengan seguros durante estos procesos.
 
+### **Ventajas del Encriptado Asimétrica
+  -  **Eliminación del intercambio seguro de claves**: No es necesario intercambiar una clave secreta compartida, lo que reduce el riesgo de que la clave sea interceptada durante la transmisión.
+  -  **Seguridad mejorada**: Utiliza dos claves diferentes (una pública y una privada), lo que proporciona una capa adicional de seguridad. Incluso si alguien obtiene la clave pública, no puede descifrar la información sin la clave privada.
+  -  **Autenticación y firmas digitales**: Permite la verificación de la autenticidad de los participantes en una comunicación mediante firmas digitales, garantizando que los mensajes provienen de una fuente confiable y no han sido alterados.
+  -  **Confidencialidad**: Asegura que solo el destinatario con la clave privada puede descifrar los mensajes cifrados con la clave pública, protegiendo así la información sensible.
+  -  **Escalabilidad**: Es eficaz para sistemas con un gran número de usuarios, ya que cada entidad puede tener su par de claves, facilitando la gestión de la seguridad en entornos grandes.
+ 
+
 ### **Desventajas de Encriptación Asimétrica**
   -  **`Gestión de Claves`** Si las claves privadas son comprometidas o expiran, es necesario reencriptar todas las columnas que usaron esa clave, lo que es costoso en tiempo y recursos. Además, la gestión de múltiples claves puede ser complicada.
   -  **`Lentitud del Cifrado Asimétrico`** El cifrado asimétrico (como RSA) es más lento que el cifrado simétrico (como AES), lo que puede afectar el rendimiento de las operaciones de encriptación y desencriptación, especialmente en grandes volúmenes de datos.
   -  **`Complejidad de Implementación`** Implementar encriptación asimétrica puede ser más complejo que la encriptación simétrica, requiriendo más configuración y gestión de claves.
+  -  **`Complejidad de Implementación`** Mas propenso
+  - **`Pérdida de la clave privada`**: Si pierdes la clave privada, no podrás descifrar los datos encriptados con la clave pública correspondiente. Esto puede resultar en la pérdida permanente de la información.
+  - **`Corrupción de la clave privada`**: Si el archivo que contiene la clave privada se corrompe, también perderás acceso a los datos encriptados. Es crucial mantener copias de seguridad de las claves privadas en lugares seguros.
+  - **`Gestión de claves`**: La gestión de las claves privadas requiere cuidado y atención. Las claves deben ser almacenadas de manera segura y protegidas contra accesos no autorizados. La pérdida o compromiso de la clave privada puede comprometer la seguridad de los datos. se pueden usar  HashiCorp Vault o GnuPG   gratuito , Microsoft Azure Key Vault: Ideal para la gestión de claves en la nube.
+
+### **Ventajas del Encriptado Simétrico**
+ - **Velocidad**: Es generalmente más rápido que el encriptado asimétrico porque utiliza operaciones matemáticas menos complejas.
+ - **Eficiencia**: Requiere menos recursos computacionales, lo que lo hace ideal para sistemas con limitaciones de rendimiento.
+ - **Facilidad de implementación**: Los algoritmos de encriptado simétrico son más sencillos de implementar y gestionar.
+ - **Cifrado de grandes cantidades de datos**: Es eficaz para cifrar grandes volúmenes de datos sin comprometer significativamente el rendimiento del sistema.
+ - **Seguridad**: Puede ofrecer un nivel de seguridad comparable al encriptado asimétrico cuando se utilizan claves suficientemente largas.
+ - 
 
 ### **Desventajas del Encriptado Simétrico**
   -  **`Gestión de Claves`** La gestión de claves puede ser complicada, especialmente en entornos distribuidos. Mantener la seguridad de las claves y asegurarse de que solo las partes autorizadas tengan acceso puede ser un desafío.
