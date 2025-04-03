@@ -135,6 +135,7 @@ passwordpolicy  https://github.com/eendroroy/passwordpolicy/tree/master
 - ** pgcrypto** Proporciona funciones criptográficas para cifrado, descifrado y hashing de datos, incluyendo contraseñas.
    **Uso:** Puedes usar `pgcrypto` para encriptar contraseñas y datos sensibles antes de almacenarlos.
 
+- **Pgsodium** es como pgcrypto
 - ** row_security:** Aunque no es una extensión, sino una característica incorporada en PostgreSQL, permite definir políticas de seguridad a nivel de fila, controlando el acceso a los datos basado en atributos del usuario.
 
 ************ SEGURIDAD EN AUDITORIAS  ************
