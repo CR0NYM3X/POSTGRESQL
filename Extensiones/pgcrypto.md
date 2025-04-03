@@ -118,10 +118,10 @@ Estas funciones están diseñadas específicamente para el hashing de contraseñ
      ```sql
      
 	 -- Generar HASH 
-	 SELECT crypt('mi_contraseña_segura', gen_salt('bf'));
+	 SELECT crypt('mi_contraseña_segura', gen_salt('bf', 8 ));
 	 
 	 -- Validar un hash
-	 select (passwd = crypt('mi_contraseña_segura', passwd)) AS pswmatch , passwd from ( select crypt('mi_contraseña_segura', gen_salt('bf')) as passwd) as a ; 
+	 select (passwd = crypt('mi_contraseña_segura', passwd)) AS pswmatch , passwd from ( select crypt('mi_contraseña_segura', gen_salt('bf', 8 )) as passwd) as a ; 
      ```
    - **Nota adicional**: Utiliza un valor aleatorio llamado "salt" para asegurar que contraseñas iguales tengan hashes diferentes.
    
@@ -131,7 +131,7 @@ Estas funciones están diseñadas específicamente para el hashing de contraseñ
    - **Algoritmos**: `bf`, `md5`, `xdes`, `des`.
    - **Ejemplo de uso**:
      ```sql
-     SELECT gen_salt('bf', 6 );
+     SELECT gen_salt('bf', 8 );
      ```
    - **Nota adicional**:  ofrece mayor seguridad ya que el segundo parámetro especificar el número de iteraciones para los algoritmos que lo tienen. Cuanto mayor sea el número, más tiempo se tarda en generar el hash de la contraseña y, por lo tanto, más tiempo se tarda en descifrarla.
  
