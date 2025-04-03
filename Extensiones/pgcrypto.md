@@ -108,6 +108,14 @@ Aplicaciones de los Hashes
 
 ### Funciones de Hash de Contraseñas
 
+### **1. Blowfish (bf)**
+- **Max Password Length**: 72 caracteres.
+- **Adaptive?**: Sí, el algoritmo Blowfish es adaptable, lo que significa que puedes ajustar la complejidad del hashing para hacerlo más lento y resistente a ataques de fuerza bruta.
+- **Salt Bits**: 128 bits. El salt es un valor aleatorio que se añade a la contraseña antes de encriptarla para asegurar que incluso las mismas contraseñas generen hashes diferentes.
+- **Output Length**: 60 caracteres. Este es el tamaño del hash resultante.
+- **Description**: Blowfish-based, variant 2a. Blowfish es un algoritmo de cifrado robusto y seguro.
+
+
 Estas funciones están diseñadas específicamente para el hashing de contraseñas, proporcionando seguridad adicional mediante el uso de sal y algoritmos adaptativos.
 
 1. **`crypt(password, salt)`**:
