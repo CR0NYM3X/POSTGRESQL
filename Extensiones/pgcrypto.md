@@ -247,7 +247,7 @@ insert into clientes(id_cliente, telefono) select 123456, fn_crypt('6672-65-98-4
 
 -- descifrar  los datos 
 select id_cliente,fn_decrypt(
-	fn_crypt('hola mundo','/tmp/super-secreto/public.key') -- agregamos el dato cifrado
+	telefono -- agregamos el dato cifrado
 	,'/tmp/super-secreto/secret.key' -- Clave privada 
 	,'123qweqwe' -- agregamos la clave secreta 
 ) as telefono from clientes	;
