@@ -107,9 +107,11 @@ Aplicaciones de los Hashes
 
 
 ### Funciones de Hash de Contraseñas
-  El hash es irreversibles lo que no es posible descifrar y obtener el dato original.
+  El hash es irreversibles lo que no es posible descifrar y obtener el dato original. Existen vulnerabilidades y limitaciones conocidas que son relevantes para su uso en el hash de contraseñas a través de la función crypt() de PostgreSQL. El tamaño de bloque de 64 bits del cifrado Blowfish subyacente es una preocupación conocida para el cifrado debido al potencial de ataques de cumpleaños [[1]](https://crypto.stackexchange.com/questions/87278/why-dont-we-use-blowfish-if-it-hasnt-been-cracked)
 
-### **1. Blowfish (bf)**
+**`[NOTA]`** No se recomienda usar los algoritmos md5, xdes, des  ya que son demasiados antiguos y vulnerables 
+
+### **1. Algoritmo Blowfish (bf)**
 - **Max Password Length**: 72 caracteres.
 - **Adaptive?**: Sí, el algoritmo Blowfish es adaptable, lo que significa que puedes ajustar la complejidad del hashing para hacerlo más lento y resistente a ataques de fuerza bruta.
 - **Salt Bits**: 128 bits. El salt es un valor aleatorio que se añade a la contraseña antes de encriptarla para asegurar que incluso las mismas contraseñas generen hashes diferentes.
