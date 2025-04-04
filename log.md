@@ -116,6 +116,44 @@ log_line_prefix  = <%t %r %a %d %u %p %c %i>
 cat  postgresql-250312.log   | grep -Ei failed | grep -Ei password  | awk '{print "IP: " $4 " DB:" $6 " User:" $7}'   | sed 's/(.*)//g' | sort  | uniq -c
 
 
+
+
+************ MONITOREAR TODAS LAS CONEXIONES DE POSTGRESQL ************
+--- Mensajes del log
+<2025-04-04 12:02:10 MST 192.29.249.242(55776) [unknown] [unknown] [unknown] 494973 67f02cb2.78d7d >LOG:  connection received: host=192.29.249.242 port=55776
+<2025-04-04 12:02:10 MST 192.29.249.242(55776) [unknown] db_test tantor 494973 67f02cb2.78d7d authentication>LOG:  connection authenticated: identity="tantor" method=scram-sha-256 (/sysx/data16/pg_hba.conf:146)
+<2025-04-04 12:02:10 MST 192.29.249.242(55776) [unknown] db_test tantor 494973 67f02cb2.78d7d authentication>LOG:  connection authorized: user=tantor database=db_test application_name=TEST_APP
+<2025-04-04 12:04:35 MST 192.29.249.242(56269) [unknown] postgresc postgres 495383 67f02d43.78f17 authentication>FATAL:  no pg_hba.conf entry for host "192.29.249.242", user "postgres", database "postgresc", no encryption
+<2025-04-03 10:44:49 MST 192.44.164.40(60330) [unknown] db_test user_test 1181741 67eec911.12082d authentication>FATAL:  password authentication failed for user "user_test"
+<2025-03-24 20:43:50 MST [local] [unknown] db_test postgres 3413860 67e22676.341764 authentication>DETAIL:  Connection matched file "/sysx/data16/pg_hba.conf" line 123: "local   all             all                                     ident map=new_name"
+
+ 
+
+	DROP TABLE IF EXISTS tmp_con_validations_1;
+ 
+	create temporary table  tmp_con_validations_1
+	(	
+		con_date TIMESTAMP,
+		ip_address VARCHAR(45),
+		app_name VARCHAR(50),
+		db_name VARCHAR(50),
+		user_name VARCHAR(50),
+		session_id VARCHAR(50),
+		event_type VARCHAR(50),
+		status VARCHAR(50),
+		msg TEXT
+	); 
+	
+	
+	COPY tmp_con_validations_1 from  PROGRAM $$ 
+	
+	tar --to-stdout -xf /sysx/data16/pg_log/postgresql-$(date -d "yesterday" +"%y%m%d").tar.gz | grep -aE "authentication>|connection received:"     | awk  ' {   gsub(/\(.*\)/, "", $4); gsub(/[<\[\]]/, ""); gsub(">", "?"); print $1 " " $2  "?" $4 "?" $5 "?" $6 "?" $7 "?" $9 "?" $10 "?"  substr($0, index($0,$11))} ' 
+	 
+	$$ WITH (FORMAT CSV,DELIMITER '?');  
+	
+	
+	select * from  tmp_con_validations_1;
+
 ```
 
 Auditorias:
