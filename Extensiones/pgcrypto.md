@@ -174,14 +174,17 @@ Estas funciones permiten encriptar y desencriptar datos utilizando el estándar 
      ```
 
 ### Funciones de Encriptación PGP (Asimétrico)
-
 Aunque pgp_pub_encrypt utiliza algoritmos simétricos como AES para la encriptación de los datos, lo que la hace asimétrica es el uso de un par de claves (pública y privada) para la gestión de la encriptación y desencriptación.
+<br>Es importante tener en cuenta estas recomendaciones : <br>
+las funciones fn_crypt y fn_decrypt se deben ejecutar como consultas preparadas para evitar que envie los valores de los parametros al log <br>
+[**Opciones de Almacenamiento de Claves**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Extensiones/pgcrypto.md#opciones-de-almacenamiento-de-claves)<br>
+[**Mejor opción sobre el manejo de path**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Extensiones/pgcrypto.md#mejor-opci%C3%B3n-sobre-el-manejo-de-path)
  
-1.- Generamos las claves publica y privada como se enseño en este documento.
+1.- Generamos las claves publica y privada como se enseño en este documento. [Aquí](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Extensiones/pgcrypto.md#generaci%C3%B3n-de-claves-con-gpg)
 
 ```sql
 
--- Crear tabla ejemplo
+-- ***** Crear tabla ejemplo    ***** 
 -- drop table clientes;
 CREATE TABLE clientes(
 	id_cliente int,
@@ -189,42 +192,64 @@ CREATE TABLE clientes(
 );
 --  select * from clientes;
 
+-- ***** CREAMOS LA FUNCION PARA CIFRAR   ***** 
+ -- DROP FUNCTION fn_crypt(v_data text, v_pubkey_path text);
+CREATE OR REPLACE FUNCTION fn_crypt(v_data text, v_pubkey_path text)
+	RETURNS bytea
+	LANGUAGE plpgsql
+	set client_min_messages = 'notice'
+AS $$
+DECLARE
+  ex_context text;
+  v_query_prepare text;
+  v_encrypted_data bytea;
+BEGIN
+    EXECUTE format( 'SELECT pgp_pub_encrypt(%L, dearmor(pg_read_file(%L)), ''cipher-algo=aes256'')',
+			v_data, v_pubkey_path  ) INTO v_encrypted_data;
+	RETURN v_encrypted_data;
+EXCEPTION
+	WHEN others THEN
+		GET STACKED DIAGNOSTICS ex_context = PG_EXCEPTION_CONTEXT;
+		RAISE EXCEPTION ' % ', ex_context;
+END;
+$$;
+ 
+ 
+-- ***** CREAMOS LA FUNCION PARA DESCIFRAR  ***** 
+-- DROP FUNCTION fn_decrypt(v_encrypted_data bytea, v_privkey_path text, v_passphrase text);
+CREATE OR REPLACE FUNCTION fn_decrypt(v_encrypted_data bytea, v_privkey_path text, v_passphrase text)
+	RETURNS text 
+	LANGUAGE plpgsql
+	set client_min_messages = 'notice'
+AS $$
+DECLARE
+	ex_context text;
+	v_decrypted_data text;
+BEGIN
 
-
--- Crear tabla para leer los datos 
--- drop table pgp_keys;
-CREATE TABLE pgp_keys (
-    id uuid DEFAULT gen_random_uuid(),
-    name varchar(20),
-    value text, 
-    date timestamp without time zone DEFAULT clock_timestamp()::timestamp without time zone
-);
--- select * from pgp_keys;
-
--- importar clave publica
-insert into pgp_keys(name,value) 
-select 'public_key', '-----BEGIN PGP PUBLIC KEY BLOCK-----
-..
-..
------END PGP PUBLIC KEY BLOCK-----';
-
--- importar clave privada
-insert into pgp_keys(name,value) 
-select 'private_key', '-----BEGIN PGP PRIVATE KEY BLOCK-----
-..
-..
------END PGP PRIVATE KEY BLOCK-----';
-
-
+    EXECUTE format(
+      'SELECT pgp_pub_decrypt(%L, dearmor(pg_read_file(%L)), %L, ''cipher-algo=aes256'')',
+      v_encrypted_data, v_privkey_path, v_passphrase
+    )
+    INTO v_decrypted_data;
+    RETURN v_decrypted_data;
+EXCEPTION
+	WHEN others THEN
+		GET STACKED DIAGNOSTICS ex_context = PG_EXCEPTION_CONTEXT;
+		RAISE EXCEPTION ' % ', ex_context;
+END;
+$$;
+ 
+ 
 -- Cifrar los datos 
-insert into clientes(id_cliente, telefono) select 123456, PGP_PUB_ENCRYPT('6672-65-98-46', (select dearmor(value) from pgp_keys where name = 'public_key') , 'cipher-algo=aes256' );
+insert into clientes(id_cliente, telefono) select 123456, fn_crypt('6672-65-98-46','/tmp/super-secreto/public.key');
+
 
 -- Decifrar los datos 
-select id_cliente,PGP_PUB_DECRYPT( 
-	telefono::bytea,  
-	(select dearmor(value) from pgp_keys where name = 'private_key'),
-	'123qweqwe' , 
-	'cipher-algo=aes256'
+select id_cliente,fn_decrypt(
+	fn_crypt('hola mundo','/tmp/super-secreto/public.key') -- agregamos el dato cifrado
+	,'/tmp/super-secreto/secret.key' -- Clave privada 
+	,'123qweqwe' -- agregamos la clave secreta 
 ) as telefono from clientes	;
 ```
 
@@ -539,6 +564,41 @@ SELECT PGP_PUB_ENCRYPT(
 
 **Riesgos**:  
 - Si el servidor es comprometido, las claves pueden ser robadas.  
+
+
+
+## **Mejor opción sobre el manejo de path**
+
+
+
+### **Opción 1: La función tiene guardada  la ruta/path de la clave pública**
+
+#### **Ventajas**:
+1. **Simplicidad**: La función es más simple y fácil de usar, ya que no requiere que el usuario proporcione la ruta cada vez que se llama.
+2. **Menos Propenso a Errores**: Reduce el riesgo de errores por parte del usuario al proporcionar la ruta incorrecta.
+
+#### **Desventajas**:
+1. **Flexibilidad Limitada**: No permite cambiar fácilmente la clave pública sin modificar la función.
+2. **Seguridad**: Si la ruta de la clave pública está codificada en la función, puede ser más difícil de gestionar y actualizar de manera segura.
+
+
+### **Opción 2: La aplicación manda por parámetro la ruta/path de la clave pública**
+
+#### **Ventajas**:
+1. **Flexibilidad**: Permite cambiar la clave pública fácilmente sin modificar la función.
+2. **Seguridad**: Facilita la gestión y actualización de claves, ya que la ruta puede ser proporcionada dinámicamente.
+
+#### **Desventajas**:
+1. **Complejidad**: La función es más compleja y requiere que el usuario proporcione la ruta cada vez que se llama.
+2. **Propenso a Errores**: Aumenta el riesgo de errores por parte del usuario al proporcionar la ruta incorrecta.
+
+
+### **Mejores Prácticas de Seguridad**:
+- **Gestión de Claves**: La gestión dinámica de claves es generalmente preferida en estándares de seguridad, ya que permite una actualización y rotación más fácil de las claves.
+- **Validación de Entrada**: Asegúrate de validar la ruta proporcionada por el usuario para evitar errores y posibles ataques.
+
+ 
+
 
 
 ## Números primos
