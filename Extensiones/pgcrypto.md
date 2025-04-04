@@ -107,6 +107,7 @@ Aplicaciones de los Hashes
 
 
 ### Funciones de Hash de Contraseñas
+Las funciones hash deben ser irevertibles lo que no es posible decifrar y objener el dato original.
 
 ### **1. Blowfish (bf)**
 - **Max Password Length**: 72 caracteres.
