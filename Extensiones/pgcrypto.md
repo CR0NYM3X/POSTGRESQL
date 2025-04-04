@@ -245,7 +245,7 @@ $$;
 insert into clientes(id_cliente, telefono) select 123456, fn_crypt('6672-65-98-46','/tmp/super-secreto/public.key');
 
 
--- Decifrar los datos 
+-- descifrar  los datos 
 select id_cliente,fn_decrypt(
 	fn_crypt('hola mundo','/tmp/super-secreto/public.key') -- agregamos el dato cifrado
 	,'/tmp/super-secreto/secret.key' -- Clave privada 
