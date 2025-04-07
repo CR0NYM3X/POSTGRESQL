@@ -1,4 +1,6 @@
 
+https://www.postgresql.org/docs/current/indexes-types.html
+
 # INDEX
 Un índice es una estructura de datos que almacena una referencia a los datos en una tabla, permitiendo que las búsquedas y otras operaciones sean mucho más rápidas. Piensa en un índice como el índice de un libro, que te permite encontrar rápidamente la página donde se menciona un tema específico.
 
