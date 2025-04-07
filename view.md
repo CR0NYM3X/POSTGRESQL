@@ -15,7 +15,7 @@ Las vistas son objetos de base de datos que representan una consulta SQL almacen
 
 1. **Almacenamiento**:
    - **Vista (View)**: No almacena datos físicamente. Es una consulta almacenada que se ejecuta cada vez que se accede a la vista.
-   - **Vista Materializada (Materialized View)**: Almacena los datos físicamente en una tabla que genera automaticamente Postgresql. Los datos se actualizan periódicamente o manualmente.
+   - **Vista Materializada (Materialized View)**: Almacena los datos físicamente  en disco, igual que una tabla normal. Usa un archivo de datos (en el directorio base/<DB_ID>/<OID> de la base de datos)
 
 2. **Rendimiento**:
    - **Vista**: Puede ser más lenta si la consulta es compleja, ya que se ejecuta cada vez que se accede.
@@ -23,7 +23,8 @@ Las vistas son objetos de base de datos que representan una consulta SQL almacen
 
 3. **Actualización de Datos**:
    - **Vista**: Siempre muestra los datos más recientes, ya que ejecuta la consulta en tiempo real.
-   - **Vista Materializada**: Puede no estar completamente actualizada, dependiendo de la frecuencia de actualización.
+   - **Vista Materializada**: Puede no estar completamente actualizada, dependiendo de la frecuencia de actualización. no se actualizan automáticamente cuando cambian las tablas base. Debes ejecutar REFRESH MATERIALIZED VIEW nombre_vista para regenerar los datos almacenados.
+
 
 4. **Index**:
    - **Vista**: no se pueden crear .
