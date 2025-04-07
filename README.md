@@ -22,7 +22,7 @@ https://lists.postgresql.org/
 https://www.postgresql.org/about/contact/
 https://www.postgresql.org/account/submitbug/
 
-
+https://www.metisdata.io/blog
 https://www.datasunrise.com/es/informacion-profesional/
 medium.com
 https://p2d2.cz/
