@@ -2713,3 +2713,6 @@ LINE 1: select * from personas;
 
  
 ``` 
+
+
+Aspectos internos de MVCC en Postgres -> https://medium.com/@rohanjnr44/internals-of-mvcc-in-postgres-hidden-costs-of-updates-vs-inserts-381eadd35844
