@@ -246,7 +246,8 @@ ALTER SYSTEM SET password_encryption = 'md5';
 **`pg_toast:`** Este esquema se usa para almacenar datos de tablas que son demasiado grandes para caber en una sola fila. PostgreSQL automáticamente mueve estos datos a tablas TOAST (The Oversized-Attribute Storage Technique) para manejar eficientemente grandes cantidades de datos
 
 ### ¿Cómo funciona TOAST?
-PostgreSQL utiliza automáticamente la compresión para datos grandes almacenados en columnas de tipo `TEXT`, `BYTEA` y `VARCHAR` mediante el mecanismo TOAST (The Oversized-Attribute Storage Technique). Este mecanismo utiliza el algoritmo de compresión pglz para comprimir datos que exceden un cierto tamaño⁴.
+PostgreSQL utiliza automáticamente la compresión para datos grandes almacenados en columnas de tipo `TEXT`, `BYTEA` y `VARCHAR` mediante el mecanismo TOAST (The Oversized-Attribute Storage Technique). Este mecanismo utiliza el algoritmo de compresión pglz para comprimir datos que exceden un cierto tamañ. TOAST permite almacenar valores grandes fuera de la fila principal de la tabla. Esto significa que, en lugar de almacenar todo el valor dentro de la fila, PostgreSQL almacena una referencia al valor que se encuentra en una tabla especial de TOAST.
+
 ```
 show default_toast_compression;
 +---------------------------+
@@ -315,6 +316,108 @@ ALTER TABLE clientes ALTER COLUMN nombre SET COMPRESSION pglz;
 
 
 --- 
+
+
+
+#### Aumentar el tamaño de las páginas 
+en una base de datos puede tener varias ventajas y desventajas.
+
+
+### **Consideraciones:**
+1. **Compatibilidad del sistema**: Verifica que tu sistema operativo y hardware soporten páginas grandes. No todos los sistemas tienen esta capacidad, y puede requerir configuraciones adicionales.
+2. **Memoria disponible**: Asegúrate de que tu servidor tenga suficiente memoria física para manejar las páginas grandes sin afectar otras aplicaciones.
+3. **Pruebas exhaustivas**: Realiza pruebas en un entorno de desarrollo o pruebas antes de implementar en producción. Esto te ayudará a identificar posibles problemas y ajustar la configuración según sea necesario.
+4. **Impacto en el rendimiento**: Aunque las páginas grandes pueden mejorar el rendimiento, también pueden causar degradación en ciertas aplicaciones, especialmente aquellas que realizan muchas operaciones de fork().
+5. **Monitoreo y ajuste**: Después de la implementación, monitorea el rendimiento del sistema y ajusta la configuración según sea necesario. Es posible que necesites realizar ajustes adicionales para optimizar el uso de páginas grandes.
+
+
+
+### Ventajas de aumentar el tamaño de las páginas
+1. **Reducción de E/S (Entrada/Salida):** Al tener páginas más grandes, se pueden almacenar más datos en cada página, lo que reduce la cantidad de operaciones de E/S necesarias para leer o escribir datos,
+2. **Mejor uso de la memoria:** Las páginas más grandes pueden mejorar la eficiencia del uso de la memoria caché, ya que se reduce la fragmentación y se aumenta la probabilidad de que los datos necesarios estén en la memoria,
+3. **Optimización de consultas:** Para consultas que acceden a grandes volúmenes de datos secuenciales, las páginas más grandes pueden mejorar el rendimiento al reducir la cantidad de páginas que deben ser leídas,
+
+### Desventajas de aumentar el tamaño de las páginas
+1. **Mayor uso de memoria:** Las páginas más grandes pueden consumir más memoria, lo que puede ser un problema si la memoria es limitada,
+2. **Impacto en el rendimiento de acceso aleatorio:** Si las consultas acceden a datos de manera aleatoria, las páginas más grandes pueden reducir el rendimiento, ya que se leerán más datos de los necesarios,
+3. **Mayor tiempo de recuperación:** En caso de fallos, la recuperación de páginas más grandes puede tomar más tiempo debido a la mayor cantidad de datos que deben ser procesados,
+
+### Cuándo usar páginas más grandes
+- **Consultas secuenciales:** Si tu aplicación realiza muchas consultas secuenciales que acceden a grandes volúmenes de datos, aumentar el tamaño de las páginas puede mejorar el rendimiento,
+- **Carga de trabajo de lectura intensiva:** Si la carga de trabajo es principalmente de lectura y los datos se acceden de manera secuencial, las páginas más grandes pueden ser beneficiosas,
+
+### Cuándo no usar páginas más grandes
+- **Acceso aleatorio:** Si tu aplicación realiza muchas consultas que acceden a datos de manera aleatoria, es mejor mantener un tamaño de página más pequeño para reducir el impacto en el rendimiento,
+- **Memoria limitada:** Si el sistema tiene restricciones de memoria, aumentar el tamaño de las páginas puede no ser recomendable debido al mayor uso de memoria,
+
+### Escenario real
+Imagina que tienes una base de datos que almacena registros de transacciones financieras. La mayoría de las consultas son informes que analizan grandes volúmenes de datos de manera secuencial para generar estadísticas diarias, semanales y mensuales. En este caso, aumentar el tamaño de las páginas puede mejorar el rendimiento de las consultas, ya que se reduce la cantidad de operaciones de E/S necesarias para leer los datos.
+
+### Ventajas y desventajas de diferentes tamaños de página
+
+#### Tamaño de página pequeño (4KB, 8KB)
+**Ventajas:**
+- **Acceso aleatorio eficiente:** Ideal para aplicaciones OLTP (Online Transaction Processing) que realizan muchas operaciones de lectura y escritura aleatorias.
+- **Menor uso de memoria:** Menos espacio de agrupación de almacenamiento intermedio con filas no deseadas.
+
+**Desventajas:**
+- **Mayor número de operaciones de E/S:** Puede aumentar el número de operaciones de E/S necesarias para leer grandes volúmenes de datos.
+
+
+#### Tamaño de página grande (16KB, 32KB)
+**Ventajas:**
+- **Optimización de consultas secuenciales:** Ideal para aplicaciones DSS (Decision Support Systems) que acceden a grandes volúmenes de datos de manera secuencial.
+- **Reducción de E/S:** Menor número de operaciones de E/S necesarias para leer grandes volúmenes de datos.
+
+**Desventajas:**
+- **Mayor uso de memoria:** Puede consumir más memoria, lo que puede ser un problema si la memoria es limitada.
+- **Impacto en el rendimiento de acceso aleatorio:** Puede reducir el rendimiento para consultas que acceden a datos de manera aleatoria.
+
+
+ Ejemplo de modificación de las paginas 
+```sql
+-- Consultar todos los parámetros importantes de las paginas y costos 
+select name,setting, context  from  pg_settings where name ~* 'page|cost|tuple' order by name;
++----------------------------------+---------+------------+
+|               name               | setting |  context   |
++----------------------------------+---------+------------+
+| autovacuum_vacuum_cost_delay     | 100     | sighup     |
+| autovacuum_vacuum_cost_limit     | -1      | sighup     |
+| bgwriter_lru_maxpages            | 100     | sighup     |
+| cpu_index_tuple_cost             | 0.005   | user       |
+| cpu_operator_cost                | 0.0025  | user       |
+| cpu_tuple_cost                   | 0.01    | user       |
+| cursor_tuple_fraction            | 0.1     | user       |
+| full_page_writes                 | on      | sighup     |
+| huge_pages                       | try     | postmaster |
+| huge_page_size                   | 0       | postmaster |
+| ignore_invalid_pages             | off     | postmaster |
+| jit_above_cost                   | 100000  | user       |
+| jit_inline_above_cost            | 500000  | user       |
+| jit_optimize_above_cost          | 500000  | user       |
+| jit_tuple_deforming              | on      | user       |
+| max_pred_locks_per_page          | 2       | sighup     |
+| parallel_setup_cost              | 1000    | user       |
+| parallel_tuple_cost              | 0.1     | user       |
+| random_page_cost                 | 4       | user       |
+| seq_page_cost                    | 1       | user       |
+| shared_memory_size_in_huge_pages | 4214    | internal   |
+| vacuum_cost_delay                | 20      | user       |
+| vacuum_cost_limit                | 200     | user       |
+| vacuum_cost_page_dirty           | 20      | user       |
+| vacuum_cost_page_hit             | 1       | user       |
+| vacuum_cost_page_miss            | 2       | user       |
+| zero_damaged_pages               | off     | superuser  |
++----------------------------------+---------+------------+
+
+
+
+huge_page_size = '2MB'
+
+
+```
+
+ ---
  
 
 ### ¿Qué es el método de acceso heap?
@@ -372,10 +475,14 @@ Además del método heap, PostgreSQL permite definir otros métodos de acceso a 
 ### 1. **Storage**
 El parámetro **Storage**  métodos de almacenamiento se aplican a nivel de columna y determinan cómo se almacenan los datos dentro de las tablas que utilizan heap storage. Las opciones disponibles son:
 
-- **PLAIN**: Almacena los datos sin compresión ni almacenamiento externo. Es la opción por defecto para tipos de datos pequeños.
+- **PLAIN**: Almacena los datos sin compresión ni almacenamiento externo. Es la opción por defecto para tipos de datos pequeños.  como enteros
 - **MAIN**: Intenta almacenar los datos en la tabla principal, pero puede moverlos a almacenamiento externo si son demasiado grandes.
-- **EXTERNAL**: Almacena los datos fuera de la tabla principal, sin compresión.
+- **EXTERNAL**: Almacena los datos fuera de la tabla principal, sin compresión . lo que puede reducir el tamaño de la tabla principal
 - **EXTENDED**: Almacena los datos fuera de la tabla principal y los comprime. Esta es la opción por defecto para tipos de datos grandes como `TEXT` y `BYTEA`².
+
+
+<br> Cuando se dice que los datos se  Almacenan fuera de la tabla principal, esto se refiere a que los datos grandes se almacenan fuera de la fila principal y se guardan en una estructura llamada TOAST (The Oversized-Attribute Storage Technique). Esto permite que solo las partes necesarias del valor se recuperen cuando se accede a los datos, optimizando las operaciones de subcadena y reduciendo la cantidad de datos que deben ser leídos
+
 
 
 ```sql
@@ -389,8 +496,6 @@ ALTER TABLE mi_tabla ALTER COLUMN mi_columna SET STORAGE EXTENDED;
 ```
 
 
-
- 
 ### ¿Qué es una página en PostgreSQL?
 
 1. **Tamaño Fijo**: Las páginas tienen un tamaño fijo, que normalmente es de 8 kB, aunque este tamaño puede ser configurado al compilar el servidor¹.
@@ -716,3 +821,78 @@ SELECT a.attname,
         WHERE     a.attnum > 0 AND NOT a.attisdropped
         ORDER BY a.attnum;
 ```
+
+
+
+
+---
+
+# Comparación entre HDD y SSD:
+
+# **HDD (Disco Duro)**:
+- **Funcionamiento**: Utiliza platos giratorios y un brazo mecánico para leer y escribir datos. Los platos están recubiertos de material magnético.
+- **Velocidad**: Generalmente más lento debido a las partes mecánicas. La velocidad de lectura/escritura suele estar entre 50-150 MB/s.
+- **Durabilidad**: Más susceptible a daños físicos debido a las partes móviles.
+- **Capacidad**: Suelen ofrecer más capacidad de almacenamiento a un costo menor.
+- **Costo**: Más económico por gigabyte comparado con los SSD.
+
+- **Escritura de datos**: Los datos se escriben mediante una cabeza magnética que se encuentra en el extremo de un brazo mecánico. Esta cabeza magnetiza pequeñas áreas del plato para representar bits de datos.
+- **Lectura de datos**: Para leer los datos, la cabeza magnética detecta las áreas magnetizadas del plato mientras este gira. La velocidad de lectura y escritura depende de la velocidad de rotación del plato y la densidad de los datos.
+
+
+
+### Conceptos
+
+- **Platos**: Discos circulares recubiertos de material magnético donde se almacenan los datos.
+- **Cabezal de lectura/escritura**: Brazo mecánico que se mueve sobre los platos para leer y escribir datos.
+- **Sectores**: Las superficies de los platos se dividen en sectores, que son las unidades básicas de almacenamiento. Cada sector suele tener 512 bytes.
+- **Pistas**: Cada plato se divide en pistas concéntricas, que son círculos completos en los que se almacenan los datos.
+- **Cilindros**: Conjunto de pistas alineadas verticalmente a través de los platos.
+- **Clusters**: Conjunto de sectores que el sistema operativo trata como una unidad de almacenamiento.
+
+ 
+### **Fragmentación**:
+- **HDD**: La fragmentación ocurre cuando los archivos se dividen en múltiples fragmentos que se almacenan en diferentes partes del disco. Esto sucede porque los archivos se escriben en los primeros espacios disponibles, y con el tiempo, los archivos se dividen en partes más pequeñas debido a la eliminación y creación de nuevos archivos. La fragmentación puede ralentizar el rendimiento del disco porque el cabezal de lectura/escritura tiene que moverse a diferentes ubicaciones para acceder a todas las partes de un archivo.
+
+
+### **Mantenimiento para HDD**:
+1. **Desfragmentación**: Reorganiza los fragmentos de archivos en sectores contiguos para mejorar la velocidad de acceso.
+2. **Limpieza de disco**: Elimina archivos temporales y otros datos innecesarios para liberar espacio.
+3. **Revisión de errores**: Utiliza herramientas como CHKDSK para detectar y corregir errores en el disco.
+4. **Optimización de unidades**: Activa la caché de escritura y la indización de archivos para mejorar el rendimiento.
+5. **Evitar llenarlo completamente**: Mantén al menos un 15-20% de espacio libre para asegurar un funcionamiento óptimo.
+
+
+
+# **SSD (Unidad de Estado Sólido)**:
+- **Funcionamiento**: Utiliza memoria flash para almacenar datos, sin partes móviles. Los datos se almacenan en chips de memoria.
+- **Velocidad**: Mucho más rápido, con velocidades de lectura/escritura que pueden superar los 500 MB/s.
+- **Durabilidad**: Menos susceptible a daños físicos ya que no tiene partes móviles.
+- **Capacidad**: Aunque los precios han bajado, suelen ser más caros por gigabyte comparado con los HDD.
+- **Costo**: Más caro por gigabyte, pero los precios están disminuyendo con el tiempo.
+
+- **Escritura de datos**: Los datos se escriben en celdas de memoria mediante la carga eléctrica. Cada celda puede almacenar uno o más bits de datos, dependiendo del tipo de memoria.
+- **Lectura de datos**: Para leer los datos, el controlador del SSD selecciona las celdas de memoria y lee la carga eléctrica almacenada en ellas. Esto permite una lectura rápida y eficiente.
+
+
+### Conceptos
+- **Memoria Flash**: Utiliza chips de memoria NAND para almacenar datos. No tiene partes móviles.
+- **Bloques**: La memoria flash se organiza en bloques, que son conjuntos de páginas.
+- **Páginas**: Subdivisiones dentro de los bloques. Cada página suele tener 4 KB.
+- **Controlador**: Gestiona la lectura y escritura de datos, así como la distribución de los datos en los chips de memoria.
+- **Wear leveling**: Técnica utilizada para distribuir uniformemente las escrituras en los chips de memoria, prolongando la vida útil del SSD.
+- **TRIM**: Comando que ayuda a mantener el rendimiento del SSD al permitir que el sistema operativo informe al SSD qué bloques de datos ya no son necesarios y pueden ser borrados.
+
+
+### **Fragmentación**:
+- **SSD**: Aunque los SSD también pueden experimentar fragmentación, no afecta el rendimiento de la misma manera que en los HDD. Los SSD acceden a los datos directamente en la memoria flash, por lo que la ubicación física de los fragmentos no influye en la velocidad de acceso. Sin embargo, la desfragmentación en SSD no es recomendable porque genera escrituras innecesarias que pueden reducir la vida útil del dispositivo.
+
+
+
+### **Mantenimiento para SSD**:
+1. **TRIM**: Asegúrate de que el comando TRIM esté habilitado para optimizar el espacio disponible y mantener el rendimiento.
+2. **Actualización de firmware**: Mantén el firmware del SSD actualizado para aprovechar las mejoras y correcciones de errores.
+3. **Evitar escrituras innecesarias**: Minimiza las operaciones de escritura para prolongar la vida útil del SSD.
+4. **Desactivar la desfragmentación**: No es necesario desfragmentar un SSD y puede reducir su vida útil.
+5. **Monitoreo de salud**: Utiliza herramientas como SMART para monitorear el estado del SSD y detectar problemas a tiempo.
+ 
