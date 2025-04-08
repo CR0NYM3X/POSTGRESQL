@@ -944,3 +944,45 @@ SELECT a.attname,
 4. **Desactivar la desfragmentación**: No es necesario desfragmentar un SSD y puede reducir su vida útil.
 5. **Monitoreo de salud**: Utiliza herramientas como SMART para monitorear el estado del SSD y detectar problemas a tiempo.
  
+
+
+
+# Columnas del sistema ocultas en PostgreSQL
+
+En PostgreSQL, todas las tablas tienen varias columnas del sistema que no son visibles en un `SELECT *` normal, pero que puedes consultar explícitamente. Estas columnas proporcionan metadatos y características internas de cada fila.
+
+## Columnas del sistema principales
+
+1. **`oid`** - Identificador de objeto (solo en tablas con OIDs habilitados)
+2. **`tableoid`** - OID de la tabla que contiene esta fila (útil para herencia)
+3. **`xmin`** - Identificador de transacción que insertó la fila (versión)
+4. **`xmax`** - Identificador de transacción que eliminó/marcó para eliminar la fila
+5. **`cmin`** - Identificador de comando dentro de la transacción (de inserción)
+6. **`cmax`** - Identificador de comando dentro de la transacción (de eliminación)
+7. **`ctid`** - Identificador físico de la ubicación de la fila (página+número de fila)
+
+## Ejemplo de consulta
+
+```sql
+-- Consultar las columnas ocultas explícitamente
+SELECT tableoid, xmin, xmax, cmin, cmax, ctid, * FROM mi_tabla LIMIT 5;
+```
+ 
+Estas columnas son particularmente útiles para:
+- Depuración avanzada
+- Entender el funcionamiento interno de PostgreSQL
+- Solucionar problemas de concurrencia
+- Optimizar consultas complejas
+
+
+
+# **Semántica en PostgreSQL**
+
+En PostgreSQL, la **semántica** se refiere al significado, reglas lógicas y comportamiento de los elementos del sistema cómo se interpretan y ejecutan las operaciones,  como consultas, operaciones y estructuras de datos. A diferencia de la **sintaxis** (que define cómo se escriben las consultas), la semántica define **qué hacen** y cómo interactúan con los datos.
+ 
+La **semántica en PostgreSQL** define:
+✅ **Cómo se comportan las consultas** (ej: `JOIN`, `NULL`).  
+✅ **Cómo se manejan las transacciones** (ACID).  
+✅ **Cómo funcionan los tipos de datos** (ej: fechas, texto).  
+✅ **Cómo se optimizan las operaciones** (índices, planificación).  
+
