@@ -15,13 +15,13 @@ los Concideraciones que pueden existir al cambiar el usuario postgresql
 mkdir -p /sysx/data11/DATANEW/{11,12,13,14,15,16,17}
 
 # Inicializar el data de cada version 
-/usr/pgsql-11/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/11  2>&1
-/usr/pgsql-12/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/12  2>&1
-/usr/pgsql-13/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/13  2>&1
-/usr/pgsql-14/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/14  2>&1
-/usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/15  2>&1
-/usr/pgsql-16/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/16  2>&1
-/usr/pgsql-17/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/17  2>&1
+/usr/pgsql-11/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/11  &>/dev/null
+/usr/pgsql-12/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/12  &>/dev/null
+/usr/pgsql-13/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/13  &>/dev/null
+/usr/pgsql-14/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/14  &>/dev/null
+/usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/15  &>/dev/null
+/usr/pgsql-16/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/16  &>/dev/null
+/usr/pgsql-17/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/17  &>/dev/null
 
 # Validar se hayan inicializado correctamente 
 ls /sysx/data11/DATANEW/11 | wc -l 
