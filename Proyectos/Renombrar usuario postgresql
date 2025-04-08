@@ -1,0 +1,249 @@
+los Concideraciones que pueden existir al cambiar el usuario postgresql
+
+1. **Dependencias y Permisos**: Si otros scripts, aplicaciones o configuraciones de extensiones en la db dependen del usuario "postgres", podrías tener problemas si lo renombras.
+2. **Consistencia**: Asegúrate de actualizar todas las referencias al usuario "postgres" en los scripts de administración, backups automáticos, aplicaciones y cualquier otra configuración relacionada.
+3. **Impacto en las Conexiones**: Las conexiones del pg_hba actuales y futuras que dependan de las credenciales del usuario "postgres" pueden fallar.
+4. **Contraseñas Cifradas**: Las contraseñas cifradas con MD5 usan el nombre de la función como sal criptográfica, por lo que generaria conflicto de conexión.
+5. **Sesiones Activas**: No se puede cambiar el nombre del usuario de la sesión actual. Debes conectarte como un usuario diferente si necesitas hacerlo.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+########### CONFIGURACIÓN DE AMBIENTE DE PRUEBAS ###########
+
+
+# Crear carpetas para los data
+mkdir -p /sysx/data11/DATATEST/{11,12,13,14,15,16,17}
+
+# Inicializar el data de cada version 
+/usr/pgsql-11/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/11  2>&1
+/usr/pgsql-12/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/12  2>&1
+/usr/pgsql-13/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/13  2>&1
+/usr/pgsql-14/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/14  2>&1
+/usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/15  2>&1
+/usr/pgsql-16/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/16  2>&1
+/usr/pgsql-17/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/17  2>&1
+
+# Validar se hayan inicializado correctamente 
+ls /sysx/data11/DATANEW/11 | wc -l 
+ls /sysx/data11/DATANEW/12 | wc -l 
+ls /sysx/data11/DATANEW/13 | wc -l 
+ls /sysx/data11/DATANEW/14 | wc -l 
+ls /sysx/data11/DATANEW/15 | wc -l 
+ls /sysx/data11/DATANEW/16 | wc -l 
+ls /sysx/data11/DATANEW/17 | wc -l 
+
+
+# Cambiar puerto a las instancias 
+sed -i 's/^#port = 5432/port = 5511/' /sysx/data11/DATANEW/11/postgresql.conf
+sed -i 's/^#port = 5432/port = 5512/' /sysx/data11/DATANEW/12/postgresql.conf
+sed -i 's/^#port = 5432/port = 5513/' /sysx/data11/DATANEW/13/postgresql.conf
+sed -i 's/^#port = 5432/port = 5514/' /sysx/data11/DATANEW/14/postgresql.conf
+sed -i 's/^#port = 5432/port = 5515/' /sysx/data11/DATANEW/15/postgresql.conf
+sed -i 's/^#port = 5432/port = 5516/' /sysx/data11/DATANEW/16/postgresql.conf
+sed -i 's/^#port = 5432/port = 5517/' /sysx/data11/DATANEW/17/postgresql.conf
+
+
+# Iniciar instancias 
+/usr/pgsql-11/bin/pg_ctl start -D /sysx/data11/DATANEW/11
+/usr/pgsql-12/bin/pg_ctl start -D /sysx/data11/DATANEW/12
+/usr/pgsql-13/bin/pg_ctl start -D /sysx/data11/DATANEW/13
+/usr/pgsql-14/bin/pg_ctl start -D /sysx/data11/DATANEW/14
+/usr/pgsql-15/bin/pg_ctl start -D /sysx/data11/DATANEW/15
+/usr/pgsql-16/bin/pg_ctl start -D /sysx/data11/DATANEW/16
+/usr/pgsql-17/bin/pg_ctl start -D /sysx/data11/DATANEW/17
+
+# Validar si se levanto la instancia 
+/usr/pgsql-11/bin/psql -p 5511 -Xx -c "select 'conectado version 11'; "
+/usr/pgsql-12/bin/psql -p 5512 -Xx -c "select 'conectado version 12'; "
+/usr/pgsql-13/bin/psql -p 5513 -Xx -c "select 'conectado version 13'; "
+/usr/pgsql-14/bin/psql -p 5514 -Xx -c "select 'conectado version 14'; "
+/usr/pgsql-15/bin/psql -p 5515 -Xx -c "select 'conectado version 15'; "
+/usr/pgsql-16/bin/psql -p 5516 -Xx -c "select 'conectado version 16'; "
+/usr/pgsql-17/bin/psql -p 5517 -Xx -c "select 'conectado version 17'; "
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+######## Guardar los objetos de creacion en archivo SQL  ##############
+
+--- Crear el archivo sql y pegas las querys  de creacion 
+vim /tmp/script_create_objetos.sql
+ 
+--- Querys de creacion 
+create database db_test_rename_postgres;
+\c db_test_rename_postgres
+create schema sh_test_rename_postgres;
+ 
+ 
+CREATE TABLE sh_test_rename_postgres.tb_empleados (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    salario DECIMAL(10, 2) NOT NULL,
+    departamento VARCHAR(100) NOT NULL
+);
+
+
+INSERT INTO sh_test_rename_postgres.tb_empleados (nombre, apellido, salario, departamento)
+VALUES
+('Juan', 'Pérez', 50000, 'Ventas'),
+('María', 'López', 55000, 'Marketing'),
+('Carlos', 'Sánchez', 60000, 'Recursos Humanos'),
+('Ana', 'García', 62000, 'Finanzas');
+
+CREATE FUNCTION sh_test_rename_postgres.fn_calcular_aumento(salario DECIMAL, porcentaje DECIMAL) RETURNS DECIMAL AS $$
+BEGIN
+    RETURN salario + (salario * (porcentaje / 100));
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE VIEW sh_test_rename_postgres.vw_empleados AS
+SELECT id, nombre, apellido, salario,  sh_test_rename_postgres.fn_calcular_aumento(salario, 10) AS salario_con_aumento, departamento
+FROM sh_test_rename_postgres.tb_empleados;
+
+######## Crear los Objetos en las instancias   ##############
+
+/usr/pgsql-11/bin/psql -p 5511 -f /tmp/script_create_objetos.sql  &>/dev/null
+/usr/pgsql-12/bin/psql -p 5512 -f /tmp/script_create_objetos.sql  &>/dev/null
+/usr/pgsql-13/bin/psql -p 5513 -f /tmp/script_create_objetos.sql  &>/dev/null
+/usr/pgsql-14/bin/psql -p 5514 -f /tmp/script_create_objetos.sql  &>/dev/null
+/usr/pgsql-15/bin/psql -p 5515 -f /tmp/script_create_objetos.sql  &>/dev/null
+/usr/pgsql-16/bin/psql -p 5516 -f /tmp/script_create_objetos.sql  &>/dev/null
+/usr/pgsql-17/bin/psql -p 5517 -f /tmp/script_create_objetos.sql  &>/dev/null
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+######## Crear nuevo usuario    ##############
+---> No se puede cambiar el nombre de postgres usando el mismo usuario ejemplo : 
+
+postgres@postgres# ALTER USER postgres RENAME TO new_postgres;
+ERROR:  session user cannot be renamed
+Time: 0.682 ms
+
+  
+---- Creando el nuevo usuario user_test
+/usr/pgsql-11/bin/psql -p 5511 -c "create user user_test with superuser;"   &>/dev/null 
+/usr/pgsql-12/bin/psql -p 5512 -c "create user user_test with superuser;"   &>/dev/null 
+/usr/pgsql-13/bin/psql -p 5513 -c "create user user_test with superuser;"   &>/dev/null 
+/usr/pgsql-14/bin/psql -p 5514 -c "create user user_test with superuser;"   &>/dev/null 
+/usr/pgsql-15/bin/psql -p 5515 -c "create user user_test with superuser;"   &>/dev/null 
+/usr/pgsql-16/bin/psql -p 5516 -c "create user user_test with superuser;"   &>/dev/null 
+/usr/pgsql-17/bin/psql -p 5517 -c "create user user_test with superuser;"   &>/dev/null 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+######## Renombrar el usuario postgresql   ##############
+  
+/usr/pgsql-11/bin/psql -p 5511  -d postgres -U user_test  -c "ALTER USER postgres RENAME TO new_postgres;"   &>/dev/null 
+/usr/pgsql-12/bin/psql -p 5512  -d postgres -U user_test  -c "ALTER USER postgres RENAME TO new_postgres;"   &>/dev/null 
+/usr/pgsql-13/bin/psql -p 5513  -d postgres -U user_test  -c "ALTER USER postgres RENAME TO new_postgres;"   &>/dev/null 
+/usr/pgsql-14/bin/psql -p 5514  -d postgres -U user_test  -c "ALTER USER postgres RENAME TO new_postgres;"   &>/dev/null 
+/usr/pgsql-15/bin/psql -p 5515  -d postgres -U user_test  -c "ALTER USER postgres RENAME TO new_postgres;"   &>/dev/null 
+/usr/pgsql-16/bin/psql -p 5516  -d postgres -U user_test  -c "ALTER USER postgres RENAME TO new_postgres;"   &>/dev/null 
+/usr/pgsql-17/bin/psql -p 5517  -d postgres -U user_test  -c "ALTER USER postgres RENAME TO new_postgres;"   &>/dev/null 
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+- Crear archivo y pegar Querys de validaciones 
+vim /tmp/validacion_dependencias.sql
+
+
+-- Querys de validaciones 
+select current_setting('port') as port ,usesysid,usename,usesuper from pg_shadow where usename = 'new_postgres';
+
+\c db_test_rename_postgres
+
+SELECT 
+    current_setting('port') as port ,
+    name
+    ,rolname AS OWNER
+    ,Descripcion_Tipo_Objeto FROM  
+(
+    /* OWNER DE OBJETOS */
+    select 
+        a.relname AS NAME
+        ,a.relowner AS OWNER,
+        case a.relkind when 'r' then 'TABLE'
+        when 'm' then 'MATERIALIZED_VIEW'
+        when 'i' then 'INDEX'
+        when 'S' then 'SEQUENCE'
+        when 'v' then 'VIEW'
+        when 'c' then 'TYPE'
+        else a.relkind::text end as Descripcion_Tipo_Objeto 
+    from pg_class as a
+    WHERE relnamespace in(SELECT oid FROM pg_namespace where not nspname in('pg_catalog','information_schema','pg_toast'))
+    
+UNION ALL 
+
+/*OWNER DE FUNCIONES */
+    SELECT 
+        proname
+        ,proowner
+        ,'FUNCTION' 
+    FROM pg_proc 
+    WHERE pronamespace in(SELECT oid FROM pg_namespace where not nspname in('pg_catalog','information_schema','pg_toast'))
+
+UNION ALL 
+    /*OWNER DE BASE DE DATOS */ 
+    SELECT 
+        datname    
+        ,datdba
+        ,'DATABASE'   
+    FROM pg_database 
+ 
+UNION ALL
+    /* OWNER DE LOS SCHEMAS */
+    SELECT 
+        nspname
+        ,nspowner
+        ,'SCHEMA' 
+    FROM pg_namespace where not nspname in('pg_catalog','information_schema','pg_toast') 
+ 
+) AS A  left join pg_authid as b on  OWNER = b.oid  ;
+
+
+select current_setting('port') as port ,* from sh_test_rename_postgres.tb_empleados;
+select current_setting('port') as port ,* from  sh_test_rename_postgres.vw_empleados;
+select current_setting('port') as port ,* from sh_test_rename_postgres.fn_calcular_aumento(1.5,2.5);
+
+ 
+
+ 
+
+---- Guardar resultados en archivo /tmp/resultado_sql.txt
+/usr/pgsql-11/bin/psql -p 5511  -d postgres -U user_test -f /tmp/validacion_dependencias.sql >> /tmp/resultado_sql.txt
+/usr/pgsql-12/bin/psql -p 5512  -d postgres -U user_test -f /tmp/validacion_dependencias.sql >> /tmp/resultado_sql.txt
+/usr/pgsql-13/bin/psql -p 5513  -d postgres -U user_test -f /tmp/validacion_dependencias.sql >> /tmp/resultado_sql.txt
+/usr/pgsql-14/bin/psql -p 5514  -d postgres -U user_test -f /tmp/validacion_dependencias.sql >> /tmp/resultado_sql.txt
+/usr/pgsql-15/bin/psql -p 5515  -d postgres -U user_test -f /tmp/validacion_dependencias.sql >> /tmp/resultado_sql.txt
+/usr/pgsql-16/bin/psql -p 5516  -d postgres -U user_test -f /tmp/validacion_dependencias.sql >> /tmp/resultado_sql.txt
+/usr/pgsql-17/bin/psql -p 5517  -d postgres -U user_test -f /tmp/validacion_dependencias.sql >> /tmp/resultado_sql.txt
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+# Conclusión :  En las pruebas se crearon nuevos objetos como (DB, Esquema, tabla, función y vista),   no se presentaron problemas con el cambio de nombre postgres a new_postgres y se utilizaron los objetos y no se presento detalles , incluso como ultimo test se realizaron objetos y no se presentaron detalles 
+
+# Observación : Desde la versión 15 a la 17 en el reporte el esquema public tiene como owner el rol pg_database_owner,  revisando la documentación oficial es algo que se agrego desde la versión 15 el cual dice lo siguiente: 
+
+pg_database_owner no puede ser miembro de ningún rol y no puede tener miembros no implícitos. Inicialmente, este rol lo posee el esquema public, por lo que cada propietario de la base de datos gobierna el uso local del esquema.
+
+
+ En la página oficial de www.enterprisedb.com se encontro un post donde hacen mension de este rol y su importancia dentro de postgresql 
+ 
+  https://www.enterprisedb.com/blog/new-public-schema-permissions-postgresql-15
+ El esquema PUBLIC tiene el privilegio CREATE otorgado por default, que permite a cualquiera crear objetos en el esquema. Este último es el problemático. Si cualquiera puede crear objetos en el esquema, entonces puede engañar a otros para que usen su objeto en lugar de uno en los catálogos del sistema ( esquema pg_catalog ). Este fue el tema de CVE-2018-1058 . Las soluciones alternativas descritas para esto fueron básicamente versiones elaboradas de "no hagas eso" o "ten cuidado", pero una mejor configuración predeterminada resultó esquiva hasta ahora.
+ 
+ La solución aquí requirió una secuencia de cambios:
+
+    1.- Hay un nuevo rol pg_database_owner , que implícitamente tiene como miembro al propietario real de la base de datos actual.
+    2.- El esquema público ahora pertenece a ese rol.
+    3.- El esquema público ya no tiene privilegios CREATE otorgados de manera predeterminada.
+
+
