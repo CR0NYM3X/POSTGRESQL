@@ -248,6 +248,7 @@ HAProxy --> es un balanceador de carga y proxy inverso de código abierto. Se ut
  
 ### **7. Rendimiento y Optimización:**
 
+pageinspect  -> es una extensión de PostgreSQL que permite examinar el contenido de las páginas de la base de datos a bajo nivel. Mostrar información detallada sobre tuplas (filas) individuales
 
  pgbench : herramienta de benchmarking para probar el rendimiento de PostgreSQL. Ejecuta una serie de comandos SQL repetidamente en múltiples sesiones concurrentes y calcula la tasa promedio de transacciones (transacciones por segundo).
  pgingester : herramienta de benchmarking para evaluar diferentes métodos de ingestión de datos en lotes en PostgreSQL2. Mide el rendimiento de métodos como INSERT, COPY, Binary COPY, y UNNEST en términos de filas por segundo y duración de la ingestión.
