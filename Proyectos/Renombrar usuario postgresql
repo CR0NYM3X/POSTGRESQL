@@ -12,7 +12,7 @@ los Concideraciones que pueden existir al cambiar el usuario postgresql
 
 
 # Crear carpetas para los data
-mkdir -p /sysx/data11/DATATEST/{11,12,13,14,15,16,17}
+mkdir -p /sysx/data11/DATANEW/{11,12,13,14,15,16,17}
 
 # Inicializar el data de cada version 
 /usr/pgsql-11/bin/initdb -E UTF-8 -D /sysx/data11/DATANEW/11  2>&1
