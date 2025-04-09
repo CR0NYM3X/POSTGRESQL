@@ -88,3 +88,24 @@ WHERE id = 123;
 ```
 
 ----------------------------------------------------------------------------------------
+
+
+El documento titulado "Hooks in PostgreSQL" trata sobre el sistema de hooks en PostgreSQL. Los hooks son puntos de extensión que permiten a los desarrolladores modificar el comportamiento del sistema de base de datos sin alterar el código fuente principal. Aquí tienes un resumen de los temas que aborda:
+
+1. **Introducción a los Hooks**: Explica qué son los hooks y cómo se utilizan en PostgreSQL.
+2. **Tipos de Hooks**: Describe los diferentes tipos de hooks disponibles, como `ClientAuthentication_hook`, `ExecutorStart_hook`, `ExecutorRun_hook`, entre otros.
+3. **Funcionamiento Interno**: Detalla cómo funcionan los hooks dentro de PostgreSQL, incluyendo cómo se declaran, se configuran y se ejecutan.
+4. **Ejemplos Prácticos**: Proporciona ejemplos de cómo implementar y utilizar hooks en PostgreSQL para tareas específicas como la autenticación de clientes y la ejecución de consultas.
+```
+https://wiki.postgresql.org/images/e/e3/Hooks_in_postgresql.pdf
+https://github.com/gleu/Hooks-in-PostgreSQL/tree/master
+site:wiki.postgresql.org type:pdf
+
+
+```
+
+----------------------------------------------------------------------------------------
+
+
+
+
