@@ -959,7 +959,7 @@ En PostgreSQL, todas las tablas tienen varias columnas del sistema que no son vi
 4. **`xmax`** - Identificador de transacción que eliminó/marcó para eliminar la fila
 5. **`cmin`** - Identificador de comando dentro de la transacción (de inserción)
 6. **`cmax`** - Identificador de comando dentro de la transacción (de eliminación)
-7. **`ctid`** - Identificador físico de la ubicación de la fila (página+número de fila)
+7. **`ctid`** - Identificador físico de la ubicación de la fila (Num. página + posición de la fila dentro de esa página)
 
 ## Ejemplo de consulta
 
