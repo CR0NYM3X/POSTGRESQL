@@ -1,5 +1,10 @@
 
+#### Cálculo de la distancia:
 
+$$
+\sqrt{(7 - 8)^2 + (5 - 4)^2 + (3 - 3)^2} = \sqrt{(-1)^2 + 1^2 + 0^2} = \sqrt{1 + 1 + 0} = \sqrt{2} \approx 1.41
+$$
+     
 ### Extensión pgvector
 
 La extensión **pgvector** en PostgreSQL permite almacenar y buscar datos vectorizados directamente en la base de datos. Esto es útil para aplicaciones como:
@@ -145,11 +150,127 @@ select sqrt( POWER(7-8,2) + POWER(5-4,2) + POWER(3-3,2) ); --- 1.414213562373095
  
 
 
+  
+
+### Ejemplo con los datos de frutas
+
+#### Vectores:
+- **Manzana**: `[7, 5, 3]`
+- **Naranja**: `[6, 8, 4]`
+- **Plátano**: `[9, 2, 5]`
+- **Vector de consulta**: `[8, 4, 3]`
+
+#### Cálculo de la distancia:
+
+1. **Manzana**:
+   - Vector: `[7, 5, 3]`
+   - Consulta: `[8, 4, 3]`
+   - Distancia:
+     
+$$
+\sqrt{(7 - 8)^2 + (5 - 4)^2 + (3 - 3)^2} = \sqrt{(-1)^2 + 1^2 + 0^2} = \sqrt{1 + 1 + 0} = \sqrt{2} \approx 1.41
+$$
+
+2. **Naranja**:
+   - Vector: `[6, 8, 4]`
+   - Consulta: `[8, 4, 3]`
+   - Distancia:
+
+    
+
+### Ejemplo con los datos de frutas
+
+#### Vectores:
+- **Manzana**: `[7, 5, 3]`
+- **Naranja**: `[6, 8, 4]`
+- **Plátano**: `[9, 2, 5]`
+- **Vector de consulta**: `[8, 4, 3]`
+
+#### Cálculo de la distancia:
+
+1. **Manzana**:
+   - Vector: `[7, 5, 3]`
+   - Consulta: `[8, 4, 3]`
+   - Distancia:
+   
+$$
+\sqrt{(7 - 8)^2 + (5 - 4)^2 + (3 - 3)^2} = \sqrt{(-1)^2 + 1^2 + 0^2} = \sqrt{1 + 1 + 0} = \sqrt{2} \approx 1.41
+$$
+
+2. **Naranja**:
+   - Vector: `[6, 8, 4]`
+   - Consulta: `[8, 4, 3]`
+   - Distancia:
+   
+$$
+\sqrt{(6 - 8)^2 + (8 - 4)^2 + (4 - 3)^2} = \sqrt{(-2)^2 + 4^2 + 1^2} = \sqrt{4 + 16 + 1} = \sqrt{21} \approx 4.58
+$$
+
+3. **Plátano**:
+   - Vector: `[9, 2, 5]`
+   - Consulta: `[8, 4, 3]`
+   - Distancia:
+   
+$$
+\sqrt{(9 - 8)^2 + (2 - 4)^2 + (5 - 3)^2} = \sqrt{1^2 + (-2)^2 + 2^2} = \sqrt{1 + 4 + 4} = \sqrt{9} = 3
+$$
  
 
+# Index HNSW y IVFFlat
+Para optimizar la consulta de búsqueda de vecinos más cercanos (KNN) en PostgreSQL con el tipo `VECTOR`, debes utilizar un índice especializado.  
+ 
+
+ **Crea un índice HNSW (recomendado para alta performance)**:
+   ```sql
+   CREATE INDEX frutas_vector_hnsw_idx
+   ON frutas USING hnsw (vector vector_l2_ops)
+   WITH (m = 16, ef_construction = 64);
+   ```
+
+   *Este índice es óptimo para consultas KNN con operadores como `<->` (distancia euclidiana).*
+
+**Si prefieres un índice IVFFlat (más rápido para creación)**:
+   ```sql
+   CREATE INDEX frutas_vector_ivfflat_idx
+   ON frutas USING ivfflat (vector vector_l2_ops)
+   WITH (lists = 1000);  -- Ajusta según cardinalidad (√número_de_filas)
+   ```
+
+**Explicación**:
+- **HNSW**: Índice de grafos jerárquico para alta velocidad en grandes volúmenes de datos.
+- **IVFFlat**: Divide el espacio en clusters (listas) para búsquedas aproximadas rápidas.
+- `vector_l2_ops`: Clase de operador para distancia euclidiana (L2).
 
 
+# Index GIN
+los índices **GIN** (Generalized Inverted Index) **no son adecuados** para búsquedas por similitud en vectores (KNN, ANN) como las que realizas con operadores `<->`, `<#>` (cosine similarity) o `<=>` (inner product) en PostgreSQL con la extensión `pgvector`.  
 
+### ¿Por qué GIN no sirve para vectores?
+1. **Diseñado para datos discretos**:  
+   - GIN es óptimo para búsquedas en arrays, JSON, full-text search o datos con elementos discretos (ej.: `WHERE vector @> '[1,0,0]'`).  
+   - **No soporta búsqueda por distancia** (L2, cosine, etc.), que es fundamental para comparar vectores en espacios continuos.  
+
+2. **pgvector usa índices especializados**:  
+   - **IVFFlat**: Divide el espacio vectorial en clusters (listas) para búsqueda aproximada.  
+   - **HNSW**: Grafos jerárquicos para alta eficiencia en altas dimensiones.  
+   - Estos índices están optimizados para operadores como `<->` y algoritmos de similitud.  
+
+### Ejemplo de índices válidos para vectores:
+```sql
+-- Índice HNSW (recomendado para precisión y velocidad)
+CREATE INDEX idx_frutas_hnsw ON frutas USING hnsw (vector vector_l2_ops);
+
+-- Índice IVFFlat (más rápido para creación, requiere ajuste de 'lists')
+CREATE INDEX idx_frutas_ivfflat ON frutas USING ivfflat (vector vector_l2_ops) WITH (lists = 100);
+```
+
+### Caso donde GIN *podría* usarse (pero no es lo que necesitas):
+Si tu columna `vector` fuese un **array tradicional** (no tipo `VECTOR`) y buscaras elementos exactos:
+```sql
+-- Esto NO es una búsqueda de similitud, sino exacta:
+CREATE INDEX idx_frutas_gin ON frutas USING gin (vector);
+SELECT * FROM frutas WHERE vector @> '[7,5,3]';  -- Solo coincidencias exactas
+```
 
 
  
