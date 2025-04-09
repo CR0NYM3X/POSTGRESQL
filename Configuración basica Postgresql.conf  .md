@@ -904,6 +904,8 @@ Archivo : postgresql.conf
 		Mensaje final:
 			<2025-03-03 14:42:48 MST     1346779 67aa5411.148cdb >LOG:  configuration file "/sysx/data14/postgresql.conf" contains errors; unaffected changes were applied
 
+		Mensaje Alternativo:
+			2025-04-08 16:33:39.259 MST  LOG:  configuration file "/sysx/data11/DATANEW/11/postgresql.conf" contains errors; no changes were applied
 
 Archivo : pg_hba.conf
 	Escenario : 
