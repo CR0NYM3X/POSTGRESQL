@@ -498,9 +498,16 @@ ALTER TABLE mi_tabla ALTER COLUMN mi_columna SET STORAGE EXTENDED;
 
 ### ¿Qué es una página en PostgreSQL?
 
-1. **Tamaño Fijo**: Las páginas tienen un tamaño fijo, que normalmente es de 8 kB, aunque este tamaño puede ser configurado al compilar el servidor¹.
-2. **Estructura de Almacenamiento**: Cada tabla e índice en PostgreSQL se almacena como una matriz de estas páginas. Dentro de una tabla, una página contiene varias filas de datos; en un índice, contiene entradas de índice¹.
-3. **Gestión de Datos**: PostgreSQL utiliza estas páginas para gestionar y organizar los datos en el disco de manera eficiente. Cada vez que se necesita leer o escribir datos, se hace en unidades de páginas completas¹.
+1. **Tamaño Fijo**: Las páginas tienen un tamaño fijo, que normalmente es de 8 kB, aunque este tamaño puede ser configurado al compilar el servidor¹..
+2. **Gestión de Datos**: PostgreSQL utiliza estas páginas para gestionar y organizar los datos en el disco de manera eficiente. Cada vez que se necesita leer o escribir datos, se hace en unidades de páginas completas.
+3. **Páginas**: Los datos en PostgreSQL se almacenan en bloques de disco llamados páginas. El tamaño de una página es típicamente de 8 kB, aunque puede ser configurado a otros tamaños.
+4. **Filas y Columnas**: Cada fila de una tabla se almacena en una página. Si una fila es demasiado grande para caber en una sola página, se divide en varias partes y se almacena en múltiples páginas.
+5. **Gestión de Páginas**: PostgreSQL utiliza un gestor de almacenamiento que se encarga de administrar las páginas. Este gestor decide en qué página se almacenará cada fila y cómo se distribuirán las columnas.
+6. **Índices**: Los índices también se almacenan en páginas y ayudan a acelerar la búsqueda de datos dentro de las tablas.
+7. **Optimización**: Para mejorar el rendimiento, PostgreSQL puede comprimir datos y utilizar técnicas de almacenamiento eficientes.
+
+Ref:  https://wiki.postgresql.org/images/4/43/Postgresql_como_funciona_una_dbms_por_dentro.pdf
+
 
 ### ¿Por qué usar páginas?
 
