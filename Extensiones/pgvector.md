@@ -148,35 +148,7 @@ En este caso, la **manzana** es la fruta más similar al vector de consulta `[8,
 select sqrt( POWER(7-8,2) + POWER(5-4,2) + POWER(3-3,2) ); --- 1.414213562373095
 ```
  
-
-
-  
-
-### Ejemplo con los datos de frutas
-
-#### Vectores:
-- **Manzana**: `[7, 5, 3]`
-- **Naranja**: `[6, 8, 4]`
-- **Plátano**: `[9, 2, 5]`
-- **Vector de consulta**: `[8, 4, 3]`
-
-#### Cálculo de la distancia:
-
-1. **Manzana**:
-   - Vector: `[7, 5, 3]`
-   - Consulta: `[8, 4, 3]`
-   - Distancia:
-     
-$$
-\sqrt{(7 - 8)^2 + (5 - 4)^2 + (3 - 3)^2} = \sqrt{(-1)^2 + 1^2 + 0^2} = \sqrt{1 + 1 + 0} = \sqrt{2} \approx 1.41
-$$
-
-2. **Naranja**:
-   - Vector: `[6, 8, 4]`
-   - Consulta: `[8, 4, 3]`
-   - Distancia:
-
-    
+   
 
 ### Ejemplo con los datos de frutas
 
