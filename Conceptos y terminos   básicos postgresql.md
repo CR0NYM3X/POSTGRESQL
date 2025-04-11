@@ -993,3 +993,11 @@ La **semántica en PostgreSQL** define:
 ✅ **Cómo funcionan los tipos de datos** (ej: fechas, texto).  
 ✅ **Cómo se optimizan las operaciones** (índices, planificación).  
 
+
+
+# **homologar** 
+Se refiere al proceso de verificar y certificar que un producto, sistema o componente cumple con los estándares, normativas o especificaciones técnicas requeridas para su uso en un determinado mercado.
+### 📄 **Proceso típico de homologación**  
+1. **Pruebas técnicas** (en laboratorios autorizados).  
+2. **Documentación** (informes de cumplimiento).  
+3. **Certificación** (sellos como CE, FCC, ISO).
