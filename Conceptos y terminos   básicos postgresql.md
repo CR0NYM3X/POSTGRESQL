@@ -1169,8 +1169,5 @@ postgres@test# select U&'\0063' as alfabeto_latino,  U&'\0441' as alfabeto_cirí
 
 
 Aunque "с" (cirílico) y "c" (latino) son caracteres completamente diferentes en términos de codificación, ¡se ven casi idénticos en muchas fuentes tipográficas! Esto genera la ilusión de que son el mismo carácter.
-
  
-\0063\006c\0069\0065\006e\00746573
- select id_cliente from clientes limit 1;
 ```sql
