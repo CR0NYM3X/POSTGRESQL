@@ -1120,6 +1120,7 @@ Las diferencias entre **UTF-8**, **UTF-16** y **UTF-32**
 -- Crear una tabla con caracteres especiales
 -- Tabla: data
 
+```sql
 -- SELECT to_hex(ascii('a')); --> 61 -> 0061 
 -- U&"\0048\004f\004c\0041"
 -- U&"d\+000061ta"
@@ -1135,9 +1136,8 @@ INSERT INTO U&"d\0061ta" (id, nombre) VALUES (1, 'Prueba');
 
 -- Consultar datos
 SELECT * FROM U&"d\0061ta";
+```
 
- 
- 
 
 **3. Cambiar el carácter de escape**
 - Por defecto, el carácter de escape es `\`. Puedes cambiarlo usando la cláusula `UESCAPE`. Ejemplo: `U&"d!0061t!+000061" UESCAPE '!'`, donde el carácter de escape es ahora `!`.
