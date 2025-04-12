@@ -1001,3 +1001,176 @@ Se refiere al proceso de verificar y certificar que un producto, sistema o compo
 1. **Pruebas técnicas** (en laboratorios autorizados).  
 2. **Documentación** (informes de cumplimiento).  
 3. **Certificación** (sellos como CE, FCC, ISO).
+
+
+---
+
+
+
+# Comparación de Codificaciones: ASCII, ANSI y Unicode 
+
+### **ASCII (American Standard Code for Information Interchange)**
+- Fue el primer estándar para representar texto en computadoras.
+- Utiliza **7 bits** para codificar 128 caracteres (incluye letras en inglés, números, símbolos básicos y caracteres de control).
+- Ejemplo: 
+  - `A` en ASCII es **65**.
+  - `B` es **66**.
+
+**Limitación:** Solo soporta caracteres en inglés y unos pocos símbolos, por lo que no es útil para otros idiomas o caracteres más complejos.
+
+ 
+
+### **ANSI (American National Standards Institute)**
+- Es una extensión de ASCII que utiliza **8 bits** para codificar hasta **256 caracteres**.
+- Incluye más caracteres, como los acentos en español (`á, é, í`) y símbolos adicionales.
+- Ejemplo: 
+  - `ñ` en ANSI es **241**.
+
+**Limitación:** A pesar de ampliar ASCII, sigue siendo insuficiente para cubrir todos los idiomas y caracteres del mundo.
+
+ 
+
+### **Unicode**
+- Es un estándar universal que busca representar **todos los caracteres de todos los idiomas** y símbolos, con millones de combinaciones posibles.
+- Usa diferentes formas de codificación, como **UTF-8**, **UTF-16** y **UTF-32**.
+- Ejemplo:
+  - `A` en Unicode es **U+0041**.
+  - `ñ` es **U+00F1**.
+  - El emoji 😊 es **U+1F60A**.
+
+**Ventaja:** Es compatible con cualquier idioma, símbolos y emojis, lo que lo convierte en el estándar actual más utilizado.
+
+ 
+### Comparación rápida:
+| Tipo    | Bits usados | Caracteres soportados                | Ejemplo               |
+|---------|-------------|---------------------------------------|-----------------------|
+| ASCII   | 7 bits      | 128 caracteres (inglés básico)       | `A` = 65             |
+| ANSI    | 8 bits      | 256 caracteres (acentos, algunos idiomas) | `ñ` = 241           |
+| Unicode | Variable    | Millones (todos los idiomas y símbolos) | 😊 = U+1F60A        |
+
+
+
+Las diferencias entre **UTF-8**, **UTF-16** y **UTF-32**  
+
+
+### **1. UTF-8**
+- **Variable**: Usa entre **1 y 4 bytes** para representar cada carácter.
+- **Ventaja**: Es eficiente para textos en idiomas que usan caracteres ASCII (como inglés), porque los caracteres básicos solo ocupan 1 byte.
+- **Ejemplo**:
+  - El carácter **A** (U+0041) ocupa 1 byte: `41`.
+  - El emoji 😊 (U+1F60A) ocupa 4 bytes: `F0 9F 98 8A`.
+
+**Uso común**: Es la codificación más utilizada en la web debido a su compatibilidad y eficiencia.
+
+ 
+
+### **2. UTF-16**
+- **Variable**: Usa **2 o 4 bytes**.
+- **Ventaja**: Es más eficiente que UTF-8 para textos que contienen muchos caracteres no ASCII, como los chinos o japoneses, ya que estos suelen ocupar 2 bytes.
+- **Ejemplo**:
+  - El carácter **A** (U+0041) ocupa 2 bytes: `00 41`.
+  - El emoji 😊 (U+1F60A) ocupa 4 bytes: `D8 3D DE 0A` (usa "pares sustitutos").
+
+**Uso común**: Es utilizado en sistemas como Windows y muchas aplicaciones internas.
+
+ 
+
+### **3. UTF-32**
+- **Fijo**: Cada carácter ocupa siempre **4 bytes**, sin importar qué tan sencillo o complejo sea.
+- **Ventaja**: Es simple, ya que cada carácter tiene la misma longitud, pero ocupa más espacio en comparación con UTF-8 y UTF-16.
+- **Ejemplo**:
+  - El carácter **A** (U+0041) ocupa 4 bytes: `00 00 00 41`.
+  - El emoji 😊 (U+1F60A) ocupa también 4 bytes: `00 01 F6 0A`.
+
+**Uso común**: Es poco utilizado debido a su ineficiencia en el uso de memoria.
+
+ 
+
+### Comparación rápida:
+| Codificación | Tamaño por carácter | Ventaja                       | Desventaja               |
+|--------------|---------------------|-------------------------------|--------------------------|
+| **UTF-8**    | 1 a 4 bytes         | Eficiente con ASCII           | Menos eficiente con texto complejo. |
+| **UTF-16**   | 2 o 4 bytes         | Eficiente con idiomas asiáticos | Requiere pares sustitutos para caracteres mayores. |
+| **UTF-32**   | 4 bytes             | Simplicidad (tamaño fijo)     | Consume mucho espacio.   |
+
+ 
+### ¿Cómo elegir?
+- Si estás trabajando con aplicaciones web o datos internacionales, **UTF-8** es la mejor opción por su compatibilidad.
+- Si necesitas mayor eficiencia con caracteres no latinos, considera **UTF-16**.
+- **UTF-32** es ideal solo en casos donde la simplicidad sea crítica y el almacenamiento no sea un problema.
+
+
+
+  
+**1. Identificadores y sensibilidad de mayúsculas/minúsculas**
+- Cuando usas nombres sin comillas (por ejemplo, `foo` o `FOO`), PostgreSQL los convierte automáticamente a minúsculas (`foo`).
+- Si usas comillas dobles alrededor de un nombre (por ejemplo, `"Foo"`), PostgreSQL hace que sea **sensible a mayúsculas/minúsculas**. Esto significa que `"Foo"` es diferente de `foo`, `FOO` y `"foo"`.
+- Esto no sigue el estándar SQL, que convierte nombres sin comillas a **mayúsculas**. Por lo tanto, para portabilidad entre sistemas, es recomendable **usar comillas siempre o nunca**, pero no alternar.
+
+
+
+**2. Identificadores con caracteres Unicode**
+- Si necesitas usar caracteres Unicode en los nombres, puedes usar el prefijo `U&` seguido de comillas dobles, por ejemplo: `U&"foo"`.
+- Dentro de estas comillas, puedes representar caracteres Unicode mediante secuencias de escape:
+  - **Forma de 4 dígitos**: `\` seguido de 4 dígitos hexadecimales. Ejemplo: `d\0061t` (representa "dat").
+  - **Forma de 6 dígitos**: `\+` seguido de 6 dígitos hexadecimales. Ejemplo: `d\+000061t` (también representa "dat").
+
+
+ Escapar caracteres Unicode y usando Hex
+-- Crear una tabla con caracteres especiales
+-- Tabla: data
+
+-- SELECT to_hex(ascii('a')); --> 61 -> 0061 
+-- U&"\0048\004f\004c\0041"
+-- U&"d\+000061ta"
+-- U&"d\0061ta"
+
+CREATE TABLE U&"\0441\043B\043E\043D" (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50)
+);
+
+-- Insertar datos
+INSERT INTO U&"d\0061ta" (id, nombre) VALUES (1, 'Prueba');
+
+-- Consultar datos
+SELECT * FROM U&"d\0061ta";
+
+ 
+ 
+
+**3. Cambiar el carácter de escape**
+- Por defecto, el carácter de escape es `\`. Puedes cambiarlo usando la cláusula `UESCAPE`. Ejemplo: `U&"d!0061t!+000061" UESCAPE '!'`, donde el carácter de escape es ahora `!`.
+
+
+ Cambiar el carácter de escape
+```sql
+-- Usar un carácter de escape personalizado (!)  
+-- Tabla: data
+CREATE TABLE U&"d!0061ta" UESCAPE '!' ( 
+    id SERIAL PRIMARY KEY,
+    descripcion TEXT
+);
+
+-- Insertar datos
+INSERT INTO U&"d!0061ta" (id, descripcion) VALUES (1, 'Ejemplo con escape personalizado');
+
+-- Consultar datos
+SELECT * FROM U&"d!0061ta";
+
+
+postgres@test# select U&'\0063' as alfabeto_latino,  U&'\0441' as alfabeto_cirílico;
++-----------------+-------------------+
+| alfabeto_latino | alfabeto_cirílico |
++-----------------+-------------------+
+| c               | с                 |
++-----------------+-------------------+
+(1 row)
+
+
+Aunque "с" (cirílico) y "c" (latino) son caracteres completamente diferentes en términos de codificación, ¡se ven casi idénticos en muchas fuentes tipográficas! Esto genera la ilusión de que son el mismo carácter.
+
+ 
+\0063\006c\0069\0065\006e\00746573
+ select id_cliente from clientes limit 1;
+```sql
