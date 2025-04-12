@@ -2182,4 +2182,25 @@ CREATE TABLE partman_test.time_taptest_table_template (LIKE partman_test.time_ta
 
 
 
- 
+
+---
+# Crear operadores
+
+```sql
+https://www.postgresql.org/docs/current/sql-createoperator.html
+
+CREATE FUNCTION public.modulo_suma(int, int) RETURNS int AS $$
+BEGIN
+  RETURN ($1 + $2) % 10; -- Calcula el módulo 10 de la suma
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OPERATOR public.%+ (
+  FUNCTION = public.modulo_suma,
+  LEFTARG = int,
+  RIGHTARG = int
+);
+
+SELECT 15 %+ 7 AS resultado; -->   2 
+```
