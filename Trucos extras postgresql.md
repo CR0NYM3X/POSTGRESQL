@@ -700,8 +700,12 @@ SELECT E'Esta es una línea \n y esta es otra línea \t hola  \' ';
 
 -- **`$$`**: Delimitadores de dólar para cadenas de texto que pueden incluir comillas simples sin necesidad de escape.
 SELECT $$O'Reilly$$; -- Resulta en 'O'Reilly'
- 
 
+
+--->  CONVERTIR TEXTO A HEX
+SELECT get_byte('A'::bytea, 0) AS valor_decimal,    to_hex(get_byte('A'::bytea, 0)) AS valor_hexadecimal; -->   65 | 41  
+SELECT to_hex(ascii('A')) AS valor_hexadecimal; --> 41
+SELECT encode(convert_to('A', 'UTF8'), 'hex') AS valor_hexadecimal; --> 41
 
 
 
