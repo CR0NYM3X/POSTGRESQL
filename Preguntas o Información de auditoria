@@ -1,0 +1,94 @@
+
+
+### Preguntas de Auditoría - Parte 1
+
+1. **¿El servidor en cuestión es clusterizado o es un solo equipo físico?**
+2. **¿Cuántas transacciones se realizan al servidor mensualmente?**
+3. **¿Cuántas transacciones se realizan al servidor anualmente?**
+4. **¿Cuál es la tasa de crecimiento de la base de datos, mensualmente?**
+5. **¿Cuál es la tasa de crecimiento de los discos?**
+6. **¿Cuántas conexiones se realizan mensualmente?**
+7. **¿Qué tipo de respaldo y recuperación de datos se utiliza?**
+8. **¿Cuál es la frecuencia de los respaldos de la base de datos?**
+9. **¿Cuántos usuarios concurrentes acceden al servidor?**
+10. **¿Cuál es el tiempo promedio de respuesta del servidor?**
+11. **¿Qué herramientas de monitoreo y administración se utilizan?**
+12. **¿Cuál es el plan de contingencia en caso de fallo del servidor?**
+13. **¿Reporte de total de conexiones por usuario y otro con IPs de origen?**
+14. **¿Fecha de últimas conexiones de cada usuario (se obtendrán usuarios activos e inactivos)?**
+
+### Preguntas de Auditoría - Parte 2
+
+1. **Configuración de seguridad**:
+   - ¿Qué medidas de seguridad están implementadas para proteger la base de datos?
+   - ¿Cómo se gestionan los permisos y roles de los usuarios?
+   - ¿Qué medidas se toman para prevenir accesos no autorizados?
+   - ¿Cómo se manejan las auditorías de seguridad y cumplimiento?
+   
+
+2. **Mantenimiento y actualizaciones**:
+   - ¿Cuál es el plan de mantenimiento regular del servidor?
+   - ¿Con qué frecuencia se aplican actualizaciones y parches de seguridad?
+   - ¿Cómo se gestionan las actualizaciones del sistema operativo y del software de base de datos?
+
+
+3. **Rendimiento y optimización**:
+   - ¿Qué estrategias se utilizan para optimizar el rendimiento de la base de datos?
+   - ¿Cómo se monitorean y gestionan los índices de la base de datos?
+   - ¿Qué herramientas se utilizan para el monitoreo del rendimiento?
+
+4. **Integridad y consistencia de los datos**:
+   - ¿Qué mecanismos se utilizan para asegurar la integridad y consistencia de los datos?
+   - ¿Cómo se manejan las transacciones y los bloqueos de registros?
+   - ¿Qué procedimientos se siguen para la recuperación de datos en caso de corrupción?
+
+5. **Capacidad y escalabilidad**:
+   - ¿Cuál es la capacidad actual del servidor y cómo se planifica la escalabilidad?
+   - ¿Qué procedimientos se siguen para agregar más recursos al servidor?
+   - ¿Cómo se gestionan los picos de carga y el balanceo de carga?
+
+6. **Auditoría y cumplimiento**:
+   - ¿Cómo se registran y auditan las actividades de los usuarios?
+   - ¿Qué políticas de cumplimiento se siguen para asegurar que se cumplan las normativas?
+   - ¿Cómo se gestionan los registros de auditoría y logs del servidor?
+
+7. **Recuperación ante desastres**:
+   - ¿Cuál es el plan de recuperación ante desastres?
+   - ¿Cómo se prueba y valida el plan de recuperación?
+   - ¿Qué procedimientos se siguen para la recuperación de datos en caso de fallo del servidor?
+
+
+8. **Documentación y registros**:
+   - ¿Qué tipo de documentación se mantiene sobre la configuración y operación del servidor?
+   - ¿Cómo se gestionan los registros de auditoría y logs del servidor?
+   - ¿Qué procedimientos se siguen para la actualización de la documentación técnica?
+
+
+
+
+### Información del Servidor - con ejemplo
+
+- **Nombre de la Base de Datos:** MyVoltDB
+- **Tamaño Total (GB):** 150
+- **Nombre del Propietario de la Base de Datos:** Juan Pérez
+- **Correo Electrónico del Propietario de la Base de Datos:** juan.perez@example.com
+- **Tipo de Motor de Origen:** VoltDB
+- **Versión del Motor de Origen:** 10.2
+- **Edición del Motor de Origen:** Enterprise
+- **Modelo de Licencia:** Subscription
+- **Núcleos de CPU:** 16
+- **Memoria:** [Especificar]
+- **País:** [Especificar]
+- **Nombre del Host:** [Especificar]
+- **ID del Servidor:** SRV123456
+- **Tipo de Despliegue:** Standalone
+- **Replicación (S/N):** Sí
+- **Cluster/Oracle RAC (S/N):** Sí
+- **IOPS Disco Máximos (KB):** 5000
+- **IOPS disco Promedio (KB):** 2000
+- **Utilización:** 75%
+- **Throughput (MBps):** 800
+- **Máximo de Transacciones por Segundo:** 1,000,000
+- **Tamaño del Redo Log (KB):** 102,400
+- **Procedimientos Almacenados:** 25
+ 
