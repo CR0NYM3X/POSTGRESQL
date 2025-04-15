@@ -1170,4 +1170,13 @@ postgres@test# select U&'\0063' as alfabeto_latino,  U&'\0441' as alfabeto_cirí
 
 Aunque "с" (cirílico) y "c" (latino) son caracteres completamente diferentes en términos de codificación, ¡se ven casi idénticos en muchas fuentes tipográficas! Esto genera la ilusión de que son el mismo carácter.
  
-```sql
+```
+
+
+ 
+# Dirty
+
+2. **Dirty Blocks**: Los bloques "dirty" son aquellos que han sido modificados pero aún no han sido escritos en disco. Esto puede ocurrir durante operaciones de lectura y escritura, donde los datos en memoria se marcan como "dirty" hasta que se sincronizan con el almacenamiento persistente.
+
+3. **Dirty Pages**: Similar a los bloques "dirty", las páginas "dirty" son partes de la memoria que contienen datos modificados que aún no se han escrito en disco.
+
