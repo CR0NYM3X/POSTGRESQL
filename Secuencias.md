@@ -443,4 +443,42 @@ https://www.postgresql.org/docs/current/ddl-generated-columns.html
 
 
 
+ 
+# Desventajas de Los UUID (Universally Unique Identifiers)  
 
+### 1. **Fragmentación de Índices**
+Los UUID son valores aleatorios y no secuenciales, lo que significa que cada nuevo UUID insertado puede ir a cualquier parte del índice. Esto provoca una fragmentación significativa, ya que los índices no pueden mantener una estructura ordenada y eficiente.
+
+### 2. **Localidad de Datos**
+Debido a su naturaleza aleatoria, los UUIDs no tienen buena localidad de datos. Esto significa que los datos no se almacenan físicamente cerca unos de otros en el disco, lo que puede llevar a una mayor cantidad de operaciones de entrada/salida (IOPS) y reducir la eficiencia del caché.
+
+### 3. **Tamaño de los UUID**
+Los UUID suelen ser más grandes que los identificadores numéricos secuenciales (como los `BIGINT`), ocupando más espacio en los índices y en las tablas. Esto puede aumentar el tamaño total de la base de datos y reducir el rendimiento.
+
+### 4. **Impacto en la Memoria**
+La aleatoriedad de los UUIDs puede forzar a los índices a cargar más páginas en la memoria, lo que puede deteriorar la relación de aciertos del caché cuando el tamaño del índice excede la memoria disponible.
+
+### Ejemplo de Problema
+En bases de datos como PostgreSQL, los UUIDs pueden causar que los índices de hojas sean igualmente probables de ser golpeados, forzando todo el índice a estar en memoria y afectando negativamente el rendimiento.
+
+### Alternativas
+- **Identificadores Secuenciales:** Usar identificadores secuenciales (`AUTO_INCREMENT` o `SERIAL`) puede mejorar la eficiencia de los índices.
+- **UUIDs con Timestamp:** Algunos tipos de UUID (como UUID v1) incluyen un componente de timestamp, lo que puede mejorar la localidad de datos y reducir la fragmentación.
+
+
+ 
+
+### ¿Cuál deberías elegir?
+ 
+#### Elija números enteros incrementales si:
+- Su aplicación utiliza una única base de datos.
+- Prioriza la legibilidad, la simplicidad y el alto rendimiento.
+- Tiene requisitos de seguridad moderados.
+
+#### Elija UUID si:
+- Estás trabajando con sistemas distribuidos o microservicios.
+- La seguridad y la singularidad global son cruciales.
+- Su aplicación requiere sincronización o fusión de datos frecuente.
+
+Ref: https://medium.com/databases-in-simple-words/uuid-vs-auto-increment-integer-for-ids-what-you-should-choose-20c9cc968600 
+ 
