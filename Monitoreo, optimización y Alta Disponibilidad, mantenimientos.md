@@ -522,6 +522,12 @@ EXPLAIN para obtener el plan de ejecución de una consulta, lo que te ayudará a
 ```sql
 EXPLAIN select  version();  <br>
 EXPLAIN ANALYZE  select  version();
+
+EXPLAIN (FORMAT JSON, ANALYZE true, VERBOSE false, COSTS false, TIMING false, BUFFERS true, SUMMARY false, SETTINGS false, WAL false) select * from public.psql_tasa_crecimiento_db;
+
+https://www.postgresql.org/docs/current/sql-explain.html
+https://www.postgresql.org/docs/current/using-explain.html
+
 ```
 
 
