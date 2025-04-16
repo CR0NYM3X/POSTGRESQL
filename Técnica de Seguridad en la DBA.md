@@ -914,6 +914,39 @@ security_barrier  https://www.cybertec-postgresql.com/en/security-barriers-cheat
 ```
 
 
+# unicode para ofuscar consultas 
+```sql
+-- Consultar en Unicode 
+select U&'\0064\0061\0074\0061'; --> data
+
+-- Consultar en Unicode , se puede modificar el carácter 
+select U&'_0020_0048_0065_006c_006c_006f_0020_0057_006f_0072_0064_0020' UESCAPE '_' ; -->    Hello Word  
+	
+************** Utilizando el unicode para ofuscar las consultas **************
+
+
+--- Query para ofuscar el texto ---
+SELECT 'U&"'||regexp_replace(encode(convert_to('proname', 'UTF8'), 'hex'), '([0-9a-f]{2})', '_00\1', 'g')  || '" UESCAPE ''_'''AS modified_hex;
+
+--- consulta original ---
+select 
+	proname
+	,prosrc 
+from pg_proc 
+where proname is not null 
+	limit 1;
+
+--- consulta ya ofuscada ---
+select 
+	U&"_0070_0072_006f_006e_0061_006d_0065" UESCAPE '_'    -- proname
+	,U&"_0070_0072_006f_0073_0072_0063" UESCAPE '_'        -- prosrc 
+from U&"_0070_0067_005f_0070_0072_006f_0063" UESCAPE '_' 
+where U&"_0070_0072_006f_006e_0061_006d_0065" UESCAPE '_' is not null 
+	limit 1;
+
+
+```
+
 
 ## referencias
 ```
