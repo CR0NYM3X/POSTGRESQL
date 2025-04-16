@@ -1370,25 +1370,26 @@ new_postgres@template1# select distinct context from pg_settings ;
 
 select name,setting,context from pg_settings  where context  = 'internal';
 1. **internal**: Estos parámetros no pueden ser cambiados directamente; reflejan valores determinados internamente. Algunos pueden ajustarse recompilando el servidor con diferentes opciones de configuración o cambiando opciones suministradas a `initdb`.
+mensaje de error si intentar modificar en session "cannot be changed"
 
 select name,setting,context from pg_settings  where context  = 'postmaster';
-2. **postmaster**:(Restart) Estos parámetros solo pueden aplicarse cuando el servidor se inicia, por lo que cualquier cambio requiere reiniciar el servidor. Los valores para estos parámetros suelen almacenarse en el archivo `postgresql.conf` o pasarse en la línea de comandos al iniciar el servidor.
-
-
-select name,setting,context from pg_settings  where context  = 'sighup';
-3. **sighup**: (Reload ) Los cambios en estos parámetros pueden hacerse en `postgresql.conf` sin necesidad de reiniciar el servidor, pero requieren enviar una señal SIGHUP al proceso postmaster para que los cambios surtan efecto.
+2. **postmaster**:(neceista Restart) Estos parámetros solo pueden aplicarse cuando el servidor se inicia, por lo que cualquier cambio requiere reiniciar el servidor. Los valores para estos parámetros suelen almacenarse en el archivo `postgresql.conf` o pasarse en la línea de comandos al iniciar el servidor. , error al intentar cambiar en session " cannot be changed without restarting the server"
 
 select name,setting,context from pg_settings  where context  = 'backend';
-4. **backend**: Estos parámetros pueden ser cambiados en cualquier momento por cualquier sesión de backend, pero el cambio solo afecta a la sesión que lo realiza.
-
-select name,setting,context from pg_settings  where context  = 'superuser';
-5. **superuser**  (Reload, Transaccion): Solo los superusuarios pueden cambiar estos parámetros.
+3. **backend**: (neceista restart)  Estos parámetros requieren de un reinicio ya que aparecen este mensaje al intentar modificarlos usando SET en la session "cannot be set after connection start"
 
 select name,setting,context from pg_settings  where context  = 'superuser-backend';
-6. **superuser-backend**: (neceista restart) Estos parámetros pueden ser cambiados en cualquier momento, pero solo por superusuarios y solo afectan a la sesión que realiza el cambio.
+4. **superuser-backend**: (neceista restart) Estos parámetros requieren de un reinicio ya que aparecen este mensaje al intentar modificarlos usando SET en la session "cannot be set after connection start"
 
 select name,setting,context from pg_settings  where context  = 'user';
-7. **user** (Reload, Transaccion): Cualquier usuario puede cambiar estos parámetros en cualquier momento, y los cambios solo afectan a la sesión que realiza el cambio.
+5. **user** (Reload, Session con SET ): Cualquier usuario puede cambiar estos parámetros en cualquier momento, y los cambios solo afectan a la sesión que realiza el cambio, igual se pueden cambiar desde postgresql.conf y hacer un reload
+
+select name,setting,context from pg_settings  where context  = 'superuser';
+6. **superuser** (Reload, Session con SET ): Solo los superusuarios en la session pueden cambiar estos parámetros y requieren de recarga de configuraciones con reload.
+
+select name,setting,context from pg_settings  where context  = 'sighup';
+7. **sighup**: (Reload ) Los cambios en estos parámetros pueden hacerse en `postgresql.conf` sin necesidad de reiniciar el servidor, pero requieren enviar una señal SIGHUP al proceso postmaster para que los cambios surtan efecto.
+	no se pueden hacer cambios dentro de la sesion ya que marca error "cannot be changed now"
 
 
 
