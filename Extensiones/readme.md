@@ -206,6 +206,9 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 ### **2. Replicación y Alta Disponibilidad:**
 
+Patroni: es una herramienta que facilita la implementación de soluciones de alta disponibilidad (HA)  soporta varios almacenes de configuración distribuidos como ZooKeeper, etcd, Consul o Kubernetes permite configurar y gestionar clusters de PostgreSQL con replicación y failover automáticos, asegurando que tu base de datos esté siempre disponible incluso en caso de fallos
+
+PGProfiler: es una extensión para PostgreSQL que ayuda a identificar las actividades más intensivas en recursos dentro de tus bases de datos rea un repositorio histórico en tu base de datos que almacena "muestras" de estadísticas, permitiéndote analizar el rendimiento y los problemas de carga en períodos específicos2. Es útil para monitorear y resolver problemas de rendimiento.
 
 ************ failover ************
  **pg_auto_failover**: Esta extensión y servicio para PostgreSQL gestiona la conmutación por error automatizada para un clúster de PostgreSQL, asegurando alta disponibilidad y consistencia de datos¹.
@@ -329,7 +332,7 @@ rendimiento general de la base de datos.
 - **plv8:** Extensión que permite escribir funciones en JavaScript.
 
 
- 
+
 
  **pg_background**: Permite ejecutar comandos SQL en segundo plano, lo que es útil para tareas como `VACUUM` o `CREATE INDEX CONCURRENTLY` desde un lenguaje procedimental⁷.
  
