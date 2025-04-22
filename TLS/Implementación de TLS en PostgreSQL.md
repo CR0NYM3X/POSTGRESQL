@@ -589,6 +589,12 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
 	Uso recomendado: Para restringir los cifrados inseguros y mejorar la seguridad.
 	Ejemplo: HIGH:!aNULL:!MD5 (solo cifrados fuertes).
 
+	# TLS 1.3 
+	TLS_AES_256_GCM_SHA384
+	
+	# TLS 1.2 
+	ECDHE-RSA-AES256-GCM-SHA384
+
 5. ssl_crl_dir
 	¿Para qué sirve? Especifica un directorio donde se almacenan listas de revocación de certificados (CRL).
 	Uso recomendado: Si manejas muchas CRL en un entorno de certificados que expiran o pueden ser revocados.
