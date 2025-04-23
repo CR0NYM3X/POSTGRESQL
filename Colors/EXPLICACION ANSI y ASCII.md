@@ -29,7 +29,7 @@ ANSI extendió ASCII para incluir secuencias de escape que controlan la forma en
 \033[<n>B - Mover cursor abajo n líneas
 \033[<n>C - Mover cursor derecha n columnas
 \033[<n>D - Mover cursor izquierda n columnas
-\033[<n>G - Mover cursor a columna n
+\033[<n>G - Mover cursor a columna n similar que \r
 \033[<n>;<m>H - Mover cursor a línea n, columna m
 ```
 
@@ -122,3 +122,14 @@ RAISE NOTICE E'\033[1;4;33;44mTexto estilizado\033[0m';
 1. No todas las terminales soportan todos los códigos ANSI
 2. Algunos sistemas pueden requerir configuración especial
 3. Windows tradicionalmente ha tenido un soporte limitado
+
+
+
+1. **los mas usados**
+```
+   CLEAR_SCREEN text := E'\033[2J\033[H'; -- Limpia pantalla y mueve cursor al inicio
+   CARRIAGE_RETURN text := E'\r'; -- Retorno de carro (vuelve al inicio de línea)
+  \033[<n>G - Mover cursor a columna n similar que \r    
+
+```
+
