@@ -127,8 +127,12 @@ RAISE NOTICE E'\033[1;4;33;44mTexto estilizado\033[0m';
 
 1. **los mas usados**
 ```
-   CLEAR_SCREEN text := E'\033[2J\033[H'; -- Limpia pantalla y mueve cursor al inicio
-   CARRIAGE_RETURN text := E'\r'; -- Retorno de carro (vuelve al inicio de línea)
+    color_rojo TEXT := '\033[31m'; -- Código ANSI para texto rojo
+    reset_color TEXT := '\033[0m';  -- Código ANSI para resetear el color
+	
+	CLEAR_SCREEN text := E'\033[2J\033[H'; -- Limpia pantalla y mueve cursor al inicio
+    CARRIAGE_RETURN text := E'\r'; -- Retorno de carro (vuelve al inicio de línea)
+    
   \033[<n>G - Mover cursor a columna n similar que \r    
 
 ```
