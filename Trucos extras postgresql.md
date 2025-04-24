@@ -731,6 +731,14 @@ SELECT array_dims(matriz) FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARR
 +---------------------+
 (1 row)
 
+SELECT (matriz[2:2]) FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','g']] AS matriz) AS a;
++---------+
+| matriz  |
++---------+
+| {{c,d}} |
++---------+
+(1 row)
+
 
 ```
 
