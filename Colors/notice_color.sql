@@ -149,8 +149,8 @@ BEGIN
 
     -- Imprimir con o sin color/estilo según el cliente
     IF is_psql THEN
-        --RAISE NOTICE E'\r  %', style_code || color_code || formatted_text || reset_code;
-		formatted_text := E'\r' || style_code || color_code || formatted_text || reset_code;
+        --RAISE NOTICE E'  %', style_code || color_code || formatted_text || reset_code;
+		formatted_text := E'' || style_code || color_code || formatted_text || reset_code;
 		
 		IF is_return THEN
 			RAISE NOTICE '%', formatted_text;
@@ -163,7 +163,7 @@ BEGIN
         
 		
 		IF is_return THEN
-			RAISE NOTICE E'\r%', formatted_text;
+			RAISE NOTICE E'%', formatted_text;
 			RETURN NULL;
 		ELSE
 			RETURN formatted_text;
