@@ -671,6 +671,10 @@ SELECT * FROM mi_tabla WHERE 'perro' = ANY( '{MySQL,Oracle,PostgreSQL}'::text[] 
 
 
 ************* ARRAY multidimensionales *************
+-- Concideraciones 
+los arrays multidimensionales en PostgreSQL deben tener sub-arrays con las mismas dimensiones. 
+
+https://www.postgresql.org/docs/current/arrays.html
 
 SELECT matriz[1] FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','g']] AS matriz) AS a;
 +--------+
@@ -711,6 +715,13 @@ SELECT matriz[:] FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','g
 | {{a,b},{c,d},{f,g}} |
 +---------------------+
 
+SELECT array_dims(matriz) FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','g']] AS matriz) AS a;
++------------+
+| array_dims |
++------------+
+| [1:3][1:2] |
++------------+
+(1 row)
 
 
 ```
