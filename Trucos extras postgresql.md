@@ -723,6 +723,14 @@ SELECT array_dims(matriz) FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARR
 +------------+
 (1 row)
 
+ SELECT array_cat(matriz, ARRAY[ARRAY['e', 'f']]) AS matriz_actualizada  FROM (SELECT ARRAY[ARRAY['a', 'b'], ARRAY['c', 'd']] AS matriz) AS a;
++---------------------+
+| matriz_actualizada  |
++---------------------+
+| {{a,b},{c,d},{e,f}} |
++---------------------+
+(1 row)
+
 
 ```
 
