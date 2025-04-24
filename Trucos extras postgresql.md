@@ -667,7 +667,43 @@ SELECT * FROM mi_tabla WHERE 'perro' = ANY( '{MySQL,Oracle,PostgreSQL}'::text[] 
 
  **array_lower**: Devuelve el índice inferior de una dimensión específica del array.
  SELECT array_lower(ARRAY[1, 2, 3], 1); -- Resultado: 1
- 
+
+
+
+************* ARRAY multidimensionales *************
+
+SELECT matriz[1] FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','g']] AS matriz) AS a;
++--------+
+| matriz |
++--------+
+| NULL   |
++--------+
+
+SELECT matriz[1][1] FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','g']]::text[][] AS matriz) AS a;
++--------+
+| matriz |
++--------+
+| a      |
++--------+
+(1 row)
+
+SELECT matriz[1:2] FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','g']] AS matriz) AS a;
++---------------+
+|    matriz     |
++---------------+
+| {{a,b},{c,d}} |
++---------------+
+(1 row)
+
+
+SELECT matriz[1:] FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','g']] AS matriz) AS a;
++---------------------+
+|       matriz        |
++---------------------+
+| {{a,b},{c,d},{f,g}} |
++---------------------+
+
+
 ```
 
 
