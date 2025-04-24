@@ -704,6 +704,15 @@ SELECT matriz[1:] FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','
 +---------------------+
 
 
+SELECT matriz[:] FROM (SELECT ARRAY[ARRAY['a','b'], ARRAY['c','d'], ARRAY['f','g']] AS matriz) AS a;
++---------------------+
+|       matriz        |
++---------------------+
+| {{a,b},{c,d},{f,g}} |
++---------------------+
+
+
+
 ```
 
 
