@@ -1,4 +1,11 @@
-se veran temas que nos permitira tener siempre una alta disponibilidad, DRP etc, etc  
+se veran temas : 
 
+- DRP 
+- Respaldos.
+- Replicas Striming.
+- Replicas logicas
+- alta Disponibilidad 
+- Distribución de carga 
+ ETc 
 
 https://github.com/kashifmeo/postgreSQL/blob/main/postgreSQLPatroniCluster
