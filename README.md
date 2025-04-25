@@ -38,6 +38,8 @@ https://dbasinapuros.com/
 https://ongres.com/blog/
 
 ---- página recomendada para aprender cosas avanzadas de postgresql
+
+https://postgreshelp.com/
 https://www.tutorialdba.com/ <br>
 https://www.todopostgresql.com/
 https://it-inzhener.com/en/articles/category/name=postgresql
