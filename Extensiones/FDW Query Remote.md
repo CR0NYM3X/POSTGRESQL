@@ -483,7 +483,7 @@ vim /etc/freetds.conf
 	--- Opciones:  servername, language, character_set, port, database, dbuse, sqlserver_ansi_mode, tds_version, msg_handler, row_estimate_method, use_remote_estimate, fdw_startup_cost, fdw_tuple_cost
 	ALTER SERVER nombre_del_servidor OPTIONS (SET port '555');
 
-
+	--- Ref https://github.com/tds-fdw/tds_fdw/blob/master/ForeignServerCreation.md
 	ALTER SERVER nombre_del_servidor OPTIONS (ADD msg_handler 'notice');
 	ALTER SERVER nombre_del_servidor OPTIONS (DROP msg_handler);
 	ALTER FOREIGN TABLE nombre_de_la_tabla OPTIONS (SET row_estimate_method 'execute');
