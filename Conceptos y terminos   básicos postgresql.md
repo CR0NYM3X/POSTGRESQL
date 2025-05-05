@@ -1175,6 +1175,7 @@ Aunque "с" (cirílico) y "c" (latino) son caracteres completamente diferentes e
 
  
 # Dirty
+1. **Dirty read** se refiere a una situación en la que una transacción lee datos modificados por otra transacción que aún no ha sido comprometida
 
 2. **Dirty Blocks**: Los bloques "dirty" son aquellos que han sido modificados pero aún no han sido escritos en disco. Esto puede ocurrir durante operaciones de lectura y escritura, donde los datos en memoria se marcan como "dirty" hasta que se sincronizan con el almacenamiento persistente.
 
