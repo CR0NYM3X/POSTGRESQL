@@ -1181,3 +1181,88 @@ Aunque "с" (cirílico) y "c" (latino) son caracteres completamente diferentes e
 
 3. **Dirty Pages**: Similar a los bloques "dirty", las páginas "dirty" son partes de la memoria que contienen datos modificados que aún no se han escrito en disco.
 
+
+
+# Niveles de aislamiento en bases de datos:
+
+### Read Uncommitted
+- **Descripción**: segun esto permite lecturas sucias pero no es verdad, aunque pongas este valor no tendra efectos, en realidad  estara red committed ; 
+
+
+### Read Committed
+- **Descripción**: Las transacciones solo pueden ver los cambios realizados por otras transacciones una vez que esos cambios han sido confirmados. No permite lecturas sucias.
+- **Ventajas**: Previene lecturas sucias y es más seguro.
+- **Limitaciones**: Permite lecturas no repetibles, donde los datos pueden cambiar si otra transacción los modifica y confirma.
+
+### Repeatable Read
+- **Descripción**:  una transacción puede leer los mismos datos múltiples veces y siempre verá los mismos valores, incluso si otras transacciones han modificado esos datos entre lecturas.
+- **Ventajas**: Previene lecturas sucias y lecturas no repetibles.
+- **Limitaciones**: No previene las anomalías de escritura fantasma.
+
+### Serializable
+- **Descripción**: Este es el nivel más estricto de aislamiento. Hace que las transacciones se ejecuten de manera que el resultado sea el mismo que si se hubieran ejecutado secuencialmente, una tras otra.
+- **Ventajas**: Previene todas las anomalías de concurrencia, incluyendo lecturas sucias, lecturas no repetibles y escrituras fantasma.
+- **Limitaciones**: Puede ser más lento y menos eficiente debido a la necesidad de bloquear más recursos para asegurar la integridad.
+
+ 
+| Nivel de Aislamiento | Lecturas Sucias | Lecturas No Repetibles | Escrituras Fantasma |
+|----------------------|-----------------|------------------------|---------------------|
+| Read Uncommitted     | ❌              | ❌                     | ❌                  |
+| Read Committed       | ✅              | ❌                     | ❌                  |
+| Repeatable Read      | ✅              | ✅                     | ❌                  |
+| Serializable         | ✅              | ✅                     | ✅                  |
+
+ 
+ 
+## Ejemplo Practico de niveles de aislamiento
+
+### Read Uncommitted
+1. **Transacción A** lee el saldo de la cuenta a las 10:00 AM y ve $100.
+2. **Transacción B** deposita $50 en la cuenta a las 10:05 AM, pero aún no confirma (commit).
+3. **Transacción A** lee el saldo nuevamente a las 10:10 AM y ve $150, aunque Transacción B aún no ha confirmado.
+4. **Transacción B** decide revertir (rollback) el depósito a las 10:15 AM.
+5. **Transacción A** ha leído datos incorrectos ($150) que no deberían haber sido visibles.
+
+### Read Committed
+1. **Transacción A** lee el saldo de la cuenta a las 10:00 AM y ve $100.
+2. **Transacción B** deposita $50 en la cuenta y confirma (commit) a las 10:05 AM.
+3. **Transacción A** lee el saldo nuevamente a las 10:10 AM y ve $150.
+4. **Transacción B** deposita otros $50 y confirma a las 10:15 AM.
+5. **Transacción A** lee el saldo nuevamente a las 10:20 AM y ve $200.
+6. **Transacción A** puede ver diferentes saldos en cada lectura debido a las confirmaciones de Transacción B.
+
+### Repeatable Read
+1. **Transacción A** lee el saldo de la cuenta a las 10:00 AM y ve $100.
+2. **Transacción B** deposita $50 en la cuenta y confirma (commit) a las 10:05 AM.
+3. **Transacción A** lee el saldo nuevamente a las 10:10 AM y sigue viendo $100.
+4. **Transacción B** deposita otros $50 y confirma a las 10:15 AM.
+5. **Transacción A** lee el saldo nuevamente a las 10:20 AM y sigue viendo $100.
+6. **Transacción A** no verá los cambios realizados por Transacción B hasta que termine su propia transacción.
+- **Visibilidad de Cambios**: Los cambios realizados por **Transacción B** (los depósitos de $50) no serán visibles para **Transacción A** hasta que **Transacción A** termine. Una vez que **Transacción A** termina y confirma, cualquier nueva transacción que lea el saldo verá el saldo actualizado.
+
+### Serializable
+1. **Transacción A** lee el saldo de la cuenta a las 10:00 AM y ve $100.
+2. **Transacción B** intenta depositar $50 en la cuenta a las 10:05 AM.
+3. **Transacción A** lee el saldo nuevamente a las 10:10 AM y sigue viendo $100.
+4. **Transacción B** no puede confirmar (commit) hasta que Transacción A termine.
+5. **Transacción A** termina y confirma a las 10:15 AM.
+6. **Transacción B** ahora puede confirmar su depósito y el saldo se actualiza a $150 a las 10:20 AM.
+
+### Resumen Visual del Comportamiento con Tiempos
+
+| Nivel de Aislamiento | Lectura Inicial (10:00 AM) | Acción de Transacción B (10:05 AM) | Lectura Final de Transacción A (10:10 AM) |
+|----------------------|---------------------------|------------------------------------|------------------------------------------|
+| Read Uncommitted     | $100                      | Deposita $50 (sin commit)          | $150                                    |
+| Read Committed       | $100                      | Deposita $50 (commit)              | $150                                    |
+| Repeatable Read      | $100                      | Deposita $50 (commit)              | $100                                    |
+| Serializable         | $100                      | Deposita $50 (espera commit)       | $100                                    |
+ 
+ 
+### Resumen Visual de Aplicaciones
+
+| Nivel de Aislamiento | Escenarios Reales |
+|----------------------|-------------------|
+| Read Uncommitted     | Análisis de datos en tiempo real |
+| Read Committed       | Comercio electrónico, gestión de inventario |
+| Repeatable Read      | Trading de acciones, sistemas CRM |
+| Serializable         | Transacciones bancarias, sistemas ERP |
