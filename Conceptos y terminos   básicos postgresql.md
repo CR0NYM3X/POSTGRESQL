@@ -1266,3 +1266,49 @@ Aunque "с" (cirílico) y "c" (latino) son caracteres completamente diferentes e
 | Read Committed       | Comercio electrónico, gestión de inventario |
 | Repeatable Read      | Trading de acciones, sistemas CRM |
 | Serializable         | Transacciones bancarias, sistemas ERP |
+
+
+
+# ¿Qué es ACID?
+
+**ACID** es un acrónimo que representa cuatro propiedades fundamentales que deben cumplir las transacciones en una base de datos para garantizar su integridad y confiabilidad. Estas propiedades son:
+
+1. **Atomicidad (Atomicity)**: Asegura que todas las operaciones dentro de una transacción se completen con éxito o ninguna lo haga. Si una parte de la transacción falla, toda la transacción se revierte.
+2. **Consistencia (Consistency)**: Garantiza que una transacción lleve la base de datos de un estado válido a otro estado válido, manteniendo las reglas definidas en la base de datos.
+3. **Aislamiento (Isolation)**: Asegura que las operaciones de una transacción sean invisibles para otras transacciones hasta que se completen, evitando interferencias.
+4. **Durabilidad (Durability)**: Garantiza que una vez que una transacción se ha completado, los cambios realizados son permanentes, incluso en caso de fallos del sistema..
+
+
+### Aplicaciones y Estándares
+- **ISO/IEC 9075**: El estándar SQL, que es utilizado por la mayoría de los RDBMS, incorpora principios ACID para asegurar la integridad de las transacciones.
+- **ANSI SQL**: La American National Standards Institute (ANSI) también incluye principios ACID en sus estándares para SQL.
+
+
+### ¿Por Qué es un Estándar?
+- **Consistencia**: ACID proporciona un marco consistente para manejar transacciones, lo que es crucial para aplicaciones críticas donde la precisión de los datos es esencial.
+- **Confiabilidad**: Asegura que las transacciones se completen correctamente o no se realicen en absoluto, lo que es vital para mantener la integridad de los datos.
+- **Interoperabilidad**: La mayoría de los sistemas de gestión de bases de datos relacionales (RDBMS) como PostgreSQL, MySQL, Oracle y SQL Server implementan el modelo ACID, lo que facilita la interoperabilidad entre diferentes sistemas.
+
+
+### Importancia de ACID
+
+El modelo ACID es crucial para mantener la integridad, consistencia y confiabilidad de los datos en sistemas de bases de datos. Es especialmente importante en aplicaciones donde los datos son valiosos y los errores pueden ser costosos, como en sistemas financieros, de comercio electrónico y de gestión empresarial.
+
+### Ventajas y Desventajas
+
+#### Ventajas:
+- **Integridad de Datos**: Asegura que los datos sean precisos y consistentes.
+- **Confiabilidad**: Garantiza que las transacciones se completen correctamente o no se realicen en absoluto.
+- **Seguridad**: Protege contra fallos del sistema y garantiza que los datos se mantengan seguros.
+- **Consistencia**: Mantiene las reglas de integridad de la base de datos.
+
+#### Desventajas:
+- **Rendimiento**: Puede ser menos eficiente en términos de rendimiento en comparación con otros modelos, como BASE (utilizado en bases de datos NoSQL).
+
+### Ejemplos Reales
+
+1. **Bancos y Finanzas**: Las transacciones bancarias, como depósitos y retiros, deben ser precisas y consistentes. ACID asegura que estas operaciones se realicen correctamente.
+2. **Comercio Electrónico**: En plataformas de comercio electrónico, las operaciones de compra y actualización de inventario deben ser confiables y consistentes.
+3. **Sistemas de Gestión Empresarial (ERP)**: Las aplicaciones ERP utilizan ACID para manejar datos de múltiples departamentos, asegurando que las actualizaciones sean consistentes y no se interfieran entre sí
+
+ 
