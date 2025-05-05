@@ -225,6 +225,8 @@ PGProfiler: es una extensión para PostgreSQL que ayuda a identificar las activi
 - ** pg_ivm :**  permite actualizar vistas materializadas de manera incremental, lo que significa que solo se actualizan las partes que han cambiado
 
 ************ BACKUP ************
+- **pg_dirtyread** Recuperar datos eliminados: Puedes acceder a las tuplas que han sido marcadas como eliminadas pero aún no han sido físicamente removidas. Auditoría y análisis: Permite realizar auditorías y análisis forenses de datos eliminados.
+
 - **barman:** Herramienta de gestión de backups y recuperación para PostgreSQL Soporta la replicación en caliente y la recuperación ante desastres, ofreciendo una solución completa para la protección de datos.
 
 - **pgBackRest:** Herramienta de backup y restauración que ofrece soporte para backups incrementales y diferenciales, así como recuperación punto en el tiempoCompatible con entornos de replicación para asegurar la coherencia de los datos.
