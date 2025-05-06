@@ -204,17 +204,7 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 
 
-### **2. Replicación y Alta Disponibilidad:**
 
-Patroni: es una herramienta que facilita la implementación de soluciones de alta disponibilidad (HA)  soporta varios almacenes de configuración distribuidos como ZooKeeper, etcd, Consul o Kubernetes permite configurar y gestionar clusters de PostgreSQL con replicación y failover automáticos, asegurando que tu base de datos esté siempre disponible incluso en caso de fallos
-
-PGProfiler: es una extensión para PostgreSQL que ayuda a identificar las actividades más intensivas en recursos dentro de tus bases de datos rea un repositorio histórico en tu base de datos que almacena "muestras" de estadísticas, permitiéndote analizar el rendimiento y los problemas de carga en períodos específicos2. Es útil para monitorear y resolver problemas de rendimiento.
-
-************ failover ************
- **pg_auto_failover**: Esta extensión y servicio para PostgreSQL gestiona la conmutación por error automatizada para un clúster de PostgreSQL, asegurando alta disponibilidad y consistencia de datos¹.
- 
- **pg_failover_slots**: Hace que las ranuras de replicación lógica sean utilizables en una conmutación por error física, sincronizando las ranuras de replicación entre el nodo primario y el de respaldo¹¹.
- 
  
 
 ************ MANTENIMIENTOS ************
@@ -233,18 +223,41 @@ PGProfiler: es una extensión para PostgreSQL que ayuda a identificar las activi
 
 - **wal-g:** Herramienta de backup y recuperación que soporta múltiples métodos de almacenamiento en la nube Ofrece soporte para backups completos y diferenciales, y está diseñada para trabajar en entornos con replicación.
 
+### **2. Replicación y Alta Disponibilidad:**
 
-************ REPLICA failover ************
+
+PGProfiler: es una extensión para PostgreSQL que ayuda a identificar las actividades más intensivas en recursos dentro de tus bases de datos rea un repositorio histórico en tu base de datos que almacena "muestras" de estadísticas, permitiéndote analizar el rendimiento y los problemas de carga en períodos específicos2. Es útil para monitorear y resolver problemas de rendimiento.
+
+
+************ REPLICA Failover Automático  ************
 - **repmgr:** Una herramienta para la gestión de replicación y failover en PostgreSQL Facilita la configuración de replicación, supervisa los servidores y realiza failover automático en caso de fallo del maestro.
 
+Patroni: es una herramienta que facilita la implementación de soluciones de alta disponibilidad (HA)  soporta varios almacenes de configuración distribuidos como ZooKeeper, etcd, Consul o Kubernetes permite configurar y gestionar clusters de PostgreSQL con replicación y failover automáticos, asegurando que tu base de datos esté siempre disponible incluso en caso de fallos
+
 - **pglogical:** Proporciona replicación lógica para PostgreSQL, permitiendo replicar cambios entre diferentes bases de datos y transformarlos en el proceso.
+
+Stolon: Un orquestador de PostgreSQL HA basado en Kubernetes, aunque también puede funcionar fuera de él. Utiliza etcd para el almacenamiento distribuido y la elección de líder.
+
+ **pg_auto_failover**: Esta extensión y servicio para PostgreSQL gestiona la conmutación por error automatizada para un clúster de PostgreSQL, asegurando alta disponibilidad y consistencia de datos¹.
  
+ **pg_failover_slots**: Hace que las ranuras de replicación lógica sean utilizables en una conmutación por error física, sincronizando las ranuras de replicación entre el nodo primario y el de respaldo¹¹.
+ 
+
 ************ BALANCEO DE CARGA EN REPLICAS ************
 - **pgpool-II:** Middleware que proporciona balanceo de carga y failover automático para PostgreSQL Permite la replicación en modo maestro-esclavo y distribuye las consultas entre las réplicas para mejorar el rendimiento.
 Slony-I: Un sistema de replicación maestro-esclavo para PostgreSQL que permite replicar datos entre múltiples servidores.
 
-************ BALANCEO DE CARGA EN REPLICAS ************
 HAProxy --> es un balanceador de carga y proxy inverso de código abierto. Se utiliza para distribuir el tráfico de red entre múltiples servidores, mejorando la disponibilidad y el rendimiento de los servicios web
+
+************  sistema distribuido ************ 
+Citus es una extensión de código abierto para **PostgreSQL** que convierte la base de datos en un sistema distribuido, permitiendo escalar horizontalmente y mejorar el rendimiento en cargas de trabajo intensivas. Algunas de sus principales funciones incluyen:
+
+- **Sharding automático**: Distribuye datos en múltiples nodos para mejorar la escalabilidad.
+- **Consultas paralelas**: Ejecuta consultas en varios servidores simultáneamente, acelerando el procesamiento.
+- **Soporte para multi-tenancy**: Ideal para aplicaciones SaaS con múltiples clientes.
+- **Almacenamiento columnar**: Optimiza el rendimiento en análisis de datos y consultas agregadas.
+
+ 
 
 ************ TRANSFORMACION DE WAL EN JSON ************
 - **wal2json:** Genera datos en formato JSON a partir de los registros de WAL (Write-Ahead Logging), útil para replicación lógica y para aplicaciones que necesitan consumir los cambios en un formato legible.
