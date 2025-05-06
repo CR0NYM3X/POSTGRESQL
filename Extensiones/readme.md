@@ -314,7 +314,9 @@ rendimiento general de la base de datos.
 - **intarray:** Proporciona funciones adicionales para manipular y buscar en arrays de enteros, mejorando la eficiencia en consultas que involucren estos tipos de datos.
 
 
-### **8. Análisis y Ciencia de Datos:**
+### **8. análisis de datos  y Ciencia de Datos:**
+ParadeDB es una extensión para PostgreSQL que mejora las capacidades analíticas de la base de datos, permitiendo consultas más eficientes sobre grandes volúmenes de datos.
+pg_analytics es una extensión que integra DuckDB dentro de PostgreSQL, permitiendo que Postgres pueda consultar almacenes de datos externos como AWS S3 y formatos de tabla como Iceberg o Delta Lake
 - **MADlib:** Biblioteca de algoritmos de aprendizaje automático.
 - **cstore_fdw:** Soporte para almacenamiento en formato columna.
 - **PL/R:** Permite ejecutar código R dentro de PostgreSQL para análisis estadístico.
