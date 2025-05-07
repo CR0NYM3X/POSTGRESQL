@@ -228,6 +228,18 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 PGProfiler: es una extensión para PostgreSQL que ayuda a identificar las actividades más intensivas en recursos dentro de tus bases de datos rea un repositorio histórico en tu base de datos que almacena "muestras" de estadísticas, permitiéndote analizar el rendimiento y los problemas de carga en períodos específicos2. Es útil para monitorear y resolver problemas de rendimiento.
 
+ **pg_rewind** es una herramienta de PostgreSQL que se usa para **sincronizar un directorio de datos con otro que se haya bifurcado de él**. Su propósito principal es ayudar en escenarios de recuperación tras fallos, especialmente cuando un servidor primario ha sido reemplazado por otro y se necesita volver a poner en línea el antiguo primario como un servidor de respaldo.
+
+### **¿Cómo funciona?**
+- **Detecta el punto de divergencia** entre dos servidores PostgreSQL.
+- **Copia solo los bloques modificados**, en lugar de hacer una copia completa de la base de datos.
+- **Restaura el estado del servidor antiguo** para que pueda seguir al nuevo primario sin necesidad de una nueva copia de seguridad completa.
+
+### **Casos de uso**
+- **Recuperación tras un failover**: Si un servidor primario falla y otro toma su lugar, `pg_rewind` permite que el antiguo primario vuelva a ser un servidor de respaldo sin necesidad de una reinstalación completa.
+- **Optimización de la replicación**: Evita la necesidad de hacer una copia de seguridad completa cuando los cambios entre servidores son mínimos.
+- **Reducción del tiempo de recuperación**: Es mucho más rápido que volver a clonar una base de datos desde cero.
+ 
 
 ************ REPLICA Failover Automático  ************
 - **repmgr:** Una herramienta para la gestión de replicación y failover en PostgreSQL Facilita la configuración de replicación, supervisa los servidores y realiza failover automático en caso de fallo del maestro.
