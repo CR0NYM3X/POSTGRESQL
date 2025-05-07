@@ -299,24 +299,23 @@ unix_socket_permissions = 0777		# begin with 0 to use octal notation
 
 
 
+  
 
-#tcp_keepalives_idle = 300 #
-.....  En este escenario, se recomienda utilizar tcp_keepalives_idle .....
+- **`tcp_keepalives_idle`**: Define el tiempo de inactividad (en segundos) antes de que se envíe el primer mensaje keepalive. Útil para evitar desconexiones inesperadas en redes con periodos de baja actividad.
+- **`tcp_keepalives_interval`**: Establece el intervalo entre paquetes keepalive después de que se haya enviado el primero. Es útil en entornos con conexiones intermitentes o redes con posibles caídas frecuentes.
+- **`tcp_keepalives_count`**: Especifica cuántos paquetes keepalive deben fallar antes de que la conexión se cierre. Ideal para garantizar la estabilidad en conexiones remotas con latencias variables.
+ 
+Si la red es **estable** y el usuario simplemente ejecutó una consulta (`SELECT version();`) sin cerrar la conexión, estos parámetros de **TCP keepalive** realmente **no tendrían impacto significativo** en el comportamiento de PostgreSQL.  
 
-Escenario #1 
-requiere una conexión continua y confiable con la base de datos para garantizar la integridad de los datos y la disponibilidad del servicio.
- Sin embargo, ,  es posible que haya períodos de inactividad en la aplicación,
- durante los cuales la conexión con la base de datos podría cerrarse si no se detecta actividad.
+2. **Los parámetros `tcp_keepalives_*` solo detectan conexiones caídas**  
+   - Keepalive **no es un mecanismo para cerrar conexiones inactivas**, sino para detectar si el otro extremo sigue respondiendo.
+   - Si la red es estable y el cliente sigue ahí, estos parámetros no intervienen porque no hay fallos de conectividad que detectar.
 
-. Podrías establecer un valor de tcp_keepalives_idle de, por ejemplo, 300 segundos (5 minutos),
-lo que significa que se enviará un paquete de keepalive TCP al servidor remoto después de 5 minutos de inactividad para mantener la conexión activa.
+3. **¿Cuándo sí serían útiles?**  
+   - Si la conexión estuviera en riesgo de **desconectarse por problemas de red**, estos parámetros podrían ayudar a mantener la sesión activa.
+   - También son útiles en **conexiones remotas o inestables**, donde puede haber cortes sin que PostgreSQL lo detecte inmediatamente y los cierra.
+ 
 
-........... En este escenario, no sería necesario utilizar tcp_keepalives_idle .... 
-Escenario #2
-Esta base de datos es accedida principalmente por herramientas de análisis de datos que ejecutan consultas periódicas,
- pero no hay aplicaciones críticas para el negocio que requieran una conexión continua y confiable. Además,
-las consultas y transacciones en la base de datos son lo suficientemente frecuentes como para evitar que la
- conexión se cierre debido a inactividad.
 ```
 
 
