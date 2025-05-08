@@ -3,7 +3,7 @@ PostgreSQL Anonymizer es una extensión diseñada para ocultar o reemplazar info
 ### ¿Para qué sirve PostgreSQL Anonymizer?
 
 1. **Protección de Datos Sensibles**:
-   - Oculta o reemplaza PII y datos sensibles para proteger la privacidad de los usuarios.
+   - Oculta o reemplaza PII y datos sensibles para proteger la privacidad de los public.usuarios.
    - Facilita el cumplimiento de regulaciones de privacidad como GDPR.
 
 2. **Compartir Datos de Forma Segura**:
@@ -15,10 +15,10 @@ PostgreSQL Anonymizer es una extensión diseñada para ocultar o reemplazar info
 
 
 ### Enmascaramiento Dinámico
-El enmascaramiento dinámico oculta datos sensibles en tiempo real cuando se accede a ellos desde la base de datos. Los datos originales permanecen intactos, pero los usuarios ven versiones enmascaradas o alteradas según sus permisos.
+El enmascaramiento dinámico oculta datos sensibles en tiempo real cuando se accede a ellos desde la base de datos. Los datos originales permanecen intactos, pero los public.usuarios ven versiones enmascaradas o alteradas según sus permisos.
 
 #### Casos de uso:
-1. **Acceso controlado**: Permite a los usuarios acceder a datos sin revelar información sensible, ideal para entornos donde diferentes roles necesitan ver diferentes niveles de detalle.
+1. **Acceso controlado**: Permite a los public.usuarios acceder a datos sin revelar información sensible, ideal para entornos donde diferentes roles necesitan ver diferentes niveles de detalle.
 2. **Seguridad en tiempo real**: Protege los datos sensibles de accesos no autorizados sin necesidad de modificar los datos originales.
 
 
@@ -37,7 +37,7 @@ El enmascaramiento estático reemplaza datos  sensibles reales  con información
 #### Limitaciones de la anonimización
 ```
 El sistema de enmascaramiento dinámico solo funciona con un esquema (por defecto, público).
-Si aplica de 3 a 4 reglas en una tabla, el tiempo de respuesta para los usuarios enmascarados es aproximadamente entre un 20% y un 30% más lento que para los usuarios normales.
+Si aplica de 3 a 4 reglas en una tabla, el tiempo de respuesta para los public.usuarios enmascarados es aproximadamente entre un 20% y un 30% más lento que para los public.usuarios normales.
 La longitud máxima de una regla de enmascaramiento es de 1024 caracteres.
 Las reglas de enmascaramiento NO SE HEREDAN ! Si ha dividido una tabla en varias particiones, debe declarar las reglas de enmascaramiento para cada partición.
 El enmascaramiento estático destruirá permanentemente sus datos originales.
@@ -155,37 +155,37 @@ Inicializa la extensión `anon`:
 -- Carga un conjunto de datos predeterminados de datos aleatorios (como nombres, ciudades, etc.) y prepara el sistema para aplicar reglas de enmascaramiento
 SELECT anon.init(); 
 
--- Permite que los datos sean enmascarados en tiempo real cuando se accede a ellos. Esto es útil para proteger datos sensibles mientras se permite el acceso a usuarios con roles específicos
+-- Permite que los datos sean enmascarados en tiempo real cuando se accede a ellos. Esto es útil para proteger datos sensibles mientras se permite el acceso a public.usuarios con roles específicos
 SELECT anon.start_dynamic_masking();
 
 -- Validar el estado de la extensión
 SELECT anon.is_initialized();
 ```
 
-### Paso 6: Crear la tabla `usuarios`
+### Paso 6: Crear la tabla `public.usuarios`
 
-Crea una tabla llamada `usuarios`:
+Crea una tabla llamada `public.usuarios`:
 
 ```sql
-CREATE TABLE usuarios (
+CREATE TABLE public.usuarios (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100),
     correo VARCHAR(100)
 );
 ```
 
-### Paso 7: Insertar datos en la tabla `usuarios`
+### Paso 7: Insertar datos en la tabla `public.usuarios`
 
-Inserta algunos datos en la tabla `usuarios`:
+Inserta algunos datos en la tabla `public.usuarios`:
 
 ```sql
-INSERT INTO usuarios (nombre, correo) VALUES
+INSERT INTO public.usuarios (nombre, correo) VALUES
 ('Juan Pérez', 'juan.perez@example.com'),
 ('Ana Gómez', 'ana.gomez@example.com'),
 ('Luis Martínez', 'luis.martinez@example.com');
 
 
-postgres@mi_base_de_datos# select * from usuarios;
+postgres@mi_base_de_datos# select * from public.usuarios;
 +----+---------------+---------------------------+
 | id |    nombre     |          correo           |
 +----+---------------+---------------------------+
@@ -199,30 +199,30 @@ postgres@mi_base_de_datos# select * from usuarios;
 
 ### Paso 8: Configurar las reglas de anonimización
 
-Configura las reglas de anonimización para la tabla `usuarios` utilizando etiquetas de seguridad:
+Configura las reglas de anonimización para la tabla `public.usuarios` utilizando etiquetas de seguridad:
 
 ```sql
-SECURITY LABEL FOR anon ON COLUMN usuarios.nombre IS 'MASKED WITH FUNCTION anon.fake_last_name()';
-SECURITY LABEL FOR anon ON COLUMN usuarios.correo IS 'MASKED WITH FUNCTION anon.fake_email()';
+SECURITY LABEL FOR anon ON COLUMN public.usuarios.nombre IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+SECURITY LABEL FOR anon ON COLUMN public.usuarios.correo IS 'MASKED WITH FUNCTION anon.fake_email()';
 
 -- En caso de ocuparlo
--- SECURITY LABEL FOR anon ON COLUMN usuarios.nombre IS 'MASKED WITH VALUE NULL';
+-- SECURITY LABEL FOR anon ON COLUMN public.usuarios.nombre IS 'MASKED WITH VALUE NULL';
 ```
 
 
 
 ### Paso 9: Verificar los datos anonimizados
 
-Verifica que los datos en la tabla `usuarios` han sido anonimizados:
+Verifica que los datos en la tabla `public.usuarios` han sido anonimizados:
 
 ```sql
 \c - mi_usuario
 
 SET client_min_messages=DEBUG;
 
-select * from usuarios;
+select * from public.usuarios;
 
-LOG:  statement: select * from usuarios;
+LOG:  statement: select * from public.usuarios;
 LOG:  duration: 130.909 ms
 +----+---------+------------------------+
 | id | nombre  |         correo         |
@@ -252,8 +252,8 @@ SET
 Time: 0.246 ms
 
 
-mi_usuario@mi_base_de_datos# select * from usuarios;
-LOG:  statement: select * from usuarios;
+mi_usuario@mi_base_de_datos# select * from public.usuarios;
+LOG:  statement: select * from public.usuarios;
 LOG:  duration: 129.190 ms
 +----+----------+--------------------------+
 | id |  nombre  |          correo          |
@@ -281,7 +281,7 @@ postgres@mi_base_de_datos# SELECT anon.anonymize_database();
 
 Time: 290.828 ms
 
-postgres@mi_base_de_datos# select * from usuarios;
+postgres@mi_base_de_datos# select * from public.usuarios;
 +----+------------+------------------------+
 | id |   nombre   |         correo         |
 +----+------------+------------------------+
@@ -302,7 +302,7 @@ SELECT * FROM anon.pg_masking_rules;
 | attrelid         | 28491                                      |
 | attnum           | 2                                          |
 | relnamespace     | public                                     |
-| relname          | usuarios                                   |
+| relname          | public.usuarios                                   |
 | attname          | nombre                                     |
 | format_type      | character varying(100)                     |
 | col_description  | MASKED WITH FUNCTION anon.fake_last_name() |
@@ -314,7 +314,7 @@ SELECT * FROM anon.pg_masking_rules;
 | attrelid         | 28491                                      |
 | attnum           | 3                                          |
 | relnamespace     | public                                     |
-| relname          | usuarios                                   |
+| relname          | public.usuarios                                   |
 | attname          | correo                                     |
 | format_type      | character varying(100)                     |
 | col_description  | MASKED WITH FUNCTION anon.fake_email()     |
@@ -328,8 +328,13 @@ SELECT * FROM anon.pg_masking_rules;
  
 ### Eliminar los ejemplos 
 ```sql
+-- desenmascarar un rol
+SECURITY LABEL FOR anon ON ROLE mi_usuario IS NULL;
 
---  detiene el enmascaramiento dinámico de datos para todos los usuarios y sesiones.
+-- Quitarle parámetros predifinidos
+ALTER ROLE mi_usuario RESET search_path;
+
+--  detiene el enmascaramiento dinámico de datos para todos los public.usuarios y sesiones.
 SELECT anon.stop_dynamic_masking();
 
 -- Desactivar la extensión anon, anon en la sesión actual
@@ -348,8 +353,8 @@ drop DATABASE mi_base_de_datos;
 revoke select on all tables in schema public from mi_usuario;
 drop user mi_usuario;
 
-SECURITY LABEL FOR anon ON ROLE bob IS NULL;
-SECURITY LABEL FOR anon ON ROLE mi_usuario IS NULL;
+
+
 ``` 
 
 ### Datos extras 
