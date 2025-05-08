@@ -151,6 +151,9 @@ Inicializa la extensión `anon`:
 -- [No afecta si no lo ejecuta] Carga un conjunto de datos predeterminados de datos aleatorios (como nombres, ciudades, etc.) y prepara el sistema para aplicar reglas de enmascaramiento
 -- SELECT anon.init(); 
 
+-- Validar el estado de la extensión
+SELECT anon.is_initialized();
+
 -- Permite que los datos sean enmascarados en tiempo real cuando se accede a ellos. Esto es útil para proteger datos sensibles mientras se permite el acceso a usuarios con roles específicos
 SELECT anon.start_dynamic_masking(); 
 ```
@@ -318,12 +321,25 @@ SELECT * FROM anon.pg_masking_rules;
  
 ### Eliminar los ejemplos 
 ```sql
+
+-- Desactivar la extensión anon, anon en la sesión actual
+SELECT anon.unload();
+
+--  Detener el enmascaramiento dinámico, permitiendo que los datos se muestren sin enmascarar 
+SELECT anon.stop_dynamic_masking();
+
+-- remover todas las reglas 
+SELECT anon.remove_masks_for_all_columns();
+SELECT anon.remove_masks_for_all_roles();
+ 
+
 \c postgres postgres
 drop DATABASE mi_base_de_datos;
 revoke select on all tables in schema public from mi_usuario;
 drop user mi_usuario;
+
+SECURITY LABEL FOR anon ON ROLE bob IS NULL;
 SECURITY LABEL FOR anon ON ROLE mi_usuario IS NULL;
-SECURITY LABEL FOR anon ON ROLE postgres IS NULL;
 ``` 
 
 
@@ -406,11 +422,82 @@ postgres@mi_base_de_datos# select table_type,table_schema,table_name from inform
 (16 rows)
 
 
+-- Las funciones "pseudo" se utiliza para generar datos ficticias pero deterministas. para un mismo valor de entrada, siempre se generará el mismo valor de salida. 
+postgres@mi_base_de_datos# select proname from pg_proc where proname ilike '%pseudo%';
++-------------------+
+|      proname      |
++-------------------+
+| pseudo_first_name |
+| pseudo_last_name  |
+| pseudo_email      |
+| pseudo_city       |
+| pseudo_region     |
+| pseudo_country    |
+| pseudo_company    |
+| pseudo_iban       |
+| pseudo_siren      |
+| pseudo_siret      |
++-------------------+
+(10 rows)
+
+postgres@mi_base_de_datos# SELECT anon.pseudo_email('example@example.com');
++------------------------------+
+|         pseudo_email         |
++------------------------------+
+| ahonscha@creativecommons.org |
++------------------------------+
+(1 row)
+
+
+
+ 
+### Uso de la función partial(ov , prefix ,  padding , suffix )
+- **anon.partial_***: Estas funciones permiten enmascarar parcialmente los datos, por ejemplo, mostrando solo una parte de un número de teléfono o una dirección de correo electrónico  
+
+La función partial tiene los siguientes argumentos:
+- ov: El valor original que quieres anonimizar.
+- prefix: Número de caracteres del inicio que quieres mantener visibles.
+- padding: Texto que quieres usar para reemplazar los caracteres ocultos.
+- suffix: Número de caracteres del final que quieres mantener visibles.
+ 
+
+postgres@mi_base_de_datos#  select proname from pg_proc where proname ilike '%partial%';
++---------------+
+|    proname    |
++---------------+
+| partial       |
+| partial_email |
++---------------+
+
+postgres@mi_base_de_datos# SELECT anon.partial('Jose Maria Perez Lopez', 2, '******', 2);
++------------+
+|  partial   |
++------------+
+| Jo******ez |
++------------+
+(1 row)
+
+
+postgres@mi_base_de_datos# select * from anon.partial_email('example@example.com');
++-----------------------+
+|     partial_email     |
++-----------------------+
+| ex******@ex******.com |
++-----------------------+
+(1 row)
+
+
+
+
 ``` 
 
 ## Bibliografias
 ```
 https://postgresql-anonymizer.readthedocs.io/en/stable/
+https://www.postgresql.org/docs/18/sql-security-label.html
+
+enmascaramiento Dinamico -> https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+enmascaramiento estático -> https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
 
 https://access.crunchydata.com/documentation/postgresql-anonymizer/latest/install/
 
