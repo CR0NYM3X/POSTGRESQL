@@ -13,33 +13,36 @@ PostgreSQL Anonymizer es una extensión diseñada para ocultar o reemplazar info
    - Facilita la creación de entornos de prueba y desarrollo con datos realistas pero anonimizados, evitando el uso de datos sensibles en estos entornos.
 
 
-### Casos de Uso
 
-1. **Cumplimiento de GDPR**:
-   - Empresas que manejan datos de ciudadanos europeos pueden usar PostgreSQL Anonymizer para cumplir con las regulaciones de GDPR, asegurando que los datos personales estén protegidos.
+### Enmascaramiento Dinámico
+El enmascaramiento dinámico oculta datos sensibles en tiempo real cuando se accede a ellos desde la base de datos. Los datos originales permanecen intactos, pero los usuarios ven versiones enmascaradas o alteradas según sus permisos.
 
-2. **Compartir Datos con Terceros**:
-   - Cuando necesitas compartir datos con proveedores o socios, puedes usar PostgreSQL Anonymizer para asegurar que la información sensible esté oculta.
+#### Casos de uso:
+1. **Acceso controlado**: Permite a los usuarios acceder a datos sin revelar información sensible, ideal para entornos donde diferentes roles necesitan ver diferentes niveles de detalle.
+2. **Seguridad en tiempo real**: Protege los datos sensibles de accesos no autorizados sin necesidad de modificar los datos originales.
 
-3. **Entornos de Prueba**:
-   - Desarrolladores pueden usar datos anonimizados para probar nuevas funcionalidades sin riesgo de exponer datos reales.
+
+### Enmascaramiento Estático
+El enmascaramiento estático reemplaza datos  sensibles reales  con información falsa, Este proceso ocurre una vez y   se utilizan para pruebas, desarrollo y análisis.
+
+#### Casos de uso:
+1. **Pruebas y desarrollo**: Permite a los desarrolladores y testers trabajar con datos que parecen reales sin comprometer la privacidad.
+2. **Compartir datos**: Facilita compartir datos con proveedores, socios y equipos offshore sin exponer información sensible.
 
 
 
 ---
 
 
-
-
-### Ejemplos Prácticos
-
 #### Limitaciones de la anonimización
 ```
 El sistema de enmascaramiento dinámico solo funciona con un esquema (por defecto, público).
 Si aplica de 3 a 4 reglas en una tabla, el tiempo de respuesta para los usuarios enmascarados es aproximadamente entre un 20% y un 30% más lento que para los usuarios normales.
 La longitud máxima de una regla de enmascaramiento es de 1024 caracteres.
-Si tiene que dividir una tabla en varias particiones, debe declarar las reglas de enmascaramiento para cada partición.
+Las reglas de enmascaramiento NO SE HEREDAN ! Si ha dividido una tabla en varias particiones, debe declarar las reglas de enmascaramiento para cada partición.
 El enmascaramiento estático destruirá permanentemente sus datos originales.
+Enmascarar columnas de identidad es complicado. Si una columna de identidad se define como GENERATED ALWAYS, el enmascaramiento estático no funcionará en ella. Tenga en cuenta que las columnas de identidad se utilizan con mayor frecuencia para claves sustitutas (también conocidas como "claves sin hechos") y, en general, no es necesario enmascarar estas claves. Sin embargo, si realmente necesita enmascarar una columna de identidad, puede redefinirla como GENERATED DEFAULT.
+
 ```
 
 #### Requisito Validar si esta habilitado el SELinux
@@ -78,6 +81,8 @@ select * from pg_available_extensions where name in('tsm_system_rows','pgcrypto'
 ```
 
  
+# Ejemplos Prácticos
+
 
 ### Paso 1: Crear la base de datos y el usuario
 
@@ -137,7 +142,6 @@ ALTER DATABASE mi_base_de_datos SET session_preload_libraries = 'anon';
 --  aplicar una etiqueta de seguridad que indica que el rol mi_usuario debe tener acceso a datos enmascarados. verá los datos enmascarados en lugar de los datos originales
 SECURITY LABEL FOR anon ON ROLE mi_usuario IS 'MASKED';
 
-SECURITY LABEL FOR anon ON TABLE usuarios IS 'MASKED';
 
 
 ```
@@ -148,14 +152,14 @@ Inicializa la extensión `anon`:
 
 ```sql
 
--- [No afecta si no lo ejecuta] Carga un conjunto de datos predeterminados de datos aleatorios (como nombres, ciudades, etc.) y prepara el sistema para aplicar reglas de enmascaramiento
--- SELECT anon.init(); 
+-- Carga un conjunto de datos predeterminados de datos aleatorios (como nombres, ciudades, etc.) y prepara el sistema para aplicar reglas de enmascaramiento
+SELECT anon.init(); 
+
+-- Permite que los datos sean enmascarados en tiempo real cuando se accede a ellos. Esto es útil para proteger datos sensibles mientras se permite el acceso a usuarios con roles específicos
+SELECT anon.start_dynamic_masking();
 
 -- Validar el estado de la extensión
 SELECT anon.is_initialized();
-
--- Permite que los datos sean enmascarados en tiempo real cuando se accede a ellos. Esto es útil para proteger datos sensibles mientras se permite el acceso a usuarios con roles específicos
-SELECT anon.start_dynamic_masking(); 
 ```
 
 ### Paso 6: Crear la tabla `usuarios`
@@ -200,6 +204,9 @@ Configura las reglas de anonimización para la tabla `usuarios` utilizando etiqu
 ```sql
 SECURITY LABEL FOR anon ON COLUMN usuarios.nombre IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 SECURITY LABEL FOR anon ON COLUMN usuarios.correo IS 'MASKED WITH FUNCTION anon.fake_email()';
+
+-- En caso de ocuparlo
+-- SECURITY LABEL FOR anon ON COLUMN usuarios.nombre IS 'MASKED WITH VALUE NULL';
 ```
 
 
@@ -322,11 +329,14 @@ SELECT * FROM anon.pg_masking_rules;
 ### Eliminar los ejemplos 
 ```sql
 
+--  detiene el enmascaramiento dinámico de datos para todos los usuarios y sesiones.
+SELECT anon.stop_dynamic_masking();
+
 -- Desactivar la extensión anon, anon en la sesión actual
 SELECT anon.unload();
 
---  Detener el enmascaramiento dinámico, permitiendo que los datos se muestren sin enmascarar 
-SELECT anon.stop_dynamic_masking();
+-- desactiva el enmascaramiento de datos para la sesión actual.
+select anon.mask_disable();
 
 -- remover todas las reglas 
 SELECT anon.remove_masks_for_all_columns();
@@ -342,10 +352,19 @@ SECURITY LABEL FOR anon ON ROLE bob IS NULL;
 SECURITY LABEL FOR anon ON ROLE mi_usuario IS NULL;
 ``` 
 
+### Datos extras 
+```
+
+# Crear varias politicas de enmascaramiento en caso de requerirse 
+ALTER DATABASE db_test SET anon.masking_policies TO 'devtests, analytics';
+SECURITY LABEL FOR devtests ON COLUMN player.name IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+
+```
+
 
 ### Funciones que pueden servir 
 ``` 
-postgres@mi_base_de_datos# select proname from pg_proc where proname ilike '%fake%';
+postgres@mi_base_de_datos# select proname from pg_proc JOIN pg_namespace ON pg_proc.pronamespace = pg_namespace.oid WHERE nspname = 'anon' and  proname ilike '%fake%';
 +------------------------+
 |        proname         |
 +------------------------+
@@ -366,7 +385,7 @@ postgres@mi_base_de_datos# select proname from pg_proc where proname ilike '%fak
 
 
 
-postgres@mi_base_de_datos# select proname from pg_proc where proname ilike '%random%';
+postgres@mi_base_de_datos# select proname from pg_proc  JOIN pg_namespace ON pg_proc.pronamespace = pg_namespace.oid WHERE nspname = 'anon' and  proname ilike '%random%';
 +--------------------------+
 |         proname          |
 +--------------------------+
@@ -423,7 +442,7 @@ postgres@mi_base_de_datos# select table_type,table_schema,table_name from inform
 
 
 -- Las funciones "pseudo" se utiliza para generar datos ficticias pero deterministas. para un mismo valor de entrada, siempre se generará el mismo valor de salida. 
-postgres@mi_base_de_datos# select proname from pg_proc where proname ilike '%pseudo%';
+postgres@mi_base_de_datos# select proname from pg_proc  JOIN pg_namespace ON pg_proc.pronamespace = pg_namespace.oid WHERE nspname = 'anon' and  proname ilike '%pseudo%';
 +-------------------+
 |      proname      |
 +-------------------+
@@ -461,7 +480,7 @@ La función partial tiene los siguientes argumentos:
 - suffix: Número de caracteres del final que quieres mantener visibles.
  
 
-postgres@mi_base_de_datos#  select proname from pg_proc where proname ilike '%partial%';
+postgres@mi_base_de_datos#  select proname from pg_proc  JOIN pg_namespace ON pg_proc.pronamespace = pg_namespace.oid WHERE nspname = 'anon' and  proname ilike '%partial%';
 +---------------+
 |    proname    |
 +---------------+
