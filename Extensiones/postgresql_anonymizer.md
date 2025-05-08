@@ -380,6 +380,32 @@ postgres@mi_base_de_datos# select proname from pg_proc where proname ilike '%ran
 | random_siret             |
 +--------------------------+
 (24 rows)
+
+
+postgres@mi_base_de_datos# select table_type,table_schema,table_name from information_schema.tables where table_schema  = 'anon' order by table_type,table_name;
++------------+--------------+----------------------+
+| table_type | table_schema |      table_name      |
++------------+--------------+----------------------+
+| BASE TABLE | anon         | city                 |
+| BASE TABLE | anon         | company              |
+| BASE TABLE | anon         | config               |
+| BASE TABLE | anon         | email                |
+| BASE TABLE | anon         | first_name           |
+| BASE TABLE | anon         | iban                 |
+| BASE TABLE | anon         | identifier           |
+| BASE TABLE | anon         | identifiers_category |
+| BASE TABLE | anon         | last_name            |
+| BASE TABLE | anon         | lorem_ipsum          |
+| BASE TABLE | anon         | secret               |
+| BASE TABLE | anon         | siret                |
+| VIEW       | anon         | pg_identifiers       |
+| VIEW       | anon         | pg_masked_roles      |
+| VIEW       | anon         | pg_masking_rules     |
+| VIEW       | anon         | pg_masks             |
++------------+--------------+----------------------+
+(16 rows)
+
+
 ``` 
 
 ## Bibliografias
