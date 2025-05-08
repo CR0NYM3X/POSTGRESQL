@@ -17,6 +17,9 @@ https://www.postgresql.org/list/
   https://www.postgresql.org/list/pgsql-performance/
   https://www.postgresql.org/list/pgsql-es-ayuda/
 
+https://www.dalibo.com/actus
+https://labs.dalibo.com/
+
 https://lists.postgresql.org/
 
 https://www.postgresql.org/about/contact/
