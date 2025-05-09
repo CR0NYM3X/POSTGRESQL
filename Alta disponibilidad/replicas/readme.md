@@ -89,3 +89,10 @@
   - Puede impactar el rendimiento si no se gestiona bien.
 
  
+
+
+
+## Bibliografía 
+```
+https://www.youtube.com/watch?v=kW8xT_cgEMM
+```
