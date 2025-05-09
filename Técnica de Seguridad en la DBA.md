@@ -35,8 +35,10 @@ https://listings.pcisecuritystandards.org/documents/PCI-DSS-v4_0-LA.pdf
 
 
 5. **ISO/IEC 27001**: [REF](https://www.eternitylaw.com/es/noticias/5-estandares-basicos-de-procesamiento-de-pagos-mejores-practicas-de-cumplimiento-de-estandares-2025/)
-   - **Propósito**: Establece un sistema de gestión de seguridad de la información (SGSI) para proteger datos sensibles, incluyendo datos de pago.
+   - **Propósito**: es una norma internacional publicada por la Organización Internacional de Normalización (ISO) y la Comisión Electrotécnica Internacional (IEC). Proteger la confidencialidad, integridad y disponibilidad de la información. Su objetivo es ayudar a las organizaciones a gestionar la seguridad de la información
    - **Aplicabilidad**: Es un estándar internacional aplicable a cualquier tipo de organización.
+   - **exige**  Planes de continuidad del negocio. Evaluación de riesgos. Definición de RPO y RTO para sistemas críticos. Pruebas periódicas de recuperación ante desastres.
+
 
 6. **FIPS (Federal Information Processing Standards)**:
    - **Propósito**: Establece requisitos de seguridad para sistemas informáticos utilizados por el gobierno de los Estados Unido.
