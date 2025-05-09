@@ -226,6 +226,8 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 ### **2. Replicación y Alta Disponibilidad:**
 
+- **wal2json:** Genera datos en formato JSON a partir de los registros de WAL (Write-Ahead Logging), útil para replicación lógica y para aplicaciones que necesitan consumir los cambios en un formato legible.  https://github.com/eulerto/wal2json
+
 
 PGProfiler: es una extensión para PostgreSQL que ayuda a identificar las actividades más intensivas en recursos dentro de tus bases de datos rea un repositorio histórico en tu base de datos que almacena "muestras" de estadísticas, permitiéndote analizar el rendimiento y los problemas de carga en períodos específicos2. Es útil para monitorear y resolver problemas de rendimiento.
 
@@ -272,9 +274,7 @@ Citus es una extensión de código abierto para **PostgreSQL** que convierte la 
 
  
 
-************ TRANSFORMACION DE WAL EN JSON ************
-- **wal2json:** Genera datos en formato JSON a partir de los registros de WAL (Write-Ahead Logging), útil para replicación lógica y para aplicaciones que necesitan consumir los cambios en un formato legible.
- 
+
 
  
 ### **7. Rendimiento y Optimización:**
