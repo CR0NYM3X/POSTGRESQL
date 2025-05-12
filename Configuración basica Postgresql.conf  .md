@@ -1279,6 +1279,9 @@ crontab -e
 @reboot /ruta/completa/a/tu_script.sh
 
 
+Puedes colocar un script en /etc/init.d/ 
+/etc/init.d/ 
+
 ```
 
 ### Colocar el archivo de configuración (postgresql.conf, pg_hba.conf y pg_ident)
