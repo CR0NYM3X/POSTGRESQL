@@ -461,6 +461,7 @@ fi
 
 
 ```bash
+********************** LINUX **********************
 
 # configuración regional del sistema
 localectl status
@@ -475,6 +476,14 @@ cat /etc/locale.conf
 
 # todos los idiomas instalados y disponibles 
 locale -a
+
+
+********************** POSTGRESQL **********************
+SHOW lc_messages; -- idioma de los mensajes del sistema.
+SHOW lc_monetary; -- formato monetario.
+SHOW lc_numeric; --  formato de números.
+SHOW lc_time; -- formato de fechas y horas.
+
 
 ```
 
