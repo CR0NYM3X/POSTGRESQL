@@ -455,3 +455,27 @@ fi
 ```
 
 
+
+
+###  **1. Ver idioma del sistema **
+
+
+```bash
+
+# configuración regional del sistema
+localectl status
+
+# Ver variable de entorno 
+echo $LANG
+
+
+# El idioma del sistema 
+cat /etc/locale.conf
+
+
+# todos los idiomas instalados y disponibles 
+locale -a
+
+```
+
+   
