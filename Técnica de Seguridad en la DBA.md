@@ -43,7 +43,9 @@ https://listings.pcisecuritystandards.org/documents/PCI-DSS-v4_0-LA.pdf
 6. **FIPS (Federal Information Processing Standards)**:
    - **Propósito**: Establece requisitos de seguridad para sistemas informáticos utilizados por el gobierno de los Estados Unido.
    - **Aplicabilidad**: Incluye estándares para el cifrado y la protección de datos de pago.
- 
+
+ 7. **LFPDPPP** es la Ley Federal de Protección de Datos Personales en Posesión de los Particulares en México. Su versión más reciente fue publicada el 20 de marzo de 2025 y entró en vigor el 21 de marzo de 2025
+en todo el país, cuyo objetivo es proteger los datos personales que están en manos de particulares (empresas, organizaciones, profesionistas, etc.), regulando su tratamiento de forma legítima, controlada e informada
 
 
 # Tecnicas de Hardening 
