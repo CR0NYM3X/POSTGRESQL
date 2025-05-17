@@ -1,0 +1,65 @@
+DO $$ 
+DECLARE 
+    usuarios TEXT[] := ARRAY['user1', 'user2', 'user3', 'user4', 'user5'];
+    usuario_actual TEXT; 
+    tienda_numero TEXT;
+    base_datos TEXT;
+    db_nombre TEXT;
+	socket TEXT;
+BEGIN
+    -- Crea la extensión dblink
+    IF not exists (SELECT 1 FROM pg_extension WHERE extname = 'dblink') THEN
+        CREATE EXTENSION dblink;
+    END IF;
+
+    -- Obtener el valor de la tienda 
+    COPY (SELECT 'Hostname') TO PROGRAM 'bash -c "hostname | grep -o ''[0-9]\\+'' > /tmp/hostname.txt"';
+    tienda_numero := TRIM(BOTH E'\n' FROM pg_read_file('/tmp/hostname.txt', 0, 4));
+	
+	--Obtener ruta de socket para la conexión
+	select setting From pg_settings where name='unix_socket_directories' into socket;
+    
+    -- Iterar sobre todas las bases de datos, excluyendo las bases de datos del sistema
+    FOR db_nombre IN 
+        SELECT datname 
+        FROM pg_database 
+        WHERE datname NOT IN ('postgres', 'template1', 'template0')
+    LOOP
+        -- Conectar a cada base de datos
+        base_datos := db_nombre;
+        PERFORM dblink_connect(format('dbname=%L host=%L', base_datos, replace(socket,' ','')));
+        
+        -- Iterar sobre cada usuario 
+        FOREACH usuario_actual IN ARRAY usuarios LOOP 
+            -- Reemplazar #### por el nombre de la tienda 
+            IF usuario_actual LIKE '%####%' THEN 
+                usuario_actual := REPLACE(usuario_actual, '####', tienda_numero); 
+            END IF; 
+            
+            -- Conectar a la base de datos remota y otorgar permisos
+            BEGIN
+                PERFORM dblink_exec(format('GRANT CREATE ON SCHEMA public TO %I', usuario_actual));
+                PERFORM dblink_exec(format('GRANT CONNECT ON DATABASE %I TO %I', base_datos, usuario_actual));
+                PERFORM dblink_exec(format('GRANT ALL ON ALL TABLES IN SCHEMA public TO %I', usuario_actual));
+                PERFORM dblink_exec(format('GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO %I', usuario_actual));
+                PERFORM dblink_exec(format('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO %I', usuario_actual));
+                PERFORM dblink_exec(format('GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO %I', usuario_actual));
+                PERFORM dblink_exec(format('GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO %I', usuario_actual));
+                PERFORM dblink_exec(format('GRANT TRUNCATE ON ALL TABLES IN SCHEMA public TO %I', usuario_actual));
+                PERFORM dblink_exec(format('GRANT pg_read_server_files TO %I', usuario_actual));
+                PERFORM dblink_exec(format('GRANT pg_write_server_files TO %I', usuario_actual));
+                PERFORM dblink_exec(format('ALTER USER %I WITH NOSUPERUSER NOCREATEROLE NOCREATEDB', usuario_actual));
+            EXCEPTION WHEN OTHERS THEN
+                -- Capturar error y continuar
+                RAISE NOTICE 'Usuario % no existe o ocurrió un error. Continuando...', usuario_actual;
+            END;
+        END LOOP;
+
+        PERFORM dblink_disconnect();    
+    END LOOP;
+
+    -- Elimina la extensión dblink
+    IF exists (SELECT 1 FROM pg_extension WHERE extname = 'dblink') THEN
+        DROP EXTENSION dblink;
+    END IF;    
+END $$;
