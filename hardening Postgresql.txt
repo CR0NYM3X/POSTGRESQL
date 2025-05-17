@@ -6,6 +6,52 @@
 ************************************************************************************
 
 
+ 
+### 🛡️ **Hardening de Bases de Datos: Fortaleciendo la Seguridad desde la Raíz**
+
+#### 1. **Introducción**
+- ¿Qué es el Hardening de Bases de Datos?
+- Importancia de la Seguridad en las Bases de Datos
+
+#### 2. **Principios Fundamentales del Hardening**
+- Confidencialidad, Integridad y Disponibilidad (CIA)
+- Principio de Mínimos Privilegios
+- Defensa en Profundidad
+
+#### 3. **Superficie de Ataque y Riesgos Comunes**
+- Vectores de ataque más frecuentes
+- Casos reales de brechas por mala configuración
+
+#### 4. **Medidas de Hardening Esenciales**
+- Eliminación de Servicios y Funcionalidades Innecesarias
+- Configuración Segura del Motor de Base de Datos
+- Gestión de Usuarios y Roles
+
+#### 5. **Control de Acceso y Autenticación**
+- Políticas de contraseñas seguras
+- Autenticación multifactor (MFA)
+- Auditoría de accesos
+
+#### 6. **Cifrado y Protección de Datos**
+- Cifrado en tránsito y en reposo
+- Uso de certificados y TLS/SSL
+
+#### 7. **Auditoría y Monitoreo**
+- Registro de eventos y accesos
+- Herramientas de monitoreo y detección de anomalías
+
+#### 8. **Actualizaciones y Parches**
+- Gestión de vulnerabilidades
+- Automatización de actualizaciones
+
+#### 9. **Buenas Prácticas y Recomendaciones**
+- Checklist de hardening
+- Normativas y estándares (ISO 27001, CIS Benchmarks, etc.)
+
+#### 10. **Conclusión**
+- Resumen de acciones clave
+- Próximos pasos para implementar el hardening
+ 
 
 
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
