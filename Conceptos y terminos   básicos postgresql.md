@@ -1312,3 +1312,14 @@ El modelo ACID es crucial para mantener la integridad, consistencia y confiabili
 3. **Sistemas de Gestión Empresarial (ERP)**: Las aplicaciones ERP utilizan ACID para manejar datos de múltiples departamentos, asegurando que las actualizaciones sean consistentes y no se interfieran entre sí
 
  
+# CI/CD con PostgreSQL 
+ se refiere a la implementación de prácticas de integración y entrega continuas en proyectos que utilizan PostgreSQL como base de datos. CI (Continuous Integration) implica automatizar la prueba y validación del código con cada cambio, asegurando que las modificaciones no rompan el sistema. CD (Continuous Delivery/Deployment) extiende este concepto, permitiendo despliegues automatizados y confiables en entornos de producción o pruebas.
+
+En el contexto de PostgreSQL, CI/CD puede incluir:
+- **Pruebas automatizadas**: Validación de consultas SQL, integridad de datos y rendimiento.
+- **Migraciones de base de datos**: Uso de herramientas como Flyway o Liquibase para gestionar cambios en el esquema.
+- **Despliegue automatizado**: Integración con Docker, Kubernetes o herramientas CI/CD como GitHub Actions, GitLab CI/CD, o Jenkins para actualizar bases de datos sin interrupciones.
+
+Es una estrategia clave para mantener aplicaciones escalables y confiables. ¿Te gustaría más detalles sobre herramientas específicas o ejemplos de implementación?
+
+
