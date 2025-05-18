@@ -1320,6 +1320,4 @@ En el contexto de PostgreSQL, CI/CD puede incluir:
 - **Migraciones de base de datos**: Uso de herramientas como Flyway o Liquibase para gestionar cambios en el esquema.
 - **Despliegue automatizado**: Integración con Docker, Kubernetes o herramientas CI/CD como GitHub Actions, GitLab CI/CD, o Jenkins para actualizar bases de datos sin interrupciones.
 
-Es una estrategia clave para mantener aplicaciones escalables y confiables. ¿Te gustaría más detalles sobre herramientas específicas o ejemplos de implementación?
-
-
+Es una estrategia clave para mantener aplicaciones escalables y confiables.  
