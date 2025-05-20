@@ -24,7 +24,7 @@
 - **Requisitos**: `pgcrypto` requiere OpenSSL. No se instalará si el soporte de OpenSSL no fue seleccionado al construir PostgreSQL.
 
 ### Consideraciones
-  - Las claves privadas RSA deben almacenarse en un [HSM](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Extensiones/pgcrypto.md#1-qu%C3%A9-es-un-hardware-security-module-hsm). Las claves públicas pueden estar en archivos restringidos, pero nunca en la BD o código.
+  - Las claves privadas RSA deben almacenarse en un [HSM](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pgcrypto.md#1-qu%C3%A9-es-un-hardware-security-module-hsm). Las claves públicas pueden estar en archivos restringidos, pero nunca en la BD o código.
   - Opciones de Almacenamiento de Claves.
 ### Ventajas
 
@@ -177,10 +177,10 @@ Estas funciones permiten encriptar y desencriptar datos utilizando el estándar 
 Aunque pgp_pub_encrypt utiliza algoritmos simétricos como AES para la encriptación de los datos, lo que la hace asimétrica es el uso de un par de claves (pública y privada) para la gestión de la encriptación y desencriptación.
 <br>Es importante tener en cuenta estas recomendaciones : <br>
 las funciones fn_crypt y fn_decrypt se deben ejecutar como consultas preparadas para evitar que envie los valores de los parametros al log <br>
-[**Opciones de Almacenamiento de Claves**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Extensiones/pgcrypto.md#opciones-de-almacenamiento-de-claves)<br>
-[**Mejor opción sobre el manejo de path**](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Extensiones/pgcrypto.md#mejor-opci%C3%B3n-sobre-el-manejo-de-path)
+[**Opciones de Almacenamiento de Claves**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pgcrypto.md#opciones-de-almacenamiento-de-claves)<br>
+[**Mejor opción sobre el manejo de path**](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pgcrypto.md#mejor-opci%C3%B3n-sobre-el-manejo-de-path)
  
-1.- Generamos las claves publica y privada como se enseño en este documento. [Aquí](https://github.com/CR0NYM3X/POSTGRESQL/edit/main/Extensiones/pgcrypto.md#generaci%C3%B3n-de-claves-con-gpg)
+1.- Generamos las claves publica y privada como se enseño en este documento. [Aquí](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pgcrypto.md#generaci%C3%B3n-de-claves-con-gpg)
 
 ```sql
 
