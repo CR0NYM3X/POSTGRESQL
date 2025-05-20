@@ -289,7 +289,9 @@ Estas funciones permiten encriptar y desencriptar datos utilizando algoritmos es
 
 # ¿Qué es GPG y para qué sirve?
 
-**GnuPG (GPG) GNU Privacy Guard** es una herramienta de cifrado y firma digital de datos desarrollada como una alternativa Comercial y costo a PGP (Pretty Good Privacy) . GPG cumple con el estándar OpenPGP y permite a los usuarios cifrar y firmar digitalmente mensajes, archivos y correos electrónicos.
+**GnuPG (GPG) GNU Privacy Guard** Es una herramienta de cifrado y firma digital de datos desarrollada como una alternativa Comercial . GPG cumple con el estándar OpenPGP y permite a los usuarios cifrar y firmar digitalmente mensajes, archivos y correos electrónicos. es completamente gratuito y de código abierto del estándar OpenPGP, aunque su versión empresarial llamada GnuPG VS-Desktop puede tener un costo para organizaciones que requieren soporte profesional y características avanzadas
+
+**OpenPGP** - es un estándar abierto de cifrado de datos definido por la IETF (RFC 4880).
 
 ### Ventajas de GPG
 
