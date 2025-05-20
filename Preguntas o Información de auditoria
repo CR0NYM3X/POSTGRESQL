@@ -16,6 +16,10 @@
 12. **¿Cuál es el plan de contingencia en caso de fallo del servidor?**
 13. **¿Reporte de total de conexiones por usuario y otro con IPs de origen?**
 14. **¿Fecha de últimas conexiones de cada usuario (se obtendrán usuarios activos e inactivos)?**
+• Graficas de consumo cpu, memoria, disco y network de la BD
+• Promedio de conexiones activas
+• Detalle de los querys en el top 10 de consumo de recursos y mayor tiempo de ejecución en la BD (Favor de entregar este en archivo .csv)
+
 
 ### Preguntas de Auditoría - Parte 2
 
