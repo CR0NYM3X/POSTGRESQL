@@ -33,6 +33,24 @@ Reducir el riesgo de:
 - **Cumplimiento normativo insuficiente** (como GDPR, HIPAA,  (ISO 27001, CIS Benchmarks, etc.))
 
 
+###  ¿Para qué sirve escanear PostgreSQL con Tenable-Nessus si ya tiene hardening?
+
+1. ###  **Verificación del hardening**
+   - Nessus puede ayudarte a **confirmar que las configuraciones seguras realmente están aplicadas**.
+
+2. ###  **Detección de vulnerabilidades conocidas**
+   - Aunque hayas hecho hardening, puede haber **vulnerabilidades en la versión del software** que estás usando.
+   - Nessus compara tu instalación con una base de datos de vulnerabilidades (CVE) y te alerta si hay parches pendientes.
+
+3. ###  **Evaluación de configuraciones inseguras**
+   - Nessus puede detectar configuraciones que **no son recomendadas**, como:
+     - Usuarios con privilegios excesivos
+     - Parámetros de autenticación débiles
+     - Servicios innecesarios habilitados
+
+4. ###  **Generación de reportes para auditoría**
+   - Te permite **documentar el estado de seguridad** de tu base de datos, útil para auditorías internas o externas.
+ 
  
 ************************************************************************************
 ************************************************************************************
