@@ -226,6 +226,11 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 ### **2. Replicación y Alta Disponibilidad:**
 
+pg_receivewal -> se utiliza para transmitir en tiempo real los registros de escritura anticipada (WAL) desde un servidor PostgreSQL a un directorio local o remoto
+https://www.postgresql.org/docs/current/app-pgreceivewal.html
+https://philipmcclarence.com/mastering-continuous-archiving-with-pg_receivewal/
+https://www.cybertec-postgresql.com/en/never-lose-a-postgresql-transaction-with-pg_receivewal/
+
 - **wal2json:** Genera datos en formato JSON a partir de los registros de WAL (Write-Ahead Logging), útil para replicación lógica y para aplicaciones que necesitan consumir los cambios en un formato legible.  https://github.com/eulerto/wal2json
 
 
