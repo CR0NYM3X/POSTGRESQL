@@ -1060,64 +1060,72 @@ en análisis de datos en tiempo real, la compilación JIT puede ser muy benefici
 
  
 
-### ¿Qué es HOT? [[]](https://medium.com/@nikolaykudinov/deep-dive-into-postgresqls-hot-updates-the-story-behind-heap-only-tuples-f569360d9c)
-HOT (Heap-Only Tuple) es una técnica que permite realizar actualizaciones en las filas de una tabla sin necesidad de modificar los índices asociados a esas filas. Esto es posible cuando:
 
-. **No se modifican las columnas indexadas**: La actualización no afecta a ninguna columna que esté referenciada por un índice.
-. **Espacio libre en la página**: Hay suficiente espacio libre en la página que contiene la fila original para almacenar la nueva versión de la fila.
+### **¿Qué es HOT?**  [[Ref-1]](https://www.cybertec-postgresql.com/en/hot-updates-in-postgresql-for-better-performance/)[[Ref-2]](https://medium.com/@nikolaykudinov/deep-dive-into-postgresqls-hot-updates-the-story-behind-heap-only-tuples-f569360d9c) 
+HOT (**Heap Only Tuple**) fue introducido en **PostgreSQL 8.3** y se maneja de forma automática. Permite que los registros sean actualizados sin modificar los índices, lo que mejora el rendimiento en bases de datos.
 
-### ¿Cómo se usa HOT?
+### **Beneficios de usar HOT**  
+- Reduce la sobrecarga en actualizaciones al evitar escrituras innecesarias en índices.  
+- Disminuye el consumo de I/O, ya que los índices no necesitan ser modificados.  
+- Optimiza el rendimiento en tablas con alta concurrencia de actualizaciones.  
+- Previene la fragmentación de índices (**bloat**), evitando reescrituras innecesarias.  
 
-Para aprovechar la técnica HOT, PostgreSQL realiza las siguientes optimizaciones:
+### **Desventajas de HOT**  
+- Solo funciona cuando la columna modificada **no está indexada**. Si la columna tiene un índice, PostgreSQL **no puede usar HOT** y la actualización afectará el índice.  
+- Requiere espacio disponible en la página. Si la página está llena, el sistema usará una actualización tradicional sin HOT.
 
-. **Evita nuevas entradas en los índices**: Cuando se actualiza una fila y se cumplen las condiciones mencionadas, no se crean nuevas entradas en los índices. Esto reduce significativamente el costo de las actualizaciones.
-. **Elimina versiones antiguas**: Las versiones antiguas de las filas actualizadas pueden ser eliminadas durante las operaciones normales, sin necesidad de operaciones de vacuum periódicas.
+---
 
-### Beneficios de HOT
+### **Ejemplo 1: Modificación de una columna sin índice**  
+Cuando una columna no tiene índice, PostgreSQL puede aplicar HOT para optimizar la actualización:  
+1. Se crea una nueva versión del registro dentro de la misma página, sin modificar el índice.  
+2. El **ctid** cambia, apuntando a la nueva versión del registro.  
+3. La página mantiene un enlace interno entre la versión antigua y la nueva, evitando escrituras adicionales en el índice.
 
-- **Mejora el rendimiento**: Al reducir la necesidad de actualizar los índices, las operaciones de actualización son más rápidas y eficientes.
-- **Menor fragmentación**: Al eliminar las versiones antiguas de las filas de manera más eficiente, se reduce la fragmentación de las tablas.
+---
 
-### Ejemplo de uso
+### **Ejemplo 2: Modificación de una columna con índice**  
+Si la columna que se modifica está indexada, PostgreSQL **no puede usar HOT** y sigue otro proceso:  
+1. Se genera una nueva versión del registro.  
+2. El índice debe actualizarse para reflejar el nuevo valor.  
+3. Se crea una nueva entrada en el índice, lo que implica más operaciones de I/O.  
+4. El **ctid** cambia y apunta a una nueva ubicación sin enlace interno.
 
-Para aumentar la probabilidad de que las actualizaciones sean HOT, puedes ajustar el parámetro `fillfactor` de una tabla. Este parámetro determina el porcentaje de espacio que se deja libre en cada página para futuras actualizaciones.
+---
+
+### **Consideraciones para optimizar el uso de HOT**  
+- **Evita indexar columnas que cambian con frecuencia**, para que PostgreSQL pueda aplicar HOT.  
+- **Ajusta el `fillfactor`** al crear la tabla, dejando espacio libre en cada página (ejemplo: `fillfactor=80`).  
+- **Monitorea el uso de HOT con `pageinspect`** para verificar si las actualizaciones realmente lo están aprovechando.  
+- **Ejecuta `VACUUM` regularmente**, ya que aunque HOT optimiza las escrituras, las versiones antiguas de los registros siguen ocupando espacio hasta que se libera.
+
+
+### Ejemplo de ajustes : 
+
+
+### **Creación de la tabla con un fillfactor óptimo**
+Para mejorar la eficiencia, podríamos configurar el `fillfactor` en **80** en lugar del valor predeterminado (**100**). Esto permite que cada página tenga un 20% de espacio libre,  permitiendo futuras actualizaciones dentro de la misma página.
 
 ```sql
 CREATE TABLE ejemplo (
     id SERIAL PRIMARY KEY,
     nombre TEXT,
     descripcion TEXT
-) WITH (fillfactor = 70);
+) WITH (fillfactor = 80);
 
-ALTER TABLE mi_tabla SET (fillfactor = 70);
-
+ALTER TABLE mi_tabla SET (fillfactor = 80);
 ```
- 
 
-### Desventajas de la técnica HOT
 
-Aunque la técnica HOT (Heap-Only Tuple) ofrece varias ventajas, también tiene algunas desventajas:
+### **Qué pasa si el fillfactor es 100**
+Si hubiésemos definido la tabla con `fillfactor=100`, cada página se llenaría completamente, sin espacio para modificaciones. En ese caso, PostgreSQL **no podría usar HOT** y tendría que mover el registro a otra página, incrementando el costo de I/O.
 
-. **Limitaciones en las actualizaciones**: HOT solo se puede utilizar cuando las columnas actualizadas no están indexadas. Si necesitas actualizar columnas que están indexadas, no podrás beneficiarte de HOT.
-. **Espacio en la página**: Para que HOT funcione, debe haber suficiente espacio libre en la página que contiene la fila original. Si las páginas están llenas, las actualizaciones no podrán aprovechar HOT.
-3. **Complejidad en el mantenimiento**: Aunque HOT reduce la necesidad de operaciones de vacuum, aún es necesario realizar mantenimiento periódico para evitar la acumulación de versiones antiguas de filas.
+🔹 **Fillfactor alto (100)** → Más eficiencia en lecturas pero peor rendimiento en actualizaciones.  
+🔹 **Fillfactor optimizado (80)** → Mejor rendimiento en tablas con muchos `UPDATE`.
 
-### Cuándo usar HOT
 
-HOT es especialmente útil en los siguientes escenarios:
 
-- **Actualizaciones frecuentes**: Si tu aplicación realiza muchas actualizaciones en columnas no indexadas, HOT puede mejorar significativamente el rendimiento.
-- **Tablas grandes**: En tablas con muchas filas, HOT puede reducir la sobrecarga de las actualizaciones al evitar la creación de nuevas entradas en los índices.
-- **Espacio libre en páginas**: Si puedes ajustar el `fillfactor` para dejar espacio libre en las páginas, aumentarás la probabilidad de que las actualizaciones sean HOT.
 
-### Cuándo no usar HOT
-
-Evita depender de HOT en los siguientes casos:
-
-- **Actualizaciones en columnas indexadas**: Si necesitas actualizar columnas que están indexadas, HOT no será aplicable.
-- **Páginas llenas**: Si las páginas de tus tablas están constantemente llenas, HOT no podrá ser utilizado de manera efectiva.
-- **Requerimientos de rendimiento específicos**: En algunos casos, la complejidad añadida de gestionar HOT puede no justificar los beneficios, especialmente si las actualizaciones son poco frecuentes.
- 
 
 
 
