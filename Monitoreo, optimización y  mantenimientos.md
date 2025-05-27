@@ -1060,8 +1060,7 @@ en análisis de datos en tiempo real, la compilación JIT puede ser muy benefici
 
  
 
-### ¿Qué es HOT?
-
+### ¿Qué es HOT? [[1]](https://medium.com/@nikolaykudinov/deep-dive-into-postgresqls-hot-updates-the-story-behind-heap-only-tuples-f52694360d9c)
 HOT (Heap-Only Tuple) es una técnica que permite realizar actualizaciones en las filas de una tabla sin necesidad de modificar los índices asociados a esas filas. Esto es posible cuando:
 
 1. **No se modifican las columnas indexadas**: La actualización no afecta a ninguna columna que esté referenciada por un índice.
