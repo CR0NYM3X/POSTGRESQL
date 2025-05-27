@@ -1100,6 +1100,10 @@ Si la columna que se modifica está indexada, PostgreSQL **no puede usar HOT** y
 - **Ejecuta `VACUUM` regularmente**, ya que aunque HOT optimiza las escrituras, las versiones antiguas de los registros siguen ocupando espacio hasta que se libera.
 
 
+### Cuando usarlo 
+- Si la tabla es mayormente de solo lectura, mantener fillfactor = 100 es lo más eficiente. 
+- Si la tabla tiene muchas actualizaciones, reducirlo 80 0 90 puede ser beneficioso para evitar reubicaciones de registros
+
 ### Ejemplo de ajustes : 
 
 
@@ -1123,6 +1127,13 @@ Si hubiésemos definido la tabla con `fillfactor=100`, cada página se llenaría
 🔹 **Fillfactor alto (100)** → Más eficiencia en lecturas pero peor rendimiento en actualizaciones.  
 🔹 **Fillfactor optimizado (80)** → Mejor rendimiento en tablas con muchos `UPDATE`.
 
+
+### **Impacto negativo de un `fillfactor` menor (ejemplo: 80%)**  
+ **Más páginas necesarias:** Como cada página deja un 20% de espacio libre, la tabla ocupará más páginas en el almacenamiento.  
+ **Posible impacto en lecturas secuenciales:** Si la tabla se consulta con `SELECT * FROM`, el acceso a más páginas puede ralentizar la lectura, especialmente en bases de datos grandes.  
+ **Mayor consumo de almacenamiento:** Si la tabla tiene millones de registros, el espacio desperdiciado puede afectar el tamaño total de la base de datos.  
+
+ Sin embargo, **el beneficio de mejorar actualizaciones** puede superar estos costos en bases de datos con cambios frecuentes. **Todo depende del caso de uso.**  
 
 
 
