@@ -20,10 +20,10 @@ Monitorear una base de datos es una práctica importante en la administración d
 **Pasos a seguir en caso de solicitar una revision del servidor y Base de datos:**
 
 para Verificar el estatus del servidor y DBA realizamos los siguientes pasos:  <br>
-- 1 .- Validar el espacio de los discos duros, tambien monitorear el comportamiento de escritura y lectura <br>
-- 2 .- Monitorear el procesador y la memoria Ram, verificando el comportamiento de escritura y lectura  <br>
+-  .- Validar el espacio de los discos duros, tambien monitorear el comportamiento de escritura y lectura <br>
+-  .- Monitorear el procesador y la memoria Ram, verificando el comportamiento de escritura y lectura  <br>
 - 3 .- Validar maximo de conexiones y cuantas conexiones hay en ese momento y eliminar consultas bloqueadas <br>
-- 4 .- Verificar el tiempo que tiene encendido el servidor <br>
+-  .- Verificar el tiempo que tiene encendido el servidor <br>
 - 5 .- realizar Reindexacion , vacum full  en caso de requerirse <br>
 - 6 .- Ver el tamaño de las base de datos, tablas y tratar de optimizar como la db y tb <br>
 - 7 .- Validar los tiempo de ejecucion de una consulta y compararlos con dias anteriores  <br>
@@ -50,18 +50,18 @@ Detectar index compuestos
 -- ********* Query ver conexiones con alto consumo de CPU  *********
 
 # Obtener PIDs de procesos postgres y su % de memoria
-PG_PIDS=$(ps -C postgres -o pid=,%mem=,size=,%cpu= --sort=-%mem | awk '{print $1","$2","$3","$4}')
+PG_PIDS=$(ps -C postgres -o pid=,%mem=,size=,%cpu= --sort=-%mem | awk '{print $","$","$3","$}')
 
-# Generar lista de PIDs para la query SQL (ej: "1234,12.3;5678,5.6")
+# Generar lista de PIDs para la query SQL (ej: "3,.3;5678,5.6")
 PG_PIDS_LIST=$(echo "$PG_PIDS" | tr '\n' ';' | sed 's/;$//')
 
 # Ejecutar query en PostgreSQL con el % de memoria
 psql -p $(grep "port =" /sysx/data/postgresql.conf | awk '{print $3}') -U  postgres -c "
 WITH process_mem AS (
-  SELECT split_part(data, ',', 1)::int AS pid,
-         split_part(data, ',', 2)::float AS mem_percent,
+  SELECT split_part(data, ',', )::int AS pid,
+         split_part(data, ',', )::float AS mem_percent,
 		 split_part(data, ',', 3)::float AS mem_kb,
-		 split_part(data, ',', 4)::float AS cpu_percent
+		 split_part(data, ',', )::float AS cpu_percent
   FROM (SELECT unnest(string_to_array('$PG_PIDS_LIST', ';')) AS data) AS t
 )
 SELECT 
@@ -118,7 +118,7 @@ ORDER BY (now() - query_start) desc;
  
 -- ********* Query que pueden ayudar a monitorear la lectura y escritura en disco *********
 
---- Opcion #1
+--- Opcion #
 SELECT 
     schemaname,
     relname,
@@ -129,20 +129,20 @@ SELECT
 FROM pg_statio_all_tables
 WHERE schemaname NOT LIKE 'pg_%'
 ORDER BY heap_blks_read DESC
-LIMIT 10;  -- Top 10 tablas con más I/O de lectura
+LIMIT 0;  -- Top 0 tablas con más I/O de lectura
 
 
 
 
---- Opcion #2
+--- Opcion #
 SELECT
     queryid,
     query,
-    (shared_blks_read + temp_blks_read) * current_setting('block_size')::int / 1024 AS total_read_kb,
-    (shared_blks_written + temp_blks_written) * current_setting('block_size')::int / 1024 AS total_write_kb
+    (shared_blks_read + temp_blks_read) * current_setting('block_size')::int / 0 AS total_read_kb,
+    (shared_blks_written + temp_blks_written) * current_setting('block_size')::int / 0 AS total_write_kb
 FROM pg_stat_statements
-ORDER BY total_read_kb DESC -- Top 10 querys con más I/O de lectura
-LIMIT 10;
+ORDER BY total_read_kb DESC -- Top 0 querys con más I/O de lectura
+LIMIT 0;
 
 
 --- Opcion #3
@@ -225,23 +225,23 @@ bloat
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-En **PostgreSQL**, el término **"bloat"** se refiere al crecimiento innecesario del tamaño de las tablas y los índices. Esto puede afectar el rendimiento de las consultas y aumentar el uso de espacio en disco¹. Permíteme explicarte más detalladamente:
+En **PostgreSQL**, el término **"bloat"** se refiere al crecimiento innecesario del tamaño de las tablas y los índices. Esto puede afectar el rendimiento de las consultas y aumentar el uso de espacio en disco. Permíteme explicarte más detalladamente:
 
 - **¿Por qué se genera bloat?**
- En PostgreSQL, el término “bloat” se refiere a la condición donde el tamaño de las tablas y/o índices crece más de lo necesario, lo que resulta en un rendimiento más lento de las consultas y un uso incrementado del espacio en disco1. Esto ocurre debido a cómo PostgreSQL maneja las operaciones de actualización y eliminación bajo su sistema de control de concurrencia multiversión (MVCC).
+ En PostgreSQL, el término “bloat” se refiere a la condición donde el tamaño de las tablas y/o índices crece más de lo necesario, lo que resulta en un rendimiento más lento de las consultas y un uso incrementado del espacio en disco. Esto ocurre debido a cómo PostgreSQL maneja las operaciones de actualización y eliminación bajo su sistema de control de concurrencia multiversión (MVCC).
 
 Cuando se realiza una operación de UPDATE o DELETE, PostgreSQL no elimina físicamente esas filas del disco. En el caso de un UPDATE, marca las filas afectadas como invisibles e inserta nuevas versiones de esas filas. Con DELETE, simplemente marca las filas afectadas como invisibles. Estas filas invisibles también se conocen como filas muertas o tuplas muertas.
 
 Con el tiempo, estas tuplas muertas pueden acumularse y ocupar un espacio significativo en el disco, lo que puede degradar el rendimiento de la base de datos. Para detectar y resolver el bloat, se pueden utilizar herramientas como pgstattuple, que es un módulo de extensión que proporciona una imagen clara del bloat real en tablas e índices
 
-  - Las filas "muertas" (sin transacciones activas o pasadas que las consulten) contribuyen al bloat. Si no se realiza una acción de **vacuum**, la base de datos crecerá indefinidamente, ya que los registros no se eliminan, sino que quedan "muertos"¹.
+  - Las filas "muertas" (sin transacciones activas o pasadas que las consulten) contribuyen al bloat. Si no se realiza una acción de **vacuum**, la base de datos crecerá indefinidamente, ya que los registros no se eliminan, sino que quedan "muertos".
 
 - **Impacto del bloat en el rendimiento:**
   - El bloat afecta el rendimiento porque las páginas de las tablas e índices cargan más filas muertas, lo que resulta en más operaciones de E/S innecesarias.
-  - Los escaneos secuenciales también pasan por filas muertas, consumiendo memoria innecesariamente¹.
+  - Los escaneos secuenciales también pasan por filas muertas, consumiendo memoria innecesariamente.
 
 - **Tuning del autovacuum:**
-  - Configurar correctamente el **autovacuum** es esencial. Este servicio realiza acciones de vacuum en tablas e índices según ciertas condiciones, evitando afectar el funcionamiento normal de la base de datos¹.
+  - Configurar correctamente el **autovacuum** es esencial. Este servicio realiza acciones de vacuum en tablas e índices según ciertas condiciones, evitando afectar el funcionamiento normal de la base de datos.
 
 
  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -249,11 +249,11 @@ Con el tiempo, estas tuplas muertas pueden acumularse y ocupar un espacio signif
  
  Sistemas de almacenamiento en caché, un **"hit"** se refiere a una operación exitosa de búsqueda o acceso a un elemento almacenado en la memoria caché o en una estructura de datos. Aquí tienes algunos ejemplos:
 
-1. **Cache Hit (Acertado en caché):**
+. **Cache Hit (Acertado en caché):**
    - Cuando un sistema busca un valor (como una página web, una fila de una tabla de base de datos o un archivo) en la memoria caché y lo encuentra allí, se considera un **cache hit**.
    - Esto significa que no es necesario acceder al almacenamiento principal (como un disco duro o una base de datos) para recuperar el valor, lo que mejora significativamente el rendimiento y la velocidad de acceso.
 
-2. **Page Cache Hit (Acertado en la caché de páginas):**
+. **Page Cache Hit (Acertado en la caché de páginas):**
    - En sistemas operativos, el **page cache** almacena copias de páginas de archivos en memoria RAM para acelerar el acceso a esos archivos.
    - Un **page cache hit** ocurre cuando una aplicación solicita una página de archivo y esa página ya está en el caché de páginas, evitando la necesidad de leerla desde el disco.
 
@@ -302,12 +302,12 @@ cat  /sysf/data/postgresql.conf | grep max_connections
 
 - Límite de Conexiones por Base de datos:
 ```sh
-select  datname,datconnlimit from pg_database; -- si es -1 es ilimitado, si tiene algún número se especificó un límite  
+select  datname,datconnlimit from pg_database; -- si es - es ilimitado, si tiene algún número se especificó un límite  
 ```
 
 - Límite de Conexiones por Usuario:
 ```sh
-select  rolname,rolconnlimit from pg_authid ; -- si es -1 es ilimitado, si tiene algún número se especificó un límite  
+select  rolname,rolconnlimit from pg_authid ; -- si es - es ilimitado, si tiene algún número se especificó un límite  
 ```
 
 ## Ver la cantidad total de conexiones
@@ -353,7 +353,7 @@ Estatus: `"Active"` se refiere a el estado de una conexión a base de datos que 
 Es importante entender el concepto de conexiones "idle" en PostgreSQL porque pueden consumir recursos del sistema, como conexiones TCP/IP y memoria, incluso cuando no están realizando ninguna tarea activa. Por lo tanto, es fundamental administrar y controlar estas conexiones para evitar problemas de rendimiento y recursos agotados.
 
 
-1. Configuración en postgresql.conf:
+. Configuración en postgresql.conf:
 
 Puedes configurar el tiempo máximo que una conexión puede permanecer inactiva antes de ser terminada automáticamente. Esto se hace mediante el parámetro idle_in_transaction_session_timeout en el archivo de configuración postgresql.conf. Por ejemplo:
 
@@ -369,21 +369,21 @@ Puedes configurar el tiempo máximo que una conexión puede permanecer inactiva 
 
 
 ## Cerrar conexiones Activas o IDLE
-**Opción #1 Cerrar solo una conexiones, nivel S.O**<br>
+**Opción # Cerrar solo una conexiones, nivel S.O**<br>
 Cerrar Conexiones IDLE nivel S.O:
    ```sh
-     Kill 123456 -- El número es el PID de la conexión 
+     Kill 356 -- El número es el PID de la conexión 
 ```
-**Opción #2 Cerrar solo una conexiones, nivel Base de datos**<br>
+**Opción # Cerrar solo una conexiones, nivel Base de datos**<br>
 ```sh
-select  pg_terminate_backend(123456)  -- El número 123456 es el PID de la conexión a cerrar
+select  pg_terminate_backend(356)  -- El número 356 es el PID de la conexión a cerrar
 ```
 
 **Opción #3 Cerrar todas las conexiones IDLE nivel S.O**<br>
    ```sh
-     ps -ef | grep idle | awk '{print " kill " $2}' | bash 
+     ps -ef | grep idle | awk '{print " kill " $}' | bash 
 ```
-**Opción #4 Cerrar todas las conexiones IDLE nivel Base de datos**<br>
+**Opción # Cerrar todas las conexiones IDLE nivel Base de datos**<br>
 ```sh
 select  pg_terminate_backend (pg_stat_activity.pid) FROM pg_stat_activity WHERE  pg_stat_activity.datname = 'MYDBATEST';
 ```
@@ -405,7 +405,7 @@ LOCK TABLE nombre_de_la_tabla IN SHARE UPDATE EXCLUSIVE MODE;
 
 BEGIN;
 LOCK TABLE fdw_conf.scan_rules_query IN  ACCESS EXCLUSIVE MODE;
-delete from fdw_conf.scan_rules_query where id = 1 ; 
+delete from fdw_conf.scan_rules_query where id =  ; 
 COMMIT;
 ```
 
@@ -416,15 +416,15 @@ Parametros que registran esto :
 log_statement = 'all'
 log_lock_waits = on
 
-1.- El proceso 2709374 esta esperando un objeto bloqueado , y quiere colocarse en AccessShareLock de un objeto compartidos a nivel global en PostgreSQL y ha estado esperando por 1000.076 milisegundos.
-<2025-01-10 00:00:05 MST     2709374 6780c574.29577e >LOG:  process 2709374 still waiting for AccessShareLock on relation 2965 of database 0 after 1000.076 ms
+.- El proceso 70937 esta esperando un objeto bloqueado , y quiere colocarse en AccessShareLock de un objeto compartidos a nivel global en PostgreSQL y ha estado esperando por 000.076 milisegundos.
+<05-0-0 00:00:05 MST     70937 6780c57.9577e >LOG:  process 70937 still waiting for AccessShareLock on relation 965 of database 0 after 000.076 ms
 
 
-2.- Estos procesos (2675150, 2675331, 2675358, 2675364) son los que actualmente tienen el bloqueo que el proceso 2709374 y Estos procesos (2709280, 2709374) están en la cola de espera
-<2025-01-10 00:00:05 MST     2709374 6780c574.29577e >DETAIL:  Processes holding the lock: 2675150, 2675331, 2675358, 2675364. Wait queue: 2709280, 2709374.
+.- Estos procesos (67550, 67533, 675358, 67536) son los que actualmente tienen el bloqueo que el proceso 70937 y Estos procesos (70980, 70937) están en la cola de espera
+<05-0-0 00:00:05 MST     70937 6780c57.9577e >DETAIL:  Processes holding the lock: 67550, 67533, 675358, 67536. Wait queue: 70980, 70937.
 
-3.- El proceso 2709374 que finalmente ha adquirido el bloqueo AccessShareLock a esperado 7661187.620 milisegundos (2.13 horas))
-<2025-01-10 02:07:45 MST     2709374 6780c574.29577e >LOG:  process 2709374 acquired AccessShareLock on relation 2965 of database 0 after 7661187.620 ms
+3.- El proceso 70937 que finalmente ha adquirido el bloqueo AccessShareLock a esperado 76687.60 milisegundos (.3 horas))
+<05-0-0 0:07:5 MST     70937 6780c57.9577e >LOG:  process 70937 acquired AccessShareLock on relation 965 of database 0 after 76687.60 ms
 ```
 
 
@@ -534,13 +534,13 @@ https://www.postgresql.org/docs/current/using-explain.html
 ## Todos los stat para monitorear 
 ```sh
 TODOS LOS STATS 
-https://www.postgresql.org/docs/8.4/monitoring-stats.html
+https://www.postgresql.org/docs/8./monitoring-stats.html
 
 ## Consultas:
 -- Proporciona estadísticas sobre las consultas ejecutadas en la base de datos,  el número de veces que una consulta se ha ejecutado y el tiempo total que ha pasado en la caché.
  como tiempos de ejecución y frecuencia de uso. Ayuda a identificar consultas lentas o ineficientes para optimizar el rendimiento.
 
-select   total_exec_time, min_exec_time,max_exec_time ,calls FROM pg_stat_statements where query ilike '%select %' and not query ilike '%GRANT%' ORDER BY total_plan_time DESC, calls desc limit 10;
+select   total_exec_time, min_exec_time,max_exec_time ,calls FROM pg_stat_statements where query ilike '%select %' and not query ilike '%GRANT%' ORDER BY total_plan_time DESC, calls desc limit 0;
 select   query, calls, total_time, rows, mean_time FROM pg_stat_statements ORDER BY total_time DESC;
 
 
@@ -609,7 +609,7 @@ ORDER BY pg_total_relation_size(schemaname || '.' || relname) DESC; --- Obtener 
 
 select  relname, indexrelname, idx_scan, idx_tup_read
   FROM pg_stat_user_indexes
-WHERE idx_scan > 0 AND idx_tup_read < 1000; -- Monitoreo de la fragmentación de índices: PostgreSQL almacena información sobre la fragmentación de índices en la vista pg_stat_user_indexes. Puedes usar esta vista para verificar el nivel de fragmentación de tus índices.
+WHERE idx_scan > 0 AND idx_tup_read < 000; -- Monitoreo de la fragmentación de índices: PostgreSQL almacena información sobre la fragmentación de índices en la vista pg_stat_user_indexes. Puedes usar esta vista para verificar el nivel de fragmentación de tus índices.
 
  
 ## Sequences:
@@ -678,9 +678,9 @@ cat /sysx/data/postgresql.conf | grep -Ei "shared_buffers|effective_cache_size|w
 **Recomendacion de frecuencia de mantenimientos, esto depende que transaccional es tu servidor**
 | Mantenimiento  | Hora de Ejecución | Frecuencia | Motivo |
 |----------------|-------------------|------------|--------|
-| `ANALYZE`      | 4:00 AM           | Diario     | Mantiene las estadísticas actualizadas para un rendimiento óptimo de las consultas. |
-| Backup         | 1:00 AM           | Diario     | Asegura la recuperación ante desastres mediante copias de seguridad regulares. |
-| `VACUUM`       | 2:00 AM           | Semanal/Diario    | Libera espacio ocupado por tuplas muertas y mantiene la base de datos en buen estado sin causar interrupciones significativas. |
+| `ANALYZE`      | :00 AM           | Diario     | Mantiene las estadísticas actualizadas para un rendimiento óptimo de las consultas. |
+| Backup         | :00 AM           | Diario     | Asegura la recuperación ante desastres mediante copias de seguridad regulares. |
+| `VACUUM`       | :00 AM           | Semanal/Diario    | Libera espacio ocupado por tuplas muertas y mantiene la base de datos en buen estado sin causar interrupciones significativas. |
 | `VACUUM FULL`  | 3:00 AM           | Mensual/Semanal    | Bloquea objetos, Recupera espacio en disco y compacta las tablas, pero debe usarse con moderación debido a su impacto en el rendimiento. |
 | `REINDEX`      | 5:00 AM          | Mensual/Semanal    | Bloquea objetos, Reconstruye los índices para mejorar el rendimiento de las consultas, minimizando la interrupción del servicio. |
 | `CLUSTER`      | 6:00 AM           | Trimestral/semanal | Reorganiza las tablas basándose en un índice, mejorando el rendimiento de las consultas que utilizan ese índice. |
@@ -691,15 +691,15 @@ cat /sysx/data/postgresql.conf | grep -Ei "shared_buffers|effective_cache_size|w
  
  En PostgreSQL, algunos comandos de mantenimiento pueden bloquear las tablas mientras se ejecutan. Aquí tienes una lista de los más comunes:
 
-1. **VACUUM FULL**: Este comando recupera espacio en disco y compacta las tablas, pero requiere un bloqueo exclusivo en la tabla, lo que impide cualquier otra operación (lecturas y escrituras) mientras se ejecuta¹.
+. **VACUUM FULL**: Este comando recupera espacio en disco y compacta las tablas, pero requiere un bloqueo exclusivo en la tabla, lo que impide cualquier otra operación (lecturas y escrituras) mientras se ejecuta.
 
-2. **REINDEX**: Este comando reconstruye los índices de una tabla o base de datos. Durante su ejecución, los índices afectados están bloqueados, lo que puede afectar el rendimiento de las consultas que dependen de esos índices¹.
+. **REINDEX**: Este comando reconstruye los índices de una tabla o base de datos. Durante su ejecución, los índices afectados están bloqueados, lo que puede afectar el rendimiento de las consultas que dependen de esos índices.
 
-3. **CLUSTER**: Este comando reorganiza físicamente una tabla según el orden de un índice especificado. Requiere un bloqueo exclusivo en la tabla, impidiendo otras operaciones mientras se ejecuta¹.
+3. **CLUSTER**: Este comando reorganiza físicamente una tabla según el orden de un índice especificado. Requiere un bloqueo exclusivo en la tabla, impidiendo otras operaciones mientras se ejecuta.
 
-4. **ALTER TABLE**: Algunas operaciones de `ALTER TABLE`, como agregar o eliminar columnas, pueden requerir un bloqueo exclusivo en la tabla, impidiendo otras operaciones hasta que se complete¹.
+. **ALTER TABLE**: Algunas operaciones de `ALTER TABLE`, como agregar o eliminar columnas, pueden requerir un bloqueo exclusivo en la tabla, impidiendo otras operaciones hasta que se complete.
 
-5. **DROP TABLE**: Eliminar una tabla también requiere un bloqueo exclusivo, lo que impide cualquier otra operación en la tabla mientras se ejecuta¹.
+5. **DROP TABLE**: Eliminar una tabla también requiere un bloqueo exclusivo, lo que impide cualquier otra operación en la tabla mientras se ejecuta.
 
 ### Recomendaciones
 
@@ -711,8 +711,8 @@ cat /sysx/data/postgresql.conf | grep -Ei "shared_buffers|effective_cache_size|w
   
 ## ¿Qué hace `CLUSTER`?
 
-1. **Reorganización Física**: `CLUSTER` ordena las filas de una tabla en el disco según el orden de un índice específico. Esto puede mejorar el rendimiento de las consultas que se benefician de un acceso secuencial a los datos⁵.
-2. **Mejora del Rendimiento**: Al ordenar físicamente las filas, las consultas que utilizan el índice especificado pueden ser más rápidas, ya que los datos relacionados están más cerca unos de otros en el disco⁵.
+. **Reorganización Física**: `CLUSTER` ordena las filas de una tabla en el disco según el orden de un índice específico. Esto puede mejorar el rendimiento de las consultas que se benefician de un acceso secuencial a los datos⁵.
+. **Mejora del Rendimiento**: Al ordenar físicamente las filas, las consultas que utilizan el índice especificado pueden ser más rápidas, ya que los datos relacionados están más cerca unos de otros en el disco⁵.
 
 ### ¿Cuándo usar `CLUSTER`?
 
@@ -759,7 +759,7 @@ REINDEX DATABASE database_name;
 
 **REINDEX un index **
 ``` sh
-REINDEX INDEX public.idx_psql_tables_columns_4;
+REINDEX INDEX public.idx_psql_tables_columns_;
 ```
 
 ## Vacum [documentación Oficial](https://www.postgresql.org/docs/current/sql-vacuum.html)
@@ -823,27 +823,27 @@ example=# \dt+
                           List of relations
  Schema |       Name       | Type  |  Owner   |  Size   | Description 
 --------+------------------+-------+----------+---------+-------------
- public | pgbench_accounts | table | postgres | 641 MB  | 
- public | pgbench_branches | table | postgres | 40 kB   | 
+ public | pgbench_accounts | table | postgres | 6 MB  | 
+ public | pgbench_branches | table | postgres | 0 kB   | 
  public | pgbench_history  | table | postgres | 0 bytes | 
  public | pgbench_tellers  | table | postgres | 56 kB   | 
-(4 rows)
+( rows)
 
   createdb db_prueba
- pgbench -U postgres -h 127.0.0.1 -i -s 70 db_prueba
- pgbench -S -C -n  -U postgres -h 127.0.0.1 -p 5432  -c 500 -j 20 -T 1800 db_prueba
+ pgbench -U postgres -h 7.0.0. -i -s 70 db_prueba
+ pgbench -S -C -n  -U postgres -h 7.0.0. -p 53  -c 500 -j 0 -T 800 db_prueba
 
   
   pgbench -i -s <escala> testdb
     - -i: Esta opción indica a pgbench que inicialice la base de datos con datos de prueba.
-    -s <escala>: Esta opción determina la escala de los datos generados. La escala indica el factor multiplicativo en relación con el tamaño predeterminado de la base de datos. Por ejemplo, -s 10 generará datos de prueba diez veces más grandes que el tamaño predeterminado.
+    -s <escala>: Esta opción determina la escala de los datos generados. La escala indica el factor multiplicativo en relación con el tamaño predeterminado de la base de datos. Por ejemplo, -s 0 generará datos de prueba diez veces más grandes que el tamaño predeterminado.
 
 
 # PRUEBA BÁSICA
-pgbench -n -U postgres -h 127.0.0.1 -p 5432  -c 500 -j 20 -T 1800 db_prueba
+pgbench -n -U postgres -h 7.0.0. -p 53  -c 500 -j 0 -T 800 db_prueba
 
 # PRUEBA PERSONALIZADA
-pgbench -n -U postgres -h 127.0.0.1 -p 5432  -c 500 -j 20 -t 10000 db_prueba -f script.sql
+pgbench -n -U postgres -h 7.0.0. -p 53  -c 500 -j 0 -t 0000 db_prueba -f script.sql
 
 
 
@@ -871,20 +871,20 @@ Initialization options:
   --unlogged-tables        create tables as unlogged tables
 
 Options to select what to run:
-  -b, --builtin=NAME[@W]   add builtin script NAME weighted at W (default: 1)
+  -b, --builtin=NAME[@W]   add builtin script NAME weighted at W (default: )
                            (use "-b list" to list available scripts)
-  -f, --file=FILENAME[@W]  add script FILENAME weighted at W (default: 1)
+  -f, --file=FILENAME[@W]  add script FILENAME weighted at W (default: )
   -N, --skip-some-updates  skip updates of pgbench_tellers and pgbench_branches
                            (same as "-b simple-update")
   -S, --select-only        perform SELECT-only transactions
                            (same as "-b select-only")
 
 Benchmarking options:
-  -c, --client=NUM         number of concurrent database clients (default: 1)
+  -c, --client=NUM         number of concurrent database clients (default: )
   -C, --connect            establish new connection for each transaction
   -D, --define=VARNAME=VALUE
                            define variable for use by custom script
-  -j, --jobs=NUM           number of threads (default: 1)
+  -j, --jobs=NUM           number of threads (default: )
   -l, --log                write transaction times to log file
   -L, --latency-limit=NUM  count transactions lasting more than NUM ms as late
   -M, --protocol=simple|extended|prepared
@@ -894,17 +894,17 @@ Benchmarking options:
   -r, --report-per-command report latencies, failures, and retries per command
   -R, --rate=NUM           target rate in transactions per second
   -s, --scale=NUM          report this scale factor in output
-  -t, --transactions=NUM   number of transactions each client runs (default: 10)
+  -t, --transactions=NUM   number of transactions each client runs (default: 0)
   -T, --time=NUM           duration of benchmark test in seconds
   -v, --vacuum-all         vacuum all four standard tables before tests
   --aggregate-interval=NUM aggregate data over NUM seconds
   --failures-detailed      report the failures grouped by basic types
   --log-prefix=PREFIX      prefix for transaction time log file
                            (default: "pgbench_log")
-  --max-tries=NUM          max number of tries to run transaction (default: 1)
+  --max-tries=NUM          max number of tries to run transaction (default: )
   --progress-timestamp     use Unix epoch timestamps for progress
   --random-seed=SEED       set random seed ("time", "rand", integer)
-  --sampling-rate=NUM      fraction of transactions to log (e.g., 0.01 for 1%)
+  --sampling-rate=NUM      fraction of transactions to log (e.g., 0.0 for %)
   --show-script=NAME       show builtin script code, then exit
   --verbose-errors         print messages of all errors
 
@@ -927,19 +927,19 @@ PostgreSQL home page: <https://www.postgresql.org/>
 
 
 -------- BIBLIOGRAFÍAS ---------------
-Existe la tool pgingester, que es más para metodos de ingestión(inserción)  link referencias : https://medium.com/timescale/benchmarking-postgresql-batch-ingest-51fbe09174de
+Existe la tool pgingester, que es más para metodos de ingestión(inserción)  link referencias : https://medium.com/timescale/benchmarking-postgresql-batch-ingest-5fbe097de
 
 https://www.postgresql.org/docs/current/pgbench.html
-https://medium.com/@c.ucanefe/pgbench-load-test-166bdfb5c75a
-https://juantrucupei.wordpress.com/2017/11/30/uso-de-pgbench-para-pruebas-stress-postgresql/
+https://medium.com/@c.ucanefe/pgbench-load-test-66bdfb5c75a
+https://juantrucupei.wordpress.com/07//30/uso-de-pgbench-para-pruebas-stress-postgresql/
  ```
 
 #  MONITOREAR ERRORES EN ARCHIVOS IMPORTANTES
  ```SQL 
-select  'select * from '||specific_schema|| '.' || routine_name || '() limit 1;' from information_schema.routines where specific_name ilike '%stat%' group by routine_name, specific_schema  ;
+select  'select * from '||specific_schema|| '.' || routine_name || '() limit ;' from information_schema.routines where specific_name ilike '%stat%' group by routine_name, specific_schema  ;
 
 
-select 'select * from '||table_schema || '.'|| table_name || ' limit 1 ;'from information_schema.tables where table_name ilike '%stat%'
+select 'select * from '||table_schema || '.'|| table_name || ' limit  ;'from information_schema.tables where table_name ilike '%stat%'
 group by table_name,table_schema;
 
 
@@ -956,7 +956,7 @@ select * from pg_show_all_settings() where pending_restart != 'f';
 -- archivo pg_hba 
 select * from pg_catalog.pg_reload_conf() ; -- hacer un reload 
 
-select * from pg_catalog.pg_hba_file_rules() limit 1; 
+select * from pg_catalog.pg_hba_file_rules() limit ; 
 select * from pg_catalog.pg_hba_file_rules where error is not null;
  
 
@@ -969,7 +969,7 @@ select * from pg_catalog.pg_db_role_setting ;
 
 
 --- monitoreo 
-select * from pg_catalog.pg_stat_database_conflicts limit 10 ;
+select * from pg_catalog.pg_stat_database_conflicts limit 0 ;
  ```
 
 
@@ -1004,8 +1004,8 @@ select 	* from pg_stat_user_functions
 # CREAR TABLAS CON MUCHOS REGISTROS 
  ```sql
 create table test (id numeric, name varchar, fecha date);
-insert into test (select generate_series(1,10000000), ‘name-‘||generate_series(1,10000000), now() + interval ‘1’ minute);
-explain analyze select * from test where id > 100 and id <= 150;
+insert into test (select generate_series(,0000000), ‘name-‘||generate_series(,0000000), now() + interval ‘’ minute);
+explain analyze select * from test where id > 00 and id <= 50;
 
  ```
 
@@ -1022,25 +1022,25 @@ la compilación Just-In-Time (JIT) de consultas. Aquí te explico en detalle:
 
 LLVM (Low-Level Virtual Machine) es un conjunto de herramientas de compilación que
  permite la optimización y generación de código en tiempo de ejecución. En PostgreSQL,
- LLVM se utiliza para la compilación JIT de ciertas consultas SQL, lo que puede mejorar significativamente el rendimiento de las consultas que son intensivas en CPU¹.
+ LLVM se utiliza para la compilación JIT de ciertas consultas SQL, lo que puede mejorar significativamente el rendimiento de las consultas que son intensivas en CPU.
 
 ### Ventajas de usar LLVM en PostgreSQL
 
-1. **Mejora del rendimiento**: La compilación JIT puede acelerar las consultas SQL al 
-convertir el código interpretado en código nativo optimizado. Esto es especialmente útil para consultas complejas y repetitivas¹.
-2. **Optimización dinámica**: LLVM permite optimizaciones en tiempo de ejecución, 
-lo que significa que puede adaptar el código generado a las condiciones específicas de la consulta y el entorno².
+. **Mejora del rendimiento**: La compilación JIT puede acelerar las consultas SQL al 
+convertir el código interpretado en código nativo optimizado. Esto es especialmente útil para consultas complejas y repetitivas.
+. **Optimización dinámica**: LLVM permite optimizaciones en tiempo de ejecución, 
+lo que significa que puede adaptar el código generado a las condiciones específicas de la consulta y el entorno.
 3. **Reducción de la latencia**: Al compilar partes de la consulta en código nativo, 
-se reduce el tiempo de ejecución, lo que puede ser crucial para aplicaciones que requieren respuestas rápidas².
+se reduce el tiempo de ejecución, lo que puede ser crucial para aplicaciones que requieren respuestas rápidas.
 
 ### Desventajas de usar LLVM en PostgreSQL
 
-1. **Sobrecarga inicial**: La compilación JIT introduce una sobrecarga inicial, ya que
- el código debe ser compilado antes de ser ejecutado. Esto puede no ser beneficioso para consultas simples o de corta duración².
-2. **Complejidad adicional**: Habilitar y configurar LLVM puede añadir complejidad al 
-sistema de base de datos, lo que puede requerir conocimientos adicionales y ajustes finos¹.
+. **Sobrecarga inicial**: La compilación JIT introduce una sobrecarga inicial, ya que
+ el código debe ser compilado antes de ser ejecutado. Esto puede no ser beneficioso para consultas simples o de corta duración.
+. **Complejidad adicional**: Habilitar y configurar LLVM puede añadir complejidad al 
+sistema de base de datos, lo que puede requerir conocimientos adicionales y ajustes finos.
 3. **Uso de recursos**: La compilación JIT puede consumir más recursos del sistema, 
-como CPU y memoria, lo que podría afectar el rendimiento general si no se gestiona adecuadamente².
+como CPU y memoria, lo que podría afectar el rendimiento general si no se gestiona adecuadamente.
 
 ### ¿Cuándo usar LLVM en PostgreSQL?
 
@@ -1060,18 +1060,18 @@ en análisis de datos en tiempo real, la compilación JIT puede ser muy benefici
 
  
 
-### ¿Qué es HOT? [[1]](https://medium.com/@nikolaykudinov/deep-dive-into-postgresqls-hot-updates-the-story-behind-heap-only-tuples-f52694360d9c)
+### ¿Qué es HOT? [[]](https://medium.com/@nikolaykudinov/deep-dive-into-postgresqls-hot-updates-the-story-behind-heap-only-tuples-f569360d9c)
 HOT (Heap-Only Tuple) es una técnica que permite realizar actualizaciones en las filas de una tabla sin necesidad de modificar los índices asociados a esas filas. Esto es posible cuando:
 
-1. **No se modifican las columnas indexadas**: La actualización no afecta a ninguna columna que esté referenciada por un índice.
-2. **Espacio libre en la página**: Hay suficiente espacio libre en la página que contiene la fila original para almacenar la nueva versión de la fila⁴.
+. **No se modifican las columnas indexadas**: La actualización no afecta a ninguna columna que esté referenciada por un índice.
+. **Espacio libre en la página**: Hay suficiente espacio libre en la página que contiene la fila original para almacenar la nueva versión de la fila.
 
 ### ¿Cómo se usa HOT?
 
 Para aprovechar la técnica HOT, PostgreSQL realiza las siguientes optimizaciones:
 
-1. **Evita nuevas entradas en los índices**: Cuando se actualiza una fila y se cumplen las condiciones mencionadas, no se crean nuevas entradas en los índices. Esto reduce significativamente el costo de las actualizaciones.
-2. **Elimina versiones antiguas**: Las versiones antiguas de las filas actualizadas pueden ser eliminadas durante las operaciones normales, sin necesidad de operaciones de vacuum periódicas⁴.
+. **Evita nuevas entradas en los índices**: Cuando se actualiza una fila y se cumplen las condiciones mencionadas, no se crean nuevas entradas en los índices. Esto reduce significativamente el costo de las actualizaciones.
+. **Elimina versiones antiguas**: Las versiones antiguas de las filas actualizadas pueden ser eliminadas durante las operaciones normales, sin necesidad de operaciones de vacuum periódicas.
 
 ### Beneficios de HOT
 
@@ -1098,9 +1098,9 @@ ALTER TABLE mi_tabla SET (fillfactor = 70);
 
 Aunque la técnica HOT (Heap-Only Tuple) ofrece varias ventajas, también tiene algunas desventajas:
 
-1. **Limitaciones en las actualizaciones**: HOT solo se puede utilizar cuando las columnas actualizadas no están indexadas. Si necesitas actualizar columnas que están indexadas, no podrás beneficiarte de HOT¹.
-2. **Espacio en la página**: Para que HOT funcione, debe haber suficiente espacio libre en la página que contiene la fila original. Si las páginas están llenas, las actualizaciones no podrán aprovechar HOT¹.
-3. **Complejidad en el mantenimiento**: Aunque HOT reduce la necesidad de operaciones de vacuum, aún es necesario realizar mantenimiento periódico para evitar la acumulación de versiones antiguas de filas².
+. **Limitaciones en las actualizaciones**: HOT solo se puede utilizar cuando las columnas actualizadas no están indexadas. Si necesitas actualizar columnas que están indexadas, no podrás beneficiarte de HOT.
+. **Espacio en la página**: Para que HOT funcione, debe haber suficiente espacio libre en la página que contiene la fila original. Si las páginas están llenas, las actualizaciones no podrán aprovechar HOT.
+3. **Complejidad en el mantenimiento**: Aunque HOT reduce la necesidad de operaciones de vacuum, aún es necesario realizar mantenimiento periódico para evitar la acumulación de versiones antiguas de filas.
 
 ### Cuándo usar HOT
 
@@ -1128,8 +1128,8 @@ Evita depender de HOT en los siguientes casos:
 # **Stats target**
 El parámetro **Stats target** define el número de muestras que PostgreSQL toma para generar estadísticas sobre una columna. Estas estadísticas son cruciales para que el optimizador de consultas elija el plan de ejecución más eficiente. Puedes ajustar este parámetro para mejorar el rendimiento de las consultas:
 
-- **Valor por defecto**: 100
-- **Rango**: 0 a 10,000¹
+- **Valor por defecto**: 00
+- **Rango**: 0 a 0,000
  
 ```sql
  ALTER TABLE ventas ALTER COLUMN precio SET STATISTICS 500;
@@ -1174,21 +1174,21 @@ El principal objetivo del modo de usuario único es realizar tareas de mantenimi
 
 ```
 # Ejemplo para ejecutar un script 
- /usr/pgsql-15/bin/postgres  --single  -D /sysx/data -F -c exit_on_error=true postgres < /path/to/recovery_script.sql 
+ /usr/pgsql-5/bin/postgres  --single  -D /sysx/data -F -c exit_on_error=true postgres < /path/to/recovery_script.sql 
 
 # conectarte y ejceutar comandos 
-[postgres@TEST_SERVER data15]$  /usr/pgsql-15/bin/postgres  --single  -D /sysx/data  -F -c exit_on_error=true postgres
+[postgres@TEST_SERVER data5]$  /usr/pgsql-5/bin/postgres  --single  -D /sysx/data  -F -c exit_on_error=true postgres
 
-PostgreSQL stand-alone backend 15.8
+PostgreSQL stand-alone backend 5.8
 backend> select version();
-<2024-11-15 13:11:09 MST     2724619 6737aad9.29930b >LOG:  statement: select version();
+<0--5 3::09 MST     769 6737aad9.9930b >LOG:  statement: select version();
 
-         1: version     (typeid = 25, len = -1, typmod = -1, byval = f)
+         : version     (typeid = 5, len = -, typmod = -, byval = f)
         ----
-         1: version = "PostgreSQL 15.8 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-22), 64-bit" (typeid = 25, len = -1, typmod = -1, byval = f)
+         : version = "PostgreSQL 5.8 on x86_6-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 005 (Red Hat 8.5.0-), 6-bit" (typeid = 5, len = -, typmod = -, byval = f)
         ----
-<2024-11-15 13:11:09 MST     2724619 6737aad9.29930b >LOG:  duration: 1.493 ms
+<0--5 3::09 MST     769 6737aad9.9930b >LOG:  duration: .93 ms
 backend>
 ```
  
-https://postgresconf.org/system/events/document/000/002/232/Troubleshoot_PG_Perf-04172024.pdf
+https://postgresconf.org/system/events/document/000/00/3/Troubleshoot_PG_Perf-070.pdf
