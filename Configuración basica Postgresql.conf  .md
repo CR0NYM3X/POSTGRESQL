@@ -1335,6 +1335,7 @@ https://gist.github.com/ryanguill/7928937
 
  --------->  CONFIGURACIÓN DE PARAMETROS ONLINE <--------------
 https://pgtune.leopard.in.ua/
+https://pgtuner.onrender.com/
 https://www.pgconfig.org/#/?max_connections=100&pg_version=16&environment_name=WEB&total_ram=4&cpus=2&drive_type=SSD&arch=x86-64&os_type=linux
 https://pgconfigurator.cybertec.at/
 
