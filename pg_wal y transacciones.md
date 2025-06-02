@@ -491,24 +491,25 @@ Si observas un número elevado de transacciones por segundo o un alto volumen de
 
 
 ### **1. Concepto de WAL**
-El Write-Ahead Logging (WAL) es un método estándar para asegurar la integridad de los datos. La idea central es que los cambios en los archivos de datos (donde residen las tablas e índices) deben escribirse solo después de que esos cambios se hayan registrado en los archivos WAL¹.
+El Write-Ahead Logging (WAL/ Registro de escritura anticipada) es un mecanismo de registro que garantiza la integridad de los datos y la recuperación ante fallos. Funciona registrando todas las modificaciones realizadas en la base de datos antes de que se confirmen en el almacenamiento físico.
 
 ### **2. Estructura de los Archivos WAL**
 - **Segmentos**: Los archivos WAL se almacenan en el directorio `pg_wal` como un conjunto de archivos de segmento, normalmente de 16 MB cada uno⁴.
 - **Páginas**: Cada segmento se divide en páginas, normalmente de 8 kB cada una⁴.
 
 ### **3. Proceso de Generación de WAL**
-1. **Registro de Transacciones**: Cuando se ejecuta una transacción, los cambios no se escriben inmediatamente en el disco. En su lugar, se registran primero en un archivo WAL³.
-2. **Número de Secuencia de Registro (LSN)**: Cada registro en el WAL tiene un Número de Secuencia de Registro (LSN), que es un desplazamiento en bytes dentro del WAL. Este número aumenta de manera monótona con cada nuevo registro⁴.
-3. **Flushing**: Los registros WAL se escriben primero en el buffer compartido y luego se vacían (flush) al almacenamiento permanente¹.
+1. **Registro de Transacciones**: Cuando se ejecuta una transacción, los cambios no se escriben inmediatamente en el disco. En su lugar, se registran primero en un archivo WAL.
+2. **Número de Secuencia de Registro (LSN)**: Cada registro en el WAL tiene un Número de Secuencia de Registro (LSN), que es un desplazamiento en bytes dentro del WAL. Este número aumenta de manera monótona con cada nuevo registro.
+3. **Flushing**: Los registros WAL se escriben primero en el buffer compartido.
 
 ### **4. Checkpoints**
-- **Definición**: Los checkpoints son puntos en los que se garantiza que los archivos de datos se han actualizado con toda la información escrita antes de ese checkpoint².
-- **Proceso**: Durante un checkpoint, todas las páginas de datos sucias se vacían al disco y se escribe un registro especial de checkpoint en el archivo WAL².
+- **Definición**: Los checkpoints son puntos en los que se garantiza que los archivos de datos se han actualizado con toda la información escrita antes de ese checkpoint.
+- **Proceso**: Durante un checkpoint, todas las páginas de datos sucias se vacían al disco y se escribe un registro especial de checkpoint en el archivo WAL.
 
 ### **5. Archiving y Recuperación**
-- **Archiving**: Si el archivado de WAL está habilitado, los archivos WAL se copian a una ubicación de archivo antes de ser eliminados de `pg_wal`¹.
-- **Recuperación**: En caso de un fallo, PostgreSQL puede usar los registros WAL para rehacer (redo) cualquier cambio que no se haya aplicado a los archivos de datos³.
+- **Archiving**: Si el archivado de WAL está habilitado, los archivos WAL se copian a una ubicación de archivo antes de ser eliminados de `pg_wal`.
+- **Recuperación**: En caso de un fallo inesperadamente, postgres usa los registros WAL para reestablecer el estado más reciente de la base de datos y descartar las transacciones no confirmadas.
+
 
 ### **6. Configuración de WAL**
 - **checkpoint_timeout**: Define el intervalo de tiempo entre checkpoints. El valor predeterminado es de 5 minutos².
