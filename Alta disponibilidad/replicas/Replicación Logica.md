@@ -193,9 +193,25 @@ SELECT proname FROM pg_proc WHERE proname LIKE '%slot%';
 
 -- Ver suscripciones activas
 SELECT * FROM pg_subscription;
+ 
+-- Borrar todo de la replica logica
+	DROP SUBSCRIPTION my_subscription;
+	DROP PUBLICATION my_publication;
+	SELECT pg_drop_replication_slot('mi_slot');
 
--- Ver conexiones de replicación en el servidor publicador
-SELECT * FROM pg_stat_replication;
+-- Tablas 
+ select proname from pg_proc where proname ilike '%slot%';
+ select table_schema,table_name from information_schema.tables where table_name ilike '%slot%';
+ 
+ select proname from pg_proc where proname ilike '%wal%';
+ select table_schema,table_name from information_schema.tables where table_name ilike '%wal%';
+ 
+ select name,setting from pg_settings  where name ilike '%wal%';
+ select name,setting from pg_settings  where name ilike '%slot%';
+
+
+ 
+
 ```
 
 
