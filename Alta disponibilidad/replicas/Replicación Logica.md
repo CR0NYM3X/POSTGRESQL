@@ -4,6 +4,7 @@
 ---
 
 ## 🧠 ¿Cómo funciona la replicación lógica?
+en la **replicación lógica** de PostgreSQL, no se usa la base de datos `replication`. A diferencia de la **replicación física**, donde se clona el almacenamiento completo de la base de datos, la replicación lógica trabaja a nivel de **publicaciones y suscripciones**.
 
 1. **El servidor origen (publisher)** registra los cambios en el WAL con `wal_level = logical`.
 2. Se crea un **slot de replicación lógica** que captura los cambios.
