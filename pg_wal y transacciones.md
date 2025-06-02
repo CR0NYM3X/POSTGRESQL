@@ -2715,5 +2715,37 @@ LINE 1: select * from personas;
  
 ``` 
 
+## La escritura en disco puede ocurrir por varios eventos:  
+  - Cuando se ejecuta un `COMMIT` con `synchronous_commit = on`.  
+  - Cuando el **fsync** obliga al sistema operativo a confirmar la escritura.  
+  - En cada **checkpoint**, PostgreSQL transfiere los cambios acumulados desde memoria al disco.  
+
+
+### **1. `synchronous_commit` → ¿Cuándo se considera confirmada una transacción?**
+📌 **Este parámetro controla si PostgreSQL espera a que los datos sean escritos en disco antes de confirmar (`COMMIT`).**  
+- Si está en `on`, la transacción **no se considera finalizada** hasta que el WAL (registro de cambios) **se escriba en disco**.  
+- Si está en `off`, PostgreSQL **marca la transacción como confirmada** sin esperar a que los datos se graben físicamente en el disco, mejorando rendimiento.  
+
+
+### **2. `fsync` → ¿Los datos realmente llegan al disco físico?**
+📌 **Este parámetro fuerza que PostgreSQL asegure que los datos sean grabados en disco antes de continuar.**  
+- Si está en `on`, PostgreSQL usa el sistema operativo para verificar que los cambios se han escrito en el disco físico.  
+- Si está en `off`, PostgreSQL **no espera** confirmación del disco y confía en que el sistema operativo maneje la escritura cuando lo crea conveniente.  
+
+
+
+### **1. Background Writer**  
+El **background writer** es un proceso en PostgreSQL que trabaja en segundo plano para escribir páginas modificadas de memoria al disco. Este proceso intenta minimizar la carga de los checkpoints distribuyendo la escritura de datos de manera más uniforme.
+
+
+Puedes ajustar su comportamiento en `postgresql.conf`:
+```bash
+bgwriter_delay = 200ms  # Tiempo entre escrituras
+bgwriter_lru_maxpages = 100 # Máximo de páginas escritas en cada ciclo
+```
+Así, el **background writer** ayuda a reducir la cantidad de datos que deben ser escritos en cada checkpoint.
+
+
+
 
 Aspectos internos de MVCC en Postgres -> https://medium.com/@rohanjnr44/internals-of-mvcc-in-postgres-hidden-costs-of-updates-vs-inserts-381eadd35844
