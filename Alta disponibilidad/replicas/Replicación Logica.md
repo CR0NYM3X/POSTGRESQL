@@ -36,6 +36,11 @@ max_wal_senders = 4
 CREATE PUBLICATION pub_ventas FOR TABLE ventas;
 ```
 
+**Creación de un replication slot lógico**
+```sql
+SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'pgoutput'); --  slot_name , plugin name
+```
+
 ---
 
 ### 🔧 Paso 2: Configurar el servidor destino
@@ -48,6 +53,7 @@ CREATE PUBLICATION pub_ventas FOR TABLE ventas;
 CREATE SUBSCRIPTION sub_ventas
 CONNECTION 'host=ip_del_origen dbname=db_origen user=replicador password=secreta port=5432'
 PUBLICATION pub_ventas;
+WITH (slot_name = 'mi_slot');
 ```
 
 ---
@@ -80,9 +86,7 @@ PUBLICATION pub_ventas;
 ## 🧩 ¿Qué es un *replication slot* (slot de replicación)?
 
 Un **slot de replicación** es una estructura que PostgreSQL usa para **mantener los cambios del WAL disponibles** hasta que un suscriptor (cliente de replicación) los haya recibido y procesado.
-conclusion : Evita que PostgreSQL elimine archivos WAL que aún no han sido leídos por un suscriptor.
-
-
+conclusion : Evita que PostgreSQL elimine archivos WAL que aún no han sido leídos por un suscriptor. Sin un replication slot, los registros WAL podrían eliminarse antes de que la réplica o cliente los capture, causando pérdida de datos en la sincronización.
 
 ### 🔧 ¿Para qué sirve?
 
