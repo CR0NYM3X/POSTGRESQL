@@ -1,5 +1,5 @@
 
- La **replicación lógica** en PostgreSQL permite copiar datos **a nivel de tabla** desde una base de datos origen hacia otra base de datos (que puede estar en el mismo servidor o en otro), **en tiempo real y de forma selectiva**. A diferencia de la replicación física, no copia todo el clúster, sino solo los cambios en ciertas tablas.
+ La **replicación lógica** se introdujo a partir de la versión 10 y permite copiar datos **a nivel de tabla** desde una base de datos origen hacia otra base de datos (que puede estar en el mismo servidor o en otro), **en tiempo real y de forma selectiva**. A diferencia de la replicación física, no copia todo el clúster, sino solo los cambios en ciertas tablas.
 
 ---
 
@@ -25,9 +25,15 @@ Tienes una base de datos principal (`db_origen`) y quieres replicar en tiempo re
 **1.1. Asegúrate de tener:**
 
 ```conf
-wal_level = logical
-max_replication_slots = 4
-max_wal_senders = 4
+
+wal_level = logical  # Se usa para replicación lógica, permitiendo la captura de cambios específicos.
+max_wal_senders = 4 # Define el número máximo de procesos que pueden enviar datos de replicación.
+
+max_replication_slots = 10  # Número máximo de slots permitidos
+max_slot_wal_keep_size = 2048  # # Tamaño máximo en MB de WAL retenido por cada replication slot (Evita crecimiento excesivo)
+
+wal_sender_timeout = 30000 # Intervalo de tiempo en milisegundos para enviar keep-alive a las réplicas
+commit_delay = 100 # Tasa de commits por cada registro WAL para evitar acumulaciones
 ```
 
 **1.2. Crear una publicación:**
