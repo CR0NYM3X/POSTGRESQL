@@ -1,4 +1,11 @@
 
+ 
+El archivado continuo de WAL es útil para:
+- **Recuperación ante fallos**: Permite restaurar la base de datos a un estado anterior mediante la reproducción de los registros archivados.
+- **Replicación**: Se pueden enviar los archivos WAL a servidores de réplica para mantener una copia actualizada de la base de datos.
+- **Punto de recuperación en el tiempo (PITR)**: Se puede restaurar la base de datos a un momento específico en el pasado.
+
+ 
 # pasos que sigue PostgreSQL cuando se realiza una modificación de datos, como un `INSERT`, `UPDATE` o `DELETE`:
 
 ### 1. Recepción de la Consulta
