@@ -1,5 +1,5 @@
 
- La **replicación lógica** se introdujo a partir de la versión 10 y permite copiar datos **a nivel de tabla** desde una base de datos origen hacia otra base de datos (que puede estar en el mismo servidor o en otro), **en tiempo real y de forma selectiva**. A diferencia de la replicación física, no copia todo el clúster, sino solo los cambios en ciertas tablas.
+ La **replicación lógica** se introdujo a partir de la versión 10 y permite copiar datos **a nivel de tabla**  desde una base de datos origen hacia otra base de datos (puede estar en el mismo servidor o en otro), **en tiempo real y de forma selectiva**. solo se replica el DML y no el DDL  A diferencia de la replicación física que si lo hace y copia todo el clúster. 
 
 ---
 
