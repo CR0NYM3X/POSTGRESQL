@@ -110,7 +110,10 @@ select * from pg_publication_tables;
 
 **Creación de un replication slot lógico**
 ```sql
-SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'wal2json'); --  slot_name , plugin name pgoutput o wal2json
+SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'wal2json'); --  slot_name , plugin name pgoutput o wal2json o test_decoding
+
+-- Tambien se puede usar pg_recvlogical para crear slots  
+-- pg_recvlogical -h 127.0.0.1 -p 5417 -d test_db_master -U postgres --slot mi_slot --create-slot -P wal2json
 ```
 
 **Validar status slots**
@@ -145,7 +148,7 @@ CREATE TABLE clientes (
 CREATE SUBSCRIPTION sub_clientes
 CONNECTION 'host=127.0.0.1 dbname=test_db_master user=postgres port=5517'
 PUBLICATION pub_clientes
-WITH (enabled=false, slot_name = 'mi_slot', create_slot = false, copy_data = true, streaming = true );
+WITH (enabled=false, slot_name = 'mi_slot', create_slot = false, copy_data = true, streaming = true,  origin = 'any', publication_names = 'pub_clientes' );
 
 enabled=false -> la suscripción se crea, pero no empieza a recibir datos hasta que la conexión se habilite manualmente con ENABLE
 create_slot = true: Crea el slot automáticamente si no existe.
@@ -174,11 +177,16 @@ SELECT * FROM pg_stat_subscription;
 Si quieres recibir los cambios en tiempo real, puedes usar `pg_recvlogical`, una herramienta de PostgreSQL:
 
 ```bash
-pg_recvlogical -d mi_base -S mi_slot  -P wal2json --start -f -
+ 
 
 
-$ pg_recvlogical -d postgres --slot test_slot --create-slot -P wal2json
-$ pg_recvlogical -d postgres --slot test_slot --start -o pretty-print=1 -o add-msg-prefixes=wal2json -f -
+# Iniciar la replicación lógica y recibir cambios en tiempo real 
+pg_recvlogical -h 127.0.0.1 -p 5417 -d postgres -U test --slot test_slot --start -o pretty-print=1 -o add-msg-prefixes=wal2json -f -
+
+
+Usa -o pretty-print=1 para formatear la salida en JSON legible.
+Usa -o add-msg-prefixes=wal2json para agregar prefijos a los mensajes replicados.
+-f - indica que la salida se mostrará directamente en la terminal.
 
 ```
 
@@ -309,7 +317,7 @@ rpm -qla | grep wal2json
 -- Verifica si hay procesos de replicación activos
 SELECT * FROM pg_stat_wal_receiver; --- comando para ver lo que se recibe y saber cual es el servidor principal
 SELECT * FROM pg_stat_replication;  --- comando para ver en el serv principal las ip serv soporte y ver la columna sync_state  puede tener el valor  async  y sync
-
+SELECT slot_name, spill_txns, spill_count, spill_bytes, total_txns, total_bytes FROM pg_stat_replication_slots;
  
 -- Verifica si hay funciones
 SELECT proname FROM pg_proc WHERE proname LIKE '%slot%';
@@ -352,6 +360,10 @@ select table_schema,table_name from information_schema.tables where table_name i
  select name,setting from pg_settings  where name ilike '%wal%';
  select name,setting from pg_settings  where name ilike '%slot%';
 
+SET logical_decoding_work_mem to '64kB';
+
+
+
 ```
 
 
@@ -363,6 +375,14 @@ https://github.com/eulerto/wal2json
 https://www.postgresql.org/docs/current/sql-createsubscription.html
 https://www.postgresql.org/docs/current/logical-replication-subscription.html
 
+Streaming Logical Changes with wal2json in a PostgreSQL Patroni Cluster -> https://medium.com/@pawanpg0963/streaming-logical-changes-with-wal2json-in-a-postgresql-patroni-cluster-4ed2b3442f3e
+Getting postgres logical replication changes using pgoutput plugin -> https://medium.com/@film42/getting-postgres-logical-replication-changes-using-pgoutput-plugin-b752e57bfd58
+
+https://neon.com/docs/extensions/wal2json
+https://amitkapila16.blogspot.com/2021/09/logical-replication-improvements-in.html
+
+29.3. Logical Replication Failover -> https://www.postgresql.org/docs/17/logical-replication-failover.html?source=post_page-----4ed2b3442f3e---------------------------------------
+47.1. Logical Decoding Examples -> https://www.postgresql.org/docs/17/logicaldecoding-example.html?source=post_page-----4ed2b3442f3e---------------------------------------
 ```
 
 
