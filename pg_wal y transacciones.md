@@ -2747,5 +2747,8 @@ Así, el **background writer** ayuda a reducir la cantidad de datos que deben se
 
 
 
+# Cuando un WAL deja de ser necesario ? 
+Los WAL se vuelven innecesarios cuando se completa un checkpoint, las réplicas ya los aplicaron, no están retenidos por wal_keep_size o ningún replication slot los requiere.
+
 
 Aspectos internos de MVCC en Postgres -> https://medium.com/@rohanjnr44/internals-of-mvcc-in-postgres-hidden-costs-of-updates-vs-inserts-381eadd35844
