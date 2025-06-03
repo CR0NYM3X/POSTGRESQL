@@ -20,53 +20,168 @@ Tienes una base de datos principal (`db_origen`) y quieres replicar en tiempo re
 
 ---
 
-### 🔧 Paso 1: Configurar el servidor origen
+### 🔧 Paso 1: Configurar el servidor origen/Publicador
+
+
+
+**1.1. wal2json**
+es un decodificador de cambios en PostgreSQL que te permite transformar los registros **WAL** en formato **JSON**, lo que facilita la replicación lógica. Aquí están los pasos clave para configurarla.
+wal2json no necesita shared_preload_libraries porque es un decodificador lógico de WAL que se carga dinámicamente cuando se usa un replication slot
+
+```conf
+ /sysx/data11/DATANEW/17 $ rpm -qa | grep wal2json
+wal2json_16-2.6-1PGDG.rhel8.x86_64
+wal2json_17-2.6-2PGDG.rhel8.x86_64
+```
 
 **1.1. Asegúrate de tener:**
 
 ```conf
 
 wal_level = logical  # Se usa para replicación lógica, permitiendo la captura de cambios específicos.
-max_wal_senders = 4 # Define el número máximo de procesos que pueden enviar datos de replicación.
+max_wal_senders = 10 # Define el número máximo de procesos que pueden enviar datos de replicación.
+max_wal_size = 1GB
+min_wal_size = 80MB
 
 max_replication_slots = 10  # Número máximo de slots permitidos
-max_slot_wal_keep_size = 2048  # # Tamaño máximo en MB de WAL retenido por cada replication slot (Evita crecimiento excesivo)
 
-wal_sender_timeout = 30000 # Intervalo de tiempo en milisegundos para enviar keep-alive a las réplicas
-commit_delay = 100 # Tasa de commits por cada registro WAL para evitar acumulaciones
+
+
+# Parámetros Extras que quisas quieres configurar
+  # checkpoint_timeout = 30min   # Si el tiempo de checkpoint es muy bajo, PostgreSQL ejecutará checkpoints muy frecuentes, lo que puede afectar el rendimiento. ✔ Si el tiempo es muy alto, se acumularán muchos cambios antes de cada checkpoint, lo que aumentará el consumo de memoria.
+
+  # checkpoint_completion_target = 0.9
+
+  # wal_sender_timeout = 30000 # Intervalo de tiempo en milisegundos para enviar keep-alive a las réplicas
+  # wal_receiver_timeout = 30000  # Tiempo máximo de espera antes de cancelar la conexión con el publicador
+  # max_slot_wal_keep_size = 2048   # Tamaño máximo en MB de WAL retenido por cada replication slot (Evita crecimiento excesivo) o -1 para ilimitado
+  # commit_delay = 100 # Tasa de commits por cada registro WAL para evitar acumulaciones
+```
+
+**1. Reiniciar el servicio**
+```sql
+ pg_ctl restart -D /sysx/data11/DATANEW/17
+```
+
+
+**1. Crear Base de datos de pruebas**
+```sql
+create database test_db_master;
+
+\c test_db_master
+```
+
+
+**1. Crear tabla de pruebas:**
+
+```sql
+
+-- truncate clientes RESTART IDENTITY ;  
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,  -- Identificador único autoincremental
+    nombre VARCHAR(100) NOT NULL,  -- Nombre del cliente
+    email VARCHAR(255) UNIQUE,  -- Correo electrónico único
+    fecha_registro TIMESTAMP DEFAULT NOW()  -- Fecha de registro automática
+);
+
+ 
+
+INSERT INTO clientes (nombre, email, fecha_registro)  
+SELECT 
+    'Cliente ' || id,  
+    'cliente' || id || '@example.com',  
+    NOW() - (id || ' days')::INTERVAL  -- Cada fecha será distinta, restando días según el ID
+FROM generate_series(1, 100) AS id;
+
+select * from clientes;
 ```
 
 **1.2. Crear una publicación:**
 
 ```sql
-CREATE PUBLICATION pub_ventas FOR TABLE ventas;
+ CREATE PUBLICATION pub_clientes FOR TABLE clientes;
 ```
 
 **Creación de un replication slot lógico**
 ```sql
-SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'pgoutput'); --  slot_name , plugin name
+SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'pgoutput'); --  slot_name , plugin name pgoutput o wal2json
 ```
 
 ---
 
-### 🔧 Paso 2: Configurar el servidor destino
+### 🔧 Paso 2: Configurar el servidor destino/suscriptor
 
-**2.1. Crear la tabla `ventas` con la misma estructura.**
+**2.1. Crear la tabla `clientes` con la misma estructura.**
+```sql
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,  -- Identificador único autoincremental
+    nombre VARCHAR(100) NOT NULL,  -- Nombre del cliente
+    email VARCHAR(255) UNIQUE,  -- Correo electrónico único
+    fecha_registro TIMESTAMP DEFAULT NOW()  -- Fecha de registro automática
+);
+```
 
 **2.2. Crear la suscripción:**
 
 ```sql
-CREATE SUBSCRIPTION sub_ventas
-CONNECTION 'host=ip_del_origen dbname=db_origen user=replicador password=secreta port=5432'
-PUBLICATION pub_ventas;
-WITH (slot_name = 'mi_slot');
+CREATE SUBSCRIPTION sub_clientes
+CONNECTION 'host=127.0.0.1 dbname=test_db_master user=postgres port=5517'
+PUBLICATION pub_clientes
+WITH (enabled=false, slot_name = 'mi_slot', create_slot = false, copy_data = true, streaming = true );
+
+enabled=false -> la suscripción se crea, pero no empieza a recibir datos hasta que la conexión se habilite manualmente con ENABLE
+create_slot = true: Crea el slot automáticamente si no existe.
+slot_name: Asigna un replication slot para asegurar retención de WAL.
+streaming = true: Habilita la recepción en tiempo real, reduciendo latencia.
+copy_data = true :  se copian todos los datos actuales de las tablas en la publicación. ✅ Si copy_data = false → Solo se replican los cambios futuros y no se copian los datos ya existentes.
+
+
+```
+
+
+**2.2. Habilitar la suscripción:**
+```sql
+ALTER SUBSCRIPTION sub_clientes ENABLE; -- Activa la suscripción si estaba deshabilitada.
+ALTER SUBSCRIPTION sub_clientes REFRESH PUBLICATION; -- sincronizar la suscripción con el publicador en caso de que haya cambios en las publicaciones
+
+
+```
+
+
+
+### **Escuchar cambios desde un slot lógico**
+Si quieres recibir los cambios en tiempo real, puedes usar `pg_recvlogical`, una herramienta de PostgreSQL:
+
+```bash
+pg_recvlogical -d mi_base -S mi_slot  -P wal2json --start -f -
+
+
+$ pg_recvlogical -d postgres --slot test_slot --create-slot -P wal2json
+$ pg_recvlogical -d postgres --slot test_slot --start -o pretty-print=1 -o add-msg-prefixes=wal2json -f -
+
+```
+
+
+# Verificar los cambios sin iniciar captura en tiempo real
+Recuperar los cambios almacenados en un replication slot lógico.
+
+```sql
+-- los últimos 10 cambios:
+SELECT * FROM pg_logical_slot_get_changes('mi_slot', NULL, 10);
+```
+
+# Enviar mensaje desde el servidor publicador a los suscriptores
+enviar eventos personalizados en la replicación lógica.  Si necesitas comunicarse con sistemas externos sin modificar la base de datos.
+```sql
+SELECT pg_logical_emit_message(true, 'wal2json', 'this message will be delivered');
+SELECT pg_logical_emit_message(true, 'pgoutput', 'this message will be filtered');
 ```
 
 ---
 
 ### 🔄 ¿Qué pasa ahora?
 
-- Cada vez que se hace un `INSERT`, `UPDATE` o `DELETE` en `ventas` en `db_origen`, el cambio se replica automáticamente en `db_destino`.
+- Cada vez que se hace un `INSERT`, `UPDATE` o `DELETE` en `ventas` en `db_origen`, el cambio se replica automáticamente 
 - Puedes usar esto para análisis en tiempo real, backups distribuidos, o sincronización entre regiones.
 
 ---
@@ -178,21 +293,19 @@ SELECT slot_name, plugin, slot_type, active FROM pg_replication_slots;
 	plugin = (null) → Física
 
 -- Verifica si hay procesos de replicación activos
-SELECT * FROM pg_stat_replication;
+SELECT * FROM pg_stat_wal_receiver; --- comando para ver lo que se recibe y saber cual es el servidor principal
+SELECT * FROM pg_stat_replication;  --- comando para ver en el serv principal las ip serv soporte y ver la columna sync_state  puede tener el valor  async  y sync
 
-
--- Verifica la configuración del servidor
-SHOW wal_level;
-SHOW max_replication_slots;
-SHOW max_wal_senders;
-
-
+ 
 -- Verifica si hay funciones
 SELECT proname FROM pg_proc WHERE proname LIKE '%slot%';
 
 
 -- Ver suscripciones activas
 SELECT * FROM pg_subscription;
+SELECT * FROM pg_stat_subscription;
+
+
  
 -- Borrar todo de la replica logica
 	DROP SUBSCRIPTION my_subscription;
@@ -209,15 +322,16 @@ SELECT * FROM pg_subscription;
  select name,setting from pg_settings  where name ilike '%wal%';
  select name,setting from pg_settings  where name ilike '%slot%';
 
-
- 
-
 ```
+
+
 
 
 ## Bibliografía
 ```
-
+https://github.com/eulerto/wal2json
+https://www.postgresql.org/docs/current/sql-createsubscription.html
+https://www.postgresql.org/docs/current/logical-replication-subscription.html
 
 ```
 
