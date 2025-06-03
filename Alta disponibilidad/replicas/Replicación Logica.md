@@ -102,9 +102,27 @@ select * from clientes;
  CREATE PUBLICATION pub_clientes FOR TABLE clientes;
 ```
 
+**Validar status publicacion**
+```sql
+select * from pg_publication_tables;
+```
+
+
 **Creación de un replication slot lógico**
 ```sql
-SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'pgoutput'); --  slot_name , plugin name pgoutput o wal2json
+SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'wal2json'); --  slot_name , plugin name pgoutput o wal2json
+```
+
+**Validar status slots**
+```sql
+-- Verifica si hay slots de replicación lógica activos
+SELECT slot_name, plugin, slot_type, active FROM pg_replication_slots;
+
+	slot_type = physical → Réplica física (streaming)
+	slot_type = logical → Réplica lógica
+	plugin = wal2json o pgoutput → Lógica
+	plugin = (null) → Física
+
 ```
 
 ---
@@ -143,11 +161,14 @@ copy_data = true :  se copian todos los datos actuales de las tablas en la publi
 ```sql
 ALTER SUBSCRIPTION sub_clientes ENABLE; -- Activa la suscripción si estaba deshabilitada.
 ALTER SUBSCRIPTION sub_clientes REFRESH PUBLICATION; -- sincronizar la suscripción con el publicador en caso de que haya cambios en las publicaciones
-
-
 ```
 
-
+**Validar estatus de subscripciones**
+```
+-- Ver suscripciones activas
+SELECT * FROM pg_subscription;
+SELECT * FROM pg_stat_subscription;
+```
 
 ### **Escuchar cambios desde un slot lógico**
 Si quieres recibir los cambios en tiempo real, puedes usar `pg_recvlogical`, una herramienta de PostgreSQL:
@@ -282,15 +303,8 @@ conclusion : Evita que PostgreSQL elimine archivos WAL que aún no han sido leí
 ```sql
 
 -- Verifica si el plugin wal2json está instalado
-SELECT * FROM pg_available_extensions WHERE name = 'wal2json';
+rpm -qla | grep wal2json
 
--- Verifica si hay slots de replicación lógica activos
-SELECT slot_name, plugin, slot_type, active FROM pg_replication_slots;
-
-	slot_type = physical → Réplica física (streaming)
-	slot_type = logical → Réplica lógica
-	plugin = wal2json o pgoutput → Lógica
-	plugin = (null) → Física
 
 -- Verifica si hay procesos de replicación activos
 SELECT * FROM pg_stat_wal_receiver; --- comando para ver lo que se recibe y saber cual es el servidor principal
@@ -301,12 +315,6 @@ SELECT * FROM pg_stat_replication;  --- comando para ver en el serv principal la
 SELECT proname FROM pg_proc WHERE proname LIKE '%slot%';
 
 
--- Ver suscripciones activas
-SELECT * FROM pg_subscription;
-SELECT * FROM pg_stat_subscription;
-
-
- 
 -- Borrar todo de la replica logica
 	DROP SUBSCRIPTION my_subscription;
 	DROP PUBLICATION my_publication;
@@ -318,7 +326,29 @@ SELECT * FROM pg_stat_subscription;
  
  select proname from pg_proc where proname ilike '%wal%';
  select table_schema,table_name from information_schema.tables where table_name ilike '%wal%';
- 
+
+
+select table_schema,table_name from information_schema.tables where table_name ilike '%publi%';
++--------------+--------------------------+
+| table_schema |        table_name        |
++--------------+--------------------------+
+| pg_catalog   | pg_publication           |
+| pg_catalog   | pg_publication_namespace |
+| pg_catalog   | pg_publication_rel       |
+| pg_catalog   | pg_publication_tables    |
++--------------+--------------------------+
+
+ select table_schema,table_name from information_schema.tables where table_name ilike '%subscription%';
++--------------+----------------------------+
+| table_schema |         table_name         |
++--------------+----------------------------+
+| pg_catalog   | pg_subscription            |
+| pg_catalog   | pg_subscription_rel        |
+| pg_catalog   | pg_stat_subscription       |
+| pg_catalog   | pg_stat_subscription_stats |
++--------------+----------------------------+
+
+
  select name,setting from pg_settings  where name ilike '%wal%';
  select name,setting from pg_settings  where name ilike '%slot%';
 
