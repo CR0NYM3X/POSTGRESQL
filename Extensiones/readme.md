@@ -254,7 +254,7 @@ PGProfiler: es una extensión para PostgreSQL que ayuda a identificar las activi
 
 Patroni: es una herramienta que facilita la implementación de soluciones de alta disponibilidad (HA)  soporta varios almacenes de configuración distribuidos como ZooKeeper, etcd, Consul o Kubernetes permite configurar y gestionar clusters de PostgreSQL con replicación y failover automáticos, asegurando que tu base de datos esté siempre disponible incluso en caso de fallos
 
-- **pglogical:** Proporciona replicación lógica para PostgreSQL, permitiendo replicar cambios entre diferentes bases de datos y transformarlos en el proceso.
+- **pglogical:** Proporciona replicación lógica para PostgreSQL, permitiendo replicar cambios entre diferentes bases de datos y transformarlos en el proceso. https://github.com/2ndQuadrant/pglogical
 
 Stolon: Un orquestador de PostgreSQL HA basado en Kubernetes, aunque también puede funcionar fuera de él. Utiliza etcd para el almacenamiento distribuido y la elección de líder.
 
