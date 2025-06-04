@@ -13,26 +13,65 @@ en la **replicación lógica** de PostgreSQL, no se usa la base de datos `replic
 
 ---
 
-## 📦 Ejemplo real: replicación lógica entre dos bases PostgreSQL
+ 
 
-### 🎯 Escenario:
-Tienes una base de datos principal (`db_origen`) y quieres replicar en tiempo real solo la tabla `ventas` hacia otra base (`db_destino`) para análisis o backup.
+# Plugins 
+los plugins de salida se utilizan para la replicación lógica y permiten convertir los cambios en el WAL (Write-Ahead Log) a formatos específicos, como JSON o texto plano.
 
----
+## **pgoutput**
+✅ Es el plugin **oficial** de PostgreSQL, integrado directamente .  
+✅ Funciona con **publicaciones y suscripciones**, sin necesidad de procesos externos.  
+✅ **Replica datos automáticamente**, sin transformar la salida en JSON como `wal2json`.  
+✅ Permite replicar unidireccional varias tablas en diferentes suscriptores de forma eficiente.  
 
-### 🔧 Paso 1: Configurar el servidor origen/Publicador
 
-
-
-**1.1. wal2json**
-es un decodificador de cambios en PostgreSQL que te permite transformar los registros **WAL** en formato **JSON**, lo que facilita la replicación lógica. Aquí están los pasos clave para configurarla.
-wal2json no necesita shared_preload_libraries porque es un decodificador lógico de WAL que se carga dinámicamente cuando se usa un replication slot
+##  **wal2json**
+Es un **plugin de salida** que  decodifica  cambios en PostgreSQL y convierte los cambios del Write-Ahead Log (**WAL**) en **formato JSON**. Es útil para **capturar eventos de la base de datos en tiempo real** y enviarlos a otros sistemas, como motores de streaming, procesamiento de datos o integraciones con APIs. wal2json no necesita shared_preload_libraries porque es un decodificador lógico de WAL que se carga dinámicamente cuando se usa un replication slot
 
 ```conf
  /sysx/data11/DATANEW/17 $ rpm -qa | grep wal2json
 wal2json_16-2.6-1PGDG.rhel8.x86_64
 wal2json_17-2.6-2PGDG.rhel8.x86_64
 ```
+
+### 📌 **¿Para qué sirve `wal2json`?**
+✅ **Captura de cambios en tiempo real** (CDC)  
+✅ **Integración con sistemas externos** (Kafka, RabbitMQ, etc.)  
+✅ **Monitoreo de modificaciones en la base de datos**  
+✅ **Auditoría y trazabilidad de datos**  
+✅ **Migración de datos entre sistemas heterogéneos**
+
+
+### 📌 **¿Se puede usar para replicar una tabla en un servidor maestro/publication ?**
+No es un mecanismo nativo de replicación lógica en PostgreSQL. Sin embargo, se puede usar para capturar los cambios en una tabla en el servidor publicador y enviarlos al suscriptor, aunque necesitarás un proceso externo que interprete los eventos y los aplique en el servidor destino.
+
+
+##  **test_decoding**
+Es un **módulo de prueba** para la decodificación lógica en PostgreSQL. No está diseñado para uso en producción, sino como un **ejemplo** para desarrollar plugins de salida personalizados.
+
+--- 
+
+## **pglogical**
+Es una extensión para **replicación lógica bidireccional** en PostgreSQL. Es una alternativa avanzada a la replicación lógica nativa y ofrece características adicionales como **replicación bidireccional**, **filtrado de datos**, y **actualización entre versiones de PostgreSQL**.
+
+### 📌 **Características principales de `pglogical`**
+✅ **Replicación lógica avanzada** → Permite replicar datos entre servidores PostgreSQL sin necesidad de replicación física.  
+✅ **Replicación bidireccional** → Soporta sincronización entre múltiples servidores.  
+✅ **Filtrado de datos** → Puedes replicar solo ciertas tablas o columnas.  
+✅ **Migración entre versiones** → Facilita la actualización de PostgreSQL sin downtime.  
+ 
+### ⚠️ **¿Cuándo usar `pglogical` en lugar de la replicación lógica nativa?**
+- Si necesitas **replicación bidireccional** entre servidores.  
+- Si quieres **filtrar datos** en la replicación.  
+- Si estás **migrando entre versiones de PostgreSQL** sin downtime.  
+
+---
+
+
+## 📦 Ejemplo real: replicación lógica entre dos bases PostgreSQL
+
+
+### 🔧 Paso 1: Configurar el servidor origen/Publicador
 
 **1.1. Asegúrate de tener:**
 
@@ -83,7 +122,6 @@ CREATE TABLE clientes (
     email VARCHAR(255) UNIQUE,  -- Correo electrónico único
     fecha_registro TIMESTAMP DEFAULT NOW()  -- Fecha de registro automática
 );
-
  
 
 INSERT INTO clientes (nombre, email, fecha_registro)  
@@ -119,7 +157,7 @@ SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'wal2json'); --  slo
 **Validar status slots**
 ```sql
 -- Verifica si hay slots de replicación lógica activos
-SELECT slot_name, plugin, slot_type, active FROM pg_replication_slots;
+SELECT slot_name, plugin, slot_type, active, active_pid FROM pg_replication_slots;
 
 	slot_type = physical → Réplica física (streaming)
 	slot_type = logical → Réplica lógica
@@ -148,14 +186,15 @@ CREATE TABLE clientes (
 CREATE SUBSCRIPTION sub_clientes
 CONNECTION 'host=127.0.0.1 dbname=test_db_master user=postgres port=5517'
 PUBLICATION pub_clientes
-WITH (enabled=false, slot_name = 'mi_slot', create_slot = false, copy_data = true, streaming = true,  origin = 'any', publication_names = 'pub_clientes' );
+WITH (enabled=false, slot_name = 'mi_slot', create_slot = false, copy_data = true, streaming = true );
+
 
 enabled=false -> la suscripción se crea, pero no empieza a recibir datos hasta que la conexión se habilite manualmente con ENABLE
 create_slot = true: Crea el slot automáticamente si no existe.
 slot_name: Asigna un replication slot para asegurar retención de WAL.
 streaming = true: Habilita la recepción en tiempo real, reduciendo latencia.
 copy_data = true :  se copian todos los datos actuales de las tablas en la publicación. ✅ Si copy_data = false → Solo se replican los cambios futuros y no se copian los datos ya existentes.
-
+publish='insert,delete' -> Se usa para indicar que es lo que va trasmitir 
 
 ```
 
@@ -177,12 +216,8 @@ SELECT * FROM pg_stat_subscription;
 Si quieres recibir los cambios en tiempo real, puedes usar `pg_recvlogical`, una herramienta de PostgreSQL:
 
 ```bash
- 
-
-
 # Iniciar la replicación lógica y recibir cambios en tiempo real 
-pg_recvlogical -h 127.0.0.1 -p 5417 -d postgres -U test --slot test_slot --start -o pretty-print=1 -o add-msg-prefixes=wal2json -f -
-
+ pg_recvlogical -h 127.0.0.1 -p 5517 -d test_db_master -U postgres --slot mi_slot --start -o pretty-print=1 -o add-msg-prefixes=wal2json -f -
 
 Usa -o pretty-print=1 para formatear la salida en JSON legible.
 Usa -o add-msg-prefixes=wal2json para agregar prefijos a los mensajes replicados.
@@ -191,20 +226,36 @@ Usa -o add-msg-prefixes=wal2json para agregar prefijos a los mensajes replicados
 ```
 
 
-# Verificar los cambios sin iniciar captura en tiempo real
-Recuperar los cambios almacenados en un replication slot lógico.
+### **Verificar los cambios sin iniciar captura en tiempo real**
+Recuperar los cambios almacenados en un replication slot lógico, en el servidor publicador.
 
 ```sql
 -- los últimos 10 cambios:
 SELECT * FROM pg_logical_slot_get_changes('mi_slot', NULL, 10);
 ```
 
-# Enviar mensaje desde el servidor publicador a los suscriptores
+### **Enviar mensaje desde el servidor publicador a los suscriptores**
 enviar eventos personalizados en la replicación lógica.  Si necesitas comunicarse con sistemas externos sin modificar la base de datos.
 ```sql
 SELECT pg_logical_emit_message(true, 'wal2json', 'this message will be delivered');
 SELECT pg_logical_emit_message(true, 'pgoutput', 'this message will be filtered');
 ```
+
+
+
+### **Insertar registros en servidor publicador**
+```sql
+INSERT INTO clientes (nombre, email, fecha_registro)  
+SELECT 
+    'Cliente ' || id,  
+    'cliente' || id || '@example4.com',  
+    NOW() - (id || ' days')::INTERVAL  -- Cada fecha será distinta, restando días según el ID
+FROM generate_series(1, 10) AS id;
+
+select * from clientes;
+```
+
+
 
 ---
 
@@ -309,10 +360,8 @@ conclusion : Evita que PostgreSQL elimine archivos WAL que aún no han sido leí
 
 ## Validaciones extras 
 ```sql
-
 -- Verifica si el plugin wal2json está instalado
 rpm -qla | grep wal2json
-
 
 -- Verifica si hay procesos de replicación activos
 SELECT * FROM pg_stat_wal_receiver; --- comando para ver lo que se recibe y saber cual es el servidor principal
@@ -363,6 +412,12 @@ select table_schema,table_name from information_schema.tables where table_name i
 SET logical_decoding_work_mem to '64kB';
 
 
+-- Si retorna true, significa que el servidor está en modo standby (réplica).
+-- Si retorna false, significa que el servidor es el primario y acepta escrituras
+select pg_is_in_recovery();
+
+
+SELECT slot_name, pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),restart_lsn)) AS lag, active from pg_replication_slots WHERE slot_type='logical';
 
 ```
 
@@ -371,9 +426,9 @@ SET logical_decoding_work_mem to '64kB';
 
 ## Bibliografía
 ```
-https://github.com/eulerto/wal2json
-https://www.postgresql.org/docs/current/sql-createsubscription.html
-https://www.postgresql.org/docs/current/logical-replication-subscription.html
+wal2json -> https://github.com/eulerto/wal2json
+CREATE SUBSCRIPTION -> https://www.postgresql.org/docs/current/sql-createsubscription.html
+29.2. Subscription  -> https://www.postgresql.org/docs/current/logical-replication-subscription.html
 
 Streaming Logical Changes with wal2json in a PostgreSQL Patroni Cluster -> https://medium.com/@pawanpg0963/streaming-logical-changes-with-wal2json-in-a-postgresql-patroni-cluster-4ed2b3442f3e
 Getting postgres logical replication changes using pgoutput plugin -> https://medium.com/@film42/getting-postgres-logical-replication-changes-using-pgoutput-plugin-b752e57bfd58
@@ -383,6 +438,12 @@ https://amitkapila16.blogspot.com/2021/09/logical-replication-improvements-in.ht
 
 29.3. Logical Replication Failover -> https://www.postgresql.org/docs/17/logical-replication-failover.html?source=post_page-----4ed2b3442f3e---------------------------------------
 47.1. Logical Decoding Examples -> https://www.postgresql.org/docs/17/logicaldecoding-example.html?source=post_page-----4ed2b3442f3e---------------------------------------
+Chapter 48. Logical Decoding -> https://www.postgresql.org/docs/12/logicaldecoding.html
+https://www.postgresql.org/docs/current/test-decoding.html
+
+F.43. test_decoding  -> https://www.highgo.ca/2019/08/22/an-overview-of-logical-replication-in-postgresql/
+
+Replicación lógica con Postgres y pglogical -> https://davidcasr.medium.com/replicaci%C3%B3n-l%C3%B3gica-con-postgres-y-pglogical-91897ac79769
 ```
 
 
