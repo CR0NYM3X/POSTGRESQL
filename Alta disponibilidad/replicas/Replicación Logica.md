@@ -367,15 +367,6 @@ conclusion : Evita que PostgreSQL elimine archivos WAL que aún no han sido leí
 
 ---
 
-## 🧠 Resumen final
-
-| Tipo de replicación | ¿Requiere slot? | Tipo de slot | ¿Puede funcionar sin slot? |
-|---------------------|------------------|--------------|-----------------------------|
-| Física (streaming)  | Opcional (pero recomendado) | `physical` | Sí, pero con riesgo de pérdida de datos |
-| Lógica              | ✅ Obligatorio   | `logical`    | ❌ No                        |
-
- 
-
 
 
 ## Validaciones extras 
