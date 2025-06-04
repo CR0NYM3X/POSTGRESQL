@@ -161,7 +161,7 @@ select * from pg_publication_tables;
 
 **Creación de un replication slot lógico**
 ```sql
-SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'wal2json'); --  slot_name , plugin name pgoutput o wal2json o test_decoding
+SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'pgoutput'); --  slot_name , plugin name pgoutput o wal2json o test_decoding
 
 -- Tambien se puede usar pg_recvlogical para crear slots  
 -- pg_recvlogical -h 127.0.0.1 -p 5417 -d test_db_master -U postgres --slot mi_slot --create-slot -P wal2json
@@ -245,6 +245,8 @@ Recuperar los cambios almacenados en un replication slot lógico, en el servidor
 ```sql
 -- los últimos 10 cambios:
 SELECT * FROM pg_logical_slot_get_changes('mi_slot', NULL, 10);
+
+SELECT * FROM pg_logical_slot_get_binary_changes('mi_slot', NULL, NULL, 'proto_version', '1', 'publication_names', 'pub_clientes');
 ```
 
 ### **Enviar mensaje desde el servidor publicador a los suscriptores**
