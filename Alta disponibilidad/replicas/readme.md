@@ -33,6 +33,9 @@
 | Integración con otros sistemas | **Lógica** | Permite enviar cambios en formato JSON o eventos. |
 | Migración entre versiones | **Lógica** | Compatible entre versiones distintas. |
 
+
+
+
 ---
 
 ## ⚠️ Consideraciones
@@ -89,7 +92,14 @@
 
  
 
+# Conceptos que se usan en las replicas 
+```sql
 
+- **Activo-Activo**:  En PostgreSQL 16, se ha mejorado la replicación lógica para permitir una configuración Activo-Activo, donde dos instancias de PostgreSQL pueden recibir escrituras simultáneamente y sincronizar los cambios entre ellas.
+En este modelo, todos los nodos están operativos y procesan solicitudes y cambios simultáneamente. Esto permite distribuir la carga de trabajo entre múltiples servidores, mejorando el rendimiento y la disponibilidad. Si un nodo falla, los demás continúan funcionando sin interrupciones.
+
+- **Activo-Pasivo**: Aquí, solo un nodo está activo y maneja las solicitudes, mientras que otro nodo permanece en espera (pasivo). Si el nodo activo falla, el pasivo puede toma el control mediante failover. Este enfoque es más simple y garantiza estabilidad, pero no aprovecha los recursos del nodo pasivo hasta que sea necesario.
+```
 
 ## Bibliografía 
 ```
