@@ -1,4 +1,5 @@
 
+ 
  La **replicación lógica** se introdujo a partir de la versión 10 y permite copiar datos **a nivel de tabla**  desde una base de datos origen hacia otra base de datos (puede estar en el mismo servidor o en otro), **en tiempo real y de forma selectiva**. solo se replica el DML y no el DDL  A diferencia de la replicación física que si lo hace y copia todo el clúster. 
 
 ---
@@ -13,7 +14,19 @@ en la **replicación lógica** de PostgreSQL, no se usa la base de datos `replic
 
 ---
 
- 
+
+### 📌 **Ejemplo de replicación unidireccional**
+
+ **Cómo funciona:**  
+1️⃣ En el servidor **primario**, los empleados registran clientes nuevos. 2️⃣ Los datos se envían al servidor secundario. 3️⃣ En el **secundario**, los analistas pueden leer la información, pero **no pueden modificarla**.  
+
+### 📌 **Ejemplo de replicación bidireccional**
+
+ **Cómo funciona:**  
+1️⃣ La oficina A registra un pedido nuevo. 2️⃣ Automáticamente, la base de datos de la oficina B recibe el pedido. 3️⃣ Si en la oficina B actualizan el estado del pedido, la oficina A también ve el cambio.  
+
+
+---
 
 # Plugins 
 los plugins de salida se utilizan para la replicación lógica y permiten convertir los cambios en el WAL (Write-Ahead Log) a formatos específicos, como JSON o texto plano.
