@@ -4,7 +4,6 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
 - **Objetivo**: Mantener una copia exacta de la base de datos principal (primaria) en una o más bases de datos secundarias (réplicas).
 - **Funcionamiento**: Utiliza los archivos de registro de escritura adelantada (WAL) para enviar cambios en tiempo real desde la base de datos primaria a las réplicas.
 
-**"pg_wal"** se refiere a la carpeta o directorio donde se almacena el registro de transacciones, también conocido como "Write-Ahead Log" o WAL por sus siglas en inglés. El registro de transacciones es una característica fundamental en los sistemas de gestión de bases de datos para garantizar la durabilidad y la integridad de los datos, incluso en casos de fallos o caídas del sistema. <br>
 
 
 
@@ -58,6 +57,7 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
 
 # Conceptos que se usan en las replicas 
 ```sql
+**"pg_wal"** se refiere a la carpeta o directorio donde se almacena el registro de transacciones, también conocido como "Write-Ahead Log" o WAL por sus siglas en inglés. El registro de transacciones es una característica fundamental en los sistemas de gestión de bases de datos para garantizar la durabilidad y la integridad de los datos, incluso en casos de fallos o caídas del sistema. <br>
 
 - **Activo-Activo**:  En PostgreSQL 16, se ha mejorado la replicación lógica para permitir una configuración Activo-Activo, donde dos instancias de PostgreSQL pueden recibir escrituras simultáneamente y sincronizar los cambios entre ellas.
 En este modelo, todos los nodos están operativos y procesan solicitudes y cambios simultáneamente. Esto permite distribuir la carga de trabajo entre múltiples servidores, mejorando el rendimiento y la disponibilidad. Si un nodo falla, los demás continúan funcionando sin interrupciones.
@@ -205,6 +205,30 @@ select specific_schema, routine_name  from  information_schema.routines  where r
 | pg_catalog      | pg_backup_stop  |
 
 ```
+
+
+
+### Cosas Extras
+```sql
+
+### Validar walls  
+herramienta para ver que es lo que contiene los wall 
+ 
+pg_waldump  --- 
+pg_waldump /var/lib/pgsql/data/pg_wal/0000000100000002000000C9
+ 
+# Ejecutar pg_basebackup en segundo plano usando un archivo de salida /home/postgres/nohup.out
+nohup  pg_basebackup -U postgres -h 10.28.230.123 -R -P -X stream -c fast -D /tmp/data16-replica/ &
+
+# Esperar a que el proceso de pg_basebackup termine
+pg_basebackup_pid=$(ps -ef | grep postgres | grep pg_basebackup | grep -v grep | awk '{print $2}')
+while kill -0 "$pg_basebackup_pid" 2>/dev/null; do
+    sleep 60
+done
+```
+
+
+
 
 
 **BIBLIOGRAFIAS**
