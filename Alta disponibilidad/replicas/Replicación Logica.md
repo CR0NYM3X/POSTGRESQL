@@ -18,7 +18,7 @@ en la **replicación lógica** de PostgreSQL, no se usa la base de datos `replic
 ### 📌 **Ejemplo de replicación unidireccional**
 
  **Cómo funciona:**  
-1️⃣ En el servidor **primario**, los empleados registran clientes nuevos. 2️⃣ Los datos se envían al servidor secundario. 3️⃣ En el **secundario**, los analistas pueden leer la información, pero **no pueden modificarla**.  
+1️⃣ En el servidor **primario**, los empleados registran clientes nuevos. 2️⃣ Los datos se envían al servidor secundario. 3️⃣ En el **secundario**, los analistas pueden leer la información Y modificar datos pero estos cambios no afectan el primario.  
 
 ### 📌 **Ejemplo de replicación bidireccional**
 
@@ -232,6 +232,8 @@ Si quieres recibir los cambios en tiempo real, puedes usar `pg_recvlogical`, una
 # Iniciar la replicación lógica y recibir cambios en tiempo real 
  pg_recvlogical -h 127.0.0.1 -p 5517 -d test_db_master -U postgres --slot mi_slot --start -o pretty-print=1 -o add-msg-prefixes=wal2json -f -
 
+ pg_recvlogical -h 127.0.0.1 -P 5517 -U postgres -d test_db_master --slot mi_slot --start -o pretty-print=1 -f -
+
 Usa -o pretty-print=1 para formatear la salida en JSON legible.
 Usa -o add-msg-prefixes=wal2json para agregar prefijos a los mensajes replicados.
 -f - indica que la salida se mostrará directamente en la terminal.
@@ -241,19 +243,22 @@ Usa -o add-msg-prefixes=wal2json para agregar prefijos a los mensajes replicados
 
 ### **Verificar los cambios sin iniciar captura en tiempo real**
 Recuperar los cambios almacenados en un replication slot lógico, en el servidor publicador.
-
 ```sql
--- los últimos 10 cambios:
+-- Esta funcion devuelve una salida en texto plano, Muestra los ultimos 10 cambios y se usa cuando el plugin es wal2json.
 SELECT * FROM pg_logical_slot_get_changes('mi_slot', NULL, 10);
 
+-- Esta funcion devuelve una salida en bynario,  y se usa cuando el plugin es pgoutput. esta funcion la procesa y no podras ver mas los mismos datos 
 SELECT * FROM pg_logical_slot_get_binary_changes('mi_slot', NULL, NULL, 'proto_version', '1', 'publication_names', 'pub_clientes');
+
+-- Esta funcion nos permite consumir los datos sin procesarlos y podemos visualizarlos varias veces 
+SELECT get_byte(data, 1), encode(substr(data, 24, 23), 'escape')  FROM pg_logical_slot_peek_binary_changes('mi_slot', NULL, NULL, 'proto_version', '1', 'publication_names', 'pub_clientes', 'messages', 'true') ;
 ```
 
 ### **Enviar mensaje desde el servidor publicador a los suscriptores**
 enviar eventos personalizados en la replicación lógica.  Si necesitas comunicarse con sistemas externos sin modificar la base de datos.
 ```sql
-SELECT pg_logical_emit_message(true, 'wal2json', 'this message will be delivered');
-SELECT pg_logical_emit_message(true, 'pgoutput', 'this message will be filtered');
+SELECT pg_logical_emit_message(true, 'wal2json', 'HOLAAA ESTOY USANDO EL PLUGIN wal2json');
+SELECT pg_logical_emit_message(true, 'pgoutput', 'HOLAAA ESTOY USANDO EL PLUGIN pgoutput');
 ```
 
 
@@ -375,6 +380,9 @@ conclusion : Evita que PostgreSQL elimine archivos WAL que aún no han sido leí
 
 ## Validaciones extras 
 ```sql
+
+ALTER SUBSCRIPTION sub_clientes DISABLE;
+
 -- Verifica si el plugin wal2json está instalado
 rpm -qla | grep wal2json
 
@@ -447,6 +455,7 @@ CREATE SUBSCRIPTION -> https://www.postgresql.org/docs/current/sql-createsubscri
 
 Streaming Logical Changes with wal2json in a PostgreSQL Patroni Cluster -> https://medium.com/@pawanpg0963/streaming-logical-changes-with-wal2json-in-a-postgresql-patroni-cluster-4ed2b3442f3e
 Getting postgres logical replication changes using pgoutput plugin -> https://medium.com/@film42/getting-postgres-logical-replication-changes-using-pgoutput-plugin-b752e57bfd58
+Replicación lógica con Postgres y pglogical -> https://davidcasr.medium.com/replicaci%C3%B3n-l%C3%B3gica-con-postgres-y-pglogical-91897ac79769
 
 https://neon.com/docs/extensions/wal2json
 https://amitkapila16.blogspot.com/2021/09/logical-replication-improvements-in.html
@@ -457,8 +466,6 @@ Chapter 48. Logical Decoding -> https://www.postgresql.org/docs/12/logicaldecodi
 https://www.postgresql.org/docs/current/test-decoding.html
 
 F.43. test_decoding  -> https://www.highgo.ca/2019/08/22/an-overview-of-logical-replication-in-postgresql/
-
-Replicación lógica con Postgres y pglogical -> https://davidcasr.medium.com/replicaci%C3%B3n-l%C3%B3gica-con-postgres-y-pglogical-91897ac79769
 ```
 
 
