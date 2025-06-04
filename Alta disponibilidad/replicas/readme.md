@@ -3,15 +3,14 @@
 ## 🎯 ¿Para qué sirve hacer réplicas en PostgreSQL?
 
 ### ✅ 1. **Alta disponibilidad (High Availability)**
-- Si el servidor principal falla, puedes cambiar rápidamente a una réplica.
-- Muy útil en sistemas críticos donde el tiempo de inactividad no es aceptable.
+- La replicación permite que una base de datos esté disponible incluso si el servidor principal falla. Los datos se copian a uno o más servidores de réplica, que pueden asumir el rol del servidor principal en caso de fallo.
+
 
 ### ✅ 2. **Balanceo de carga (Load Balancing)**
-- Puedes enviar consultas de solo lectura (como reportes o dashboards) a una réplica.
-- Esto reduce la carga en el servidor principal.
+- Las réplicas pueden ser utilizadas para distribuir la carga de trabajo, permitiendo que las consultas de solo lectura se ejecuten en los servidores de réplica, aliviando la carga del servidor principal.
 
 ### ✅ 3. **Recuperación ante desastres (Disaster Recovery)**
-- Tener una réplica en otra ubicación geográfica permite restaurar el servicio en caso de fallos graves.
+- En caso de un desastre, las réplicas pueden ser utilizadas para restaurar rápidamente los datos y minimizar el tiempo de inactividad.
 
 ### ✅ 4. **Análisis sin afectar producción**
 - Puedes hacer análisis pesados o pruebas en una réplica sin afectar el rendimiento del servidor principal.
