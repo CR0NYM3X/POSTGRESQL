@@ -22,7 +22,66 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
     - Los cambios se realizan en este archivo, no en `recovery.conf`.
 ```
 
+# Ejemplo de replica striming
 
+## Configuración de servidor maestro
+
+### Crear un usuario con permisos REPLICATION
+El parámetro REPLICATION en la sentencia CREATE USER en PostgreSQL sirve para otorgar permisos especiales al usuario, permitiéndole realizar tareas de replicación dentro del sistema de bases de datos.
+
+```SQL
+CREATE USER user_replicador WITH REPLICATION PASSWORD '123123';
+
+-- Tambien se puede usar 
+# createuser --replication -P -e user_replicador -p 5516  
+```
+
+### configuración de postgresql.conf
+```SQL
+
+listen_addresses = '*'
+max_replication_slots = 10
+
+max_standby_archive_delay -1 
+max_standby_streaming_delay: -1 
+
+wal_log_hints = on
+wal_level = replica
+max_wal_size = 1GB
+min_wal_size = 80MB
+max_wal_senders =  5 
+wal_keep_size = 1000 
+hot_standby = off  #  OFF =PRINCIPAL  ON  =SOPORTE
+
+# archive_mode = on
+# archive_timeout = 0
+# archive_command = 'cp %p /path/to/archive/%f' 
+
+-- Replicación sincrónica si quieres activar
+# synchronous_commit = on 
+# synchronous_standby_names = '*' 
+```
+
+### configuración de pg_hba.conf
+```
+host    replication     user_replicador            127.0.0.1/32            scram-sha-256
+```
+
+### Reiniciar servidor para recargar configuraciones
+```
+pg_ctl restart -D /sysx/data11/DATANEW/16
+```
+
+### Crear un slot 
+Para habilitar la replicación física, se utiliza una característica llamada "replication slots" (ranuras de replicación), que permiten que el servidor principal mantenga un registro de los cambios necesarios para replicar. 
+```
+SELECT * FROM pg_create_physical_replication_slot('repl_slot');
+
+-- Esto en caso de querer eliminar el slot 
+-- SELECT pg_drop_replication_slot('repl_slot');
+```
+
+---
 
 ### Promover un servidor a primario 
  un servidor secundario puede ser promovido a primario para evitar interrupciones en el servicio. ya que una vez que se promueve un servidor secundario a primario, 
@@ -30,10 +89,6 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
 ```
 /usr/local/pgsql/bin/pg_ctl promote -D /sysx/data/
 ```
-
-
-
-
 
 ### Herramientas y técnicas adicionales
 ```
@@ -52,7 +107,13 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
 5.- **repmgr**
    - Es una herramienta de código abierto diseñada para administrar la replicación y el failover en un grupo de servidores PostgreSQL
 
-6.- *Patroni**: es una herramienta que facilita la implementación de soluciones de alta disponibilidad (HA)  soporta varios almacenes de configuración distribuidos como ZooKeeper, etcd, Consul o Kubernetes permite configurar y gestionar clusters de PostgreSQL con replicación y failover automáticos, asegurando que tu base de datos esté siempre disponible incluso en caso de fallos
+6.- **Patroni**: es una herramienta que facilita la implementación de soluciones de alta disponibilidad (HA)  soporta varios almacenes de configuración distribuidos como ZooKeeper, etcd, Consul o Kubernetes permite configurar y gestionar clusters de PostgreSQL con replicación y failover automáticos, asegurando que tu base de datos esté siempre disponible incluso en caso de fallos
+
+7.- **pg_receivewal**:
+	Se usa para recibir en tiempo real los archivos WAL (Write-Ahead Logging) desde el servidor primario, almacenándolos en un disco sin necesidad de un servidor de base de datos activo. Es útil para configuraciones de respaldo y recuperación.
+
+8.- **pg_rewind**:
+	Sirve para sincronizar un servidor PostgreSQL que estuvo desactualizado con otro, copiando solo los cambios necesarios en lugar de hacer una restauración completa. Se usa en escenarios de failover o recuperación tras un split-brain.
 ```
 
 # Conceptos que se usan en las replicas 
@@ -85,6 +146,13 @@ archive_mode: Habilita el envío de registros WAL a un archivo de respaldo exter
 archive_command: Define cómo y dónde almacenar los registros WAL fuera del servidor.
 restore_command: Define cómo el servidor esclavo recupera registros WAL faltantes para mantener la replicación.
 
+synchronous_commit  : PostgreSQL garantiza que una transacción no se considera confirmada hasta que el servidor principal y al menos un servidor de réplica síncrono hayan escrito la información en su almacenamiento.
+synchronous_standby_names  : Este parámetro define qué servidores de réplica funcionan como "standby" síncronos. El valor ' * ' significa que cualquier servidor de réplica puede actuar como síncrono.
+
+max_standby_archive_delay -1  -> Esto evita que las consultas en la réplica sean canceladas, pero puede generar un retraso significativo en la sincronización de datos.
+max_standby_streaming_delay: -1  --> Si se establece en -1, la réplica nunca cancelará consultas en ejecución debido a conflictos con los datos replicados, lo que puede generar una acumulación de cambios pendientes.
+
+wal_keep_size
 wal_log_hints: Este parámetro es requerido para que el servicio pg_rewind sea capaz de sincronizar con el servidor primario.
 wal_level: Establece el nivel de registro WAL necesario  y se utiliza este parámetro para habilitar la réplica streaming. Los posibles valores son “minimal”, “logical” o “replica”.
 max_wal_size: Es usado para especificar el tamaño máximo del archivo WAL.
@@ -93,8 +161,12 @@ hot_standby:  el modo de hot standby permite conexiones de solo lectura en un se
 max_wal_sender: especifica el número máximo con los servidores en espera.
 
     • max_wal_senders: Define el número máximo de conexiones que el servidor principal puede aceptar desde réplicas.
-    • wal_keep_segments: Determina cuántos segmentos WAL se deben mantener o conservar disponibles para permitir la recuperación de réplicas.
-	• hot_standby: Habilita el modo de réplica en caliente, permitiendo consultas de solo lectura en la réplica.
+
+El parámetro wal_keep_segments fue reemplazado por wal_keep_size a partir de PostgreSQL 13.
+    • wal_keep_segments: (Versiones anteriores a PostgreSQL 13): Definía la cantidad de segmentos WAL a mantener en disco.
+    • wal_keep_size (PostgreSQL 13 en adelante): Define el tamaño total en MB o GB de los archivos WAL que se conservarán.
+
+    • hot_standby: Habilita el modo de réplica en caliente, permitiendo consultas de solo lectura en la réplica.
     • primary_conninfo: Especifica cómo la réplica se conectará al servidor principal.
     • recovery_target_timeline: Configura la réplica para seguir la línea de tiempo más reciente para la recuperación.
     • trigger_file: Define la ubicación de un archivo que, cuando se crea, detiene la recuperación y permite que la réplica funcione como servidor principal. definimos la ruta en la que se creará el fichero del trigger standby.
@@ -225,6 +297,17 @@ pg_basebackup_pid=$(ps -ef | grep postgres | grep pg_basebackup | grep -v grep |
 while kill -0 "$pg_basebackup_pid" 2>/dev/null; do
     sleep 60
 done
+
+
+# Permisos 
+touch ~/.pgpass
+chmod 0600 ~/.pgpass
+mkdir /tmp/archive_wal
+chown -R postgres:postgres /tmp/archive_wal
+chmod 777 /tmp/archive_wal
+
+
+
 ```
 
 
