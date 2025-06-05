@@ -21,6 +21,16 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
 
 ## Configuración de servidor maestro
 
+### Preparar directorios para la replica 
+```SQL
+mkdir -p /sysx/data16/DATANEW/data_maestro
+mkdir -p /sysx/data16/DATANEW/data_secundario
+
+/usr/pgsql-16/bin/initdb -E UTF-8 -D /sysx/data16/DATANEW/data_maestro  &>/dev/null
+
+```
+
+
 
 ### configuración de postgresql.conf
 ```SQL
@@ -41,11 +51,11 @@ hot_standby = off  #  OFF = PRINCIPAL y ON  = SOPORTE
 
 # archive_mode = on
 # archive_timeout = 0
-# archive_command = 'cp %p /path/to/archive/%f' 
+# archive_command = 'cp %p /sysx/data16/DATANEW/archive_wal/%f' 
 
--- Replicación sincrónica si quieres activar
+-- En caso de querer configurar una Replicación sincrónica  ocupas configurar estos parámetros
 # synchronous_commit = on 
-# synchronous_standby_names = '*' 
+# synchronous_standby_names = 'app_replicador' # Puedes colocar * para decirle que todas las application_name de las replicas sean syncronas o especificar el application_name 
 ```
 
 ### Iniciar el serivico
@@ -100,10 +110,11 @@ host    replication     user_replicador            127.0.0.1/32            scram
  $PGBIN16/pg_ctl reload -D /sysx/data16/DATANEW/data_maestro
 ```
 
-### Crear un slot 
-Para habilitar la replicación física, se utiliza una característica llamada "replication slots" (ranuras de replicación), que permiten que el servidor principal mantenga un registro de los cambios necesarios para replicar. 
+### Crear un slot (Opcional)
+Crear el slot es **opcional** ya que al usar pg_basebackup lo crea automaticamente,  el Para habilitar la replicación física, se utiliza una característica llamada "replication slots" (ranuras de replicación), que permiten que el servidor principal mantenga un registro de los cambios necesarios para replicar.
+
 ```SQL
-SELECT * FROM pg_create_physical_replication_slot('replica_slot');
+-- SELECT * FROM pg_create_physical_replication_slot('replica_slot');
 
 -- Esto en caso de querer eliminar el slot 
 -- SELECT pg_drop_replication_slot('replica_slot');
@@ -115,18 +126,18 @@ SELECT * FROM pg_create_physical_replication_slot('replica_slot');
 
 ## Configuración de servidor Secundario/Replica
 
-# hace una copia de seguridad del servidor primario en tiempo real.
+### hace una copia de seguridad del servidor primario en tiempo real.
 
 
 ```SQL
 --nohup  pg_basebackup -U postgres -h 10.28.230.123 -R -P -X stream -c fast -D /tmp/data16-replica/ &
 
-pg_basebackup -h 127.0.0.1 -U user_replicador -p 55171 -D /sysx/data16/DATANEW/data_secundario -c fast -X stream -C -S replica_slot -Fp -R -P
+pg_basebackup -h 127.0.0.1 -U user_replicador -p 55161 -D /sysx/data16/DATANEW/data_secundario -c fast -X stream -C -S replica_slot -Fp -R -P
 
 ### Parámetros:
 - **`pg_basebackup`** → Herramienta de PostgreSQL para hacer una copia de seguridad del servidor primario.
 - **`-h 127.0.0.1`** → Se conecta al servidor local (`localhost`), lo que indica que el backup se realiza en la misma máquina.
-- **`-p 55171`** → Especifica el puerto donde el servidor PostgreSQL está escuchando las conexiones.
+- **`-p 55161`** → Especifica el puerto donde el servidor PostgreSQL está escuchando las conexiones.
 - **`-D /sysx/data16/DATANEW/data_secundario`** → Directorio destino donde se guardará la copia de seguridad.
 - **`-U user_replicador`** → Usuario que realizará el backup. Este usuario debe tener permisos de replicación.
 - **`-c fast`** → Indica que la copia de seguridad debe completarse lo más rápido posible, reduciendo el impacto en el servidor primario.
@@ -138,25 +149,19 @@ pg_basebackup -h 127.0.0.1 -U user_replicador -p 55171 -D /sysx/data16/DATANEW/d
 - **`-R`** → Genera el archivo `recovery.conf o standby.signal`, necesario para que el servidor secundario funcione como réplica.
 - **`-v`** → Activa el modo **verbose**, mostrando mensajes detallados sobre el proceso de copia.
 
-
-# Esperar a que el proceso de pg_basebackup termine
-pg_basebackup_pid=$(ps -ef | grep postgres | grep pg_basebackup | grep -v grep | awk '{print $2}')
-while kill -0 "$pg_basebackup_pid" 2>/dev/null; do
-    sleep 60
-done
 ```
 
 
 ### Editar archivo postgresql.auto.conf
 ```SQL
-primary_conninfo = 'host=127.0.0.1 port=55171 user=user_replicador password=123123 application_name=app_replicador'
+primary_conninfo = 'host=127.0.0.1 port=55161 user=user_replicador password=123123 application_name=app_replicador'
 primary_slot_name = 'replica_slot'
 hot_standby = 'on'
 port = 55162
 listen_addresses = '*'
 wal_level = replica
 
-# restore_command = 'cp /var/lib/postgresql/12/main/archive/%f %p' # Este solo se activa si se habilito el archive_mode y archive_command
+# restore_command = 'cp /var/lib/postgresql/12/main/archive/%f %p' # Este solo se activa si se habilito el archive_mode y archive_command en el servidor primario 
 # recovery_target_timeline = 'latest' # se usa en procesos de recuperación para determinar a qué línea de tiempo debe restaurarse Recupera hasta la línea de tiempo más reciente.
 ```
 
@@ -184,7 +189,9 @@ SELECT slot_name, spill_txns, spill_count, spill_bytes, total_txns, total_bytes 
 -- Verifica si hay procesos de replicación activos
 SELECT * FROM pg_stat_wal_receiver; --- comando para ver lo que se recibe y saber cual es el servidor principal
 SELECT * FROM pg_stat_replication;  --- comando para ver en el serv principal las ip serv soporte y ver la columna sync_state  puede tener el valor  async  y sync
-
+	write_lag -> Indica cuánto tiempo tarda la réplica en escribir los datos del WAL que recibe desde el primario.
+	flush_lag -> Indica cuánto tiempo tarda la réplica en flushear (asegurar en disco) los datos del WAL que ya ha escrito. 
+	replay_lag ->  Indica cuánto tiempo tarda la réplica en aplicar los cambios del WAL a las tablas, es decir, que los datos sean realmente visibles para las consultas.
 
 ps -fea | grep walreceiver
 ps -fea | grep walsender
@@ -320,12 +327,11 @@ pg_stat_progress_basebackup:  esta vista te informará sobre el progreso de la c
 
 **Querys que pueden servir**
 ```sql
+-- ver los archivos WAL presentes en el servidor
+SELECT name,pg_size_pretty(sum(size)) AS size,modification FROM pg_ls_waldir() group by  name,modification;
 
-SELECT * FROM pg_replication_slots;
 select * from pg_stat_activity 
 select * from pg_stat_progress_basebackup;
-SELECT * FROM pg_stat_wal_receiver; --- comando para ver lo que se recibe y saber cual es el servidor principal
-SELECT * FROM pg_stat_replication;  --- comando para ver en el serv principal las ip serv soporte y ver la columna sync_state  puede tener el valor  async  y sync
 SELECT CASE WHEN pg_last_wal_receive_lsn() = pg_last_wal_replay_lsn()   THEN 0  ELSE EXTRACT (EPOCH FROM now() - pg_last_xact_replay_timestamp()) END AS log_delay;
 
 SELECT pid, usename, application_name, state
