@@ -2730,8 +2730,8 @@ LINE 1: select * from personas;
 
 ### **1. `synchronous_commit` → ¿Cuándo se considera confirmada una transacción?**
 📌 **Este parámetro controla si PostgreSQL espera a que los datos sean escritos en disco antes de confirmar (`COMMIT`).**  
-- Si está en `on`, la transacción **no se considera finalizada** hasta que el WAL (registro de cambios) **se escriba en disco**.  
-- Si está en `off`, PostgreSQL **marca la transacción como confirmada** sin esperar a que los datos se graben físicamente en el disco, mejorando rendimiento.  
+- Si está en `on`, cada transacción solo se confirma después de que PostgreSQL garantiza que los datos están seguros en el WAL  antes de devolver éxito.
+- Si está en `off`, Si está en OFF, el sistema no espera la escritura en el disco y devuelve éxito inmediatamente, confiando en que la escritura en el WAL se hará en segundo plano.
 
 
 ### **2. `fsync` → ¿Los datos realmente llegan al disco físico?**
