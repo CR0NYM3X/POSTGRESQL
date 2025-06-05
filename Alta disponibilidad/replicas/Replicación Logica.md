@@ -1,6 +1,6 @@
 
  
- La **replicación lógica** se introdujo a partir de la versión 10 y permite copiar datos **a nivel de tabla**  desde una base de datos origen hacia otra base de datos (puede estar en el mismo servidor o en otro), **en tiempo real y de forma selectiva**. solo se replica el DML y no el DDL  A diferencia de la replicación física que si lo hace y copia todo el clúster. en la version 16 en adelante se introdujo el uso de repica de tipo activo-activo
+ La **replicación lógica** se introdujo a partir de la versión 10 y permite copiar datos **a nivel de tabla**  desde una base de datos origen hacia otra base de datos (puede estar en el mismo servidor o en otro), **en tiempo real y de forma selectiva**. solo se replica el DML y no el DDL  A diferencia de la replicación física que si lo hace y copia todo el clúster. en la version 16 en adelante se introdujo el uso de repica de tipo activo-activo pero este tiene problemas cuando se actualiza la misma fila casi al mismo  tiempo este envia toda la fila completa en vez de enviar solo la columna modificada.
 
 ---
 
