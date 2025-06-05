@@ -9,16 +9,11 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
 
 ### Archivos que se usan en replica
 ```sql
-1.- **`recovery.conf`** en versiones anteriores de PostgreSQL se utilizaba para configurar la recuperación de bases de datos a partir de una copia de seguridad base. En él, se especificaban parámetros importantes como `restore_command` y `recovery_target_time` o `recovery_target_name`¹. Sin embargo, a partir de PostgreSQL 12, este archivo ha sido reemplazado por el archivo `recovery.signal`. Aquí están las diferencias clave:
+1. **`standby.signal`**:
+    - Es un marcador que le indica a PostgreSQL que debe operar en modo standby, es decir, como una réplica de solo lectura que recibe datos desde un servidor primario. Sustituye el antiguo recovery.conf → En versiones anteriores de PostgreSQL (antes de v12), se usaba recovery.conf. Ahora, simplemente la presencia de standby.signal activa el modo réplica.
 
-2. **`recovery.signal`**:
-    - Es un archivo vacío que indica al servidor PostgreSQL que debe iniciar una recuperación.
-    - Se crea al inicio de la recuperación y se elimina automáticamente al finalizar.
-    - Cumple la función de bandera para activar el modo de recuperación.
-
-3. **`postgresql.conf`**:
+2. **`postgresql.auto.conf`**:
     - Ahora contiene los parámetros de recuperación.
-    - Configura opciones como `restore_command`, `recovery_target`, y más.
     - Los cambios se realizan en este archivo, no en `recovery.conf`.
 ```
 
@@ -26,19 +21,10 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
 
 ## Configuración de servidor maestro
 
-### Crear un usuario con permisos REPLICATION
-El parámetro REPLICATION en la sentencia CREATE USER en PostgreSQL sirve para otorgar permisos especiales al usuario, permitiéndole realizar tareas de replicación dentro del sistema de bases de datos.
-
-```SQL
-CREATE USER user_replicador WITH REPLICATION PASSWORD '123123';
-
--- Tambien se puede usar 
-# createuser --replication -P -e user_replicador -p 5516  
-```
 
 ### configuración de postgresql.conf
 ```SQL
-
+port = 55161
 listen_addresses = '*'
 max_replication_slots = 10
 
@@ -51,7 +37,7 @@ max_wal_size = 1GB
 min_wal_size = 80MB
 max_wal_senders =  5 
 wal_keep_size = 1000 
-hot_standby = off  #  OFF =PRINCIPAL  ON  =SOPORTE
+hot_standby = off  #  OFF = PRINCIPAL y ON  = SOPORTE  
 
 # archive_mode = on
 # archive_timeout = 0
@@ -62,6 +48,48 @@ hot_standby = off  #  OFF =PRINCIPAL  ON  =SOPORTE
 # synchronous_standby_names = '*' 
 ```
 
+### Iniciar el serivico
+```SQL
+$PGBIN16/pg_ctl start -D /sysx/data16/DATANEW/data_maestro
+```
+
+### Crear un usuario con permisos REPLICATION
+El parámetro REPLICATION en la sentencia CREATE USER en PostgreSQL sirve para otorgar permisos especiales al usuario, permitiéndole realizar tareas de replicación dentro del sistema de bases de datos.
+
+```SQL
+CREATE USER user_replicador WITH REPLICATION PASSWORD '123123';
+
+-- Tambien se puede usar 
+# createuser --replication -P -e user_replicador -p 5516  
+```
+
+### Crear Base de datos y tabla con datos de pruebas
+```SQL
+create database test_db_master;
+\c test_db_master
+
+-- truncate clientes RESTART IDENTITY ;  
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,  -- Identificador único autoincremental
+    nombre VARCHAR(100) NOT NULL,  -- Nombre del cliente
+    email VARCHAR(255) UNIQUE,  -- Correo electrónico único
+    fecha_registro TIMESTAMP DEFAULT NOW()  -- Fecha de registro automática
+);
+ 
+
+INSERT INTO clientes (nombre, email, fecha_registro)  
+SELECT 
+    'Cliente ' || id,  
+    'cliente' || id || '@example.com',  
+    NOW() - (id || ' days')::INTERVAL  -- Cada fecha será distinta, restando días según el ID
+FROM generate_series(1, 100) AS id;
+
+select * from clientes;
+
+```
+
+ 
+
 ### configuración de pg_hba.conf
 ```
 host    replication     user_replicador            127.0.0.1/32            scram-sha-256
@@ -69,56 +97,100 @@ host    replication     user_replicador            127.0.0.1/32            scram
 
 ### Reiniciar servidor para recargar configuraciones
 ```
-pg_ctl restart -D /sysx/data11/DATANEW/16
+ $PGBIN16/pg_ctl reload -D /sysx/data16/DATANEW/data_maestro
 ```
 
 ### Crear un slot 
 Para habilitar la replicación física, se utiliza una característica llamada "replication slots" (ranuras de replicación), que permiten que el servidor principal mantenga un registro de los cambios necesarios para replicar. 
 ```SQL
-SELECT * FROM pg_create_physical_replication_slot('repl_slot');
+SELECT * FROM pg_create_physical_replication_slot('replica_slot');
 
 -- Esto en caso de querer eliminar el slot 
--- SELECT pg_drop_replication_slot('repl_slot');
+-- SELECT pg_drop_replication_slot('replica_slot');
 ```
+
 
 ---
 
 
 ## Configuración de servidor Secundario/Replica
 
+# hace una copia de seguridad del servidor primario en tiempo real.
 
 
 ```SQL
-nohup  pg_basebackup -U postgres -h 10.28.230.123 -R -P -X stream -c fast -D /tmp/data16-replica/ &
+--nohup  pg_basebackup -U postgres -h 10.28.230.123 -R -P -X stream -c fast -D /tmp/data16-replica/ &
+
+pg_basebackup -h 127.0.0.1 -U user_replicador -p 55171 -D /sysx/data16/DATANEW/data_secundario -c fast -X stream -C -S replica_slot -Fp -R -P
+
+### Parámetros:
+- **`pg_basebackup`** → Herramienta de PostgreSQL para hacer una copia de seguridad del servidor primario.
+- **`-h 127.0.0.1`** → Se conecta al servidor local (`localhost`), lo que indica que el backup se realiza en la misma máquina.
+- **`-p 55171`** → Especifica el puerto donde el servidor PostgreSQL está escuchando las conexiones.
+- **`-D /sysx/data16/DATANEW/data_secundario`** → Directorio destino donde se guardará la copia de seguridad.
+- **`-U user_replicador`** → Usuario que realizará el backup. Este usuario debe tener permisos de replicación.
+- **`-c fast`** → Indica que la copia de seguridad debe completarse lo más rápido posible, reduciendo el impacto en el servidor primario.
+- **`-X stream`** → Transmite los archivos WAL en tiempo real, asegurando consistencia en la copia de seguridad.
+- **`-C`** → Crea un **slot de replicación** en el servidor primario.
+- **`-S replica_slot`** → Asigna el nombre `replica_slot` al **slot de replicación**.
+- **`-Fp`** → Usa el formato **"plain"**, lo que significa que la copia mantiene la estructura original de los archivos, en lugar de generar un solo archivo comprimido.
+- **`-P`** → Muestra un indicador de progreso mientras se ejecuta el proceso de copia.
+- **`-R`** → Genera el archivo `recovery.conf o standby.signal`, necesario para que el servidor secundario funcione como réplica.
+- **`-v`** → Activa el modo **verbose**, mostrando mensajes detallados sobre el proceso de copia.
+
 
 # Esperar a que el proceso de pg_basebackup termine
 pg_basebackup_pid=$(ps -ef | grep postgres | grep pg_basebackup | grep -v grep | awk '{print $2}')
 while kill -0 "$pg_basebackup_pid" 2>/dev/null; do
     sleep 60
 done
-
 ```
 
+
+### Editar archivo postgresql.auto.conf
 ```SQL
-sed -i 's/hot_standby = off/hot_standby = on/g' /sysx/data/postgresql.conf
+primary_conninfo = 'host=127.0.0.1 port=55171 user=user_replicador password=123123 application_name=app_replicador'
+primary_slot_name = 'replica_slot'
+hot_standby = 'on'
+port = 55162
+listen_addresses = '*'
+wal_level = replica
+
+# restore_command = 'cp /var/lib/postgresql/12/main/archive/%f %p' # Este solo se activa si se habilito el archive_mode y archive_command
+# recovery_target_timeline = 'latest' # se usa en procesos de recuperación para determinar a qué línea de tiempo debe restaurarse Recupera hasta la línea de tiempo más reciente.
 ```
 
+### Iniciar el servicio 
 ```SQL
-pg_ctl start -D /sysx/data/ -o -i
+$PGBIN16/pg_ctl start -D /sysx/data16/DATANEW/data_secundario
+
 ```
 
 
-recovery.conf  o en el postgresql.auto.conf
+# Validación de replicas en primario 
 
-ls -lhtra | grep standby.signal
-
+### Validar status slots
 ```SQL
-recovery_target_timeline = 'latest'
-primary_conninfo = 'host=172.31.14.134 port=5432 user=replica password=passwd application_name=pgslave1'
-restore_command = 'cp /var/lib/postgresql/12/main/archive/%f %p'
-primary_slot_name = 'my_replication_slot'
-```
+-- Verifica si hay slots de replicación lógica activos
+SELECT slot_name, plugin, slot_type, active, active_pid FROM pg_replication_slots;
 
+	slot_type = physical → Réplica física (streaming)
+	slot_type = logical → Réplica lógica
+	plugin = wal2json o pgoutput → Lógica
+	plugin = (null) → Física
+
+SELECT slot_name, spill_txns, spill_count, spill_bytes, total_txns, total_bytes FROM pg_stat_replication_slots;
+
+-- Verifica si hay procesos de replicación activos
+SELECT * FROM pg_stat_wal_receiver; --- comando para ver lo que se recibe y saber cual es el servidor principal
+SELECT * FROM pg_stat_replication;  --- comando para ver en el serv principal las ip serv soporte y ver la columna sync_state  puede tener el valor  async  y sync
+
+
+ps -fea | grep walreceiver
+ps -fea | grep walsender
+ps -fea | grep stream
+
+```
 
 
 
@@ -268,6 +340,8 @@ SELECT pid, usename, application_name, state
 FROM pg_stat_replication
 ORDER BY application_name, pid;
 
+select name,setting from pg_settings where name ilike '%recove%';
+
 select specific_schema, routine_name  from  information_schema.routines  where routine_name ilike '%repli%';
 | pg_catalog      | pg_get_replica_identity_index          |
 | pg_catalog      | pg_stat_get_replication_slot           |
@@ -354,6 +428,59 @@ chmod 777 /tmp/archive_wal
 
 
 
+
+[postgres@SERVER-TEST ~]$ pg_basebackup -?
+  -D, --pgdata=DIRECTORY receive base backup into directory
+  -F, --format=p|t       output format (plain (default), tar)
+  -r, --max-rate=RATE    maximum transfer rate to transfer data directory
+                         (in kB/s, or use suffix "k" or "M")
+  -R, --write-recovery-conf
+                         write configuration for replication
+  -t, --target=TARGET[:DETAIL]
+                         backup target (if other than client)
+  -T, --tablespace-mapping=OLDDIR=NEWDIR
+                         relocate tablespace in OLDDIR to NEWDIR
+      --waldir=WALDIR    location for the write-ahead log directory
+  -X, --wal-method=none|fetch|stream
+                         include required WAL files with specified method
+  -z, --gzip             compress tar output
+  -Z, --compress=[{client|server}-]METHOD[:DETAIL]
+                         compress on client or server as specified
+  -Z, --compress=none    do not compress tar output
+
+General options:
+  -c, --checkpoint=fast|spread
+                         set fast or spread checkpointing
+  -C, --create-slot      create replication slot
+  -l, --label=LABEL      set backup label
+  -n, --no-clean         do not clean up after errors
+  -N, --no-sync          do not wait for changes to be written safely to disk
+  -P, --progress         show progress information
+  -S, --slot=SLOTNAME    replication slot to use
+  -v, --verbose          output verbose messages
+  -V, --version          output version information, then exit
+      --manifest-checksums=SHA{224,256,384,512}|CRC32C|NONE
+                         use algorithm for manifest checksums
+      --manifest-force-encode
+                         hex encode all file names in manifest
+      --no-estimate-size do not estimate backup size in server side
+      --no-manifest      suppress generation of backup manifest
+      --no-slot          prevent creation of temporary replication slot
+      --no-verify-checksums
+                         do not verify checksums
+  -?, --help             show this help, then exit
+
+Connection options:
+  -d, --dbname=CONNSTR   connection string
+  -h, --host=HOSTNAME    database server host or socket directory
+  -p, --port=PORT        database server port number
+  -s, --status-interval=INTERVAL
+                         time between status packets sent to server (in seconds)
+  -U, --username=NAME    connect as specified database user
+  -w, --no-password      never prompt for password
+  -W, --password         force password prompt (should happen automatically)
+  
+
 ```
 
 
@@ -362,6 +489,9 @@ chmod 777 /tmp/archive_wal
 
 **BIBLIOGRAFIAS**
 ```sql
+https://www.postgresql.org/docs/current/warm-standby.html
+https://www.postgresql.org/docs/11/standby-settings.html
+
  https://www.postgresql.fastware.com/blog/two-phase-commits-for-logical-replication-publications-subscriptions
 
 [ pg_ctl restart -D /sysx/data11/DATANEW/17](https://docs.google.com/document/d/1dhRb2ZCVfBXCU9HAfG-1NfK4IXQUJFeL/edit
