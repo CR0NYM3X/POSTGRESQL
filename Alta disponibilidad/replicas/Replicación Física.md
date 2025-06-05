@@ -74,7 +74,7 @@ pg_ctl restart -D /sysx/data11/DATANEW/16
 
 ### Crear un slot 
 Para habilitar la replicación física, se utiliza una característica llamada "replication slots" (ranuras de replicación), que permiten que el servidor principal mantenga un registro de los cambios necesarios para replicar. 
-```
+```SQL
 SELECT * FROM pg_create_physical_replication_slot('repl_slot');
 
 -- Esto en caso de querer eliminar el slot 
@@ -83,11 +83,57 @@ SELECT * FROM pg_create_physical_replication_slot('repl_slot');
 
 ---
 
+
+## Configuración de servidor Secundario/Replica
+
+
+
+```SQL
+nohup  pg_basebackup -U postgres -h 10.28.230.123 -R -P -X stream -c fast -D /tmp/data16-replica/ &
+
+# Esperar a que el proceso de pg_basebackup termine
+pg_basebackup_pid=$(ps -ef | grep postgres | grep pg_basebackup | grep -v grep | awk '{print $2}')
+while kill -0 "$pg_basebackup_pid" 2>/dev/null; do
+    sleep 60
+done
+
+```
+
+```SQL
+sed -i 's/hot_standby = off/hot_standby = on/g' /sysx/data/postgresql.conf
+```
+
+```SQL
+pg_ctl start -D /sysx/data/ -o -i
+```
+
+
+recovery.conf  o en el postgresql.auto.conf
+
+ls -lhtra | grep standby.signal
+
+```SQL
+recovery_target_timeline = 'latest'
+primary_conninfo = 'host=172.31.14.134 port=5432 user=replica password=passwd application_name=pgslave1'
+restore_command = 'cp /var/lib/postgresql/12/main/archive/%f %p'
+primary_slot_name = 'my_replication_slot'
+```
+
+
+
+
+
+
 ### Promover un servidor a primario 
  un servidor secundario puede ser promovido a primario para evitar interrupciones en el servicio. ya que una vez que se promueve un servidor secundario a primario, 
  el antiguo servidor primario (que ahora es secundario) perderá su estatus de primario y no podrá recibir escrituras hasta que se restablezca la replicación y se configure nuevamente como primario.
 ```
+#Promover servidor
 /usr/local/pgsql/bin/pg_ctl promote -D /sysx/data/
+
+#Cambiar hot_standby a off en postgresql.conf
+sed -i 's/hot_standby = off/hot_standby = on/g' /sysx/data/postgresql.conf
+
 ```
 
 ### Herramientas y técnicas adicionales
