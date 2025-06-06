@@ -151,6 +151,13 @@ select * from clientes;
 
 ```sql
  CREATE PUBLICATION pub_clientes FOR TABLE clientes;
+
+
+-- OR, to replicate selected tables from anywhere
+-- CREATE PUBLICATION my_selected_tables_pub FOR TABLE my_schema.table1, another_schema.table2;
+
+-- OR, for specific DML operations (less common for full migration)
+-- CREATE PUBLICATION my_inserts_only_pub FOR TABLE my_table WITH (publish = 'insert');
 ```
 
 **Validar status publicacion**
@@ -182,6 +189,15 @@ SELECT slot_name, plugin, slot_type, active, active_pid FROM pg_replication_slot
 ---
 
 ### 🔧 Paso 2: Configurar el servidor destino/suscriptor
+
+
+**[Conf Opcional] -  postgresql.conf (Suscriptor)**
+```sql
+max_logical_replication_workers = 10  # O más, <= max_worker_processes 
+max_sync_workers_per_subscription = 5  # O más, <= max_logical_replication_workers 
+max_worker_processes = 20            # Asegúrese de que esto sea suficiente para todos los trabajadores
+```
+
 
 **2.1. Crear la tabla `clientes` con la misma estructura.**
 ```sql
@@ -447,6 +463,7 @@ wal2json -> https://github.com/eulerto/wal2json
 CREATE SUBSCRIPTION -> https://www.postgresql.org/docs/current/sql-createsubscription.html
 29.2. Subscription  -> https://www.postgresql.org/docs/current/logical-replication-subscription.html
 
+Mastering PostgreSQL Logical Replication -> https://medium.com/@syedfahadkhalid93/mastering-postgresql-logical-replication-your-definitive-guide-for-seamless-upgrades-and-b619c3a23e3f
 Streaming Logical Changes with wal2json in a PostgreSQL Patroni Cluster -> https://medium.com/@pawanpg0963/streaming-logical-changes-with-wal2json-in-a-postgresql-patroni-cluster-4ed2b3442f3e
 Getting postgres logical replication changes using pgoutput plugin -> https://medium.com/@film42/getting-postgres-logical-replication-changes-using-pgoutput-plugin-b752e57bfd58
 Replicación lógica con Postgres y pglogical -> https://davidcasr.medium.com/replicaci%C3%B3n-l%C3%B3gica-con-postgres-y-pglogical-91897ac79769
