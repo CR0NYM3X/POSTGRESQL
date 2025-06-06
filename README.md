@@ -25,6 +25,7 @@ https://lists.postgresql.org/
 https://www.postgresql.org/about/contact/
 https://www.postgresql.org/account/submitbug/
 
+https://scalegrid.io/blog/
 https://www.heatware.net/postgresql/partitioning-vs-sharding/
 https://www.interdb.jp/pg/index.html
 https://www.metisdata.io/blog
