@@ -208,10 +208,36 @@ ps -fea | grep stream
  el antiguo servidor primario (que ahora es secundario) perderá su estatus de primario y no podrá recibir escrituras hasta que se restablezca la replicación y se configure nuevamente como primario.
 ```
 #Promover servidor
-/usr/local/pgsql/bin/pg_ctl promote -D /sysx/data/
+$PGBI16/pg_ctl promote -D /sysx/data16/DATANEW/data_secundario
+-- SELECT pg_promote(); -- Se puede usar esta funcion para promover 
+
+rm /sysx/data16/DATANEW/data_secundario/standby.signal
+echo "" > postgresql.auto.conf
 
 #Cambiar hot_standby a off en postgresql.conf
-sed -i 's/hot_standby = off/hot_standby = on/g' /sysx/data/postgresql.conf
+sed -i 's/hot_standby = off/hot_standby = on/g' /sysx/data16/DATANEW/data_secundario/postgresql.conf
+
+
+************ Opciones de recuperación de primario perdido ************
+OPCIÓN 1: Usar pg_rewind para actualizar el antiguo primario, si solo esta desfasado por pocos días
+OPCIÓN 2: Crear una nueva réplica con pg_basebackup  y hacer failover manual
+OPCIÓN 3: Restauración desde backup 
+
+************ EJEMPLO DE RECUPERACIÓN DE SERVIDOR ************
+En este ejemplo se simula que el servidor primario presento detalles de red por dos días y se desactualizo y el servidor secundario fue promovido a primario, entonces
+ahora el servidor primario  restablecio la red y queremos volverlo hacer primario
+
+-- Apagar servidor primario antiguo
+$PGBIN16/pg_ctl stop -D /sysx/data16/DATANEW/data_maestro
+
+-- Conecta al nuevo primario para obtener el historial correcto.
+pg_rewind -D /sysx/data16/DATANEW/data_maestro --source-server="host=127.0.0.1 port=55162 user=user_replicador password=123123" -P -R 
+
+************ Requisitos antes de ejecutar pg_rewind ************
+- PostgreSQL debe estar **configurado para replicación** con **WAL archiving** habilitado.
+- El servidor primario debe haber sido apagado adecuadamente (`pg_ctl stop` o `systemctl stop postgresql`).
+- **El nuevo primario debe tener el historial WAL completo** para que `pg_rewind` pueda reconstruir el estado correcto en el nodo secundario.
+- **El antiguo primario debe estar detenido** antes de aplicar `pg_rewind`.
 
 ```
 
@@ -424,7 +450,7 @@ while kill -0 "$pg_basebackup_pid" 2>/dev/null; do
     sleep 60
 done
 
-
+tail -f  nohup.out
 # Permisos 
 touch ~/.pgpass
 chmod 0600 ~/.pgpass
