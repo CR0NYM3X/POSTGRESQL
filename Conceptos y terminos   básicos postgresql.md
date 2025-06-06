@@ -1321,3 +1321,8 @@ En el contexto de PostgreSQL, CI/CD puede incluir:
 - **Despliegue automatizado**: Integración con Docker, Kubernetes o herramientas CI/CD como GitHub Actions, GitLab CI/CD, o Jenkins para actualizar bases de datos sin interrupciones.
 
 Es una estrategia clave para mantener aplicaciones escalables y confiables.  
+
+
+
+### **PoC (Proof of Concept, o Prueba de Concepto)**
+Es un **prototipo o demostración** que se desarrolla para comprobar si una idea, tecnología o solución es viable antes de invertir tiempo y recursos en su implementación completa. 
