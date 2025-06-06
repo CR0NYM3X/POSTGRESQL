@@ -34,6 +34,24 @@
 | Migración entre versiones | **Lógica** | Compatible entre versiones distintas. |
 
 
+ 
+### 🔹 **Failover**
+El **failover** ocurre cuando el **nodo primario** falla inesperadamente y un nodo **standby** se convierte automáticamente en el nuevo **nodo primario**.  
+✅ Se activa de manera automática en sistemas configurados con monitoreo y failover.  
+✅ Evita la caída total del servicio.  
+✅ Se usa en escenarios de emergencia cuando el servidor principal deja de funcionar.  
+Ejemplo de comando manual:
+ 
+### 🔹 **Switchover**
+El **switchover** es un proceso planificado en el que el nodo **primario** y uno **standby** intercambian roles de forma controlada.  
+✅ Se realiza sin que haya fallos en el sistema.  
+✅ Se usa para mantenimiento o actualizaciones del nodo primario.  
+✅ Permite cambiar de líder sin interrupciones.  
+ 
+
+💡 **Diferencia clave:**  
+- **Failover** = Evento inesperado, ocurre por una falla.  
+- **Switchover** = Cambio intencional y programado.
 
 
 ---
