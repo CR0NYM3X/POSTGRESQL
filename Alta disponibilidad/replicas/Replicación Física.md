@@ -26,7 +26,7 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
 mkdir -p /sysx/data16/DATANEW/data_maestro
 mkdir -p /sysx/data16/DATANEW/data_secundario
 
-/usr/pgsql-16/bin/initdb -E UTF-8 -D /sysx/data16/DATANEW/data_maestro  &>/dev/null
+/usr/pgsql-16/bin/initdb -E UTF-8 -D /sysx/data16/DATANEW/data_maestro --data-checksums  &>/dev/null
 
 ```
 
@@ -63,15 +63,6 @@ hot_standby = off  #  OFF = PRINCIPAL y ON  = SOPORTE
 $PGBIN16/pg_ctl start -D /sysx/data16/DATANEW/data_maestro
 ```
 
-### Crear un usuario con permisos REPLICATION
-El parámetro REPLICATION en la sentencia CREATE USER en PostgreSQL sirve para otorgar permisos especiales al usuario, permitiéndole realizar tareas de replicación dentro del sistema de bases de datos.
-
-```SQL
-CREATE USER user_replicador WITH REPLICATION PASSWORD '123123';
-
--- Tambien se puede usar 
-# createuser --replication -P -e user_replicador -p 5516  
-```
 
 ### Crear Base de datos y tabla con datos de pruebas
 ```SQL
@@ -98,6 +89,15 @@ select * from clientes;
 
 ```
 
+### Crear un usuario con permisos REPLICATION
+El parámetro REPLICATION en la sentencia CREATE USER en PostgreSQL sirve para otorgar permisos especiales al usuario, permitiéndole realizar tareas de replicación dentro del sistema de bases de datos.
+
+```SQL
+CREATE USER user_replicador WITH REPLICATION PASSWORD '123123';
+
+-- Tambien se puede usar 
+# createuser --replication -P -e user_replicador -p 5516  
+```
  
 
 ### configuración de pg_hba.conf
@@ -130,7 +130,7 @@ Crear el slot es **opcional** ya que al usar pg_basebackup lo crea automaticamen
 
 
 ```SQL
---nohup  pg_basebackup -U postgres -h 10.28.230.123 -R -P -X stream -c fast -D /tmp/data16-replica/ &
+--nohup  &
 
 pg_basebackup -h 127.0.0.1 -U user_replicador -p 55161 -D /sysx/data16/DATANEW/data_secundario -c fast -X stream -C -S replica_slot -Fp -R -P
 
@@ -208,14 +208,17 @@ ps -fea | grep stream
  el antiguo servidor primario (que ahora es secundario) perderá su estatus de primario y no podrá recibir escrituras hasta que se restablezca la replicación y se configure nuevamente como primario.
 ```
 #Promover servidor
-$PGBI16/pg_ctl promote -D /sysx/data16/DATANEW/data_secundario
+$PGBIN16/pg_ctl promote -D /sysx/data16/DATANEW/data_secundario
 -- SELECT pg_promote(); -- Se puede usar esta funcion para promover 
 
-rm /sysx/data16/DATANEW/data_secundario/standby.signal
-echo "" > postgresql.auto.conf
 
+mv /sysx/data16/DATANEW/data_secundario/postgresql.auto.conf  /sysx/data16/DATANEW/data_secundario/postgresql.auto.conf_ant
+echo "" > /sysx/data16/DATANEW/data_secundario/postgresql.auto.conf
+ 
 #Cambiar hot_standby a off en postgresql.conf
-sed -i 's/hot_standby = off/hot_standby = on/g' /sysx/data16/DATANEW/data_secundario/postgresql.conf
+sed -i 's/hot_standby = on/hot_standby = off/g'  /sysx/data16/DATANEW/data_secundario/postgresql.conf
+
+$PGBIN16/pg_ctl reload -D /sysx/data16/DATANEW/data_secundario
 
 
 ************ Opciones de recuperación de primario perdido ************
@@ -231,14 +234,20 @@ ahora el servidor primario  restablecio la red y queremos volverlo hacer primari
 $PGBIN16/pg_ctl stop -D /sysx/data16/DATANEW/data_maestro
 
 -- Conecta al nuevo primario para obtener el historial correcto.
-pg_rewind -D /sysx/data16/DATANEW/data_maestro --source-server="host=127.0.0.1 port=55162 user=user_replicador password=123123" -P -R 
+# en caso de requerirlo puedes usar password=123123 
+$PGBIN16/pg_rewind -D /sysx/data16/DATANEW/data_maestro --source-server="host=127.0.0.1  user=postgres port=55161" -P -R
 
 ************ Requisitos antes de ejecutar pg_rewind ************
 - PostgreSQL debe estar **configurado para replicación** con **WAL archiving** habilitado.
 - El servidor primario debe haber sido apagado adecuadamente (`pg_ctl stop` o `systemctl stop postgresql`).
 - **El nuevo primario debe tener el historial WAL completo** para que `pg_rewind` pueda reconstruir el estado correcto en el nodo secundario.
 - **El antiguo primario debe estar detenido** antes de aplicar `pg_rewind`.
+.- wal_log_hints = on # Permite que PostgreSQL registre cambios internos (hints bits, modificaciones invisibles) en el WAL, lo que facilita el uso de pg_rewind. # show wal_log_hints;
+.- initdb -D /sysx/data16/DATANEW/data_secundario --data-checksums #  Habilita verificación de integridad en cada página de datos, detectando corrupción en disco o memoria antes de que cause problemas. # SHOW data_checksums;
 
+-- ya está en la misma línea de tiempo que el primario, por lo que pg_rewind no encontró diferencias que sincronizar.
+pg_rewind: source and target cluster are on the same timeline
+pg_rewind: no rewind required
 ```
 
 ### Herramientas y técnicas adicionales
@@ -353,6 +362,10 @@ pg_stat_progress_basebackup:  esta vista te informará sobre el progreso de la c
 
 **Querys que pueden servir**
 ```sql
+-- Si retorna true, significa que el servidor está en modo standby (réplica).
+-- Si retorna false, significa que el servidor es el primario y acepta escrituras
+select pg_is_in_recovery();
+
 -- ver los archivos WAL presentes en el servidor
 SELECT name,pg_size_pretty(sum(size)) AS size,modification FROM pg_ls_waldir() group by  name,modification;
 
