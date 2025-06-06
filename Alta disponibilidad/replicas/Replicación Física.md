@@ -49,11 +49,16 @@ max_wal_senders =  5
 wal_keep_size = 1000 
 hot_standby = off  #  OFF = PRINCIPAL y ON  = SOPORTE  
 
+# Esto se activa en caso de querer respaldar los archivos wal en algun lugar externo o fuera de la instancia 
 # archive_mode = on
 # archive_timeout = 0
-# archive_command = 'cp %p /sysx/data16/DATANEW/archive_wal/%f' 
+# archive_command = 'cp %p /sysx/data16/DATANEW/archive_wal/%f'
+# archive_command = 'gzip < %p > /sysx/data16/DATANEW/archive_wal/%f.gz' # esta es una alternativa si quieres comprimir 
+# restore_command = 'cp /sysx/data16/DATANEW/archive_wal/%f %p'
+# restore_command = 'gzip -d < /sysx/data16/DATANEW/archive_wal/%f.gz > %p' # recovery_target_time = '2025-06-05 12:30:00'
+# recovery_target_timeline = 'latest'
 
--- En caso de querer configurar una Replicación sincrónica  ocupas configurar estos parámetros
+# En caso de querer configurar una Replicación sincrónica  ocupas configurar estos parámetros
 # synchronous_commit = on 
 # synchronous_standby_names = 'app_replicador' # Puedes colocar * para decirle que todas las application_name de las replicas sean syncronas o especificar el application_name 
 ```
