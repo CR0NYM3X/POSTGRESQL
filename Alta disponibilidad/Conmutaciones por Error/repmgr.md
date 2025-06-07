@@ -4,6 +4,15 @@ Es una herramienta de código abierto para la gestión de replicación y failove
 
 
 
+
+### ¿Para qué sirve un Witness Node?
+
+Evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nodos primario y standby en caso de falla. ✅ Ayuda a decidir si el failover debe ocurrir y cuál nodo debe ser promovido.
+
+1️⃣ Monitorea los nodos primario y standby. 2️⃣ En caso de caída del primario, ayuda a validar la promoción del standby. 3️⃣ Evita que ambos nodos crean que son primarios, garantizando una transición correcta.
+
+💡 Es como un árbitro en un partido: no juega, pero decide quién gana en caso de empate.
+
 ## Bibliografía
 ```
 https://www.repmgr.org/docs/current/index.html
