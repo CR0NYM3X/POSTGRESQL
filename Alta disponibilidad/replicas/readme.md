@@ -117,6 +117,8 @@ El **switchover** es un proceso planificado en el que el nodo **primario** y uno
 En este modelo, todos los nodos están operativos y procesan solicitudes y cambios simultáneamente. Esto permite distribuir la carga de trabajo entre múltiples servidores, mejorando el rendimiento y la disponibilidad. Si un nodo falla, los demás continúan funcionando sin interrupciones.
 
 - **Activo-Pasivo**: Aquí, solo un nodo está activo y maneja las solicitudes, mientras que otro nodo permanece en espera (pasivo). Si el nodo activo falla, el pasivo puede toma el control mediante failover. Este enfoque es más simple y garantiza estabilidad, pero no aprovecha los recursos del nodo pasivo hasta que sea necesario.
+
+El **split-brain** es un problema que ocurre en sistemas de alta disponibilidad y replicación, cuando dos nodos **pierden comunicación entre sí**, pero **ambos creen que son el primario** al mismo tiempo.   
 ```
 
 ## Bibliografía 
