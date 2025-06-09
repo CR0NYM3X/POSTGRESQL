@@ -301,6 +301,8 @@ En este modelo, todos los nodos están operativos y procesan solicitudes y cambi
 ¿Qué son las slots/ranuras de replicación?
 Una ranura de replicación es una característica de PostgreSQL que garantiza que el servidor maestro conserve los registros WAL requeridos por las réplicas incluso cuando están desconectadas del maestro.
 Si el servidor de reserva deja de funcionar, el maestro puede controlar el retraso del servidor de reserva y conservar los archivos WAL que necesita hasta que el servidor de reserva se vuelva a conectar. Luego, los archivos WAL se decodifican y se reproducen en el duplicado.
+Son útiles para replicación asincrónica, donde los standby pueden estar rezagados.
+cada replication slot es exclusivo para un solo standby/esclavo.
 
 ```
 
