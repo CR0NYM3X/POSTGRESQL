@@ -113,6 +113,9 @@ El **switchover** es un proceso planificado en el que el nodo **primario** y uno
 # Conceptos que se usan en las replicas 
 ```sql
 
+Maestro/Primario
+Esclavo/secundario/standby
+
 - **Activo-Activo**:  En PostgreSQL 16, se ha mejorado la replicación lógica para permitir una configuración Activo-Activo, donde dos instancias de PostgreSQL pueden recibir escrituras simultáneamente y sincronizar los cambios entre ellas.
 En este modelo, todos los nodos están operativos y procesan solicitudes y cambios simultáneamente. Esto permite distribuir la carga de trabajo entre múltiples servidores, mejorando el rendimiento y la disponibilidad. Si un nodo falla, los demás continúan funcionando sin interrupciones.
 
