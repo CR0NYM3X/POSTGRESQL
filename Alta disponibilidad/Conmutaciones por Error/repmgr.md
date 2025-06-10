@@ -628,4 +628,8 @@ https://medium.com/@muhilhamsyarifuddin/postgresql-ha-with-repmgr-and-keepalived
 https://medium.com/@humzaarshadkhan/postgresql-12-replication-and-failover-with-repmgr-6ffcbe24e342
 https://medium.com/@mattbiondis/postgresql-streaming-replication-using-repmgr-master-slave-c742141bc3fd
 
+Part1 - PostgreSQL16 High Availability Lab Setup  -> https://www.youtube.com/watch?v=Az6GE5Y5usg&list=PLpm71E6Qw2tCIakNQNQKoxhSOJP3PpNhQ
+Administrar la replicación y la conmutación por error en un clúster PostgreSQL 16 con repmgr -> https://www.youtube.com/watch?v=p_yvt0jLz4Q
+Implementacion de FailOver en Postgresql paso a paso desde cero -> https://www.youtube.com/watch?v=w0JDD9kne4E&t=1015s
+Alta disponibilidad con Pgpool y repmgr -> https://www.youtube.com/watch?v=LqTc9pOs-1k
 ```
