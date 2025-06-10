@@ -346,6 +346,25 @@ ERROR: unable to connect via SSH to host "127.0.0.1", user ""
 ```
 
 # Hacer pruebas de failover automatico 
+```
+# 1.- Solo ocupas dar de baja el primario y durante un rato veras que algun esclavo se convertira en maestro 
+pg_ctl stop -D /sysx/data16/DATANEW/data_maestro/
+
+# 2.- conectate a cualquier esclavo
+
+postgres@SERVER-TEST ~ $ psql -p 55163 -d repmgr -c " select node_id,active,type,slot_name from repmgr.nodes; "
++---------+--------+---------+----------------+
+| node_id | active |  type   |   slot_name    |
++---------+--------+---------+----------------+
+|      60 | f      | primary | repmgr_slot_60 |
+|      61 | f      | primary | repmgr_slot_61 |
+|      62 | f      | primary | repmgr_slot_62 |
+|      63 | t      | primary | repmgr_slot_63 |
++---------+--------+---------+----------------+
+(4 rows)
+
+
+```
 
 
 # Configurar un Witness Node 
@@ -646,11 +665,44 @@ El **failover automático** ocurre cuando el primario **falla completamente** y 
 ✅ **4. Los demás standby siguen al nuevo primario**  
 📌 **¿Se ejecuta `standby follow` manualmente?**  
 ❌ **No es necesario hacerlo manualmente**, ya que `repmgrd` ejecuta automáticamente el comando:  
-	repmgr standby follow -f /etc/repmgr.conf --upstream-node-id=2
+	repmgr standby follow -f /etc/repmgr.conf --upstream-node-id=%n
 
 🔹 Esto ajusta la replicación para que **los standby sigan al nuevo primario sin intervención manual**.
 
 ```
+
+###  Reintegrar un maestro que presento fallo 
+```
+📌 **Posibles causas y soluciones**  
+
+✅ **1. Verifica si `pgmaster` sigue creyendo que es primario**  
+Ejecuta en `pgmaster`:  
+	SELECT pg_is_in_recovery();
+
+🔹 **Si el resultado es `false`**, significa que `pgmaster` **todavía cree que es el primario**, aunque ha sido reemplazado.  
+🔹 Debes convertirlo manualmente en standby.  
+
+
+✅ **2. Revisa la configuración de replicación**  
+Ejecuta en `pgmaster`:  
+	SELECT * FROM pg_replication_slots;
+
+🔹 Si **no hay slots activos**, significa que `pgmaster` **no está recibiendo WAL del nuevo primario**.  
+
+
+✅ **3. Si la replicación está rota, reconstruye el standby**  
+💡 *Si `pgmaster` estuvo desconectado por mucho tiempo*, el nuevo primario ya procesó transacciones que `pgmaster` no tiene.  
+Para volver a sincronizar `pgmaster`, usa **`pg_basebackup` o `repmgr`** desde el nuevo primario (`pgslaveX`):  
+
+	repmgr -h pgslaveX -U repmgr -d repmgr -f /etc/repmgr.conf standby clone --force
+
+🔹 Esto hará que `pgmaster` **copie los datos actualizados y se reintegre correctamente**.  
+
+✅ **4. Reconfigura `pgmaster` como standby y sigue al nuevo primario**  
+Ejecuta en `pgmaster`:  
+	repmgr -f /etc/repmgr.conf standby follow --upstream-node-id=<nuevo_primario_id>
+```
+
 
 ## Bibliografía
 ```
