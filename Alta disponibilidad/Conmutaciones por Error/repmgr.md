@@ -150,7 +150,7 @@ postgres@postgres# SELECT slot_name, plugin, slot_type, active, active_pid FROM 
 
 ### Configurar maestro_repmgr.conf  
 vim /etc/repmgr/16/maestro_repmgr.conf
-```
+```SQL
 node_id=60
 node_name='pgmaster'
 conninfo='host=127.0.0.1 port=55160 user=repmgr dbname=repmgr connect_timeout=2'
@@ -163,27 +163,39 @@ service_stop_command    = '/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW
 service_restart_command  = '/usr/pgsql-16/bin/pg_ctl restart  -D /sysx/data16/DATANEW/data_maestro'
 service_reload_command   = '/usr/pgsql-16/bin/pg_ctl reload -D /sysx/data16/DATANEW/data_maestro'
 service_promote_command = '/usr/pgsql-16/bin/pg_ctl promote -D /sysx/data16/DATANEW/data_maestro' 
+repmgrd_service_start_command='/usr/pgsql-17/bin/repmgrd -f /etc/repmgr/16/maestro_repmgr.conf' # inicia el demonio repmgrd
+repmgrd_service_stop_command='pkill -f repmgrd' # inicia el demonio repmgrd
 
 failover=automatic # Promueve a maestro automaticamente , si quieres manual "repmgr standby promote "
 promote_command='/usr/pgsql-16/bin/repmgr standby promote -f /etc/repmgr/16/maestro_repmgr.conf --log-to-file' # un standby se convierte en maestro. y registra en log 
 follow_command='/usr/pgsql-16/bin/repmgr standby follow -f /etc/repmgr/16/maestro_repmgr.conf --log-to-file --upstream-node-id=%n' #  Asegura que los standby sigan al nuevo maestro después de un failover.
+standby_disconnect_on_failover=true # Indica que los standby deben desconectarse del maestro si este falla y otro nodo es promovido.  evita que los standby intenten seguir replicando desde un nodo caído. 
 monitor_interval_secs=2 # Establece cada cuántos segundos repmgrd verifica el estado de los nodos. 
 reconnect_attempts=6  # Define cuántas veces repmgrd intentará reconectar al maestro antes de activar un failover.
 reconnect_interval=8  # Establece el intervalo de tiempo (segundos) entre cada intento de reconexión.
 connection_check_type = 'query' # es el metodo de validacion
+
+primary_visibility_consensus=true # Antes de hacer failover, cada standby consulta a los demás para confirmar que realmente el primario está caído. Si está en false, cada standby toma decisiones individuales, aumentando el riesgo de split-brain.
+child_nodes_connected_include_witness=true #  si los standby pierden comunicación con el primario, pero aún ven al Witness, pueden asumir que la red aún está operativa y que la falla es solo del primario, no de todo el sistema. Si está en false, los standby solo consideran otros standby y el primario para decidir si están conectados.
+witness_sync_interval=15 # define la frecuencia con la que el Witness Node sincroniza su información con los demás nodos del clúster.
+child_nodes_disconnect_command='/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW/data_maestro' # permite ejecutar comandos personalizados cuando un nodo se desconecta . en este caso mandamos apagarlo
+
 log_file='/etc/repmgr/16/maestro_repmgr.log' 
 log_level='INFO'
+log_status_interval=20 # Define cada cuántos segundos repmgrd guarda información de estado en los logs
+
 monitoring_history=yes # Guarda un registro histórico del estado de los nodos, útil para auditoría y diagnósticos. 
 priority=100 # Esto en caso de fallos para tomar quien sera el maestro 
 use_replication_slots=true # Activa el uso de Replication Slots, que aseguran que un standby no pierda datos de WAL 
-log_status_interval=20 # Define cada cuántos segundos repmgrd guarda información de estado en los logs 
-standby_disconnect_on_failover=true # Indica que los standby deben desconectarse del maestro si este falla y otro nodo es promovido.  Importancia: Muy útil, evita que los standby intenten seguir replicando desde un nodo caído. 
-primary_visibility_consensus=true # hace que **Repmgr consulte al Witness antes de decidir Importancia: Esencial en clusters con Witness Node, ayuda a evitar failovers innecesarios.
-repmgrd_service_start_command='/usr/pgsql-17/bin/repmgrd -f /etc/repmgr/16/maestro_repmgr.conf' # inicia el demonio repmgrd
-repmgrd_service_stop_command='pkill -f repmgrd' # inicia el demonio repmgrd
 
 ssh_options='-q -o ConnectTimeout=10'
+
+replication_type='physical'
+location='default'
 ```
+
+**[NOTA]** -> el parámetro **primary_visibility_consensus=true** # solo aplica en entornos con varios standby,  no evita el failover en caso de no tener alcanse con el Witness Node, solo mejora la validación entre esclavos para reducir el riesgo de split-brain. y su función es evitar que múltiples standby se promuevan al mismo tiempo con el witness node 
+
 
 ### Registrar el nodo primario en repmgr:
 ```bash
@@ -232,7 +244,7 @@ Esto se hace para validar si hay algun error simulando la ejecución sin hacer c
 repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo61_repmgr.conf standby clone --dry-run
 repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo62_repmgr.conf standby clone --dry-run
 repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo63_repmgr.conf standby clone --dry-run
-```bash
+```
 
 
 ### Clonar el data_maestro en los esclavos 1 ,2 y 3:
@@ -303,6 +315,7 @@ postgres 2484680 1679705  0 15:58 pts/9    00:00:00 grep --color=auto repmgr.con
 # Insertar datos en maestro 
 psql -p 55160
 ```SQL
+
 -- Crear la base de datos
 CREATE DATABASE prueba_db;
 
@@ -336,9 +349,9 @@ psql -X -p 55163 -d prueba_db -c "select * from usuarios limit 1"
 
 
 # Hacer pruebas de switchover automatico 
-El standby más actualizado o más nuevo se convierte en nuevo primario, en este caso como no configuramos el ssh entonces no se podra usar el modo de switchover
+El standby más actualizado o más nuevo se convierte en nuevo primario, en este caso como no configuramos el ssh entonces no se podra usar el modo de switchover, en caso de si tener ssh configurado se tiene que hacer el switchover y depues el follow en todos los nodos para que sigan al nuevo primario
 ```bash
--- ejecutar el switchover en el nodo que quieres promover a primario, es decir, en uno de los standby
+-- ejecutar el switchover en el nodo esclavo/standby que quieres promover a primario.
 postgres@SERVER-TEST /sysx/data16/DATANEW $   repmgr -f  /etc/repmgr/16/esclavo62_repmgr.conf standby switchover --force
 NOTICE: executing switchover on node "pgslave62" (ID: 62)
 WARNING: unable to connect to remote host "127.0.0.1" via SSH
@@ -348,29 +361,82 @@ ERROR: unable to connect via SSH to host "127.0.0.1", user ""
 # Hacer pruebas de failover automatico 
 ```
 # 1.- Solo ocupas dar de baja el primario y durante un rato veras que algun esclavo se convertira en maestro 
-pg_ctl stop -D /sysx/data16/DATANEW/data_maestro/
+/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW/data_maestro/
 
 # 2.- conectate a cualquier esclavo
-
 postgres@SERVER-TEST ~ $ psql -p 55163 -d repmgr -c " select node_id,active,type,slot_name from repmgr.nodes; "
 +---------+--------+---------+----------------+
 | node_id | active |  type   |   slot_name    |
 +---------+--------+---------+----------------+
 |      60 | f      | primary | repmgr_slot_60 |
-|      61 | f      | primary | repmgr_slot_61 |
-|      62 | f      | primary | repmgr_slot_62 |
-|      63 | t      | primary | repmgr_slot_63 |
+|      61 | t      | primary | repmgr_slot_61 |
+|      62 | t      | standby | repmgr_slot_62 |
+|      63 | t      | standby | repmgr_slot_63 |
 +---------+--------+---------+----------------+
 (4 rows)
-
-
 ```
 
 
 # Configurar un Witness Node 
+```bash
+# Creamos la carpeta 
+mkdir -p /sysx/data16/DATANEW/data_witness
+
+# Inicializamos el data 
+/usr/pgsql-16/bin/initdb -E UTF-8 -D  /sysx/data16/DATANEW/data_witness  --data-checksums  &>/dev/null
+
+# Cambiar el puerto del witness
+echo "port = 55199" >> /sysx/data16/DATANEW/data_witness/postgresql.auto.conf
+echo "shared_preload_libraries = 'repmgr'"  >> /sysx/data16/DATANEW/data_witness/postgresql.auto.conf
+
+# levantar el servicio
+/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/data_witness
+
+# Crear el usuario 
+CREATE USER repmgr WITH REPLICATION SUPERUSER PASSWORD '123123';
+CREATE DATABASE repmgr OWNER repmgr;
+ 
+
+# agregar al pg_hba.conf 
+local   replication     repmgr                                     trust
+host    replication     repmgr             127.0.0.1/32            trust
+
+# recargar  las configuraciones 
+/usr/pgsql-16/bin/pg_ctl reload -D /sysx/data16/DATANEW/data_maestro
+
+# Creamos el conf
+touch /etc/repmgr/16/witness_repmgr.conf
+
+# agrega la siguientes lineas en witness_repmgr.conf
+node_id=99
+node_name='pgwitness'
+conninfo='host=127.0.0.1 port=55199 user=repmgr dbname=repmgr connect_timeout=2'
+data_directory='/sysx/data16/DATANEW/data_witness'
+pg_bindir='/usr/pgsql-16/bin/'
+repmgrd_pid_file='/etc/repmgr/16/witness_repmgr.pid'
+log_file='/etc/repmgr/16/witness_repmgr.log' 
+log_level='INFO'
+log_status_interval=20  
+monitoring_history=yes
+location='Witness'
 
 
+# Registrar el Witness Node en repmgr
+/usr/pgsql-15/bin/repmgr -f /etc/repmgr/16/witness_repmgr.conf witness register -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -F
 
+# Validar estatus de Witness
+repmgr -f  /etc/repmgr/16/witness_repmgr.conf cluster show
+
+ ID | Name      | Role    | Status    | Upstream | Location | Priority | Timeline | Connection string                                             
+----+-----------+---------+-----------+----------+----------+----------+----------+-----------------------------------------------------------------------
+ 60 | pgmaster  | primary | * running |          | default  | 100      | 1        | host=127.0.0.1 port=55160 user=repmgr dbname=repmgr connect_timeout=2
+ 61 | pgslave61 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55161 user=repmgr dbname=repmgr connect_timeout=2
+ 62 | pgslave62 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55162 user=repmgr dbname=repmgr connect_timeout=2
+ 63 | pgslave63 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55163 user=repmgr dbname=repmgr connect_timeout=2
+ 99 | pgwitness | witness | * running | pgmaster | Witness  | 0        | n/a      | host=127.0.0.1 port=55199 user=repmgr dbname=repmgr connect_timeout=2
+
+
+```
 
 
 
@@ -559,7 +625,7 @@ SELECT * FROM repmgr.events ORDER BY event_timestamp DESC LIMIT 5;
 SELECT * FROM repmgr.monitoring_history  LIMIT 10;
 
 -- Contiene la lista de nodos en el clúster de replicación. ✅ Define si un nodo es maestro o standby, además de su configuración.
-SELECT * FROM repmgr.nodes;
+SELECT * FROM repmgr.nodes order by node_id desc ;
 
 -- Se usa en configuración con Witness Node para coordinar el failover. ✅ Almacena las "rondas de votación" en el proceso de elección del nuevo maestro.
 SELECT * FROM repmgr.voting_term;
@@ -637,10 +703,8 @@ Logging options:
   -q, --quiet                         suppress all log output apart from errors
   -t, --terse                         don't display detail, hints and other non-critical output
   -v, --verbose                       display additional log output (useful for debugging)
-
-
-
 ```
+
 
 ###  funcionamiento de un failover automático 
 El **failover automático** ocurre cuando el primario **falla completamente** y uno de los standby es **promovido automáticamente** a nuevo primario por `repmgrd`.🚀  
@@ -672,35 +736,67 @@ El **failover automático** ocurre cuando el primario **falla completamente** y 
 ```
 
 ###  Reintegrar un maestro que presento fallo 
+Cuando un **antiguo primario** vuelve a la red después de un failover: **sigue creyendo que es el primario** ya que en sus tabla repmgr.nodes no esta actualizada y dice que el sigue siendo el primario y esta activo , pero en realidad ha sido reemplazado. Si el antiguo primario vuelve y tiene transacciones que el nuevo primario no tiene, no puede simplemente reconectarse sin riesgo de inconsistencias y para evitar conflictos de datos.
 ```
-📌 **Posibles causas y soluciones**  
+📌 **¿Qué hacer en este caso?**  
 
-✅ **1. Verifica si `pgmaster` sigue creyendo que es primario**  
-Ejecuta en `pgmaster`:  
+✅ **1. Verifica si el antiguo primario sigue creyendo que es líder**  
+Ejecuta en `pgmaster` (antiguo primario):  
 	SELECT pg_is_in_recovery();
 
-🔹 **Si el resultado es `false`**, significa que `pgmaster` **todavía cree que es el primario**, aunque ha sido reemplazado.  
-🔹 Debes convertirlo manualmente en standby.  
+🔹 **Si el resultado es `false`**, significa que **pgmaster cree que sigue siendo primario**, aunque ya no lo es.  
+🔹 Para que se reintegre, **debes convertirlo en standby manualmente**.  
 
-
-✅ **2. Revisa la configuración de replicación**  
+✅ **2. Desregistrar el antiguo primario de Repmgr**  
 Ejecuta en `pgmaster`:  
-	SELECT * FROM pg_replication_slots;
+	repmgr -f /etc/repmgr.conf standby unregister
 
-🔹 Si **no hay slots activos**, significa que `pgmaster` **no está recibiendo WAL del nuevo primario**.  
+🔹 Esto **elimina su estado antiguo y lo prepara para volver a replicar desde el nuevo primario**.  
 
 
-✅ **3. Si la replicación está rota, reconstruye el standby**  
-💡 *Si `pgmaster` estuvo desconectado por mucho tiempo*, el nuevo primario ya procesó transacciones que `pgmaster` no tiene.  
-Para volver a sincronizar `pgmaster`, usa **`pg_basebackup` o `repmgr`** desde el nuevo primario (`pgslaveX`):  
+✅ **3. Clonar `pgmaster` desde el nuevo primario si hay inconsistencia**  
+Si el nuevo primario (`pgslave1`) ya tiene transacciones que `pgmaster` no tiene, puede rechazar su reintegración.  
+Para asegurarte de que `pgmaster` está actualizado, clónalo desde el nuevo líder:  
+	repmgr -h pgslave1 -U repmgr -d repmgr -f /etc/repmgr.conf standby clone --force
 
-	repmgr -h pgslaveX -U repmgr -d repmgr -f /etc/repmgr.conf standby clone --force
+🔹 Esto **descarga una copia completa de los datos actualizados**.  
 
-🔹 Esto hará que `pgmaster` **copie los datos actualizados y se reintegre correctamente**.  
 
-✅ **4. Reconfigura `pgmaster` como standby y sigue al nuevo primario**  
+✅ **4. Registrar `pgmaster` como standby y seguir al nuevo primario**  
 Ejecuta en `pgmaster`:  
-	repmgr -f /etc/repmgr.conf standby follow --upstream-node-id=<nuevo_primario_id>
+	repmgr -f /etc/repmgr.conf standby register # Registrar primario 
+	repmgr -f /etc/repmgr.conf standby follow --upstream-node-id=<nuevo_primario_id> # Sigue al nuevo primario 
+
+🔹 Ahora `pgmaster` replicará desde `pgslave1`, y ya no intentará actuar como primario.  
+```
+
+### Borrar todo el laboratorio
+```
+# Detener el servicio 
+/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW/data_maestro
+/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW/data_esclavo61
+/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW/data_esclavo62
+/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW/data_esclavo63
+
+# Borrar los data 
+rm -r /sysx/data16/DATANEW/data_maestro
+rm -r /sysx/data16/DATANEW/data_esclavo61
+rm -r /sysx/data16/DATANEW/data_esclavo62
+rm -r /sysx/data16/DATANEW/data_esclavo63
+
+# borrar los archivos  generados de repmgr
+rm  /etc/repmgr/16/maestro_repmgr.conf
+rm  /etc/repmgr/16/esclavo61_repmgr.conf
+rm  /etc/repmgr/16/esclavo62_repmgr.conf
+rm  /etc/repmgr/16/esclavo63_repmgr.conf
+rm  /etc/repmgr/16/maestro_repmgr.pid
+rm  /etc/repmgr/16/esclavo61_repmgr.pid
+rm  /etc/repmgr/16/esclavo62_repmgr.pid
+rm  /etc/repmgr/16/esclavo63_repmgr.pid
+rm  /etc/repmgr/16/esclavo63_repmgr.log
+rm  /etc/repmgr/16/esclavo61_repmgr.log
+rm  /etc/repmgr/16/esclavo62_repmgr.log
+rm  /etc/repmgr/16/maestro_repmgr.log
 ```
 
 
@@ -709,6 +805,7 @@ Ejecuta en `pgmaster`:
 https://www.repmgr.org/docs/current/index.html
 https://www.repmgr.org/docs/current/configuration.html
 https://www.repmgr.org/docs/current/configuration-file.html#CONFIGURATION-FILE-FORMAT
+https://www.repmgr.org/docs/4.2/repmgr-witness-register.html
 Witness Node # https://www.repmgr.org/docs/current/repmgrd-network-split.html
 
 https://www.datavail.com/blog/postgresql-high-availability-setup-using-repmgr-with-witness/
