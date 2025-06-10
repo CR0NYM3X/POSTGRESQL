@@ -419,10 +419,14 @@ log_level='INFO'
 log_status_interval=20  
 monitoring_history=yes
 location='Witness'
+connection_check_type = 'query'
 
 
 # Registrar el Witness Node en repmgr
 /usr/pgsql-15/bin/repmgr -f /etc/repmgr/16/witness_repmgr.conf witness register -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -F
+
+# Levantar el demonio de repmgrd
+repmgrd -f /etc/repmgr/16/witness_repmgr.conf  -d --verbose
 
 # Validar estatus de Witness
 repmgr -f  /etc/repmgr/16/witness_repmgr.conf cluster show
@@ -434,6 +438,24 @@ repmgr -f  /etc/repmgr/16/witness_repmgr.conf cluster show
  62 | pgslave62 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55162 user=repmgr dbname=repmgr connect_timeout=2
  63 | pgslave63 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55163 user=repmgr dbname=repmgr connect_timeout=2
  99 | pgwitness | witness | * running | pgmaster | Witness  | 0        | n/a      | host=127.0.0.1 port=55199 user=repmgr dbname=repmgr connect_timeout=2
+
+
+# Ver el estado de los nodos desde postgresql
+postgres@SERVER-TEST /sysx/data16/DATANEW/data_witness $ psql -p 55199 -d repmgr -c " select node_id,node_name,active,type,slot_name from repmgr.nodes; "
+postgres@repmgr# select node_id,node_name,active,type,slot_name from repmgr.nodes;
++---------+-----------+--------+---------+----------------+
+| node_id | node_name | active |  type   |   slot_name    |
++---------+-----------+--------+---------+----------------+
+|      60 | pgmaster  | t      | primary | repmgr_slot_60 |
+|      61 | pgslave61 | t      | standby | repmgr_slot_61 |
+|      62 | pgslave62 | t      | standby | repmgr_slot_62 |
+|      63 | pgslave63 | t      | standby | repmgr_slot_63 |
+|      99 | pgwitness | t      | witness | NULL           |
++---------+-----------+--------+---------+----------------+
+
+(5 rows)
+
+
 
 
 ```
