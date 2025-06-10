@@ -17,7 +17,7 @@ Evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nod
 ✅ **Tiene una instalación mínima de PostgreSQL** → Solo necesita la base `repmgr` para validar el estado del clúster.  
 
 📌 **¿Cuáles son los riesgos sin Witness?**  
-❌ **Split-brain** → Si la red falla o se presentan problemas en el primario y hay mas de un esclavo/standby , todos los standby podrian optar por cambiarse a primario.
+❌ **Split-brain** → Si la red falla o se presentan problemas en algun esclavo, podrian por cambiarse de esclavo a primario y quererse reintegrar.
 ❌ **Failover innecesario** → No hay consenso externo para evitar decisiones erróneas.  
 ❌ **Posibles inconsistencias** → Si el antiguo primario tiene transacciones sin replicar, pueden perderse.  
 
@@ -54,22 +54,26 @@ Repmgr necesita SSH para ejecutar comandos remotos y coordinar failover/switchov
 ### Crear carpetas data 
 ```bash
 mkdir -p /sysx/data16/DATANEW/data_maestro
-mkdir -p /sysx/data16/DATANEW/data_esclavo1
-mkdir -p /sysx/data16/DATANEW/data_esclavo2
-mkdir -p /sysx/data16/DATANEW/data_esclavo3
+mkdir -p /sysx/data16/DATANEW/data_esclavo61
+mkdir -p /sysx/data16/DATANEW/data_esclavo62
+mkdir -p /sysx/data16/DATANEW/data_esclavo63
 ```
 
 ### Crear repmgr.conf  para el nodo maestro
+[NOTA] -> Podemos copiar el conf original o hacer uno vacio en nuestro caso preferimos hacer uno vacio 
 ```
-cp /etc/repmgr/16/repmgr.conf  /etc/repmgr/16/maestro_repmgr.conf
+touch /etc/repmgr/16/maestro_repmgr.conf
+
+#Copiar el conf del original lo cual no usaremos
+#cp /etc/repmgr/16/repmgr.conf  /etc/repmgr/16/maestro_repmgr.conf
 ```
 
 ### Crear log repmgr para cada nodo 
 ```
 touch  /etc/repmgr/16/maestro_repmgr.log
-touch  /etc/repmgr/16/esclavo1_repmgr.log
-touch  /etc/repmgr/16/esclavo2_repmgr.log
-touch  /etc/repmgr/16/esclavo3_repmgr.log
+touch  /etc/repmgr/16/esclavo61_repmgr.log
+touch  /etc/repmgr/16/esclavo62_repmgr.log
+touch  /etc/repmgr/16/esclavo63_repmgr.log
 ```
 
 /etc/repmgr/16.2/repmgr.log
@@ -122,26 +126,38 @@ esto para que postgresql tome las nuevas configuraciones agregadas en el pg_hba
 
 ### Configurar en el maestro un slot para cada nodo esclavo 
 ```
-SELECT * FROM pg_create_physical_replication_slot('repmgr_slot_1');
-SELECT * FROM pg_create_physical_replication_slot('repmgr_slot_2');
-SELECT * FROM pg_create_physical_replication_slot('repmgr_slot_3');
+SELECT * FROM pg_create_physical_replication_slot('repmgr_slot_61');
+SELECT * FROM pg_create_physical_replication_slot('repmgr_slot_62');
+SELECT * FROM pg_create_physical_replication_slot('repmgr_slot_63');
 
 -- Esto en caso de querer eliminar el slot 
--- SELECT pg_drop_replication_slot('repmgr_slot_1');
+-- SELECT pg_drop_replication_slot('repmgr_slot_61');
 ```
 
+### Validar los slot 
+```
+postgres@postgres# SELECT slot_name, plugin, slot_type, active, active_pid FROM pg_replication_slots;
++----------------+--------+-----------+--------+------------+
+|   slot_name    | plugin | slot_type | active | active_pid |
++----------------+--------+-----------+--------+------------+
+| repmgr_slot_61 | NULL   | physical  | f      |       NULL |
+| repmgr_slot_62 | NULL   | physical  | f      |       NULL |
+| repmgr_slot_63 | NULL   | physical  | f      |       NULL |
++----------------+--------+-----------+--------+------------+
+(3 rows)
+```
 
 
 ### Configurar maestro_repmgr.conf  
 vim /etc/repmgr/16/maestro_repmgr.conf
 ```
-node_id=1
+node_id=60
 node_name='pgmaster'
 conninfo='host=127.0.0.1 port=55160 user=repmgr dbname=repmgr connect_timeout=2'
 data_directory='/sysx/data16/DATANEW/data_maestro'
 pg_bindir='/usr/pgsql-16/bin/'
 
-pid_file='/etc/repmgr/16/maestro_repmgr.pid'
+repmgrd_pid_file='/etc/repmgr/16/maestro_repmgr.pid'
 service_start_command   = '/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/data_maestro'
 service_stop_command    = '/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW/data_maestro'
 service_restart_command  = '/usr/pgsql-16/bin/pg_ctl restart  -D /sysx/data16/DATANEW/data_maestro'
@@ -165,11 +181,13 @@ standby_disconnect_on_failover=true # Indica que los standby deben desconectarse
 primary_visibility_consensus=true # hace que **Repmgr consulte al Witness antes de decidir Importancia: Esencial en clusters con Witness Node, ayuda a evitar failovers innecesarios.
 repmgrd_service_start_command='/usr/pgsql-17/bin/repmgrd -f /etc/repmgr/16/maestro_repmgr.conf' # inicia el demonio repmgrd
 repmgrd_service_stop_command='pkill -f repmgrd' # inicia el demonio repmgrd
+
+ssh_options='-q -o ConnectTimeout=10'
 ```
 
 ### Registrar el nodo primario en repmgr:
 ```bash
-repmgr -f /etc/repmgr/16/maestro_repmgr.conf primary register
+repmgr -f /etc/repmgr/16/maestro_repmgr.conf primary register --force
 ```
 
 
@@ -179,7 +197,7 @@ repmgr -f /etc/repmgr/16/maestro_repmgr.conf cluster show
 
  ID | Name     | Role    | Status    | Upstream | Location | Priority | Timeline | Connection string                                              
 ----+----------+---------+-----------+----------+----------+----------+----------+-----------------------------------------------------------------------
- 1  | pgmaster | primary | * running |          | default  | 100      | 1        | host=127.0.0.1 port=55160 user=repmgr dbname=repmgr connect_timeout=2
+ 60  | pgmaster | primary | * running |          | default  | 100      | 1        | host=127.0.0.1 port=55160 user=repmgr dbname=repmgr connect_timeout=2
 ```
 
 
@@ -189,73 +207,73 @@ repmgr -f /etc/repmgr/16/maestro_repmgr.conf cluster show
 ### configurar los repmgr.conf de los esclavos
 Esto lo hacemos ya que caso todos los parámetros configurados son los mismo unicamente cambia la data y los puertos, esto solo porque lo hacemos de modo local en un entorno ya más real cambia hasta la ip
 ```bash
-cp maestro_repmgr.conf  /etc/repmgr/16/esclavo1_repmgr.conf
-cp maestro_repmgr.conf  /etc/repmgr/16/esclavo2_repmgr.conf
-cp maestro_repmgr.conf  /etc/repmgr/16/esclavo3_repmgr.conf
+cp /etc/repmgr/16/maestro_repmgr.conf  /etc/repmgr/16/esclavo61_repmgr.conf
+cp /etc/repmgr/16/maestro_repmgr.conf  /etc/repmgr/16/esclavo62_repmgr.conf
+cp /etc/repmgr/16/maestro_repmgr.conf  /etc/repmgr/16/esclavo63_repmgr.conf
 ```
 
+# Editar linea en conf de servidor maestro
+Esto se realiza en caso de que se llegue a caer no levante no siga a las nuevas replicas porque se va desincronizar y necesita interacion manual
+```bash
+vim /etc/repmgr/16/maestro_repmgr.conf
+follow_command='false'
+```
 
 ### Cambiar algunos valores 
 ```bash 
-sed -i 's/maestro/esclavo1/g; s/55160/55161/g; s/node_id=1/node_id=2/g; s/pgmaster/pgslave1/g' /etc/repmgr/16/esclavo1_repmgr.conf
-sed -i 's/maestro/esclavo2/g; s/55160/55162/g; s/node_id=1/node_id=3/g; s/pgmaster/pgslave2/g' /etc/repmgr/16/esclavo2_repmgr.conf
-sed -i 's/maestro/esclavo3/g; s/55160/55163/g; s/node_id=1/node_id=4/g; s/pgmaster/pgslave3/g' /etc/repmgr/16/esclavo3_repmgr.conf
+sed -i 's/maestro/esclavo61/g; s/55160/55161/g; s/node_id=60/node_id=61/g; s/pgmaster/pgslave61/g' /etc/repmgr/16/esclavo61_repmgr.conf
+sed -i 's/maestro/esclavo62/g; s/55160/55162/g; s/node_id=60/node_id=62/g; s/pgmaster/pgslave62/g' /etc/repmgr/16/esclavo62_repmgr.conf
+sed -i 's/maestro/esclavo63/g; s/55160/55163/g; s/node_id=60/node_id=63/g; s/pgmaster/pgslave63/g' /etc/repmgr/16/esclavo63_repmgr.conf
 ```
 
 ### Simular Clonar el data_maestro en los esclavos 1 ,2 y 3:
 Esto se hace para validar si hay algun error simulando la ejecución sin hacer cambios reales en los archivos o el sistema 
 ```bash
-repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo1_repmgr.conf standby clone --dry-run
-repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo2_repmgr.conf standby clone --dry-run
-repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo3_repmgr.conf standby clone --dry-run
+repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo61_repmgr.conf standby clone --dry-run
+repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo62_repmgr.conf standby clone --dry-run
+repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo63_repmgr.conf standby clone --dry-run
 ```bash
 
 
 ### Clonar el data_maestro en los esclavos 1 ,2 y 3:
 ```bash
-repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo1_repmgr.conf standby clone
-repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo2_repmgr.conf standby clone
-repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo3_repmgr.conf standby clone
+repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo61_repmgr.conf standby clone
+repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo62_repmgr.conf standby clone
+repmgr -h 127.0.0.1 -p 55160 -U repmgr -d repmgr -f /etc/repmgr/16/esclavo63_repmgr.conf standby clone
 ```
 
-### Configurar los nombre de slot en cada nodo esclavo
-```
-sed -i 's/repmgr_slot_1/repmgr_slot_1/g; s/pgmaster/pgslave1/g' /sysx/data16/DATANEW/data_esclavo1/postgresql.auto.conf
-sed -i 's/repmgr_slot_1/repmgr_slot_2/g; s/pgmaster/pgslave2/g' /sysx/data16/DATANEW/data_esclavo2/postgresql.auto.conf
-sed -i 's/repmgr_slot_1/repmgr_slot_3/g; s/pgmaster/pgslave3/g' /sysx/data16/DATANEW/data_esclavo3/postgresql.auto.conf
-```
 
 ### Agregar un puerto diferente para cada nodo esclavo
 ```
-echo "port = 55161" >> /sysx/data16/DATANEW/data_esclavo1/postgresql.auto.conf
-echo "port = 55162" >> /sysx/data16/DATANEW/data_esclavo2/postgresql.auto.conf
-echo "port = 55163" >> /sysx/data16/DATANEW/data_esclavo3/postgresql.auto.conf
+echo "port = 55161" >> /sysx/data16/DATANEW/data_esclavo61/postgresql.auto.conf
+echo "port = 55162" >> /sysx/data16/DATANEW/data_esclavo62/postgresql.auto.conf
+echo "port = 55163" >> /sysx/data16/DATANEW/data_esclavo63/postgresql.auto.conf
 ```
 
 ###  Iniciar PostgreSQL en todos los esclavos:
 ```bash
-/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/data_esclavo1
-/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/data_esclavo2
-/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/data_esclavo3
+/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/data_esclavo61
+/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/data_esclavo62
+/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/data_esclavo63
 ```
 
 ### Registrar los esclavos en repmgr:
 ```bash
-repmgr -f /etc/repmgr/16/esclavo1_repmgr.conf standby register
-repmgr -f /etc/repmgr/16/esclavo2_repmgr.conf standby register
-repmgr -f /etc/repmgr/16/esclavo3_repmgr.conf standby register
+repmgr -f /etc/repmgr/16/esclavo61_repmgr.conf standby register
+repmgr -f /etc/repmgr/16/esclavo62_repmgr.conf standby register
+repmgr -f /etc/repmgr/16/esclavo63_repmgr.conf standby register
 ```
 
 
 ### Mostrar estado del clústers: :
 ```bash
 repmgr -f /etc/repmgr/16/maestro_repmgr.conf cluster show
- ID | Name     | Role    | Status    | Upstream | Location | Priority | Timeline | Connection string                                              
-----+----------+---------+-----------+----------+----------+----------+----------+-----------------------------------------------------------------------
- 1  | pgmaster | primary | * running |          | default  | 100      | 1        | host=127.0.0.1 port=55160 user=repmgr dbname=repmgr connect_timeout=2
- 2  | pgslave1 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55161 user=repmgr dbname=repmgr connect_timeout=2
- 3  | pgslave2 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55162 user=repmgr dbname=repmgr connect_timeout=2
- 4  | pgslave3 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55163 user=repmgr dbname=repmgr connect_timeout=2
+ ID | Name      | Role    | Status    | Upstream | Location | Priority | Timeline | Connection string                                             
+----+-----------+---------+-----------+----------+----------+----------+----------+-----------------------------------------------------------------------
+ 60 | pgmaster  | primary | * running |          | default  | 100      | 1        | host=127.0.0.1 port=55160 user=repmgr dbname=repmgr connect_timeout=2
+ 61 | pgslave61 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55161 user=repmgr dbname=repmgr connect_timeout=2
+ 62 | pgslave62 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55162 user=repmgr dbname=repmgr connect_timeout=2
+ 63 | pgslave63 | standby |   running | pgmaster | default  | 100      | 1        | host=127.0.0.1 port=55163 user=repmgr dbname=repmgr connect_timeout=2
 ```
 
 
@@ -265,9 +283,9 @@ repmgr -f /etc/repmgr/16/maestro_repmgr.conf cluster show
 Ejecutar el demonio en segundo plano  , repmgrd detecta fallos revisando conexión, replicación y proceso del primario. ✅ Si el primario falla, ejecuta promote_command en el standby más apto. ✅ Los demás standby siguen al nuevo primario automáticamente con follow_command.
 ```bash
 repmgrd -f  /etc/repmgr/16/maestro_repmgr.conf -d --verbose
-repmgrd -f  /etc/repmgr/16/esclavo1_repmgr.conf -d --verbose
-repmgrd -f  /etc/repmgr/16/esclavo2_repmgr.conf -d --verbose
-repmgrd -f  /etc/repmgr/16/esclavo3_repmgr.conf -d --verbose
+repmgrd -f  /etc/repmgr/16/esclavo61_repmgr.conf -d --verbose
+repmgrd -f  /etc/repmgr/16/esclavo62_repmgr.conf -d --verbose
+repmgrd -f  /etc/repmgr/16/esclavo63_repmgr.conf -d --verbose
 ```
 
 
@@ -275,9 +293,9 @@ repmgrd -f  /etc/repmgr/16/esclavo3_repmgr.conf -d --verbose
 ```bash
  ps -fea | grep repmgr.conf
 postgres 2343245       1  0 15:54 ?        00:00:00 repmgrd -f /etc/repmgr/16/maestro_repmgr.conf -d --verbose
-postgres 2392684       1  0 15:55 ?        00:00:00 repmgrd -f /etc/repmgr/16/esclavo1_repmgr.conf -d --verbose
-postgres 2413464       1  0 15:56 ?        00:00:00 repmgrd -f /etc/repmgr/16/esclavo2_repmgr.conf -d --verbose
-postgres 2413486       1  0 15:56 ?        00:00:00 repmgrd -f /etc/repmgr/16/esclavo3_repmgr.conf -d --verbose
+postgres 2392684       1  0 15:55 ?        00:00:00 repmgrd -f /etc/repmgr/16/esclavo61_repmgr.conf -d --verbose
+postgres 2413464       1  0 15:56 ?        00:00:00 repmgrd -f /etc/repmgr/16/esclavo62_repmgr.conf -d --verbose
+postgres 2413486       1  0 15:56 ?        00:00:00 repmgrd -f /etc/repmgr/16/esclavo63_repmgr.conf -d --verbose
 postgres 2484680 1679705  0 15:58 pts/9    00:00:00 grep --color=auto repmgr.conf
 ```
 
@@ -304,43 +322,35 @@ INSERT INTO usuarios (nombre, edad) VALUES
 ('Carlos', 30),
 ('María', 22),
 ('Juan', 28);
+
+select * from usuarios;
 ```
 
 ### Validar datos en los tres nodos esclavos
 ```SQL
-postgres@SERVER-TEST /sysx/data16/DATANEW/data_maestro/log $ psql -X -p 55161 -d prueba_db -c "select * from usuarios limit 1"
- id | nombre | edad
-----+--------+------
-  1 | Ana    |   25
-(1 row)
-
-postgres@SERVER-TEST /sysx/data16/DATANEW/data_maestro/log $ psql -X -p 55162 -d prueba_db -c "select * from usuarios limit 1"
- id | nombre | edad
-----+--------+------
-  1 | Ana    |   25
-(1 row)
-
-postgres@SERVER-TEST /sysx/data16/DATANEW/data_maestro/log $ psql -X -p 55163 -d prueba_db -c "select * from usuarios limit 1"
- id | nombre | edad
-----+--------+------
-  1 | Ana    |   25
-(1 row)
+psql -X -p 55160 -d prueba_db -c "select * from usuarios limit 1"
+psql -X -p 55161 -d prueba_db -c "select * from usuarios limit 1"
+psql -X -p 55162 -d prueba_db -c "select * from usuarios limit 1"
+psql -X -p 55163 -d prueba_db -c "select * from usuarios limit 1"
 ```
 
 
-
-
 # Hacer pruebas de switchover automatico 
-El standby más actualizado o más nuevo se convierte en nuevo primario
+El standby más actualizado o más nuevo se convierte en nuevo primario, en este caso como no configuramos el ssh entonces no se podra usar el modo de switchover
 ```bash
 -- ejecutar el switchover en el nodo que quieres promover a primario, es decir, en uno de los standby
-  repmgr -f  /etc/repmgr/16/esclavo2_repmgr.conf standby switchover --force
+postgres@SERVER-TEST /sysx/data16/DATANEW $   repmgr -f  /etc/repmgr/16/esclavo62_repmgr.conf standby switchover --force
+NOTICE: executing switchover on node "pgslave62" (ID: 62)
+WARNING: unable to connect to remote host "127.0.0.1" via SSH
+ERROR: unable to connect via SSH to host "127.0.0.1", user ""
 ```
 
 # Hacer pruebas de failover automatico 
 
 
 # Configurar un Witness Node 
+
+
 
 
 
@@ -373,9 +383,9 @@ SELECT slot_name, spill_txns, spill_count, spill_bytes, total_txns, total_bytes 
 
 
 ------------------------------
-SELECT * FROM pg_stat_wal_receiver; -- En **nodo esclavo**, verificar estado de WAL:
+ 
 
-postgres@postgres# SELECT * FROM pg_stat_wal_receiver;
+postgres@postgres# SELECT * FROM pg_stat_wal_receiver; -- En **nodo esclavo**, verificar estado de WAL:
 +-[ RECORD 1 ]----------+-------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------+
@@ -613,6 +623,34 @@ Logging options:
 
 ```
 
+###  funcionamiento de un failover automático 
+El **failover automático** ocurre cuando el primario **falla completamente** y uno de los standby es **promovido automáticamente** a nuevo primario por `repmgrd`.🚀  
+```
+📌 **¿Cuándo sucede el failover automático?**  
+✅ **1. Repmgrd detecta que el primario no responde**  
+- Si el primario no responde tras varios intentos (`reconnect_attempts` y `reconnect_interval`), se considera caído.  
+- Ejecuta validaciones con `pg_isready`, `PQping()` y consultas a `pg_stat_replication`.  
+
+✅ **2. Se elige el standby más actualizado para promoverlo**  
+- Repmgr **elige el standby con mayor avance en los registros WAL**.  
+- Si `priority` está configurado en `repmgr.conf`, el standby con mayor prioridad es elegido.  
+
+✅ **3. Se ejecuta automáticamente el comando `standby promote`**  
+📌 **Ejemplo del proceso en logs:**  
+
+[INFO] node 2 appears to be the most up-to-date standby
+[NOTICE] promoting standby to primary
+
+🔹 En este punto, el standby ya **ha asumido el rol de primario**.  
+
+✅ **4. Los demás standby siguen al nuevo primario**  
+📌 **¿Se ejecuta `standby follow` manualmente?**  
+❌ **No es necesario hacerlo manualmente**, ya que `repmgrd` ejecuta automáticamente el comando:  
+	repmgr standby follow -f /etc/repmgr.conf --upstream-node-id=2
+
+🔹 Esto ajusta la replicación para que **los standby sigan al nuevo primario sin intervención manual**.
+
+```
 
 ## Bibliografía
 ```
