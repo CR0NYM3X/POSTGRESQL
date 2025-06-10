@@ -333,12 +333,14 @@ postgres@SERVER-TEST /sysx/data16/DATANEW/data_maestro/log $ psql -X -p 55163 -d
 # Hacer pruebas de failover automatico 
 
 # Hacer pruebas de switchover automatico 
-El standby más actualizado se convierte en nuevo primario
+El standby más actualizado o más nuevo se convierte en nuevo primario
 ```bash
+-- ejecutar el switchover en el nodo que quieres promover a primario, es decir, en uno de los standby
   repmgr -f /etc/repmgr.conf standby switchover --force
 ```
 
 # Configurar un Witness Node 
+
 
 
 
@@ -468,6 +470,8 @@ postgres@postgres# SELECT * FROM pg_stat_replication;
 
 SELECT pg_catalog.pg_is_in_recovery(); -- TRUE = Secunradrio | False = maestro
 
+SELECT application_name, replay_lsn FROM pg_stat_replication ORDER BY replay_lsn DESC;
+SELECT pg_last_wal_receive_lsn(), pg_last_wal_replay_lsn(); -- Para revisar qué standby tiene el WAL más reciente:
 SELECT pg_last_wal_receive_lsn(); # Devuelve el último LSN (Log Sequence Number) que el standby ha recibido del maestro.
 SELECT pg_current_wal_lsn(); # Devuelve el último LSN generado por el nodo en el que se ejecuta la consulta. 🔹 En el maestro, muestra el WAL más reciente que se está generando. 🔹 En un standby, muestra el WAL más reciente reproducido localmente.
 
