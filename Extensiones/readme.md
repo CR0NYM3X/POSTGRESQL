@@ -266,6 +266,8 @@ Stolon: Un orquestador de PostgreSQL HA basado en Kubernetes, aunque también pu
  
 
 ************ BALANCEO DE CARGA EN REPLICAS ************
+Keepalived -- Se usa para configurar direcciones IP virtuales en entornos de alta disponibilidad con VRRP.
+
 - **pgpool-II:** Middleware que proporciona balanceo de carga y failover automático para PostgreSQL Permite la replicación en modo maestro-esclavo y distribuye las consultas entre las réplicas para mejorar el rendimiento.
 Slony-I: Un sistema de replicación maestro-esclavo para PostgreSQL que permite replicar datos entre múltiples servidores.
 
