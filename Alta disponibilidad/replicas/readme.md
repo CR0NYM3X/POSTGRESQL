@@ -121,7 +121,29 @@ En este modelo, todos los nodos están operativos y procesan solicitudes y cambi
 
 - **Activo-Pasivo**: Aquí, solo un nodo está activo y maneja las solicitudes, mientras que otro nodo permanece en espera (pasivo). Si el nodo activo falla, el pasivo puede toma el control mediante failover. Este enfoque es más simple y garantiza estabilidad, pero no aprovecha los recursos del nodo pasivo hasta que sea necesario.
 
-El **split-brain** es un problema que ocurre en sistemas de alta disponibilidad y replicación, cuando dos nodos **pierden comunicación entre sí**, pero **ambos creen que son el primario** al mismo tiempo.   
+El **split-brain** es un problema que ocurre en sistemas de alta disponibilidad y replicación, cuando dos nodos **pierden comunicación entre sí**, pero **ambos creen que son el primario** al mismo tiempo.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+El **quórum** es el número mínimo de nodos que deben estar **de acuerdo** para tomar decisiones dentro de un clúster distribuido, como el failover en PostgreSQL con **Repmgr**, **Patroni**, o sistemas como **etcd/Consul**.  
+
+  **¿Cómo funciona el quórum en alta disponibilidad?**  
+  **1. Se requiere mayoría (más del 50%)**  
+- Si tienes 5 nodos en total, **al menos 3 deben estar activos y en consenso** para tomar decisiones.  
+- Evita que un solo nodo pueda decidir unilateralmente.  
+
+  **2. Impide problemas de split-brain**  
+- Si un primario falla y no hay quórum, **no se elige un nuevo primario** hasta que haya consenso.  
+- Protege contra la promoción accidental de múltiples primarios.  
+
+
+  **Ejemplo real de quórum en PostgreSQL con 3 nodos**  
+  *Si tienes 3 nodos (`pgmaster`, `pgslave1`, `pgslave2`) y `pgmaster` falla:*  
+-  Si **solo `pgslave1` sigue activo**, no hay quórum y no ocurre failover.  
+-  Si **`pgslave1` y `pgslave2` siguen activos**, hay quórum y uno de ellos se promueve a primario.  
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Consenso en sistemas distribuidos → Protocolos como Raft y Paxos ayudan a que múltiples nodos tomen decisiones sin conflictos.
+CAP Theorem → En bases de datos distribuidas, puedes tener Consistencia (C), Disponibilidad (A) o Tolerancia a Particiones (P), pero nunca las tres simultáneamente.
 ```
 
 ## Bibliografía 
