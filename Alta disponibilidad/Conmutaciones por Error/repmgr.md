@@ -489,8 +489,8 @@ SELECT slot_name, spill_txns, spill_count, spill_bytes, total_txns, total_bytes 
 
 
 
-------------------------------
- 
+************************************************************************************************************************************************************************
+
 
 postgres@postgres# SELECT * FROM pg_stat_wal_receiver; -- En **nodo esclavo**, verificar estado de WAL:
 +-[ RECORD 1 ]----------+-------------------------------------------------------------------------------------------------------------------------
@@ -515,10 +515,9 @@ ort=55160 application_name=pgslave1 fallback_application_name=walreceiver sslmod
 col_version=TLSv1.2 gssencmode=prefer krbsrvname=postgres gssdelegation=0 target_session_attrs=any load_balance_hosts=disable |
 
 
+************************************************************************************************************************************************************************
 
-
-SELECT * FROM pg_stat_replication; -- En **nodo maestro**, revisar la replicación:
-postgres@postgres# SELECT * FROM pg_stat_replication;
+postgres@postgres# SELECT * FROM pg_stat_replication;  -- En **nodo maestro**, revisar la replicación:
 +-[ RECORD 1 ]-----+-------------------------------+
 | pid              | 1947350                       |
 | usesysid         | 16384                         |
@@ -540,78 +539,88 @@ postgres@postgres# SELECT * FROM pg_stat_replication;
 | sync_priority    | 0                             |
 | sync_state       | async                         |
 | reply_time       | 2025-06-09 16:01:01.230519-07 |
-+-[ RECORD 2 ]-----+-------------------------------+
-| pid              | 1907055                       |
-| usesysid         | 16384                         |
-| usename          | repmgr                        |
-| application_name | pgslave1                      |
-| client_addr      | 127.0.0.1                     |
-| client_hostname  | NULL                          |
-| client_port      | 40782                         |
-| backend_start    | 2025-06-09 15:42:09.750765-07 |
-| backend_xmin     | NULL                          |
-| state            | streaming                     |
-| sent_lsn         | 0/F034A80                     |
-| write_lsn        | 0/F034A80                     |
-| flush_lsn        | 0/F034A80                     |
-| replay_lsn       | 0/F034A80                     |
-| write_lag        | 00:00:00.000444               |
-| flush_lag        | 00:00:00.000827               |
-| replay_lag       | 00:00:00.000877               |
-| sync_priority    | 0                             |
-| sync_state       | async                         |
-| reply_time       | 2025-06-09 16:01:01.230701-07 |
-+-[ RECORD 3 ]-----+-------------------------------+
-| pid              | 1907250                       |
-| usesysid         | 16384                         |
-| usename          | repmgr                        |
-| application_name | pgslave2                      |
-| client_addr      | 127.0.0.1                     |
-| client_hostname  | NULL                          |
-| client_port      | 40788                         |
-| backend_start    | 2025-06-09 15:42:10.123774-07 |
-| backend_xmin     | NULL                          |
-| state            | streaming                     |
-| sent_lsn         | 0/F034A80                     |
-| write_lsn        | 0/F034A80                     |
-| flush_lsn        | 0/F034A80                     |
-| replay_lsn       | 0/F034A80                     |
-| write_lag        | 00:00:00.000234               |
-| flush_lag        | 00:00:00.000675               |
-| replay_lag       | 00:00:00.000685               |
-| sync_priority    | 0                             |
-| sync_state       | async                         |
-| reply_time       | 2025-06-09 16:01:01.230548-07 |
-+------------------+-------------------------------+
+
+pid: Identificador del proceso en el servidor que maneja la replicación del standby.
+usesysid: Identificador del usuario de la base de datos que está gestionando la conexión de replicación.
+usename: Nombre del usuario que administra la replicación.
+application_name: Nombre del cliente de replicación, indicando el nodo standby que está conectado.
+client_addr: Dirección IP del standby que recibe los datos desde el primario.
+client_hostname: Nombre del host del standby si está configurado, de lo contrario muestra null.
+client_port: Puerto utilizado por el standby para conectarse al primario.
+backend_start: Fecha y hora en que la sesión de replicación fue iniciada por el standby.
+backend_xmin: Indica el ID de la transacción mínima del backend, usada para gestionar la limpieza de datos antiguos.
+state: Estado de la replicación; si es "streaming", significa que el standby está recibiendo cambios en tiempo real.
+sent_lsn: Último Log Sequence Number (LSN) enviado por el primario al standby.
+write_lsn: Último LSN escrito en el disco del standby.
+flush_lsn: Último LSN confirmado como almacenado de manera segura en el disco del standby.
+replay_lsn: Último LSN que ha sido aplicado por el standby.
+write_lag: Retraso desde que el primario envía el WAL hasta que el standby lo escribe en su disco.
+flush_lag: Retraso desde que el WAL es escrito hasta que se confirma como almacenado en el disco del standby.
+replay_lag: Retraso desde que el WAL es almacenado hasta que es aplicado en el standby.
+sync_priority: Nivel de prioridad del standby en caso de ser elegido como primario, relevante en la replicación síncrona.
+sync_state: Estado de sincronización del standby; si es "async", indica que la replicación es asíncrona y no espera confirmaciones del standby antes de completar una transacción.
+reply_time: Hora de la última respuesta del standby hacia el primario, usada para verificar su disponibilidad.
 
 
+************************************************************************************************************************************************************************
 
 SELECT pg_catalog.pg_is_in_recovery(); -- TRUE = Secunradrio | False = maestro
-
 SELECT application_name, replay_lsn FROM pg_stat_replication ORDER BY replay_lsn DESC;
-SELECT pg_last_wal_receive_lsn(), pg_last_wal_replay_lsn(); -- Para revisar qué standby tiene el WAL más reciente:
-SELECT pg_last_wal_receive_lsn(); # Devuelve el último LSN (Log Sequence Number) que el standby ha recibido del maestro.
-SELECT pg_current_wal_lsn(); # Devuelve el último LSN generado por el nodo en el que se ejecuta la consulta. 🔹 En el maestro, muestra el WAL más reciente que se está generando. 🔹 En un standby, muestra el WAL más reciente reproducido localmente.
+SELECT pg_current_wal_lsn(); # Devuelve el último LSN  WAL más reciente generado por el nodo maestro  . en el esclavo parecera el error "ERROR:  recovery is in progress.  HINT:  WAL control functions cannot be executed during recovery." 
+
+****************************************************************************************************************************************
+-- Verificar desfase entre primario y standby (sincronización de WAL)
+-- Si pg_last_wal_receive_lsn es más reciente que pg_last_wal_replay_lsn, hay retraso en la reproducción del WAL. 🔹 Si pg_last_wal_receive_lsn es NULL, el nodo no está recibiendo registros WAL.
+
+SELECT pg_last_wal_receive_lsn() /* Devuelve el último LSN (Log Sequence Number) que el standby ha recibido del maestro.*/
+   , pg_last_wal_replay_lsn(); 
+
+Para determinar cuál es más reciente entre `pg_last_wal_receive_lsn` y `pg_last_wal_replay_lsn`, debes interpretar la representación en formato **LSN (Log Sequence Number)**.  
+
+  **Cómo comparar valores LSN en PostgreSQL**  
+ **Cada LSN tiene la forma `X/Y`, donde:**  
+- `X` → Número del segmento del WAL.  
+- `Y` → Posición dentro del segmento.  
+ **El LSN más reciente tendrá un número mayor en `X` o en `Y`.**  
+
+  **Ejemplo de comparación:**  
+  *Si tienes estos valores:*  
+
+	pg_last_wal_receive_lsn = 0/80000A0
+	pg_last_wal_replay_lsn  = 0/8000080
+ 
+  **`0/80000A0` es más reciente que `0/8000080`, porque `A0` es mayor que `80` en hexadecimal.**  
+
+  **Cómo verificar si el desfase es grande**  
+  Ejecuta esta consulta en PostgreSQL:  
+	SELECT pg_wal_lsn_diff(pg_last_wal_receive_lsn(), pg_last_wal_replay_lsn());
+ 
+  Esto devolverá la diferencia en bytes entre ambos LSN.  
+  **Si la diferencia es grande, el standby está retrasado en la replicación.**  
+****************************************************************************************************************************************
 
 
-
-
-
-postgres@SERVER-TEST /sysx/data16/DATANEW $ repmgr -f /etc/repmgr/16/repmgr.conf cluster crosscheck
+ 
+postgres@SERVER-TEST /sysx/data16/DATANEW $ repmgr -f /etc/repmgr/16/witness_repmgr.conf cluster crosscheck
 INFO: connecting to database
- Name     | ID | 1 | 2 | 3 | 4
-----------+----+---+---+---+---
- pgmaster | 1  | * | * | * | *
- pgslave1 | 2  | ? | ? | ? | ?
- pgslave2 | 3  | ? | ? | ? | ?
- pgslave3 | 4  | ? | ? | ? | ?
+INFO: connecting to database
+ Name      | ID | 60 | 61 | 62 | 63 | 99
+-----------+----+----+----+----+----+----
+ pgmaster  | 60 | ?  | ?  | ?  | ?  | ?
+ pgslave61 | 61 | ?  | ?  | ?  | ?  | ?
+ pgslave62 | 62 | ?  | ?  | ?  | ?  | ?
+ pgslave63 | 63 | ?  | ?  | ?  | ?  | ?
+ pgwitness | 99 | ?  | ?  | ?  | ?  | ?
 WARNING: following problems detected:
-  node 2 inaccessible via SSH
-  node 3 inaccessible via SSH
-  node 4 inaccessible via SSH
+  node 60 inaccessible via SSH
+  node 61 inaccessible via SSH
+  node 62 inaccessible via SSH
+  node 63 inaccessible via SSH
+  node 99 inaccessible via SSH
 
 
-postgres@SERVER-TEST /sysx/data16/DATANEW $ repmgr -f /etc/repmgr/16/repmgr.conf cluster event --event=standby_register
+
+postgres@SERVER-TEST /sysx/data16/DATANEW $ repmgr -f /etc/repmgr/16/witness_repmgr.conf cluster event --event=standby_register
  Node ID | Name     | Event            | OK | Timestamp           | Details
 ---------+----------+------------------+----+---------------------+-------------------------------------------------------
  4       | pgslave3 | standby_register | t  | 2025-06-09 15:44:01 | standby registration succeeded; upstream node ID is 1
