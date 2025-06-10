@@ -26,6 +26,8 @@ LIFE CYCLES MYSQL		https://endoflife.software/applications/databases/mysql
 # Notas de cada version 
 El link te muestra los cambios realizados de cada version y si ocupa alguna restauración 
 ```
+15.1
+[version mayor].[Version menor]
 
 /*
 Antes de actualizar es importante validar la nota de la version, ya que te dice los cambios realizados y te puede dar advertencias como por ejemplo que antes de actualizar necesitas restaurar
@@ -40,7 +42,11 @@ Version 14 contains a number of changes that may affect compatibility with previ
 
 */
 
+-- Todas las versiones 
 https://www.postgresql.org/docs/release/
+
+-- Ver funcionalidades que tiene cada version
+https://www.postgresql.org/about/featurematrix/
 ```
 
 # Descargar postgresql y sus packetes 
