@@ -141,10 +141,12 @@ El **quórum** es el número mínimo de nodos que deben estar **de acuerdo** par
 -  Si **`pgslave1` y `pgslave2` siguen activos**, hay quórum y uno de ellos se promueve a primario.  
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+¿Qué significa el consenso en términos generales?  Es un acuerdo entre múltiples participantes → Un grupo debe tomar una decisión colectiva basada en reglas claras.  Evita que haya decisiones individuales incorrectas → Por ejemplo, en replicación de bases de datos, un nodo no puede decidir solo convertirse en primario sin confirmación de los demás.  Se usa en algoritmos de failover y gestión de sistemas distribuidos → Como Raft, Paxos y Etcd, que permiten que los servidores acuerden quién es el líder.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Consenso en sistemas distribuidos → Protocolos como Raft y Paxos ayudan a que múltiples nodos tomen decisiones sin conflictos.
 CAP Theorem → En bases de datos distribuidas, puedes tener Consistencia (C), Disponibilidad (A) o Tolerancia a Particiones (P), pero nunca las tres simultáneamente.
-```
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 ## Bibliografía 
 ```
