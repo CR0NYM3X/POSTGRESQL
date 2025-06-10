@@ -2,6 +2,9 @@
 ### **Repmgr**
 Es una herramienta de código abierto para la gestión de replicación y failover en PostgreSQL. Fue desarrollada originalmente por 2ndQuadrant, que luego fue adquirida por EnterpriseDB (EDB)
 
+### 📌 **Objetivo**
+Este documento describe el proceso de **instalación, configuración y administración** de un clúster de **PostgreSQL** utilizando **Repmgr** para garantizar alta disponibilidad y failover automático.  
+
 
 ### ¿Para qué sirve un Witness Node?
 Evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nodos maestro y standby en caso de falla. ✅ Ayuda a decidir si el failover debe ocurrir y cuál nodo debe ser promovido.
@@ -24,14 +27,12 @@ Evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nod
 
 
 
-### 📌 **Objetivo**
-Este documento describe el proceso de **instalación, configuración y administración** de un clúster de **PostgreSQL** utilizando **Repmgr** para garantizar alta disponibilidad y failover automático.  
-
 
 # Ejemplo de replicas y failover con Repmgr en entorno local
 
 ### Requisito 
 
+**Extension instalada**
 ```bash
 -- Validar si se tiene instalada la extension desde postgresql 
 select * from pg_available_extensions where name = 'repmgr';
@@ -47,6 +48,8 @@ $ rpm -qa | grep repmgr
 repmgr_16-5.5.0-1PGDG.rhel8.x86_64
 ```
 
+**configurar SSH entre nodos**
+Repmgr necesita SSH para ejecutar comandos remotos y coordinar failover/switchover. ✅ Sin SSH, muchas de sus funciones serían manuales en cada nodo, perdiendo automatización.
 
 ### Crear carpetas data 
 ```bash
@@ -327,17 +330,15 @@ postgres@SERVER-TEST /sysx/data16/DATANEW/data_maestro/log $ psql -X -p 55163 -d
 
 
 
-
-
-
-# Hacer pruebas de failover automatico 
-
 # Hacer pruebas de switchover automatico 
 El standby más actualizado o más nuevo se convierte en nuevo primario
 ```bash
 -- ejecutar el switchover en el nodo que quieres promover a primario, es decir, en uno de los standby
-  repmgr -f /etc/repmgr.conf standby switchover --force
+  repmgr -f  /etc/repmgr/16/esclavo2_repmgr.conf standby switchover --force
 ```
+
+# Hacer pruebas de failover automatico 
+
 
 # Configurar un Witness Node 
 
