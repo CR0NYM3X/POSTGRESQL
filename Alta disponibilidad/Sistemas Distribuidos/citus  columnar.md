@@ -8,9 +8,27 @@ Aunque **Citus Columnar** almacena los datos en formato columnar internamente, l
 Lo que cambia es **cómo los datos se organizan y se leen** detrás de escena:
 - En almacenamiento tradicional, PostgreSQL **almacena y recupera filas completas**, lo que puede hacer que agregaciones y análisis sean más lentos.
 - En Citus Columnar, los datos **se guardan por columna**, permitiendo acceder solo a las columnas necesarias, lo que mejora el rendimiento en consultas analíticas.
+
+
+ # **desventajas y consideraciones** que debes tener en cuenta antes de implementarlo:
+
+📌 **Desventajas del almacenamiento columnar**  
+- **Menor rendimiento en operaciones OLTP**: No es ideal para cargas de trabajo transaccionales con muchas inserciones y actualizaciones individuales.  
+- **Mayor latencia en escrituras**: Las actualizaciones requieren modificar múltiples columnas separadas, lo que puede aumentar el tiempo de procesamiento.  
+- **Complejidad en la administración**: Requiere ajustes específicos para optimizar consultas y almacenamiento.  
+- **Mayor consumo de memoria en ciertas consultas**: Algunas operaciones pueden requerir más recursos debido a la forma en que los datos se almacenan y procesan.  
+- **No siempre es más rápido**: En conjuntos de datos pequeños, el almacenamiento tradicional puede ser más eficiente.  
+
+📌 **Consideraciones antes de usar almacenamiento columnar**  
+- **Evalúa el tipo de carga de trabajo**: Si tu aplicación requiere muchas lecturas analíticas, columnar puede ser beneficioso.  
+- **Optimiza la compresión**: Usar `LZ4` puede mejorar el rendimiento y reducir el uso de almacenamiento.  
+- **Configura correctamente la distribución de datos**: Elegir la columna de distribución adecuada es clave para evitar cuellos de botella.  
+- **Prueba con datos reales**: Antes de migrar completamente, realiza pruebas de rendimiento con tu carga de trabajo específica.  
+ 
  
 
-laboratorio profesional que genere **alto estrés** en PostgreSQL y demuestre los beneficios de **Citus Columnar**, seguiremos estos pasos:
+# laboratorio profesional 
+genere **alto estrés** en PostgreSQL y demuestre los beneficios de **Citus Columnar**, seguiremos estos pasos:
 
 ### **1. Configuración del entorno**
 - **Instalar PostgreSQL y Citus** en un entorno distribuido con al menos **3 nodos**.
