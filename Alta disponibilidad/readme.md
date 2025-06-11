@@ -3,7 +3,10 @@
 - Citus - Pendiente 
 - PgPool-II - Pendiente 
 - PgLogical - Pendiente 
-- RepGMR - Listo 
+- HaProxy
+- Patroni
+- RepGMR - Listo
+
 
 
 ### 🔹 **BCP – Business Continuity Plan (Plan de Continuidad del Negocio)**
