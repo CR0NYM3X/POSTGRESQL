@@ -1,3 +1,11 @@
+
+### Ruta de aprendizaje 
+- Citus - Pendiente 
+- PgPool-II - Pendiente 
+- PgLogical - Pendiente 
+- RepGMR - Listo 
+
+
 ### 🔹 **BCP – Business Continuity Plan (Plan de Continuidad del Negocio)**
 Es un conjunto de estrategias y procedimientos diseñados para asegurar que una organización pueda **continuar operando durante y después de una interrupción significativa** (como desastres naturales, ciberataques, fallas técnicas, etc.).  
 Incluye aspectos como:
