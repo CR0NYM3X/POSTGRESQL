@@ -141,4 +141,6 @@ https://www.mydbops.com/blog/postgresql-automatic-failover-with-pg-auto-failover
 https://pg-auto-failover.readthedocs.io/en/main/ref/configuration.html
 https://pg-auto-failover.readthedocs.io/en/main/intro.html
 https://github.com/hapostgres/pg_auto_failover
+https://www.citusdata.com/blog/2019/05/30/introducing-pg-auto-failover/
+https://community.microstrategy.com/s/article/How-to-configure-pg-auto-failover-on-Linux-platform?language=en_US
 ```
