@@ -32,6 +32,7 @@ Si el comando devuelve una versión, la instalación fue exitosa.
 El **monitor** es el nodo que supervisa el estado de los servidores PostgreSQL.  
 ```bash
 pg_autoctl create monitor --pgdata /var/lib/postgresql/monitor --run
+sudo -u postgres /usr/pgsql-12/bin/pg_autoctl create monitor --auth trust --ssl-self-signed --pgdata /var/lib/pgsql/12/data/ --pgctl /usr/pgsql-12/bin/pg_ctl
 ```
 Esto inicia el monitor y lo deja ejecutándose en segundo plano.
 
