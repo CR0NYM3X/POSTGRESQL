@@ -157,6 +157,7 @@ CAP Theorem → En bases de datos distribuidas, puedes tener Consistencia (C), D
 - Ley de Little
 - Teorema de Brewer
 - Fórmula de escalabilidad de Gustafson
+---
 
 ### **📌 Ley de Amdahl – Límite de aceleración en paralelización**  
 
@@ -277,7 +278,7 @@ Este sistema es capaz de procesar **20,000 operaciones por segundo**. Si queremo
 - **Aumentar la cantidad de nodos** para procesar más transacciones en paralelo.  
 
 
-
+---
 ### **📌 Fórmula de Consistencia CAP – Equilibrio en sistemas distribuidos**  
 
 📍 **Fórmula general**  
@@ -299,6 +300,7 @@ Supongamos que tenemos una base de datos distribuida y ocurre una **falla de red
 No es posible tener **las tres propiedades al mismo tiempo**. Cada sistema debe elegir entre **CP (consistencia y tolerancia a fallos)** o **AP (disponibilidad y tolerancia a fallos)** según sus necesidades.  
 
 ---
+### **📌 Teorema de Brewer (PACELC) – Extensión del CAP Theorem**  
 El **PACELC Theorem** es una extensión del **CAP Theorem**, que introduce un nuevo concepto clave en sistemas distribuidos: **latencia**.  
 
 📌 **¿Qué significa PACELC?**  
@@ -309,6 +311,13 @@ El acrónimo representa:
 - **E** → **Else** (Si no hay partición).  
 - **L** → **Latency** (Latencia).  
 - **C** → **Consistency** (Consistencia).  
+
+📍 **Fórmula conceptual**  
+Si hay **partición en la red**, el sistema debe elegir entre **Consistencia (C) o Disponibilidad (A)**.  
+Si **no hay partición**, el sistema debe elegir entre **Latencia baja (L) o Consistencia (C)**.  
+
+📌 **Importancia:**  
+Este teorema amplía el **CAP Theorem**, agregando la dimensión de **latencia** en sistemas distribuidos.  
 
 📌 **¿Cómo funciona PACELC?**  
 El teorema establece dos escenarios:  
@@ -322,12 +331,12 @@ El teorema establece dos escenarios:
 📌 **Importancia**  
 PACELC mejora el CAP Theorem al considerar **rendimiento y latencia**, lo que es crucial en bases de datos distribuidas y aplicaciones en la nube.  
 
- 
-
+📌 **Dónde se usa:**  
+- Diseño de **bases de datos distribuidas** como Cassandra, Spanner y Citus.  
+- Evaluación de **arquitecturas de microservicios**.  
+- Optimización de **sistemas de almacenamiento en la nube**.  
 
 --- 
-
-
  
 ### **📌 Ley de Little – Relación entre tiempo de respuesta y concurrencia**  
 📍 **Fórmula general**  
@@ -349,21 +358,7 @@ Ayuda a calcular **cuánto tráfico puede manejar un sistema distribuido** antes
 
 ---
 
-### **📌 Teorema de Brewer (PACELC) – Extensión del CAP Theorem**  
-📍 **Fórmula conceptual**  
-Si hay **partición en la red**, el sistema debe elegir entre **Consistencia (C) o Disponibilidad (A)**.  
-Si **no hay partición**, el sistema debe elegir entre **Latencia baja (L) o Consistencia (C)**.  
-
-📌 **Importancia:**  
-Este teorema amplía el **CAP Theorem**, agregando la dimensión de **latencia** en sistemas distribuidos.  
-
-📌 **Dónde se usa:**  
-- Diseño de **bases de datos distribuidas** como Cassandra, Spanner y Citus.  
-- Evaluación de **arquitecturas de microservicios**.  
-- Optimización de **sistemas de almacenamiento en la nube**.  
-
----
-
+ 
 ### **📌 Fórmula de escalabilidad de Gustafson – Corrección de la Ley de Amdahl**  
 📍 **Fórmula general**  
 
