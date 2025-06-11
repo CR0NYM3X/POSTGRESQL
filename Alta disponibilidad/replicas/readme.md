@@ -1,5 +1,4 @@
  
-
 ## 🎯 ¿Para qué sirve hacer réplicas en PostgreSQL?
 
 ### ✅ 1. **Alta disponibilidad (High Availability)**
@@ -148,7 +147,6 @@ CAP Theorem → En bases de datos distribuidas, puedes tener Consistencia (C), D
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
-
 # Conocimiento esencial para diseñar arquitecturas distribuidas eficientes.  
 
 - Ley de Amdahl
@@ -163,9 +161,8 @@ CAP Theorem → En bases de datos distribuidas, puedes tener Consistencia (C), D
 ### **📌 Ley de Amdahl – Límite de aceleración en paralelización**  
 
 📍 **Fórmula general**  
-\[
-S = \frac{1}{(1 - P) + \frac{P}{N}}
-\]  
+
+$$  S = \frac{1}{(1 - P) + \frac{P}{N}}  $$
 
 📍 **Significado de cada variable**  
 - **S (Speedup)** → **Variable**: Es el resultado final de cuánto mejora el rendimiento del sistema.  
@@ -179,15 +176,12 @@ Supongamos que queremos procesar un conjunto de datos en PostgreSQL:
 - **Usaremos 4 servidores** (`N = 4`).  
 
 Aplicamos la fórmula:  
-\[
-S = \frac{1}{(1 - 0.8) + \frac{0.8}{4}}
-\]  
-\[
-S = \frac{1}{0.2 + 0.2}
-\]  
-\[
-S = \frac{1}{0.4} = 2.5
-\]  
+
+$$ S = \frac{1}{(1 - 0.8) + \frac{0.8}{4}} $$  
+
+$$ S = \frac{1}{0.2 + 0.2} $$
+
+$$ S = \frac{1}{0.4} = 2.5 $$
 
 📌 **Conclusión**  
 Aunque agreguemos **4 nodos**, el sistema solo se vuelve **2.5 veces más rápido**, porque aún hay una fracción **(1 - P)** que nunca podrá paralelizarse. Este principio es clave en sistemas distribuidos: más servidores no siempre significan más velocidad.
@@ -197,9 +191,8 @@ Aunque agreguemos **4 nodos**, el sistema solo se vuelve **2.5 veces más rápid
 ### **📌 Ley de Gunther – Límite de escalabilidad en un sistema**  
 
 📍 **Fórmula general**  
-\[
-X(N) = \frac{N}{1 + \sigma (N - 1)}
-\]  
+
+$$ X(N) = \frac{N}{1 + \sigma (N - 1)} $$
 
 📍 **Significado de cada variable**  
 - **X(N) (Rendimiento escalado)** → **Variable**: Resultado final de cuánto mejora el rendimiento real del sistema con `N` nodos.  
@@ -213,15 +206,12 @@ Supongamos que queremos **ampliar un clúster de bases de datos** con Citus:
 - **La contención causada por comunicación es 30%** (`σ = 0.3`).  
 
 Aplicamos la fórmula:  
-\[
-X(10) = \frac{10}{1 + 0.3 (10 - 1)}
-\]  
-\[
-X(10) = \frac{10}{1 + 2.7}
-\]  
-\[
-X(10) = \frac{10}{3.7} = 2.7
-\]  
+
+$$ X(10) = \frac{10}{1 + 0.3 (10 - 1)} $$
+
+$$ X(10) = \frac{10}{1 + 2.7} $$
+
+$$ X(10) = \frac{10}{3.7} = 2.7 $$
 
 📌 **Conclusión**  
 Aunque agregamos **10 nodos**, el rendimiento **solo se multiplica por 2.7** debido a la contención de recursos compartidos. Esto demuestra que simplemente agregar más servidores no siempre es la mejor estrategia sin optimización.
@@ -231,9 +221,8 @@ Aunque agregamos **10 nodos**, el rendimiento **solo se multiplica por 2.7** deb
 ### **📌 Fórmula de latencia en redes distribuidas**  
 
 📍 **Fórmula general**  
-\[
-L = RTT + \frac{S}{B}
-\]  
+
+$$ L = RTT + \frac{S}{B} $$
 
 📍 **Significado de cada variable**  
 - **L (Latency)** → **Variable**: Tiempo total que tarda una operación en completarse en el sistema distribuido.  
@@ -248,12 +237,10 @@ Si tenemos una conexión donde:
 - **El ancho de banda es 100 Mbps** (`B = 100000 KB/s`).  
 
 Aplicamos la fórmula:  
-\[
-L = 50 + \frac{5000}{100000}
-\]  
-\[
-L = 50 + 0.05 = 50.05 ms
-\]  
+
+$$ L = 50 + \frac{5000}{100000} $$
+
+$$ L = 50 + 0.05 = 50.05 ms $$
 
 📌 **Conclusión**  
 La latencia total es **50.05 ms**, y lo que más afecta el rendimiento es el **RTT**, que es una constante del sistema. Aunque se aumente el ancho de banda, el tiempo mínimo de ida y vuelta **siempre será 50 ms**.
@@ -266,9 +253,8 @@ La latencia total es **50.05 ms**, y lo que más afecta el rendimiento es el **R
 ### **📌 Fórmula de Throughput – Capacidad del sistema para procesar operaciones**  
 
 📍 **Fórmula general**  
-\[
-T = \frac{N}{L}
-\]  
+
+$$ T = \frac{N}{L} $$  
 
 📍 **Significado de cada variable**  
 - **T (Throughput)** → **Variable**: Indica cuántas operaciones por segundo puede manejar el sistema.  
@@ -280,12 +266,10 @@ T = \frac{N}{L}
 
 📍 **Ejemplo práctico**  
 Imaginemos que tenemos un sistema distribuido con **10,000 operaciones** (`N = 10,000`) y cada transacción tarda **500 ms** (`L = 0.5 segundos`). Aplicamos la fórmula:  
-\[
-T = \frac{10,000}{0.5}
-\]  
-\[
-T = 20,000 \text{ operaciones/segundo}
-\]  
+
+$$ T = \frac{10,000}{0.5} $$  
+
+$$ T = 20,000 \text{ operaciones/segundo} $$  
 
 📌 **Conclusión**  
 Este sistema es capaz de procesar **20,000 operaciones por segundo**. Si queremos mejorar el rendimiento, podemos:  
@@ -298,9 +282,9 @@ Este sistema es capaz de procesar **20,000 operaciones por segundo**. Si queremo
 
 📍 **Fórmula general**  
 El **Teorema CAP** establece que un sistema distribuido **puede garantizar solo dos de tres propiedades**:  
-\[
-C + A + P \neq 3
-\]  
+
+$$  C + A + P \neq 3 $$  
+
 Donde:  
 - **C (Consistency)** → **Variable**: Garantiza que todos los nodos ven los mismos datos al mismo tiempo.  
 - **A (Availability)** → **Variable**: Asegura que cada solicitud recibe una respuesta, incluso si algunos nodos fallan.  
@@ -323,9 +307,9 @@ No es posible tener **las tres propiedades al mismo tiempo**. Cada sistema debe 
  
 ### **📌 Ley de Little – Relación entre tiempo de respuesta y concurrencia**  
 📍 **Fórmula general**  
-\[
-L = \lambda W
-\]  
+
+$$ L = \lambda W $$
+ 
 📍 **Significado de cada variable**  
 - **L (Longitud de la cola)** → **Variable**: Número promedio de solicitudes en espera en el sistema.  
 - **λ (Tasa de llegada)** → **Variable**: Cantidad de solicitudes que llegan por unidad de tiempo.  
@@ -358,9 +342,9 @@ Este teorema amplía el **CAP Theorem**, agregando la dimensión de **latencia**
 
 ### **📌 Fórmula de escalabilidad de Gustafson – Corrección de la Ley de Amdahl**  
 📍 **Fórmula general**  
-\[
-S = N - (1 - P) (N - 1)
-\]  
+
+$$  S = N - (1 - P) (N - 1) $$  
+
 📍 **Significado de cada variable**  
 - **S (Speedup)** → **Variable**: Aceleración del sistema con paralelización.  
 - **N (Number of Processors)** → **Variable**: Número de nodos o procesadores usados.  
@@ -373,6 +357,7 @@ Corrige la **Ley de Amdahl**, mostrando que **más nodos pueden mejorar el rendi
 - Diseño de **clusters de computación distribuida**.  
 - Optimización de **procesamiento en paralelo** en bases de datos.  
 - Evaluación de **rendimiento en sistemas de Big Data**.  
+
 
 
  
