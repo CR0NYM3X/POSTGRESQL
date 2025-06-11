@@ -125,8 +125,20 @@ SELECT * FROM users;
 Citus distribuirá automáticamente los registros entre los workers.
 
 ---
- 
 
+## Bibliografía
+```
 https://docs.citusdata.com/en/v10.2/cloud/availability.html
 https://www.citusdata.com/blog/2018/02/21/three-approaches-to-postgresql-replication/
-
+Citus: Sharding your first table -> https://www.cybertec-postgresql.com/en/citus-sharding-your-first-table/
+Scaling Horizontally on PostgreSQL: Citus’s Impact on Database Architecture -> https://demirhuseyinn-94.medium.com/scaling-horizontally-on-postgresql-cituss-impact-on-database-architecture-295329c72c62
+Insights from paper: Citus: Distributed PostgreSQL for Data-Intensive Applications -> https://hemantkgupta.medium.com/insights-from-paper-citus-distributed-postgresql-for-data-intensive-applications-6224a12af32d
+Scaling PostgreSQL with Citus: A Practical Guide -> https://oluwatosin-amokeodo.medium.com/scaling-postgresql-with-citus-a-practical-guide-14d86c87ccfb
+Debezium’s adventures with Citus -> https://robert-ganowski.medium.com/debeziums-adventures-with-citus-a5883cc60856
+Sharding PostgreSQL with Citus and Golang -> https://medium.com/@bhadange.atharv/sharding-postgresql-with-citus-and-golang-on-gofiber-21a0ef5efb30
+Multi-Node Setup using Citus -> https://medium.com/@bhadange.atharv/citus-multi-node-setup-69c900754da3
+How to find table size in Citus? -> https://medium.com/@smaranraialt/table-size-in-citus-c1fb579159fb
+Mastering PostgreSQL Scaling: A Tale of Sharding and Partitioning -> https://doronsegal.medium.com/scaling-postgres-dfd9c5e175e6
+Scaling for millions: PostgreSQL -> https://medium.com/@sabawasim.it/scaling-for-millions-postgresql-4898acfb0abe
+Data Redundancy With the PostgreSQL Citus Extension -> https://www.percona.com/blog/data-redundancy-with-the-postgresql-citus-extension/
+```
