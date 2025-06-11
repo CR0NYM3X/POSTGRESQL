@@ -1,12 +1,21 @@
 
 ### Ruta de aprendizaje 
+*** Replicas *** 
 - Citus - Pendiente 
-- PgPool-II - Pendiente 
 - PgLogical - Pendiente 
-- HaProxy
-- Patroni
-- RepGMR - Listo
+- Patroni - Pendiente
 
+*** Pool de conexiones *** 
+- PgBouncer - Pendiente 
+
+*** Balanceadores de carga *** 
+- PgPool-II - Pendiente
+- HaProxy - Pendiente
+- Keepalived - Pendiente
+
+*** Failover *** 
+- RepGMR - Listo
+- pg_auto_failover
 
 
 ### 🔹 **BCP – Business Continuity Plan (Plan de Continuidad del Negocio)**
