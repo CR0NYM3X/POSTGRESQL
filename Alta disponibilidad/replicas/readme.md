@@ -365,4 +365,5 @@ Corrige la **Ley de Amdahl**, mostrando que **más nodos pueden mejorar el rendi
 ## Bibliografía 
 ```
 https://www.youtube.com/watch?v=kW8xT_cgEMM
+https://medium.com/@c.ucanefe/patroni-ha-proxy-feed1292d23f
 ```
