@@ -154,8 +154,8 @@ CAP Theorem → En bases de datos distribuidas, puedes tener Consistencia (C), D
 - Fórmula de latencia en redes distribuidas
 - Fórmula de Throughput
 - Fórmula de Consistencia CAP
+- Teorema de Brewer (PACELC)
 - Ley de Little
-- Teorema de Brewer
 - Fórmula de escalabilidad de Gustafson
 ---
 
