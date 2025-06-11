@@ -8,6 +8,13 @@ pg_auto_failover utiliza **tres componentes principales**:
 2. **Nodo Primario**: Servidor PostgreSQL que recibe las escrituras.  
 3. **Nodo Secundario (Standby)**: Replica los datos del primario y toma el control en caso de fallo.  
 
+### Desventaja 
+**Solo soporta un nodo standby**  
+- pg_auto_failover solo permite **un nodo primario y un nodo standby**, lo que limita la escalabilidad en comparación con otras soluciones como Patroni o repmgr.  
+- No es ideal para arquitecturas con múltiples réplicas de lectura.
+
+
+ 
 ---
  
 
