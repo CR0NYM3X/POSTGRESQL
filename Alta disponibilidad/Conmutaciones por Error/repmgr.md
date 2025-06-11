@@ -352,11 +352,12 @@ psql -X -p 55163 -d prueba_db -c "select * from usuarios limit 1"
 El standby más actualizado o más nuevo se convierte en nuevo primario, en este caso como no configuramos el ssh entonces no se podra usar el modo de switchover, en caso de si tener ssh configurado se tiene que hacer el switchover y depues el follow en todos los nodos para que sigan al nuevo primario
 ```bash
 -- ejecutar el switchover en el nodo esclavo/standby que quieres promover a primario.
-postgres@SERVER-TEST /sysx/data16/DATANEW $   repmgr -f  /etc/repmgr/16/esclavo62_repmgr.conf standby switchover --force
+postgres@SERVER-TEST /sysx/data16/DATANEW $   repmgr -f  /etc/repmgr/16/esclavo62_repmgr.conf standby switchover  --siblings-follow --dry-run 
 NOTICE: executing switchover on node "pgslave62" (ID: 62)
 WARNING: unable to connect to remote host "127.0.0.1" via SSH
 ERROR: unable to connect via SSH to host "127.0.0.1", user ""
 ```
+
 
 # Hacer pruebas de failover automatico 
 ```
