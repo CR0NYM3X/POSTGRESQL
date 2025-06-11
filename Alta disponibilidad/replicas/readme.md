@@ -298,7 +298,31 @@ Supongamos que tenemos una base de datos distribuida y ocurre una **falla de red
 📌 **Conclusión**  
 No es posible tener **las tres propiedades al mismo tiempo**. Cada sistema debe elegir entre **CP (consistencia y tolerancia a fallos)** o **AP (disponibilidad y tolerancia a fallos)** según sus necesidades.  
 
+---
+El **PACELC Theorem** es una extensión del **CAP Theorem**, que introduce un nuevo concepto clave en sistemas distribuidos: **latencia**.  
 
+📌 **¿Qué significa PACELC?**  
+El acrónimo representa:  
+- **P** → **Partitioning** (Partición en la red).  
+- **A** → **Availability** (Disponibilidad).  
+- **C** → **Consistency** (Consistencia).  
+- **E** → **Else** (Si no hay partición).  
+- **L** → **Latency** (Latencia).  
+- **C** → **Consistency** (Consistencia).  
+
+📌 **¿Cómo funciona PACELC?**  
+El teorema establece dos escenarios:  
+1. **Si hay una partición en la red (P)** → Se debe elegir entre **Disponibilidad (A) o Consistencia (C)** (como en el CAP Theorem).  
+2. **Si no hay partición (Else - E)** → Se debe elegir entre **Latencia baja (L) o Consistencia (C)**.  
+
+📌 **Ejemplo práctico**  
+- **Google Spanner** prioriza **consistencia** en todo momento (**PC/EC**).  
+- **Cassandra** prioriza **disponibilidad y baja latencia** (**PA/EL**).  
+
+📌 **Importancia**  
+PACELC mejora el CAP Theorem al considerar **rendimiento y latencia**, lo que es crucial en bases de datos distribuidas y aplicaciones en la nube.  
+
+ 
 
 
 --- 
@@ -358,6 +382,8 @@ Corrige la **Ley de Amdahl**, mostrando que **más nodos pueden mejorar el rendi
 - Optimización de **procesamiento en paralelo** en bases de datos.  
 - Evaluación de **rendimiento en sistemas de Big Data**.  
 
+
+---
 
 
  
