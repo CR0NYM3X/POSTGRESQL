@@ -6,7 +6,7 @@
 - **Balanceo de carga**: Distribuye las consultas entre los nodos para evitar sobrecarga en un solo servidor.
 - **Optimización para análisis de datos**: Mejora el rendimiento en consultas analíticas y agregaciones en grandes volúmenes de información.
 
- ### **  ¿Cómo funciona Citus en un sistema distribuido?**
+ ### **¿Cómo funciona Citus en un sistema distribuido?**
 Citus convierte **PostgreSQL en una base de datos distribuida** al dividir los datos en múltiples nodos (**sharding**) y ejecutando consultas en paralelo. En un sistema **Citus distribuido**, hay dos componentes clave:
 
 1. **Coordinador** → Es el nodo principal que recibe las consultas y las distribuye a los **workers**.
@@ -22,8 +22,9 @@ Cuando creas una tabla distribuida con `create_distributed_table()`, Citus **div
 - **Consultas** → El Coordinador consulta a los Workers y combina los resultados.
 - **Paralelismo** → Cada Worker procesa parte de la carga, mejorando el rendimiento.
 
-### **Un shard**
-es un fragmento de una tabla distribuida que se almacena en los workers. Citus automáticamente asigna y gestiona estos shards, pero no los trata como tablas convencionales en el catálogo de PostgreSQL (pg_class).
+### **Qué es  shard?** 
+Es un fragmento de una tabla distribuida que se almacena en los workers. Citus automáticamente asigna y gestiona estos shards, pero no los trata como tablas convencionales en el catálogo de PostgreSQL (pg_class).
+
 ---
 
 ### **🖥️ Escenario del laboratorio**
