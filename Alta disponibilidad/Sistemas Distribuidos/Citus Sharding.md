@@ -78,6 +78,7 @@ Todos los servidores (coordinador y workers) deben tener PostgreSQL y Citus inst
 
 2. **Agregar los workers al clúster**
    ```sql
+   SELECT citus_set_coordinator_host('192.168.1.100', 5432);
    SELECT * FROM citus_add_node('192.168.1.101', 5432);
    SELECT * FROM citus_add_node('192.168.1.102', 5432);
    ```
