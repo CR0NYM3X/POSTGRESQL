@@ -131,7 +131,11 @@ Citus distribuirá automáticamente los registros entre los workers.
 ```
 https://docs.citusdata.com/en/v10.2/cloud/availability.html
 https://www.citusdata.com/blog/2018/02/21/three-approaches-to-postgresql-replication/
+
+citus — distributed database and columnar storage functionality  -> https://postgrespro.com/docs/enterprise/16/citus.html
+Postgres + Citus + Partman, Your IoT Database -> https://www.crunchydata.com/blog/postgres-citus-partman-your-iot-database
 Citus: Sharding your first table -> https://www.cybertec-postgresql.com/en/citus-sharding-your-first-table/
+
 Scaling Horizontally on PostgreSQL: Citus’s Impact on Database Architecture -> https://demirhuseyinn-94.medium.com/scaling-horizontally-on-postgresql-cituss-impact-on-database-architecture-295329c72c62
 Insights from paper: Citus: Distributed PostgreSQL for Data-Intensive Applications -> https://hemantkgupta.medium.com/insights-from-paper-citus-distributed-postgresql-for-data-intensive-applications-6224a12af32d
 Scaling PostgreSQL with Citus: A Practical Guide -> https://oluwatosin-amokeodo.medium.com/scaling-postgresql-with-citus-a-practical-guide-14d86c87ccfb
