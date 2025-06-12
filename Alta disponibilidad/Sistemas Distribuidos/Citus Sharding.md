@@ -134,6 +134,7 @@ https://www.citusdata.com/blog/2018/02/21/three-approaches-to-postgresql-replica
 https://github.com/citusdata/citus
 Citus 12: Schema-based sharding for PostgreSQL -> https://www.citusdata.com/blog/2023/07/18/citus-12-schema-based-sharding-for-postgres/
 Sharding Postgres on a single Citus node, how why & when -> https://www.citusdata.com/blog/2021/03/20/sharding-postgres-on-a-single-citus-node/
+Citus 11.1 shards your Postgres tables without interruption -> https://www.citusdata.com/blog/2022/09/19/citus-11-1-shards-postgres-tables-without-interruption/
 
 citus — distributed database and columnar storage functionality  -> https://postgrespro.com/docs/enterprise/16/citus.html
 Postgres + Citus + Partman, Your IoT Database -> https://www.crunchydata.com/blog/postgres-citus-partman-your-iot-database
