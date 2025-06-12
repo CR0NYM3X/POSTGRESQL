@@ -145,6 +145,9 @@ El **quórum** es el número mínimo de nodos que deben estar **de acuerdo** par
 
 CAP Theorem → En bases de datos distribuidas, puedes tener Consistencia (C), Disponibilidad (A) o Tolerancia a Particiones (P), pero nunca las tres simultáneamente.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Un Data Warehouse es un sistema de almacenamiento y gestión de datos diseñado para facilitar el análisis y la toma de decisiones en una organización. Funciona como un repositorio central donde se integran y estructuran grandes volúmenes de información provenientes de múltiples fuentes.
+
 ```
 
 # Conocimiento esencial para diseñar arquitecturas distribuidas eficientes.  
