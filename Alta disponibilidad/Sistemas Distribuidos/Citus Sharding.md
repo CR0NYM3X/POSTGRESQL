@@ -133,6 +133,7 @@ https://docs.citusdata.com/en/v10.2/cloud/availability.html
 https://www.citusdata.com/blog/2018/02/21/three-approaches-to-postgresql-replication/
 https://github.com/citusdata/citus
 Citus 12: Schema-based sharding for PostgreSQL -> https://www.citusdata.com/blog/2023/07/18/citus-12-schema-based-sharding-for-postgres/
+Sharding Postgres on a single Citus node, how why & when -> https://www.citusdata.com/blog/2021/03/20/sharding-postgres-on-a-single-citus-node/
 
 citus — distributed database and columnar storage functionality  -> https://postgrespro.com/docs/enterprise/16/citus.html
 Postgres + Citus + Partman, Your IoT Database -> https://www.crunchydata.com/blog/postgres-citus-partman-your-iot-database
@@ -150,4 +151,6 @@ How to find table size in Citus? -> https://medium.com/@smaranraialt/table-size-
 Mastering PostgreSQL Scaling: A Tale of Sharding and Partitioning -> https://doronsegal.medium.com/scaling-postgres-dfd9c5e175e6
 Scaling for millions: PostgreSQL -> https://medium.com/@sabawasim.it/scaling-for-millions-postgresql-4898acfb0abe
 Data Redundancy With the PostgreSQL Citus Extension -> https://www.percona.com/blog/data-redundancy-with-the-postgresql-citus-extension/
+
+PostgreSQL: 1 trillion rows in Citus -> https://www.cybertec-postgresql.com/en/postgresql-1-trillion-rows-in-citus/
 ```
