@@ -1,4 +1,4 @@
-**Citus** es una extensión de PostgreSQL que permite **escalar bases de datos distribuidas**, ideal para manejar grandes volúmenes de datos y mejorar el rendimiento en sistemas con múltiples nodos. Citus usa logical decoding para mover datos entre nodos.  
+**Citus** es una extensión de PostgreSQL que permite **escalar bases de datos distribuidas**, ideal para manejar grandes volúmenes de datos y mejorar el rendimiento en sistemas con múltiples nodos. Citus usa logical decoding para mover datos entre nodos.  esta herramienta se recomienda usar en sistemas donde requieran realizar analisis de una gran cantidad de datos. convierte a postgresql OLTP (Procesamiento de Transacciones en Línea) en un OLAP (Procesamiento Analítico en Línea)
 
 ### **¿Por qué esto es potente?**
 1. **Escalabilidad horizontal** → En lugar de que un solo servidor maneje toda la carga, los datos se distribuyen en múltiples workers, mejorando el rendimiento.
@@ -35,7 +35,8 @@ los datos que estaban en ese nodo pueden volverse inaccesibles**, afectando las 
  
 
 ### **🖥️ Escenario del laboratorio**
-Imagina que tienes **cuatro servidores** en una red privada que formarán el clúster, Este esquema permitirá repartir la carga de trabajo y escalar el sistema de manera eficiente.
+Se crearon **cuatro servidores** en una red privada que formarán el clúster, Este esquema permitirá repartir la carga de trabajo y escalar el sistema de manera eficiente.
+se utilizara citus columnar para mejorar  la compresión y acelerar las consultas, reduciendo el uso de disco y mejorando el rendimiento en agregaciones como avg(), sum() etc... insertaremos mil millones de registros. si no usaramos citus columar se necesitarian 350GB en disco. utilizaremos unicamente las configuraciones por default de postgresql y nuestro servidor tiene 24 GB de Ram, 15 nucleos y S.O Red Hat .
 
 - **Coordinador**: 127.0.0.1 Puerto 55164 *(Maneja las consultas y distribuye los datos)*
 - **Worker 1**: 127.0.0.1 Puerto 55165 *(Almacena parte de los datos y ejecuta queries)*
@@ -106,7 +107,7 @@ host    all    all    127.0.01/32    trust
 
 ### **Instalar la extension en todos los nodos**
 ```
-psql -p 55164 -c "CREATE EXTENSION citus;"
+psql -p 55164 -c "CREATE EXTENSION citus;" -- este ya instala la extension de citus_columnar
 psql -p 55165 -c "CREATE EXTENSION citus;"
 psql -p 55166 -c "CREATE EXTENSION citus;"
 psql -p 55167 -c "CREATE EXTENSION citus;"
@@ -133,7 +134,7 @@ CREATE TABLE users (
     email TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
     is_active BOOLEAN DEFAULT true
-);
+)  USING columnar;
 ```
 
 ### Empezar a distribuir la tabla
@@ -154,8 +155,39 @@ CREATE INDEX idx_users_created_at ON users(created_at);
 ```
 
 
-### Insertar los datos 
+### Visualizar 
+```sql
+postgres@postgres# \dt+
+                                    List of relations
++--------+-------+-------+----------+-------------+---------------+-------+-------------+
+| Schema | Name  | Type  |  Owner   | Persistence | Access method | Size  | Description |
++--------+-------+-------+----------+-------------+---------------+-------+-------------+
+| public | users | table | postgres | permanent   | columnar      | 16 kB | NULL        |
++--------+-------+-------+----------+-------------+---------------+-------+-------------+
+(1 row)
 
+postgres@postgres# \d users
+                            Table "public.users"
++------------+-----------------------------+-----------+----------+---------+
+|   Column   |            Type             | Collation | Nullable | Default |
++------------+-----------------------------+-----------+----------+---------+
+| id         | bigint                      |           | not null |         |
+| username   | text                        |           | not null |         |
+| email      | text                        |           | not null |         |
+| created_at | timestamp without time zone |           |          | now()   |
+| is_active  | boolean                     |           |          | true    |
++------------+-----------------------------+-----------+----------+---------+
+Indexes:
+    "users_pkey" PRIMARY KEY, btree (id)
+    "idx_users_created_at" btree (created_at)
+    "idx_users_email" btree (email)
+    "idx_users_username" btree (username, email)
+
+```
+
+
+### Insertar mil millones de registros
+Esta operacion tarda tiempo
 ```bash
 psql -p 55164 -c "INSERT INTO users (id, username, email, created_at, is_active)
 SELECT i, 'user_' || i, 'user_' || i || '@example.com', now() - (i % 10000) * interval '1 second', (i % 2 = 0)
@@ -173,33 +205,37 @@ psql -p 55164  -c "INSERT INTO users (id, username, email, created_at, is_active
 SELECT i, 'user_' || i, 'user_' || i || '@example.com', now() - (i % 10000) * interval '1 second', (i % 2 = 0)
 FROM generate_series(750000001, 1000000000) AS i;" &
 
+
+ps -fea | grep generate_series
+
 ```
 
 
 
-### Consultar datos en los nodos 
+### Consultar espacio de cada nodo  
+
 ```sql
-psql -p 55164 -c "SELECT count(*) FROM users ;" 
-psql -p 55165 -c "SELECT count(*) FROM users ;" 
-psql -p 55166 -c "SELECT count(*) FROM users ;" 
-```
+psql -p 55164 -c "SELECT pg_size_pretty(pg_database_size('postgres'));" # Coordinador  tamaño 9748 kB 
+psql -p 55165 -c "SELECT pg_size_pretty(pg_database_size('postgres'));" # Worker1 tamaño 111 GB
+psql -p 55165 -c "SELECT pg_size_pretty(pg_database_size('postgres'));" # Worker1  tamaño 111 GB
+psql -p 55165 -c "SELECT pg_size_pretty(pg_database_size('postgres'));"  # Worker1  tamaño 111 GB
 
-### Ver la distribucion del sharding
-```sql
-SELECT 'select * from ' || shard_name || '; -- Ejecutar en Server: ' || nodename || ' - Port: ' ||nodeport FROM citus_shards where shard_size != 16384;
+du -lh /sysx/data16/DATANEW/ | grep "/sysx/data16/DATANEW/$"
 
-
--- Querys monitoreo
 SELECT * FROM citus_tables;
-SELECT p.nodename, p.nodeport,s.* FROM pg_dist_shard s JOIN pg_dist_shard_placement p ON s.shardid = p.shardid;
-SELECT * FROM citus_shards;
-SELECT * FROM citus_stat_statements  LIMIT 10;
-SELECT * FROM citus_stat_activity;
-SELECT * FROM pg_dist_partition;
-SELECT * from pg_dist_placement;
+
 ```
 
----
+
+### Consultas de prueba para medir el rendiemiento;
+Esta consulta se puede realizar en cualquier nodo coordinador o worker, los resultados debe variar en los 20 o 30ms
+```sql
+
+select * from users where username in('user_558121771', 'user_546225936', 'user_104260803', 'user_435382393', 'user_436477677', 'user_480562912', 'user_220547089', 'user_465849719', 'user_922686500', 'user_67022343', 'user_864700256', 'user_96992106', 'user_97821595', 'user_804278165', 'user_634866347', 'user_910340103', 'user_797078547', 'user_252314339', 'user_127316864', 'user_255343492', 'user_32945176', 'user_397205450', 'user_922289404', 'user_989248229', 'user_95656', 'user_674104665', 'user_926157642', 'user_759415215', 'user_343356717', 'user_746892625', 'user_296891570', 'user_952883649', 'user_552850535', 'user_765911606', 'user_811833978', 'user_249614931', 'user_760638493', 'user_77138948', 'user_816895258', 'user_152084701', 'user_870678589', 'user_767589769', 'user_735472977', 'user_579996699', 'user_633072027', 'user_313737799', 'user_79859741', 'user_377459834', 'user_430415774', 'user_62891351');
+
+```
+
+
  
 ### **🔹 Paso 1: Agregar el nuevo nodo**
 Configurar el data y servicio del nuevo nodo 
@@ -236,6 +272,25 @@ SELECT rebalance_table_shards('users');
 ```sql
 SELECT * FROM citus_shards;
 ```
+
+
+### Ver la distribucion del sharding
+```sql
+SELECT 'select * from ' || shard_name || '; -- Ejecutar en Server: ' || nodename || ' - Port: ' ||nodeport FROM citus_shards where shard_size != 16384;
+
+
+-- Querys monitoreo
+SELECT * FROM citus_schemas;
+SELECT * FROM citus_tables;
+SELECT p.nodename, p.nodeport,s.* FROM pg_dist_shard s JOIN pg_dist_shard_placement p ON s.shardid = p.shardid;
+SELECT * FROM citus_shards;
+SELECT * FROM citus_stat_statements  LIMIT 10;
+SELECT * FROM citus_stat_activity;
+SELECT * FROM pg_dist_partition;
+SELECT * from pg_dist_placement;
+```
+
+
 
 ### Borrar el laboratorio 
 ```sql
