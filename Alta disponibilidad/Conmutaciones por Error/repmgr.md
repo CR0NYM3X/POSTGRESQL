@@ -461,7 +461,29 @@ postgres@repmgr# select node_id,node_name,active,type,slot_name from repmgr.node
 
 ```
 
+ 
 
+#### 🔧 **3. Re-sincronizar un nodo (Maestro o Esclavo) que presento problemas**
+Si el nodo ha estado fuera de línea por mucho tiempo, es probable que necesite ser re-sincronizado. Puedes hacerlo con:
+```bash
+repmgr node rejoin -f /etc/repmgr.conf --force-rewind
+```
+
+- `--force-rewind`: Usa `pg_rewind` para sincronizar el nodo con el primario actual.
+- Esto es más rápido que una re-clonación completa y conserva la configuración existente.
+
+---
+
+#### 🧪 **4. Verifica que el nodo se haya reintegrado correctamente**
+Después de la reintegración, vuelve a ejecutar:
+
+```bash
+repmgr cluster show
+```
+
+El nodo debería aparecer como **"standby"** y en estado **"running"**.
+
+ 
 
 ### Monitoreo de estado en PostgreSQL 
 ```SQL
