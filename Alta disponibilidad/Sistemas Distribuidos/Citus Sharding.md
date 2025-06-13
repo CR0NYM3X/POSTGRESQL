@@ -186,6 +186,37 @@ Indexes:
 ```
 
 
+### **🔹 Paso 1: Agregar el nuevo nodo**
+ 
+Conéctate al **coordinador** y registra el nuevo worker:
+```sql
+SELECT * FROM citus_add_node('192.168.1.103', 5432);
+```
+
+### **🔹 Paso 2: Verificar nodos activos**
+Antes de redistribuir los datos, asegúrate de que el nuevo nodo está activo:
+```sql
+SELECT * FROM citus_get_active_worker_nodes();
+```
+
+### **🔹 Paso 3: Redistribuir shards**
+Ahora que el nuevo nodo está disponible, redistribuye los datos entre todos los workers:
+```sql
+SELECT rebalance_table_shards('users');
+
+-- select * from citus_rebalance_status();
+
+```
+
+### **🔹 Paso 4: Verifica la nueva redistribución con:**
+```sql
+SELECT * FROM citus_shards;
+```
+
+---
+
+
+
 ### Insertar mil millones de registros
 Esta operacion tarda tiempo
 ```bash
@@ -237,41 +268,6 @@ select * from users where username in('user_558121771', 'user_546225936', 'user_
 
 
  
-### **🔹 Paso 1: Agregar el nuevo nodo**
-Configurar el data y servicio del nuevo nodo 
-```sql
-mkdir -p  /sysx/data16/DATANEW/data_worker3
-/usr/pgsql-16/bin/initdb -E UTF-8 -D  /sysx/data16/DATANEW/data_worker3 --data-checksums  &>/dev/null
-echo "port = 55167" >> /sysx/data16/DATANEW/data_worker3/postgresql.auto.conf
-echo "shared_preload_libraries = 'citus'" >> /sysx/data16/DATANEW/data_worker3/postgresql.auto.conf
-/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/data_worker3
-psql -p 55167 -c "CREATE EXTENSION citus;"
-```
-
-Conéctate al **coordinador** y registra el nuevo worker:
-```sql
-SELECT * FROM citus_add_node('192.168.1.103', 5432);
-```
-
-### **🔹 Paso 2: Verificar nodos activos**
-Antes de redistribuir los datos, asegúrate de que el nuevo nodo está activo:
-```sql
-SELECT * FROM citus_get_active_worker_nodes();
-```
-
-### **🔹 Paso 3: Redistribuir shards**
-Ahora que el nuevo nodo está disponible, redistribuye los datos entre todos los workers:
-```sql
-SELECT rebalance_table_shards('users');
-
--- select * from citus_rebalance_status();
-
-```
-
-### **🔹 Paso 4: Verifica la nueva redistribución con:**
-```sql
-SELECT * FROM citus_shards;
-```
 
 
 ### Ver la distribucion del sharding
