@@ -216,6 +216,44 @@ SELECT * FROM citus_shards;
 ---
 
 
+###   Crear tabla `puestos` (como referencia)
+
+```sql
+CREATE TABLE puestos (
+    id SMALLINT PRIMARY KEY,
+    nombre TEXT NOT NULL
+);
+
+
+SELECT create_reference_table('puestos');
+```
+
+ 
+###  Insertar datos de ejemplo
+
+```sql
+INSERT INTO puestos (id, nombre) VALUES
+(1, 'Director General'),
+(2, 'Gerente de Área'),
+(3, 'Jefe de Departamento'),
+(4, 'Analista'),
+(5, 'Desarrollador'),
+(6, 'Soporte Técnico'),
+(7, 'Practicante');
+```
+
+---
+
+###   En el servidor coordinador agregar nueva columna
+Puedes ahora agregar una columna `puesto_id` a la tabla `users`:
+```sql
+ALTER TABLE users ADD COLUMN puesto_id SMALLINT;
+```
+
+ 
+
+---
+
 
 ### Insertar mil millones de registros
 Esta operacion tarda tiempo
@@ -302,6 +340,73 @@ rm -r  /sysx/data16/DATANEW/data_worker3
 ```
 
 ---
+
+ 
+###   ¿Cuál es el objetivo de una tabla de referencia?
+
+Las **tablas de referencia** se usan para **evitar la redistribución de datos** durante los `JOINs` en consultas distribuidas. Se replican en **todos los nodos del clúster**, lo que permite que cada nodo tenga acceso local a esa información sin necesidad de hacer consultas remotas.
+
+
+###   Ejemplo práctico
+
+Supón que tienes:
+
+- Una tabla distribuida: `ventas(distribuida por id_cliente)`
+- Una tabla pequeña: `paises(id, nombre)`
+
+Si haces muchas consultas como:
+
+```sql
+SELECT v.id, p.nombre
+FROM ventas v
+JOIN paises p ON v.pais_id = p.id;
+```
+
+
+###  Flujo de ejecución con tabla de referencia
+
+1. El coordinador recibe la consulta.
+2. Detecta que `ventas` está distribuida y `paises` es una tabla de referencia.
+3. Envía la consulta a cada nodo **junto con la lógica del `JOIN`**.
+4. Cada nodo ejecuta la consulta **localmente**, porque ya tiene una copia de `paises`.
+5. Los resultados se agregan y devuelven al cliente.
+
+
+###   ¿Qué pasa si no usas tabla de referencia?
+
+Si `paises` no es una tabla de referencia:
+
+- El sistema tendría que **redistribuir los datos** de `paises` o de `ventas` para hacer el `JOIN`, lo cual es **costoso y lento**.
+- Podrías tener errores si los datos no están disponibles en todos los nodos.
+
+
+ 
+###   2. ¿Se pueden usar claves foráneas (foreign keys) en Citus?
+
+**No directamente entre tablas distribuidas y de referencia.** PostgreSQL permite claves foráneas, pero **Citus no las aplica ni las valida automáticamente** en entornos distribuidos. Aquí los detalles:
+
+| Tipo de tabla | ¿Soporta claves foráneas? | Comentario |
+|---------------|----------------------------|------------|
+| Local         | ✅ Sí                      | Comportamiento normal de PostgreSQL |
+| Distribuida   | ⚠️ No                      | Citus ignora las `FOREIGN KEY` por rendimiento y escalabilidad |
+| Referencia    | ⚠️ Parcialmente            | Puedes definirlas, pero **no se aplican ni validan automáticamente** |
+
+> Puedes definir la clave foránea para documentación o herramientas de modelado, pero **Citus no la hará cumplir**.
+
+---
+
+###  Alternativas recomendadas
+
+- Validar integridad referencial **a nivel de aplicación**.
+- Usar **triggers** si necesitas validación estricta (aunque puede impactar el rendimiento).
+- Si ambas tablas son de referencia, puedes usar claves foráneas normalmente.
+
+ 
+ 
+
+
+
+ 
 
 ## Info extra 
 ```
