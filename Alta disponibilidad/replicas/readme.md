@@ -32,7 +32,21 @@
 | Integración con otros sistemas | **Lógica** | Permite enviar cambios en formato JSON o eventos. |
 | Migración entre versiones | **Lógica** | Compatible entre versiones distintas. |
 
+### 🔍 Comparación: Replicación en Streaming vs. Replicación Lógica
 
+ 
+
+| **Característica**             | **Replicación en Streaming (Física)**                              | **Replicación Lógica**                                                                 |
+|-------------------------------|---------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| **Nivel de replicación**      | A nivel de bloque de disco (físico)                                | A nivel de cambios en filas y tablas (lógico)                                         |
+| **Uso del WAL**               | Se transmite tal cual, binario                                     | Se decodifica el WAL en cambios lógicos (INSERT, UPDATE, DELETE)                     |
+| **Requiere estructura idéntica** | Sí (mismo esquema, extensiones, etc.)                              | No necesariamente (puede haber diferencias en tablas, columnas, etc.)                |
+| **Flexibilidad**              | Limitada                                                           | Alta (puedes replicar solo algunas tablas, transformar datos, etc.)                  |
+| **Casos de uso**              | Alta disponibilidad, failover                                      | Integración, migraciones, replicación parcial, multi-master (con herramientas externas) |
+| **Transmisión del WAL**       | Se transmite el WAL completo en formato binario a cada réplica     | Cada suscriptor recibe solo los cambios relevantes del publicar, y ya decodificados desde el WAL usando el plugin lógico (pgoutput, wal2json, etc.)       |
+ 
+
+---
  
 ### 🔹 **Failover**
 El **failover** ocurre cuando el **nodo primario** falla inesperadamente y un nodo **standby** se convierte automáticamente en el nuevo **nodo primario**.  
