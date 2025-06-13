@@ -464,6 +464,7 @@ postgres@repmgr# select node_id,node_name,active,type,slot_name from repmgr.node
  
 
 #### 🔧 **3. Re-sincronizar un nodo (Maestro o Esclavo) que presento problemas**
+Asegúrate de tener habilitado en tu configuración (wal_log_hints = on).
 Si el nodo ha estado fuera de línea por mucho tiempo, es probable que necesite ser re-sincronizado. Puedes hacerlo con:
 ```bash
 repmgr node rejoin -f /etc/repmgr.conf --force-rewind
