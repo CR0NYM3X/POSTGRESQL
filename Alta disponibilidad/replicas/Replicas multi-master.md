@@ -38,19 +38,40 @@ Es una solución de **replicación lógica basada en publicaciones y suscripcion
 
 ###  Configuración base en ambos nodos
 
-#### 1. `postgresql.conf`
 
-```conf
-listen_addresses = '*'
-wal_level = logical
-max_worker_processes = 10
-max_replication_slots = 10
-max_wal_senders = 10
-shared_preload_libraries = 'pglogical'
-track_commit_timestamp = on
+### Crear carpetas 
+```bash
+mkdir /sysx/data16/DATANEW/data_maestro1
+mkdir /sysx/data16/DATANEW/data_maestro2
 ```
 
-#### 2. `pg_hba.conf`
+### Inicializar datas 
+```bash
+/usr/pgsql-16/bin/initdb -E UTF-8 -D  /sysx/data16/DATANEW/data_maestro1 --data-checksums  &>/dev/null
+/usr/pgsql-16/bin/initdb -E UTF-8 -D  /sysx/data16/DATANEW/data_maestro2 --data-checksums  &>/dev/null
+```
+
+#### `configurar postgresql.conf`
+
+```conf
+# Habilita la nivel de wal logico
+echo "wal_level = logical" >> /sysx/data16/DATANEW/data_maestro1/postgresql.auto.conf
+echo "wal_level = logical" >> /sysx/data16/DATANEW/data_maestro2/postgresql.auto.conf
+
+# Cargar la liberia citus en todos los nodos 
+echo "shared_preload_libraries = 'pglogical'" >> /sysx/data16/DATANEW/data_maestro1/postgresql.auto.conf
+echo "shared_preload_libraries = 'pglogical'" >> /sysx/data16/DATANEW/data_maestro2/postgresql.auto.conf
+
+# Cambiar los puertos en cada nodo
+echo "port = 55161" >> /sysx/data16/DATANEW/data_maestro1/postgresql.auto.conf
+echo "port = 55162" >> /sysx/data16/DATANEW/data_maestro2/postgresql.auto.conf
+
+# Permitir las conexiones externas 
+echo "listen_addresses = '*'" >> /sysx/data16/DATANEW/data_maestro1/postgresql.auto.conf
+echo "listen_addresses = '*'" >> /sysx/data16/DATANEW/data_maestro2/postgresql.auto.conf
+```
+
+####  `configurar pg_hba.conf`
 
 Permitir replicación entre nodos:
 
@@ -59,37 +80,38 @@ host    all             all             0.0.0.0/0               trust
 host    replication     all             0.0.0.0/0               trust
 ```
 
----
-
-###  Crear usuario y base de datos
-
-En ambos nodos:
-
+#### `Iniciar el servicio`
 ```bash
-createuser -s --replication pguser
-createdb -O pguser pgdb
+/usr/pgsql-16/bin/pg_ctl start -D  /sysx/data16/DATANEW/data_maestro1
+/usr/pgsql-16/bin/pg_ctl start -D  /sysx/data16/DATANEW/data_maestro2
 ```
 
----
-
+ 
+###  Crear usuario y base de datos
+En ambos nodos:
+```bash
+ psql -p 55161 -c "CREATE USER user_replicador WITH REPLICATION superuser PASSWORD '123123'; "
+ psql -p 55162 -c "CREATE USER user_replicador WITH REPLICATION superuser PASSWORD '123123'; "
+```
+ 
 ###  Crear la extensión `pglogical`
-
 En ambos nodos:
 
 ```sql
-CREATE EXTENSION pglogical;
+psql -p 55161 -c "CREATE EXTENSION pglogical;"
+psql -p 55162 -c "CREATE EXTENSION pglogical;"
 ```
 
 ---
 
 ###  Crear tabla de prueba
-
 En ambos nodos:
-
 ```sql
-CREATE TABLE test (
+CREATE TABLE prueba_datos (
     id SERIAL PRIMARY KEY,
-    data TEXT
+    nombre TEXT,
+    valor INTEGER,
+    fecha_creacion TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -100,30 +122,55 @@ CREATE TABLE test (
 #### En **Nodo A**:
 
 ```sql
+-- crear el nodo donde indicas la ip del servidor del noda A 
 SELECT pglogical.create_node(
-    node_name := 'node_a',
-    dsn := 'host=10.0.0.1 port=5432 dbname=pgdb user=pguser'
+         node_name := 'maestro1',
+         dsn := 'host=127.0.0.1 port=55161 sslmode=prefer dbname=postgres user=user_replicador'
+         );
+
+-- Indicar como se va llamar la replica, esto es para agregarle como un tipo de grupo
+SELECT pglogical.create_replication_set( set_name := 'replica_set',replicate_insert := TRUE, replicate_update := TRUE,replicate_delete := TRUE, replicate_truncate := TRUE);
+
+-- Todas las tablas del esquema public serán incluidas en el replication 
+SELECT pglogical.replication_set_add_all_tables('replica_set', ARRAY['public']);
+
+
+-- Opcional en caso de querer replicar solo una tabla 
+SELECT pglogical.replication_set_add_table(
+    set_name := 'replica_set',
+    relation := 'public.mi_tabla',
+    synchronize_data := true
 );
 
-SELECT pglogical.create_replication_set('replica_set');
-
-SELECT pglogical.replication_set_add_all_tables('replica_set', ARRAY['public']);
 ```
 
 #### En **Nodo B**:
 
-```sql
-SELECT pglogical.create_node(
-    node_name := 'node_b',
-    dsn := 'host=10.0.0.2 port=5432 dbname=pgdb user=pguser'
-);
 
+```sql
+-- crear el nodo donde indicas la ip del servidor del noda B
+SELECT pglogical.create_node(
+         node_name := 'maestro2',
+         dsn := 'host=127.0.0.1 port=55162 sslmode=prefer dbname=postgres user=user_replicador'
+         );
+
+-- Indicar como se va llamar la replica, esto es para agregarle como un tipo de grupo
 SELECT pglogical.create_replication_set('replica_set');
 
+
+-- Todas las tablas del esquema public serán incluidas en el replication 
 SELECT pglogical.replication_set_add_all_tables('replica_set', ARRAY['public']);
+
+
+-- Opcional en caso de querer replicar solo una tabla 
+SELECT pglogical.replication_set_add_table(
+    set_name := 'replica_set',
+    relation := 'public.mi_tabla',
+    synchronize_data := true
+);
+
 ```
 
----
 
 ###  Crear suscripciones cruzadas (multi-maestro)
 
@@ -131,38 +178,105 @@ SELECT pglogical.replication_set_add_all_tables('replica_set', ARRAY['public']);
 
 ```sql
 SELECT pglogical.create_subscription(
-    subscription_name := 'sub_from_b',
-    provider_dsn := 'host=10.0.0.2 port=5432 dbname=pgdb user=pguser',
-    replication_sets := ARRAY['replica_set']
-);
+		
+		-- nombre local de la suscripción.
+         subscription_name := 'subscriptionA', 
+		 
+		 --  Agregar cadena de conexión (DSN) del nodo B proveedor.
+         provider_dsn :=  'host=127.0.0.1 port=55162 sslmode=prefer dbname=postgres user=user_replicador',
+						  
+		 -- Define desde qué orígenes se deben reenviar los cambios. Útil para evitar bucles en replicación bidireccional.
+         forward_origins := '{}',
+		 
+		 -- el suscriptor sincroniza los datos existentes desde el proveedor al momento de crear la suscripción. Si es false, solo se replicarán los cambios futuros.
+         synchronize_data := true,
+		 
+		 replication_sets := ARRAY['replica_set'],
+         synchronize_structure := true
+
+         );
+		 
 ```
 
 #### En **Nodo B**:
 
 ```sql
 SELECT pglogical.create_subscription(
-    subscription_name := 'sub_from_a',
-    provider_dsn := 'host=10.0.0.1 port=5432 dbname=pgdb user=pguser',
-    replication_sets := ARRAY['replica_set']
-);
+         subscription_name := 'subscriptionB',
+ 
+         provider_dsn :=  'host=127.0.0.1 port=55161 sslmode=prefer dbname=postgres user=user_replicador',
+         forward_origins := '{}',
+         synchronize_data := true,
+         replication_sets := ARRAY['replica_set'],
+         synchronize_structure := true
+         );
+		 
 ```
 
+### Insertar registros en nodo A como ejemplo
+```
+INSERT INTO prueba_datos (nombre, valor)
+SELECT 
+    'Nombre_' || g AS nombre,
+    (RANDOM() * 1000)::INT AS valor
+FROM generate_series(1, 10000) AS g;
+
+postgres@postgres# select count(*) from prueba_datos;
++-------+
+| count |
++-------+
+| 10000 |
++-------+
+(1 row)
+ ```
+
+### Querys para validar información 
+ ```
+select * from pglogical.tables;
+select * from pglogical.node; 
+SELECT * FROM pglogical.show_subscription_status();
+select * from pglogical.replication_set_table;
+select * from pglogical.local_sync_status;
+select * from pglogical.depend;
+
+
+SELECT pglogical.replicate_ddl_command('ALTER TABLE public.people ADD COLUMN notes TEXT');
+
+select pglogical.drop_subscription('subscriptionB');
+SELECT pglogical.drop_node('maestro1');
+
+
+SELECT pglogical.synchronize_sequence(seqoid) FROM pglogical.sequence_state;
+select pglogical.alter_subscription_disable('subscriber_name');
+SELECT slot_name, confirmed_flush_lsn from pg_replication_slots  ;
+SELECT * FROM pg_stat_replication;
+
+ ```
+
+
+
+
 ---
 
-###  Verificación
+### Eliminar laboratorio
+```sql
+/usr/pgsql-16/bin/pg_ctl stop -D  /sysx/data16/DATANEW/data_maestro1
+/usr/pgsql-16/bin/pg_ctl stop -D  /sysx/data16/DATANEW/data_maestro2
+rm -r /sysx/data16/DATANEW/data_maestro1
+rm -r /sysx/data16/DATANEW/data_maestro2
 
-- Inserta un dato en `Nodo A` y verifica que aparece en `Nodo B`.
-- Inserta un dato en `Nodo B` y verifica que aparece en `Nodo A`.
-
----
+```
 
 ###  Consideraciones importantes
 
 - **Conflictos**: pglogical no resuelve conflictos automáticamente. Debes evitar colisiones de claves primarias.
 - **Esquema**: ambos nodos deben tener el mismo esquema.
 - **Cambios DDL**: deben aplicarse manualmente o usando `pglogical.replicate_ddl_command`.
+- Evita conflictos de escritura simultánea en las mismas filas desde ambos nodos.
+- Puedes usar `forward_origins` para evitar bucles de replicación.
+- Asegúrate de que las claves primarias estén bien definidas en todas las tablas replicadas.
 
-
+---
 
 ### Blibliografia 
 ```sql
