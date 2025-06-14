@@ -285,7 +285,7 @@ ps -fea | grep generate_series
 
 ```sql
 psql -p 55164 -c "SELECT pg_size_pretty(pg_database_size('postgres'));" # Coordinador  tamaño 9748 kB 
-psql -p 55165 -c "SELECT pg_size_pretty(pg_database_size('postgres'));" # Worker1 tamaño 111 GB
+psql -p 55165 -c "SELECT pg_size_pretty(pg_database_size('postgres'));" # Worker1 tamaño  111 GB sin tabla columnar a 82 GB con tabla columnar 
 psql -p 55165 -c "SELECT pg_size_pretty(pg_database_size('postgres'));" # Worker1  tamaño 111 GB
 psql -p 55165 -c "SELECT pg_size_pretty(pg_database_size('postgres'));"  # Worker1  tamaño 111 GB
 
