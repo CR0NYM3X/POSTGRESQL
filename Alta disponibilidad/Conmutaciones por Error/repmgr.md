@@ -7,7 +7,7 @@ Este documento describe el proceso de **instalación, configuración y administr
 
 
 ### ¿Para qué sirve un Witness Node?
-Evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nodos maestro y standby en caso de falla. ✅ Ayuda a decidir si el failover debe ocurrir y cuál nodo debe ser promovido.
+Es el concsenso de las replicas y evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nodos maestro y standby en caso de falla. ✅ Ayuda a decidir si el failover debe ocurrir y cuál nodo debe ser promovido.
 1️⃣ Monitorea los nodos maestro y standby. 2️⃣ En caso de caída del maestro, ayuda a validar la promoción del standby. 3️⃣ Evita que ambos nodos crean que son maestros, garantizando una transición correcta.
 💡 Es como un árbitro en un partido: no juega, pero decide quién gana en caso de empate.
 
