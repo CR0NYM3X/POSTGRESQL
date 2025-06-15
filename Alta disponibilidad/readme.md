@@ -45,6 +45,7 @@ Incluye:
 ---
 
 ## 🕒 ¿Qué es RPO y RTO?
+No hay una fórmula matemática universal para calcular el RTO y el RPO, porque dependen de factores específicos del negocio, el tipo de servicio y el impacto que tendría una interrupción. Pero sí hay métodos estructurados para estimarlos con precisión.
 
 ### 🔁 **RPO (Recovery Point Objective)**
 
@@ -57,6 +58,31 @@ Es la **cantidad máxima de datos que puedes permitirte perder** si ocurre un fa
 - **¿Qué mide?**  
 Es el **tiempo máximo que una empresa puede estar sin operar** tras un fallo antes de que haya consecuencias graves. En otras palabras:  
  *¿Cuánto tiempo puedo estar fuera de servicio sin que me cueste demasiado caro?*
+
+
+###  ¿Cómo se calcula el **RTO**?
+
+
+**Pasos para estimarlo:**
+1. **Identifica el servicio o sistema.**
+2. **Evalúa el impacto de su caída** (económico, legal, reputacional).
+3. **Consulta con usuarios y responsables** cuánto tiempo pueden operar sin él.
+4. **Define el tiempo máximo tolerable de inactividad.**
+
+> Ejemplo: Si un sistema de pagos genera $10,000 por hora, y estar inactivo más de 2 horas implica pérdida de clientes, tu RTO sería **2 horas**.
+
+ 
+###  ¿Cómo se calcula el **RPO**?
+
+**Pasos para estimarlo:**
+1. **Analiza la frecuencia de cambios en los datos.**
+2. **Determina cuánto tiempo puedes retroceder sin perder información crítica.**
+3. **Evalúa el impacto de perder datos recientes.**
+
+> Ejemplo: Si haces respaldos cada 4 horas y puedes tolerar perder hasta 4 horas de datos, tu RPO es **4 horas**.
+
+
+
 
 ## 📌 ¿Por qué son importantes?
 
