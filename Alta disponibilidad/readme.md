@@ -2,8 +2,10 @@
 ### Ruta de aprendizaje 
 *** Replicas *** 
 - Citus - Pendiente 
-- PgLogical - Pendiente 
-- Patroni - Pendiente
+- PgLogical - Pendiente
+- BDR
+- PostgreSQL-XL
+- Patroni
 
 *** Pool de conexiones *** 
 - PgBouncer - Pendiente 
@@ -16,6 +18,8 @@
 *** Failover *** 
 - RepGMR - Listo
 - pg_auto_failover
+- Patroni - Pendiente
+
 
 
 ### 🔹 **BCP – Business Continuity Plan (Plan de Continuidad del Negocio)**
