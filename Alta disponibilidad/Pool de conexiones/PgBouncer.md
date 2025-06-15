@@ -579,6 +579,8 @@ server_reset_query = 'DISCARD ALL'
 # Bibliografías 
 
  ```
+https://medium.com/@Mahdi_ramadhan/handling-postgresql-connection-pooling-dee3849d0299
+
 https://engineering.adjust.com/post/pgbouncer_authentication_layer/
 https://medium.com/swlh/pgbouncer-installation-configuration-and-use-cases-for-better-performance-1806316f3a22
 https://postgrespro.com/docs/postgrespro/12/pgbouncer
