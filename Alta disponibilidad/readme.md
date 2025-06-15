@@ -49,18 +49,14 @@ Incluye:
 ### 🔁 **RPO (Recovery Point Objective)**
 
 - **¿Qué mide?**  
-  El **máximo tiempo de pérdida de datos aceptable**.
-- **Ejemplo:**  
-  Si tu RPO es de 15 minutos, significa que puedes tolerar perder hasta 15 minutos de datos.
+Es la **cantidad máxima de datos que puedes permitirte perder** si ocurre un fallo.  
+ *¿Cuánta información puedo perder sin que sea un desastre?*
 
 ### ⏱️ **RTO (Recovery Time Objective)**
 
 - **¿Qué mide?**  
-  El **tiempo máximo aceptable para restaurar el servicio** después de una interrupción.
-- **Ejemplo:**  
-  Si tu RTO es de 1 hora, debes tener todo funcionando nuevamente en menos de 60 minutos.
-
----
+Es el **tiempo máximo que una empresa puede estar sin operar** tras un fallo antes de que haya consecuencias graves. En otras palabras:  
+ *¿Cuánto tiempo puedo estar fuera de servicio sin que me cueste demasiado caro?*
 
 ## 📌 ¿Por qué son importantes?
 
@@ -70,17 +66,26 @@ Incluye:
 | **RTO** | Define la velocidad de recuperación. Si tu RTO es bajo, necesitas infraestructura lista para restaurar rápido. |
 | **DRP** | Asegura que todos sepan qué hacer en caso de desastre. Reduce el caos y el tiempo de inactividad. |
 
----
 
-## 🧰 Ejemplo real
 
-Una empresa de e-commerce:
+###  Escenario práctico: una tienda en línea
 
-- **RPO = 5 minutos** → usa replicación en tiempo real o respaldos incrementales frecuentes.
-- **RTO = 30 minutos** → tiene una réplica en standby lista para activarse automáticamente.
-- **DRP** → incluye procedimientos para restaurar servidores, contactar proveedores, y notificar a clientes.
+Imagina que tienes una tienda online que vende productos 24/7.
 
----
+- Haces **copias de seguridad cada 6 horas**.
+- Si el sistema se cae, puedes **restaurarlo en 2 horas**.
+
+Entonces:
+
+- **RPO = 6 horas** → podrías perder hasta 6 horas de pedidos si el sistema falla justo antes de la siguiente copia de seguridad.
+- **RTO = 2 horas** → necesitas que todo vuelva a funcionar en máximo 2 horas para no perder ventas ni reputación.
+
+
+### ¿Qué pasa si no cumples con esos tiempos?
+
+- Si el **RTO** se extiende a 5 horas, podrías perder miles en ventas y clientes molestos.
+- Si el **RPO** es mayor, podrías perder pedidos, datos de clientes o inventario actualizado.
+
 
 ## ✅ Beneficios de tener RPO, RTO y DRP bien definidos
 
@@ -88,6 +93,8 @@ Una empresa de e-commerce:
 - Protección de la reputación.
 - Cumplimiento de normativas (como ISO 27001, GDPR).
 - Mayor confianza del cliente y del equipo interno.
+
+---
 
  ### 🔹 **CMP – Crisis Management Plan (Plan de Gestión de Crisis)**
 Es el plan que define cómo una organización **responde a una crisis** (ya sea reputacional, operativa, legal, etc.) para minimizar el impacto y restaurar la normalidad.  
