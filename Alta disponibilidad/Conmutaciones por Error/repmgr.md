@@ -7,7 +7,7 @@ Este documento describe el proceso de **instalación, configuración y administr
 
 
 ### ¿Para qué sirve un Witness Node?
-Es el concsenso de las replicas y evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nodos maestro y standby en caso de falla. ✅ Ayuda a decidir si el failover debe ocurrir y cuál nodo debe ser promovido.
+Es un simple nodo que no participa en la replica pero necesita postgresql para funcionar y es un testigo que ayuda a los esclavos a validar si siguen en red en caso de que el primario falle, evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nodos maestro y standby en caso de falla. ✅ Ayuda a decidir si el failover debe ocurrir y cuál nodo debe ser promovido.
 1️⃣ Monitorea los nodos maestro y standby. 2️⃣ En caso de caída del maestro, ayuda a validar la promoción del standby. 3️⃣ Evita que ambos nodos crean que son maestros, garantizando una transición correcta.
 💡 Es como un árbitro en un partido: no juega, pero decide quién gana en caso de empate.
 
@@ -22,7 +22,6 @@ Es el concsenso de las replicas y evita divisiones en el clúster (split-brain).
 ❌ **Posibles inconsistencias** → Si el antiguo primario tiene transacciones sin replicar, pueden perderse.  
 
 **[NOTA]**  
-- **Cada standby actúa por separado**, sin compartir información entre ellos.  
 - Si varios standby están activos y detectan que el primario ha fallado, **cada uno puede intentar promoverse a nuevo primario** si no hay un mecanismo de consenso.  
 
 
