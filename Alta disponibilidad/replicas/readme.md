@@ -135,23 +135,7 @@ En este modelo, todos los nodos están operativos y procesan solicitudes y cambi
 - **Activo-Pasivo**: Aquí, solo un nodo está activo y maneja las solicitudes, mientras que otro nodo permanece en espera (pasivo). Si el nodo activo falla, el pasivo puede toma el control mediante failover. Este enfoque es más simple y garantiza estabilidad, pero no aprovecha los recursos del nodo pasivo hasta que sea necesario.
 
 El **split-brain** es un problema que ocurre en sistemas de alta disponibilidad y replicación, cuando dos nodos **pierden comunicación entre sí**, pero **ambos creen que son el primario** al mismo tiempo.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-El **quórum** es el número mínimo de nodos que deben estar **de acuerdo** para tomar decisiones dentro de un clúster distribuido, como el failover en PostgreSQL con **Repmgr**, **Patroni**, o sistemas como **etcd/Consul**.  
-
-  **¿Cómo funciona el quórum en alta disponibilidad?**  
-  **1. Se requiere mayoría (más del 50%)**  
-- Si tienes 5 nodos en total, **al menos 3 deben estar activos y en consenso** para tomar decisiones.  
-- Evita que un solo nodo pueda decidir unilateralmente.  
-
-  **2. Impide problemas de split-brain**  
-- Si un primario falla y no hay quórum, **no se elige un nuevo primario** hasta que haya consenso.  
-- Protege contra la promoción accidental de múltiples primarios.  
-
-
-  **Ejemplo real de quórum en PostgreSQL con 3 nodos**  
-  *Si tienes 3 nodos (`pgmaster`, `pgslave1`, `pgslave2`) y `pgmaster` falla:*  
--  Si **solo `pgslave1` sigue activo**, no hay quórum y no ocurre failover.  
--  Si **`pgslave1` y `pgslave2` siguen activos**, hay quórum y uno de ellos se promueve a primario.  
+  
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ¿Qué significa el consenso en términos generales?  Es un acuerdo entre múltiples participantes → Un grupo debe tomar una decisión colectiva basada en reglas claras.  Evita que haya decisiones individuales incorrectas → Por ejemplo, en replicación de bases de datos, un nodo no puede decidir solo convertirse en primario sin confirmación de los demás.  Se usa en algoritmos de failover y gestión de sistemas distribuidos → Como Raft, Paxos y Etcd, que permiten que los servidores acuerden quién es el líder.
@@ -163,6 +147,49 @@ CAP Theorem → En bases de datos distribuidas, puedes tener Consistencia (C), D
 Un Data Warehouse es un sistema de almacenamiento y gestión de datos diseñado para facilitar el análisis y la toma de decisiones en una organización. Funciona como un repositorio central donde se integran y estructuran grandes volúmenes de información provenientes de múltiples fuentes.
 
 ```
+
+
+
+### 🔑 ¿Qué es el quórum?
+
+Es **la mayoría necesaria de nodos de consenso (por ejemplo, etcd)** que deben estar **activos y en acuerdo** para que se puedan tomar decisiones críticas de manera segura.  
+Ejemplo clásico: en un clúster de 3 nodos etcd, **se necesita al menos 2 funcionando** para tener quórum. Herramientas como etcd exige quorum y si no hay mayoría (quorum) de nodos disponibles no aceptará escrituras ni permitirá elecciones de líder 
+
+### 📌 Reglas clave:
+
+- El **quórum se calcula sobre los nodos consenso como etcd**, **no sobre los servidores PostgreSQL**.
+- Siempre necesitas al menos **una mayoría de nodos etcd funcionales** para que Patroni pueda tomar decisiones críticas como un failover.
+- **Debe ser siempre un número impar** para facilitar la mayoría.
+- Fórmula: Para tolerar _f_ fallos → necesitas **2×f + 1** nodos etcd.
+
+
+### 🧠 ¿Por qué es tan importante?
+
+Porque sin quórum:
+
+- No se puede promover una réplica a primario.
+- El sistema entra en estado de seguridad (failover bloqueado).
+- Se evita el *split-brain* (dos nodos creyéndose líderes al mismo tiempo).
+
+
+### Configuración de nodos etcd y tolerancia a fallos
+
+| # Nodos etcd | Quórum necesario | Fallos tolerables | ¿Cuándo usarlo?                              |
+|--------------|------------------|-------------------|----------------------------------------------|
+| 1 (no recomendado) | 1                | 0                 | Solo para pruebas locales – ❌ Punto único de fallo |
+| 3 (ideal mínimo)   | 2                | 1                 | Producción básica                            |
+| 5                 | 3                | 2                 | Alta disponibilidad en múltiples zonas       |
+| 7                 | 4                | 3                 | Infraestructura crítica o multinube          |
+ 
+  
+### 🧠 **¿Cuándo deberías considerar aumentar los nodos de consenso?**
+Saber cuándo aumentar el número de nodos en tu clúster de consenso (como etcd) no depende de cuántos servidores PostgreSQL tengas, sino de cuánto Fallos de consenso estás dispuesto a tolerar y qué tan crítica es tu infraestructura y en un sistema donde se prestan fallos comunes.
+
+1. **Cuando necesitas tolerar más fallos**
+   - Si actualmente tienes 3 nodos etcd, solo puedes tolerar 1 caída.
+   - Si quieres tolerar 2 fallos simultáneos, necesitas 5 nodos.
+
+ ---
 
 # Conocimiento esencial para diseñar arquitecturas distribuidas eficientes.  
 
