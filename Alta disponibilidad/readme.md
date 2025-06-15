@@ -19,6 +19,7 @@
 - RepGMR - Listo
 - pg_auto_failover
 - Patroni - Pendiente
+- pglookout
 
 
 
