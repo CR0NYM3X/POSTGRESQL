@@ -5,6 +5,8 @@ Es una herramienta de código abierto para la gestión de replicación y failove
 ### 📌 **Objetivo**
 Este documento describe el proceso de **instalación, configuración y administración** de un clúster de **PostgreSQL** utilizando **Repmgr** para garantizar alta disponibilidad y failover automático.  
 
+### Consenso en repmgr
+No implementa un sistema de consenso distribuido como etcd o Raft, pero **sí tiene una forma limitada de consenso interno**, llamada **primary visibility consensus**, introducida a partir de la versión 4.4. Es una técnica que permite a los nodos standby (réplicas) **consultarse entre sí** y con un nodo witness si existe— para decidir si el nodo primario sigue visible. Esto ayuda a evitar un failover innecesario si:
 
 ### ¿Para qué sirve un Witness Node?
 Es un simple nodo que no participa en la replica pero necesita postgresql para funcionar y es un testigo que ayuda a los esclavos a validar si siguen en red en caso de que el primario falle, evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nodos maestro y standby en caso de falla. ✅ Ayuda a decidir si el failover debe ocurrir y cuál nodo debe ser promovido.
@@ -175,7 +177,8 @@ reconnect_interval=8  # Establece el intervalo de tiempo (segundos) entre cada i
 connection_check_type = 'query' # es el metodo de validacion
 
 primary_visibility_consensus=true # Antes de hacer failover, cada standby consulta a los demás para confirmar que realmente el primario está caído. Si está en false, cada standby toma decisiones individuales, aumentando el riesgo de split-brain.
-child_nodes_connected_include_witness=true #  si los standby pierden comunicación con el primario, pero aún ven al Witness, pueden asumir que la red aún está operativa y que la falla es solo del primario, no de todo el sistema. Si está en false, los standby solo consideran otros standby y el primario para decidir si están conectados.
+child_nodes_connected_include_witness=true #  si los standby pierden comunicación con el primario, pero aún ven al Witness, pueden asumir que la red aún está operativa y que la falla es solo del primario, no de todo el sistema. Si está en false, los standby solo consideran otros standby y el primario para decidir si están conectados y no entra en el consenso.
+
 witness_sync_interval=15 # define la frecuencia con la que el Witness Node sincroniza su información con los demás nodos del clúster.
 child_nodes_disconnect_command='/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW/data_maestro' # permite ejecutar comandos personalizados cuando un nodo se desconecta . en este caso mandamos apagarlo
 
