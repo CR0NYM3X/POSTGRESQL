@@ -148,7 +148,38 @@ Un Data Warehouse es un sistema de almacenamiento y gestión de datos diseñado 
 
 ```
 
+## **Raft** y **Paxos** 
+ son algoritmos de *consenso distribuido*, diseñados para que múltiples nodos en un sistema lleguen a un acuerdo sobre un valor, incluso si algunos fallan o se desconectan. Son fundamentales en bases de datos distribuidas, sistemas de archivos y clústeres de alta disponibilidad.
 
+
+###  **¿Qué es Paxos?**
+
+- Propuesto por Leslie Lamport en los años 80.
+- Es un algoritmo robusto pero **difícil de entender e implementar**.
+- Usa tres roles:
+  - **Proposers**: proponen valores.
+  - **Acceptors**: aceptan o rechazan propuestas.
+  - **Learners**: aprenden el valor acordado.
+- Funciona por medio de rondas de propuestas y promesas, buscando que **una mayoría (quórum)** acepte un valor.
+
+ *Ventaja:* muy tolerante a fallos.  
+ *Desventaja:* complejo, propenso a errores de implementación.
+
+
+###️ **¿Qué es Raft?**
+
+- Diseñado en 2013 por Diego Ongaro y John Ousterhout como una alternativa más **entendible** a Paxos.
+- Usa un enfoque **basado en liderazgo**:
+  - Un nodo es elegido como **líder**.
+  - Los demás son **seguidores**.
+  - Si el líder falla, se realiza una **elección** para elegir uno nuevo.
+- El líder recibe las operaciones y las **replica en todos los nodos**.
+
+ *Ventaja:* más fácil de implementar y razonar.  
+*Desventaja:* no es tolerante a fallos bizantinos (no protege contra nodos maliciosos).
+
+
+---
 
 ### 🔑 ¿Qué es el quórum?
 
@@ -431,4 +462,9 @@ Corrige la **Ley de Amdahl**, mostrando que **más nodos pueden mejorar el rendi
 ```
 https://www.youtube.com/watch?v=kW8xT_cgEMM
 https://medium.com/@c.ucanefe/patroni-ha-proxy-feed1292d23f
+
+
+https://www.geeksforgeeks.org/paxos-vs-raft-algorithm-in-distributed-systems/
+https://dev.to/pragyasapkota/consensus-algorithms-paxos-and-raft-37ab
+
 ```
