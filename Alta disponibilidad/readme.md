@@ -5,7 +5,7 @@
 - PgLogical - Pendiente
 - BDR
 - PostgreSQL-XL
-- Patroni
+- Patroni + etcd
 
 *** Pool de conexiones *** 
 - PgBouncer - Pendiente 
