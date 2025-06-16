@@ -38,11 +38,12 @@ El **suscriptor** es el servidor que recibe los datos replicados desde el public
 
 
 
+##  Laboratorio: Replicación Direcional y despues Bi-Direccional/Multi-Maestro con `pglogical`
 
-##  Laboratorio: Replicación Direcional y despues Multi-Maestro con `pglogical`
+- Servidor Publicador : IP 127.0.0.1 Puerto 55161 
+- Servidor Suscriptor : IP 127.0.0.1 Puerto 55162 
 
 ###  Requisitos
-
 - PostgreSQL 14 o superior
 - Extensión `pglogical` instalada en ambos nodos
 - Dos instancias PostgreSQL (pueden ser contenedores, VMs o servidores físicos)
@@ -116,7 +117,7 @@ psql -p 55161 -c "CREATE EXTENSION pglogical;"
 psql -p 55162 -c "CREATE EXTENSION pglogical;"
 ```
 
-###  Crear tabla en servidor publicador
+###  Crear tabla en servidor publicador puerto:55161
  psql -p 55161
 ```sql
 CREATE TABLE prueba_datos (
@@ -131,20 +132,20 @@ CREATE TABLE prueba_datos (
 
 # Configurar pgLogical básica 
 
-#### En **Nodo A**:
+#### En **Servidor Publicador  puerto:55161**:
 
 ```sql
 -- crear el nodo donde indicas la ip del servidor del noda A 
 SELECT pglogical.create_node(
-         node_name := 'publicador',
+         node_name := 'publicador_A',
          dsn := 'host=127.0.0.1 port=55161 sslmode=prefer dbname=postgres user=user_replicador'
          );
 
 -- Indicar como se va llamar la replica, esto sirve para crear como un tipo grupo 
-SELECT pglogical.create_replication_set( set_name := 'replica_set', replicate_insert := TRUE, replicate_update := TRUE, replicate_delete := TRUE, replicate_truncate := TRUE);
+SELECT pglogical.create_replication_set( set_name := 'replica_set_publicador_A', replicate_insert := TRUE, replicate_update := TRUE, replicate_delete := TRUE, replicate_truncate := TRUE);
 
 -- Todas las tablas del esquema public serán incluidas en el replication 
-SELECT pglogical.replication_set_add_all_tables('replica_set', ARRAY['public']);
+SELECT pglogical.replication_set_add_all_tables('replica_set_publicador_A', ARRAY['public']);
 
 
 -- Opcional en caso de querer replicar solo una tabla 
@@ -158,12 +159,12 @@ SELECT pglogical.replication_set_add_table(
 
 ```
 
-#### En **Nodo B**:
+#### En **Servidor Suscriptor  puerto:55162**:
 
 ```sql
 -- crear el nodo donde indicas la ip del servidor del noda B
 SELECT pglogical.create_node(
-         node_name := 'suscriptor',
+         node_name := 'suscriptor_A',
          dsn := 'host=127.0.0.1 port=55162 sslmode=prefer dbname=postgres user=user_replicador'
          );
 
@@ -172,23 +173,32 @@ SELECT pglogical.create_node(
 SELECT pglogical.create_subscription(
          subscription_name := 'nodo_suscriptor',
          provider_dsn :=  'host=127.0.0.1 port=55161 sslmode=prefer dbname=postgres user=user_replicador',
+         replication_sets := ARRAY['replica_set_publicador_A'],
          forward_origins := '{}',
-         synchronize_data := true,
-         replication_sets := ARRAY['replica_set'],
-         synchronize_structure := true
-         );
+         synchronize_structure := true,
+         synchronize_data := true);
+
+-- subscription_name ->  nombre local de la suscripción.
+-- provider_dsn ->  Agregar cadena de conexión (DSN) del nodo B proveedor.
+-- replication_sets -> Indicas como se configura el nombre de la replica en el publicador.
+-- forward_origins -> Define desde qué orígenes se deben reenviar los cambios. Útil para evitar bucles en replicación bidireccional.
+-- synchronize_structure -> intentará replicar la estructura de las tablas, índices y restricciones desde el publicador al suscriptor antes de comenzar la replicación de datos. Después de la creación de la suscripción, no se vuelve a ejecutar automáticamente. Si realizas cambios en la estructura de las tablas en el publicador después de la sincronización inicial, deberás asegurarte manualmente de que esos cambios también se reflejen en el suscriptor.
+-- synchronize_data ->  el suscriptor sincroniza los datos existentes desde el proveedor al momento de crear la suscripción. Si es false, solo se replicarán los cambios futuros. 
 
 ```
 
 
-### Insertar registros en nodo A como ejemplo
+### Insertar registros en el servidor publicador  puerto:55161 como ejemplo
 ```
 INSERT INTO prueba_datos (nombre, valor)
 SELECT 
     'Nombre_' || g AS nombre,
     (RANDOM() * 1000)::INT AS valor
 FROM generate_series(1, 10000) AS g;
+ ```
 
+### validamos en el servidor Suscriptor  puerto:55162
+ ```
 select count(*) from prueba_datos;
 +-------+
 | count |
@@ -200,32 +210,48 @@ select count(*) from prueba_datos;
 
 
 
+###  Crear la replica Bi-Direcional
+Esto hara que ahora el servidor suscriptor tambien sea publicador 
+
+#### En **Servidor Suscriptor puerto 55162**:
+```sql
+-- Indicar como se va llamar la replica, esto sirve para crear como un tipo grupo 
+SELECT pglogical.create_replication_set( set_name := 'replica_set_suscriptor_B', replicate_insert := TRUE, replicate_update := TRUE, replicate_delete := TRUE, replicate_truncate := TRUE);
+
+-- Todas las tablas del esquema public serán incluidas en el replication 
+SELECT pglogical.replication_set_add_all_tables('replica_set_suscriptor_B', ARRAY['public']);
+```
 
 
-
-
-
-###  Crear suscripciones cruzadas (multi-maestro)
-
-#### En **Nodo A**:
+#### En **Servidor Publicador  puerto 55161**:
 
 ```sql
 SELECT pglogical.create_subscription(
-         subscription_name := 'subscriberA', 
+         subscription_name := 'nodo_suscriptor', 
          provider_dsn :=  'host=127.0.0.1 port=55162 sslmode=prefer dbname=postgres user=user_replicador',
-         replication_sets := ARRAY['replica_set'],
+         replication_sets := ARRAY['replica_set_suscriptor_B'],
          forward_origins := '{}',
-         synchronize_structure := true,
-         synchronize_data := true);
-
--- subscription_name ->  nombre local de la suscripción.
--- provider_dsn ->  Agregar cadena de conexión (DSN) del nodo B proveedor.
--- replication_sets -> Indicas como se configura el nombre de la replica en el publicador.
--- forward_origins -> Define desde qué orígenes se deben reenviar los cambios. Útil para evitar bucles en replicación bidireccional.
--- synchronize_structure -> intentará replicar la estructura de las tablas, índices y restricciones desde el publicador al suscriptor antes de comenzar la replicación de datos. Después de la creación de la suscripción, no se vuelve a ejecutar automáticamente. Si realizas cambios en la estructura de las tablas en el publicador después de la sincronización inicial, deberás asegurarte manualmente de que esos cambios también se reflejen en el suscriptor.
--- synchronize_data ->  el suscriptor sincroniza los datos existentes desde el proveedor al momento de crear la suscripción. Si es false, solo se replicarán los cambios futuros. 
+         synchronize_structure := false,
+         synchronize_data := false);
 ```
 
+#### hacemos una prueba en el servidor suscriptor  puerto 55162
+```sql
+postgres@postgres# update prueba_datos set nombre = 'JOSE' where id = 1 ;
+UPDATE 1
+```
+
+#### hacemos una prueba en el servidor suscriptor  puerto 55162
+```SQL
+postgres@postgres# select * from prueba_datos  where id = 1 ;
++----+--------+-------+---------------------------+
+| id | nombre | valor |      fecha_creacion       |
++----+--------+-------+---------------------------+
+|  1 | JOSE   |   402 | 2025-06-16 14:24:36.00526 |
++----+--------+-------+---------------------------+
+(1 row)
+
+```
 
 
 
@@ -248,7 +274,7 @@ SELECT pglogical.drop_node('maestro1');
 
 SELECT pglogical.synchronize_sequence(seqoid) FROM pglogical.sequence_state;
 select pglogical.alter_subscription_disable('subscriber_name');
-SELECT slot_name, confirmed_flush_lsn from pg_replication_slots  ;
+SELECT active_pid,active,slot_name, confirmed_flush_lsn from pg_replication_slots ;
 SELECT * FROM pg_stat_replication;
 
  ```
