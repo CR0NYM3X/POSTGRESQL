@@ -1123,6 +1123,7 @@ export PATH=/usr/pgsql-16/bin:$PATH
 
 export PGPORT=5432
 export PGDATA=/sysx/data
+export pg_config=/usr/local/pgsql/bin/pg_config
 export MANPATH=$MANPATH:/usr/local/pgsql/man
 export PGDATABASE=postgres
 export PGUSER=postgres
