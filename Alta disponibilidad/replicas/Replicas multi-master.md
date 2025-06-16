@@ -266,6 +266,10 @@ select * from pglogical.local_sync_status;
 select * from pglogical.depend;
 
 
+ALTER TABLE prueba_datos REPLICA IDENTITY FULL;  -- cuando se realizan operaciones de UPDATE o DELETE, PostgreSQL incluirá todas las columnas de la fila en el registro de WAL (Write-Ahead Logging), en lugar de solo la clave primaria . es útil cuando la tabla no tiene una clave primaria o cuando se necesita capturar cambios en columnas que no forman parte de la clave primaria. Sin embargo, puede afectar el rendimiento, ya que aumenta el volumen de datos en el WAL
+
+
+
 SELECT pglogical.replicate_ddl_command('ALTER TABLE public.people ADD COLUMN notes TEXT');
 
 select pglogical.drop_subscription('subscriptionB');
@@ -306,7 +310,7 @@ rm -r /sysx/data16/DATANEW/data_maestro2
 
 ### Blibliografia 
 ```sql
-
+performance impact of REPLICA IDENTITY FULL in Postgres -> https://xata.io/blog/replica-identity-full-performance
 pglogical -> https://github.com/2ndQuadrant/pglogical
 Bidirectional replication in PostgreSQL using pglogical -> https://www.jamesarmes.com/2023/03/bidirectional-replication-postgresql-pglogical.html
 pglogical -> https://gist.github.com/edib/402d7d29d54a025265c2a5b4d0ee7fe6
