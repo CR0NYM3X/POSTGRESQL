@@ -20,7 +20,7 @@
 - pg_auto_failover
 - Patroni - Pendiente
 - pglookout
-
+- Pacemaker y Corosync
 
 
 ### 🔹 **BCP – Business Continuity Plan (Plan de Continuidad del Negocio)**
