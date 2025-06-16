@@ -865,6 +865,8 @@ https://www.repmgr.org/docs/current/configuration-file.html#CONFIGURATION-FILE-F
 https://www.repmgr.org/docs/4.2/repmgr-witness-register.html
 Witness Node # https://www.repmgr.org/docs/current/repmgrd-network-split.html
 
+
+https://nestcode.co/en/blog/managing-high-availability-database-cluster-with-repmgr-postgresql-13-repmgr-52
 https://www.datavail.com/blog/postgresql-high-availability-setup-using-repmgr-with-witness/
 https://www.enterprisedb.com/postgres-tutorials/how-implement-repmgr-postgresql-automatic-failover?lang=en
 https://medium.com/@fekete.jozsef.joe/create-a-highly-available-postgresql-cluster-in-linux-using-repmgr-and-keepalived-9d72aa9ef42f
