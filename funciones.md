@@ -86,6 +86,112 @@ psql mydbatest -c "SELECT pg_get_functiondef('fun_actualiza_datos'::regproc)" | 
 copy (select  prosrc  from  pg_proc  wHERE proname ilike '%fun_actualiza_datos%'  ) to '/tmp/fun_TI.txt' WITH CSV HEADER;
 ```
 
+---
+
+## La Clave de la Optimización en Funciones de PostgreSQL: IMMUTABLE, STABLE y VOLATILE
+
+
+### VOLATILE: El Comportamiento por Defecto y Más Cauteloso
+
+Una función declarada como `VOLATILE` es aquella cuyo resultado puede cambiar en cualquier momento, incluso dentro de la misma consulta o transacción. Esta es la categoría por defecto si no se especifica ninguna.
+
+**Propósito y Casos de Uso:**
+
+* **Funciones con Efectos Secundarios:** Cualquier función que modifique la base de datos (por ejemplo, con sentencias `INSERT`, `UPDATE`, `DELETE`, o `ALTER`) debe ser declarada como `VOLATILE`. Esto asegura que la función se ejecute exactamente como y cuando se llama, sin que el optimizador intente reordenarla o eliminarla.
+* **Resultados No Deterministas:** Se utiliza para funciones que dependen de valores que pueden cambiar con cada llamada, como `random()`, `timeofday()`, o `now()` (aunque `now()` y funciones similares a menudo se pueden clasificar como `STABLE`).
+* **Acceso a Datos Externos:** Si la función interactúa con sistemas externos o depende de variables de sesión que pueden cambiar, debe ser `VOLATILE`.
+
+**Impacto en la Optimización:**
+
+El optimizador de PostgreSQL no hace suposiciones sobre una función `VOLATILE`. Esto significa que **la función será re-evaluada por cada fila** que la necesite en una consulta. Esta falta de optimización es necesaria para garantizar la corrección de los resultados, pero puede tener un impacto significativo en el rendimiento si la función se utiliza en consultas que procesan muchas filas.
+
+**Ejemplo:**
+
+```sql
+CREATE OR REPLACE FUNCTION obtener_aleatorio()
+RETURNS double precision AS $$
+BEGIN
+    RETURN random();
+END;
+$$ LANGUAGE plpgsql VOLATILE;
+
+-- En esta consulta, obtener_aleatorio() se ejecutará una vez por cada fila de la tabla 'productos'.
+SELECT nombre_producto, obtener_aleatorio() FROM productos;
+```
+
+
+
+### STABLE: Consistencia Dentro de una Consulta
+
+Una función `STABLE` garantiza que, para el mismo conjunto de argumentos, devolverá el mismo resultado **para todas las filas dentro de una única consulta**. Sin embargo, el resultado puede cambiar entre diferentes consultas.
+
+**Propósito y Casos de Uso:**
+
+* **Funciones de Solo Lectura:** El caso de uso principal es para funciones que consultan la base de datos (`SELECT`) pero no la modifican. La función devolverá un resultado consistente basado en la "instantánea" de los datos al inicio de la consulta.
+* **Dependencia de la Configuración de la Transacción:** Funciones que dependen de parámetros que son estables durante una consulta, como `current_timestamp` o la zona horaria actual.
+
+**Impacto en la Optimización:**
+
+El optimizador sabe que puede reutilizar el resultado de una función `STABLE` si se le llama varias veces con los mismos argumentos dentro de la misma consulta. Esto evita ejecuciones redundantes de la función, mejorando significativamente el rendimiento, especialmente en consultas complejas con `JOINs` o cláusulas `WHERE` que utilizan la función repetidamente.
+
+**Ejemplo:**
+
+```sql
+CREATE OR REPLACE FUNCTION obtener_nombre_categoria(id_categoria integer)
+RETURNS text AS $$
+DECLARE
+    nombre_cat text;
+BEGIN
+    SELECT nombre INTO nombre_cat FROM categorias WHERE id = id_categoria;
+    RETURN nombre_cat;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+-- El optimizador puede llamar a obtener_nombre_categoria(1) una sola vez
+-- y reutilizar el resultado para todas las filas que cumplan la condición.
+SELECT * FROM productos WHERE obtener_nombre_categoria(categoria_id) = 'Electrónicos';
+```
+
+
+
+### IMMUTABLE: La Promesa de la Constancia Eterna
+
+Una función `IMMUTABLE` ofrece la garantía más fuerte: siempre devolverá el mismo resultado para el mismo conjunto de argumentos, para siempre. No puede consultar la base de datos ni depender de ninguna información que no esté directamente en su lista de argumentos.
+
+**Propósito y Casos de Uso:**
+
+* **Cálculos Puros:** Ideal para funciones que realizan cálculos matemáticos o manipulación de cadenas que son puramente deterministas. Por ejemplo, una función que calcula el IVA para un monto dado.
+* **Lógica de Negocio Inmutable:** Cualquier lógica de negocio que se base únicamente en sus entradas y no cambie con el tiempo.
+
+**Impacto en la Optimización:**
+
+Esta es la categoría que permite al optimizador las optimizaciones más agresivas.
+
+* **Pre-evaluación:** Si la función se llama con argumentos constantes, el optimizador puede calcular el resultado de la función una sola vez durante la fase de planificación de la consulta y reemplazar la llamada a la función con el valor resultante.
+* **Indexación:** Las funciones `IMMUTABLE` se pueden utilizar para crear índices funcionales. Esto permite indexar el resultado de una función sobre una o más columnas, acelerando drásticamente las búsquedas que utilizan esa función en la cláusula `WHERE`.
+
+**Ejemplo:**
+
+```sql
+CREATE OR REPLACE FUNCTION calcular_precio_final(precio_base numeric, impuesto numeric)
+RETURNS numeric AS $$
+BEGIN
+    RETURN precio_base * (1 + impuesto);
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- El optimizador puede reemplazar la llamada a la función por el valor 121.
+SELECT * FROM pedidos WHERE total = calcular_precio_final(100, 0.21);
+
+-- Creación de un índice funcional
+CREATE INDEX idx_nombre_mayusculas ON usuarios (UPPER(nombre));
+-- La función UPPER es IMMUTABLE, lo que permite esta optimización.
+```
+
+
+---
+
+
 ### Parámetros para agregar al crear una funcion
 
 ```sql
@@ -93,11 +199,6 @@ copy (select  prosrc  from  pg_proc  wHERE proname ilike '%fun_actualiza_datos%'
 SECURITY DEFINER: Ejecuta la función con los privilegios del propietario de la función en lugar del usuario que la llama.
 SECURITY INVOKER: Ejecuta la función con los privilegios del usuario que la llama (este es el valor predeterminado).
 
---- Tipos de Volatility :
-	VOLATILE: La función puede devolver resultados diferentes incluso con los mismos parámetros de entrada. Se asume por defecto.
-		y por lo tanto, no puede ser optimizada por el planificador de consultas.
-	STABLE: La función devuelve los mismos resultados para las mismas entradas dentro de una sola consulta.
-	IMMUTABLE: La función siempre devuelve los mismos resultados para las mismas entradas, independientemente de cuándo se llame.
 
 
 LANGUAGE: Especifica el lenguaje en el que está escrita la función (por ejemplo, plpgsql, sql, c, etc.).
