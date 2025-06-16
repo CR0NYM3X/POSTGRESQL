@@ -268,7 +268,12 @@ select * from pglogical.depend;
 
 ALTER TABLE prueba_datos REPLICA IDENTITY FULL;  -- cuando se realizan operaciones de UPDATE o DELETE, PostgreSQL incluirá todas las columnas de la fila en el registro de WAL (Write-Ahead Logging), en lugar de solo la clave primaria . es útil cuando la tabla no tiene una clave primaria o cuando se necesita capturar cambios en columnas que no forman parte de la clave primaria. Sin embargo, puede afectar el rendimiento, ya que aumenta el volumen de datos en el WAL
 
+1. **DEFAULT**: Usa la clave primaria de la tabla para identificar las filas. Si la tabla no tiene clave primaria, la replicación de `DELETE` fallará.
+2. **NOTHING**: No se registra ninguna identidad de fila, lo que significa que las operaciones `DELETE` no se replicarán.
+3. **FULL**: Registra toda la fila en el log de replicación, permitiendo la replicación incluso si la tabla no tiene clave primaria.
+4. **USING INDEX**: Permite especificar un índice único como identificador de filas para la replicación.
 
+ 
 
 SELECT pglogical.replicate_ddl_command('ALTER TABLE public.people ADD COLUMN notes TEXT');
 
