@@ -57,4 +57,88 @@ Supongamos que tienes Pgpool-II o HAProxy balanceando consultas entre un nodo ma
 2. **Configura tu balanceador para desactivar parseo de funciones** (si no es confiable), y enruta todo lo ambiguo al maestro.
 
 3. **Usa etiquetas explícitas en tus aplicaciones** (como comentarios o tags) para forzar rutas específicas si tu infraestructura lo permite.
+
+
+Perfecto, estás enfrentando un caso clásico en topologías de alta disponibilidad con balanceadores de carga y réplicas en PostgreSQL. El corazón del problema está en **funciones que internamente hacen escrituras**, pero el balanceador las envía a un *read-only replica*, lo que naturalmente genera errores.
+
+---
+
+###  1. Revisión y etiquetado correcto de funciones
+PostgreSQL permite marcar funciones como `VOLATILE`, `STABLE` o `IMMUTABLE`.
+
+- Si tus funciones hacen escrituras, **deberían estar marcadas como `VOLATILE`**. Esto ayuda a algunas herramientas de pool y balanceadores (como PgBouncer en modo `transaction`) a evitar enviar llamadas a réplicas.
+- Si no están marcadas correctamente, los proxies pueden tratarlas como funciones de solo lectura.
+
+---
+
+###  2. Revisión y configuración del balanceador
+Dependiendo de qué balanceador uses (HAProxy, Pgpool-II, etc.), deberías:
+
+- **Detectar queries de escritura dinámicamente**, y redirigirlas al maestro.
+  - En Pgpool-II, por ejemplo, puedes usar `query_cache_enabled = off` y `allow_sql_comments = on`, y apoyarte en `black_function_list` para forzar que ciertas funciones vayan al maestro.
+- **Desactivar balanceo en sesiones que ejecuten funciones mixtas o complejas**, y forzarlas al nodo maestro.
+
+---
+
+###  3. Políticas de conexión en el pooler
+Con PgBouncer, considera:
+
+- Modo `session` en lugar de `transaction`, para que toda la sesión vaya al mismo servidor.
+- Usa parámetros como `statement routing` con cuidado, o incluso **usa múltiples poolers**: uno para lectura y otro para escritura, y selecciona en tu aplicación.
+
+---
+
+###  4. Separación a nivel de aplicación
+Esto requiere más esfuerzo, pero es sólido:
+
+- Divide rutas de acceso a la BD: **una conexión explícita para escritura (maestro)** y otra para lectura (réplicas).
+- Algunas ORMs modernas permiten definir “roles” de conexión. Úsalo para enrutar adecuadamente las funciones.
+
+
+
+Usando solo HAProxy, también puedes manejar este problema, aunque necesitarás una lógica más explícita ya que HAProxy no entiende el contenido del SQL. Aquí algunas estrategias eficaces:
+
+---
+
+###  1. **Separación por puertos o backends**
+
+Configura **dos frontends distintos** en HAProxy:
+
+- Uno para **lecturas (SELECT)** que balancea entre esclavos.
+- Otro para **escrituras (INSERT, UPDATE, DELETE, funciones VOLATILE)** que va directo al maestro.
+
+En tu aplicación, **usa puertos diferentes** dependiendo del tipo de consulta. Algunos ORM o frameworks permiten esta separación.
+
+---
+
+###  2. **Uso de SQL comments para enrutar tráfico**
+
+Una táctica popular es que tu aplicación agregue un comentario especial al inicio del query. Ejemplo:
+
+```sql
+-- read
+SELECT * FROM usuarios;
+
+-- write
+/*write*/ SELECT ejecutar_funcion_que_modifica();
+```
+
+En HAProxy puedes crear ACLs como:
+
+```haproxy
+acl is_write_query req.payload(0,128) -m sub "/*write*/"
+use_backend backend_master if is_write_query
+default_backend backend_slaves
+```
+
+Esto requiere que HAProxy esté en modo TCP y analice el payload inicial del protocolo PostgreSQL (usando un proxy externo como `pg-proxy` o `stunnel` si es necesario).
+
+---
+
+###  3. **Uso de pgbouncer o una capa extra intermedia**
+
+Si HAProxy se queda corto, podrías poner **PgBouncer entre la app y HAProxy** con reglas por sesión. Así HAProxy solo enruta conexiones, y PgBouncer decide cómo manejarlas en función del tipo de operación.
+
+
+
  
