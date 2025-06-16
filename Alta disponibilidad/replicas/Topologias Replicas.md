@@ -1,6 +1,6 @@
 # **topologías de replicación** 
 
-###  **1. Replicación Primaria-Secundaria (Master-Slave o Primary-Replica)**
+###  **1. replicación direccional - Primario-Secundario (Master-Slave)**
 - **Descripción**: Un nodo primario acepta escrituras y lecturas, mientras que uno o más nodos secundarios solo aceptan lecturas.
 - **Uso común**: Escalar lecturas, alta disponibilidad.
 - **Tipo**: Asíncrona o síncrona.
