@@ -170,8 +170,9 @@ select * from pg_publication_tables;
 ```sql
 SELECT * FROM pg_create_logical_replication_slot('mi_slot', 'pgoutput'); --  slot_name , plugin name pgoutput o wal2json o test_decoding
 
--- Tambien se puede usar pg_recvlogical para crear slots  
+-- cuando usar  pg_recvlogical tambien manda crear el slot 
 -- pg_recvlogical -h 127.0.0.1 -p 5417 -d test_db_master -U postgres --slot mi_slot --create-slot -P wal2json
+
 ```
 
 **Validar status slots**
@@ -215,7 +216,7 @@ CREATE TABLE clientes (
 CREATE SUBSCRIPTION sub_clientes
 CONNECTION 'host=127.0.0.1 dbname=test_db_master user=postgres port=5517'
 PUBLICATION pub_clientes
-WITH (enabled=false, slot_name = 'mi_slot', create_slot = false, copy_data = true, streaming = true );
+WITH (enabled=false, slot_name = 'mi_slot', create_slot = false, copy_data = true, streaming = true , origin = 'none' );
 
 
 enabled=false -> la suscripción se crea, pero no empieza a recibir datos hasta que la conexión se habilite manualmente con ENABLE
@@ -226,6 +227,13 @@ copy_data = true :  se copian todos los datos actuales de las tablas en la publi
 publish='insert,delete' -> Se usa para indicar que es lo que va trasmitir 
 
 ```
+
+### **origin** 
+es clave para evitar bucles infinitos en la replicación de datos entre nodos. Este parámetro permite definir cómo se manejan los cambios en la replicación y evitar que los datos replicados vuelvan al nodo de origen. Sin origin, los cambios podrían replicarse indefinidamente en un bucle.
+
+Las opciones disponibles para `origin` son:
+- **`none`** – Solo envía los cambios que no tienen un origen asociado.
+- **`any`** – Envía todos los cambios, independientemente de su origen.
 
 
 **2.2. Habilitar la suscripción:**
@@ -253,6 +261,9 @@ Si quieres recibir los cambios en tiempo real, puedes usar `pg_recvlogical`, una
 Usa -o pretty-print=1 para formatear la salida en JSON legible.
 Usa -o add-msg-prefixes=wal2json para agregar prefijos a los mensajes replicados.
 -f - indica que la salida se mostrará directamente en la terminal.
+
+
+-- START_REPLICATION SLOT mi_slot LOGICAL WITH (origin = 'none');
 
 ```
 
