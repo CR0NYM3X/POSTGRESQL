@@ -228,8 +228,10 @@ publish='insert,delete' -> Se usa para indicar que es lo que va trasmitir
 
 ```
 
-### **origin** 
-es clave para evitar bucles infinitos en la replicación de datos entre nodos. Este parámetro permite definir cómo se manejan los cambios en la replicación y evitar que los datos replicados vuelvan al nodo de origen. Sin origin, los cambios podrían replicarse indefinidamente en un bucle.
+### **origin=none** 
+Es clave para evitar bucles infinitos en la replicación de datos entre nodos. Este parámetro permite definir cómo se manejan los cambios en la replicación y evitar que los datos replicados vuelvan al nodo de origen. Sin origin, los cambios podrían replicarse indefinidamente en un bucle.
+
+Los datos generados localmente (ejecución directa de SQL) no tendrán un origen de replicación , y los datos replicados desde otra fuente sí lo tendrán. Con esta información, se encontró una manera de replicar únicamente los cambios realizados por comandos SQL, y no los de la replicación.
 
 Las opciones disponibles para `origin` son:
 - **`none`** – Solo envía los cambios que no tienen un origen asociado.
