@@ -47,6 +47,10 @@ https://listings.pcisecuritystandards.org/documents/PCI-DSS-v4_0-LA.pdf
  7. **LFPDPPP** es la Ley Federal de Protección de Datos Personales en Posesión de los Particulares en México. Su versión más reciente fue publicada el 20 de marzo de 2025 y entró en vigor el 21 de marzo de 2025
 en todo el país, cuyo objetivo es proteger los datos personales que están en manos de particulares (empresas, organizaciones, profesionistas, etc.), regulando su tratamiento de forma legítima, controlada e informada
 
+8. **FISMA** (Federal Information Security Management Act) es una ley de seguridad de la información de EE.UU. que exige que las agencias federales implementen medidas de protección para sus sistemas y datos sensibles. Fue aprobada en 2002 y establece estándares de cumplimiento definidos por el **NIST** (National Institute of Standards and Technology). Su objetivo es garantizar la **confidencialidad, integridad y disponibilidad** de la información gubernamental.
+
+9. **STIG** (Security Technical Implementation Guide) es un conjunto de guías de seguridad desarrolladas por el **Departamento de Defensa de EE.UU.** para proteger sistemas informáticos contra amenazas cibernéticas. Estas guías establecen configuraciones seguras para software, hardware y redes, asegurando que cumplan con los estándares de seguridad requeridos.
+
 
 # Tecnicas de Hardening 
 es el proceso de fortalecer la seguridad de una base de datos para protegerla contra amenazas y ataques cibernéticos. Este proceso implica aplicar una serie de medidas y prácticas para minimizar las vulnerabilidades y reducir la superficie de ataque
@@ -1008,6 +1012,35 @@ where U&"_0070_0072_006f_006e_0061_006d_0065" UESCAPE '_' is not null
 
 ```
 
+
+# Buscar herramientas de monitoro y de seguridad instaladas en mi S.O
+```
+------ Buscar herramientas de monitorio -------
+ps aux | grep -E 'zabbix|nagios|prometheus|grafana' # Ver procesos 
+systemctl list-units --type=service | grep -E 'zabbix|nagios|prometheus|grafana' # Ver estatus de algun servicio 
+rpm -qa | grep -E 'zabbix|nagios|prometheus|grafana' # Ver paquetes 
+ls /etc | grep -E 'zabbix|nagios|prometheus|grafana' # Ver archivos 
+netstat -tulnp | grep -E '10050|10051|5666|9090' # Ver puertos 
+
+
+------ Buscar herramientas de monitorio -------
+ps aux | grep -E 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig'
+systemctl list-units --type=service | grep -E 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig'
+rpm -qa | grep -E 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig'
+ls /etc | grep -E 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig'
+netstat -tulnp | grep -E '1514|5601|9200'
+
+
+------ información sobre los puertos que mencionaste: ------
+
+- **1514** – Usado por **OSSEC**, un sistema de detección de intrusos.
+- **5601** – Usado por **Kibana**, una herramienta de visualización para Elasticsearch.
+- **9200** – Usado por **Elasticsearch**, un motor de búsqueda y análisis distribuido.
+- **10050 y 10051** – Usados por **Zabbix**, una plataforma de monitoreo de servidores.
+- **5666** – Usado por **NRPE (Nagios Remote Plugin Executor)**, para monitoreo remoto en Nagios.
+- **9090** – Usado por **Prometheus**, una herramienta de monitoreo y alertas.
+
+ ```
 
 ## referencias
 ```
