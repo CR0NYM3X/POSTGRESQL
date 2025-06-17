@@ -459,6 +459,8 @@ SELECT slot_name, pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),restart_ls
 
 [Multi-Master] Active Active in Postgres 16 -> https://www.crunchydata.com/blog/active-active-postgres-16
 
+Bidirectional Logical Replication in PostgreSQL 16 -> https://www.mydbops.com/blog/bidirectional-logical-replication-in-postgresql-16
+
 wal2json -> https://github.com/eulerto/wal2json
 CREATE SUBSCRIPTION -> https://www.postgresql.org/docs/current/sql-createsubscription.html
 29.2. Subscription  -> https://www.postgresql.org/docs/current/logical-replication-subscription.html
