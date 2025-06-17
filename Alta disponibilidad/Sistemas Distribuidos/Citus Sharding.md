@@ -126,7 +126,9 @@ SELECT * FROM citus_add_node('127.0.0.1', 55166);
 SELECT * FROM citus_get_active_worker_nodes();
 ```
 
-### Crear tabla y insertar registros en el coordinador
+### Crear tabla columnar y insertar registros en el coordinador
+Las tablas columnares Son más de análisis y funcionan mejor con consultas agregadas y escaneo masivo.
+Las consultas agregadas son aquellas que utilizan funciones como SUM(), AVG(), COUNT(), MIN(), MAX(), entre otras, para resumir datos.
 ```sql
 CREATE TABLE users (
     id BIGINT PRIMARY KEY,
