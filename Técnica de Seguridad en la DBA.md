@@ -1024,10 +1024,10 @@ netstat -tulnp | grep -E '10050|10051|5666|9090' # Ver puertos
 
 
 ------ Buscar herramientas de monitorio -------
-ps aux | grep -E 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig'
-systemctl list-units --type=service | grep -E 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig'
-rpm -qa | grep -E 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig'
-ls /etc | grep -E 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig'
+ps aux | grep -E 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig|Qualys|Rapid7|InsightVM|Tenable|Nessus|Tripwire|IBM|QRadar|ManageEngine|Log360'
+systemctl list-units --type=service | grep -Ei 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig|Qualys|Rapid7|InsightVM|Tenable|Nessus|Tripwire|IBM|QRadar|ManageEngine|Log360'
+rpm -qa | grep -Ei 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig|Qualys|Rapid7|InsightVM|Tenable|Nessus|Tripwire|IBM|QRadar|ManageEngine|Log360'
+ls /etc | grep -Ei 'auditd|ossec|selinux|apparmor|Wazuh|Sysdig|Qualys|Rapid7|InsightVM|Tenable|Nessus|Tripwire|IBM|QRadar|ManageEngine|Log360'
 netstat -tulnp | grep -E '1514|5601|9200'
 
 
