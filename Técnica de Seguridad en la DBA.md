@@ -1045,4 +1045,5 @@ netstat -tulnp | grep -E '1514|5601|9200'
 ## referencias
 ```
 https://momjian.us/main/writings/pgsql/securing.pdf
+https://github.com/geocompass/disable_copy/tree/master
 ```
