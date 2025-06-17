@@ -169,6 +169,7 @@ Prometheus ->  Prometheus es una herramienta de monitoreo de código abierto que
 Zabbix -> es una herramienta de monitoreo de código abierto que ofrece una amplia gama de características, incluyendo la supervisión de bases de datos PostgreSQL.
 Nagios -> Con plugins específicos para PostgreSQL, Nagios puede monitorear el rendimiento y la seguridad de tu base de datos
 Grafana -> Aunque se utiliza principalmente para la visualización de datos, Grafana se puede integrar con Prometheus y otras herramientas para proporcionar un monitoreo completo de PostgreSQL
+pgNow -> pgNow es una herramienta gratuita para diagnóstico de rendimiento en PostgreSQL. Fue desarrollada por Redgate y permite obtener información en tiempo real sobre la salud, configuración y rendimiento de la base de datos.
 Checkmk ->  herramienta de monitoreo de código abierto que ofrece monitoreo integral para bases de datos PostgreSQ
 
 SIEM  detección de amenazas
