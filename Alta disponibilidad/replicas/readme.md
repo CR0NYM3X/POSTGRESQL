@@ -457,6 +457,29 @@ Corrige la **Ley de Amdahl**, mostrando que **más nodos pueden mejorar el rendi
 
 
  
+### Parámetros de solo lectura
+```SQL
+select name,setting,context from pg_settings where name like '%read%';
+```
+
+### ** `default_transaction_read_only`**
+- **Función:** Define si las transacciones por defecto serán de solo lectura (`on`) o permitirán modificaciones (`off`).
+- **Uso común:** Se puede configurar globalmente en `postgresql.conf` o a nivel de sesión con:
+  ```sql
+  SET default_transaction_read_only = on;
+  ```
+- **Ejemplo:** Si está en `on`, cualquier intento de `INSERT`, `UPDATE` o `DELETE` generará un error "ERROR:  cannot execute UPDATE in a read-only transaction".
+
+### ** `transaction_read_only`**
+- **Función:** Indica si la transacción actual es de solo lectura (`on`) o permite modificaciones (`off`).
+- **Uso común:** Se puede activar dentro de una transacción con:
+  ```sql
+  BEGIN;
+  SET TRANSACTION READ ONLY;
+  ```
+- **Ejemplo:** Si una transacción se inicia con `READ ONLY`, no podrá modificar datos hasta que se cierre.
+
+
 
 ## Bibliografía 
 ```
