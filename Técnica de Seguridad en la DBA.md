@@ -194,7 +194,64 @@ track_activities = off
 select pg_read_file('/etc/hostname') --- Leee un archivo de texto
 pg_write_file
 copy
-pgcrypto
+
+ postgres@postgres# select distinct proname from pg_proc where proname ~* 'file|read|write|import|export|ls_' order by proname;
++----------------------------------------------+
+|                   proname                    |
++----------------------------------------------+
+| binary_upgrade_set_next_heap_relfilenode     |
+| binary_upgrade_set_next_index_relfilenode    |
+| binary_upgrade_set_next_toast_relfilenode    |
+| lo_export                                    |
+| lo_import                                    |
+| loread                                       |
+| lowrite                                      |
+| pg_current_logfile                           |
+| pg_event_trigger_table_rewrite_oid           |
+| pg_event_trigger_table_rewrite_reason        |
+| pg_export_snapshot                           |
+| pg_filenode_relation                         |
+| pg_hba_file_rules                            |
+| pg_ident_file_mappings                       |
+| pg_import_system_collations                  |
+| pg_ls_archive_statusdir                      |
+| pg_ls_dir                                    |
+| pg_ls_logdir                                 |
+| pg_ls_logicalmapdir                          |
+| pg_ls_logicalsnapdir                         |
+| pg_ls_replslotdir                            |
+| pg_ls_tmpdir                                 |
+| pg_ls_waldir                                 |
+| pg_read_binary_file                          |
+| pg_read_file                                 |
+| pg_read_file_old                             |
+| pg_relation_filenode                         |
+| pg_relation_filepath                         |
+| pg_rotate_logfile                            |
+| pg_rotate_logfile_old                        |
+| pg_show_all_file_settings                    |
+| pg_split_walfile_name                        |
+| pg_stat_file                                 |
+| pg_stat_get_bgwriter_buf_written_checkpoints |
+| pg_stat_get_bgwriter_buf_written_clean       |
+| pg_stat_get_bgwriter_maxwritten_clean        |
+| pg_stat_get_bgwriter_requested_checkpoints   |
+| pg_stat_get_bgwriter_stat_reset_time         |
+| pg_stat_get_bgwriter_timed_checkpoints       |
+| pg_stat_get_checkpoint_write_time            |
+| pg_stat_get_db_blk_read_time                 |
+| pg_stat_get_db_blk_write_time                |
+| pg_stat_get_db_temp_files                    |
+| pg_walfile_name                              |
+| pg_walfile_name_offset                       |
+| ts_rewrite                                   |
++----------------------------------------------+
+
+
+
+
+select distinct proname from pg_proc where proname ilike '%file%';
+
 ```
 
 -- Busca funciones del sistema que te permite manipular el sistema
