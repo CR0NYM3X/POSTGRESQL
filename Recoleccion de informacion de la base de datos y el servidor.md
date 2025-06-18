@@ -487,4 +487,7 @@ SHOW lc_time; -- formato de fechas y horas.
 
 ```
 
-   
+
+### Ver conf de kernel y limites 
+sysctl -a | grep -Ei "crypto.fips_name|semmns|shmmax " # todas las configuraciones del kernel 
+ulimit -a # los límites actuales del usuario en cuanto a recursos del sistema. 
