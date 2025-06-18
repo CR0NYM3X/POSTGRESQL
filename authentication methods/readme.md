@@ -28,3 +28,7 @@ https://www.percona.com/blog/configuring-postgresql-and-ldap-using-starttls/
 
 
 https://www.enterprisedb.com/postgres-tutorials/how-connect-postgres-ldap-starttls
+
+
+Configuring Windows Active Directory LDAP For Authentication With Postgres On Linux. -> https://bensonyerima.com/2021/06/configuring-windows-active-directory-ldap-for-authentication-with-postgres-on-linux/ <br>
+Configuring Openldap for authentication in postgres on ubuntu -> https://bensonyerima.com/2021/08/configuring-openldap-for-authentication-in-postgres-on-ubuntu/
