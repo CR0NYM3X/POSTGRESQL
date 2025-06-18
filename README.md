@@ -10,6 +10,7 @@
 
 # Páginas interesantes 
 ```
+https://bensonyerima.com/
 https://www.postgresql.org/list/
   https://www.postgresql.org/list/pgsql-general/
   https://www.postgresql.org/list/pgsql-jobs/
