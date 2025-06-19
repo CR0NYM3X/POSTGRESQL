@@ -89,21 +89,6 @@ Con PCP puedes:
 - Ver estado del watchdog (`pcp_watchdog_info`)
 
 
-###  ¿Cómo se usa?
-
-1. **Define usuarios en `pcp.conf`**  
-   Este archivo contiene usuarios y contraseñas para autenticar comandos PCP:
-   ```bash
-   echo "admin:$(pg_md5 tu_contraseña)" >> /etc/pgpool-II/pcp.conf
-   ```
-
-2. **Configura `.pcppass` en el home del usuario `postgres`**  
-   Para evitar que te pida contraseña cada vez:
-   ```bash
-   echo "localhost:9898:admin:tu_contraseña" > ~/.pcppass
-   chmod 600 ~/.pcppass
-   ```
-
 3. **Ejecuta comandos PCP**  
    Por ejemplo, para ver los nodos:
    ```bash
@@ -160,6 +145,32 @@ cp /etc/pgpool-II/pool_hba.conf.sample /etc/pgpool-II/pool_hba.conf
 cp /etc/pgpool-II/pcp.conf.sample /etc/pgpool-II/pcp.conf
 ```
 
+## agregar linea a pool_hba.conf
+Controla si Pgpool-II debe usar el archivo pool_hba.conf para autenticar conexiones de clientes, al estilo de cómo PostgreSQL usa su pg_hba.conf. 
+esto sirve para centralizar las autenticaciones cuando se manejan varios nodos postgresql y no estar configurando cada servidor postgresql por separado
+- Esto es útil si quieres que Pgpool-II filtre conexiones antes de que lleguen a PostgreSQL.
+```bash
+local   all         all                               trust
+```
+
+## agregar linea a pcp.conf
+Este archivo define los usuarios y contraseñas que pueden conectarse para ejecutar comandos administrativos PCP y se configura donde se tiene instalado el pgpool
+```bash
+### generar contraseña en md5 
+postgres@lvt-pruebas-dba /etc/pgpool-II $ /usr/pgpool-13/bin/pg_md5 mi_password123
+d910bec38754da22001aaa3b006f203a
+
+### Agregar el usuario pgpool con contraseña: mi_password123
+echo pgpool:$(/usr/pgpool-13/bin/pg_md5 mi_password123) >> /etc/pgpool-II/pcp.conf
+```
+
+## **Configura `.pcppass` en el home del usuario `postgres`**  
+   Esto permite que no tengas que escribir la contraseña cada vez que usas un comando pcp_. pcp leerá este archivo para autenticarte automáticamente.
+   ```bash
+   ## El archivo .pcppass se debe configurar en el servidor (o máquina) donde vas a ejecutar los comandos pcp_, si ejecutas los comandos en un servidor remoto entonces ahi tienes que crear el archivo
+   echo "127.0.0.1:9898:pgpool:mi_password123" > ~/.pcppass
+   chmod 600 ~/.pcppass
+   ```
 
 
 ### 🔹 **Parámetros clave pgpool.conf**
@@ -170,12 +181,12 @@ cp /etc/pgpool-II/pcp.conf.sample /etc/pgpool-II/pcp.conf
 listen_addresses = '*'             # IP de Pgpool-II
 port = 9999                        # Puerto de Pgpool-II
 backend_clustering_mode = 'streaming_replication' # Modo de replicación
-socket_dir = '/etc/pgpool-II/info'
-unix_socket_directories = '/etc/pgpool-II/info'
+ 
+unix_socket_directories = '/etc/pgpool-II/info' # en la version especifica de pgpool por ejemplo pgpool-II-13 el parametro es socket_dir 
 unix_socket_permissions = 0600
 pid_file_name = '/etc/pgpool-II/info/pgpool.pid'
 
-enable_pool_hba = on               # Activar autenticación basada en host
+enable_pool_hba = on               # controla si Pgpool-II debe usar el archivo pool_hba.conf para autenticar conexiones en la herramienta pgpool para administracion
 pool_passwd = 'pool_passwd'                       
 allow_clear_text_frontend_auth = on
 
@@ -275,6 +286,57 @@ process_management_mode = dynamic
 
 ---
 
+
+### ¿Qué pasa si se cae el nodo maestro y solo se usa balanceador de pgpool?
+✅ Opción 1: reiniciar o recargar Pgpool-II
+	Modificas pgpool.conf para actualizar el orden de los nodos (backend_hostnameX)
+	Reinicias Pgpool o ejecutas pgpool reload
+
+✅ Opción 2: usar comandos pcp_ o extensión pgpool_adm
+	Puedes usar pcp_promote_node, pcp_detach_node, etc., para actualizar Pgpool en caliente.
+	O si usas la extensión pgpool_adm, lo haces vía SQL.
+
+```
+
+---- Opcion con comando pcp 
+pcp_detach_node -h localhost -U admin -n 0 -p 9898 -w # Marca como inactivo el nodo 0 anterior 
+pcp_promote_node -h localhost -U admin -n 1 -p 9898 -w # Promociona manualmente el nuevo maestro en Pgpool-II:
+pcp_attach_node -h localhost -U admin -n 0 -p 9898 -w # (Opcional) Adjunta nuevamente el nodo que cayó si se reintegró: 
+
+---- Opcion con comando SQL 
+CREATE EXTENSION pgpool_adm;
+SELECT * FROM pcp_node_info(9898, 'admin', 'tu_clave', 0); # Ver los nodos 
+SELECT pcp_detach_node(9898, 'admin', 'tu_clave', 0); # Desconectar un nodo: 
+SELECT pcp_promote_node(9898, 'admin', 'tu_clave', 1); # Promover un nodo: 
+
+```
+
+
+
+---
+### Info extra 
+```
+select * from pg_available_extensions where name ilike '%pool%';
+postgres@postgres# \dx+ pgpool_adm
+                 Objects in extension "pgpool_adm"
++------------------------------------------------------------------+
+|                        Object description                        |
++------------------------------------------------------------------+
+| function pcp_attach_node(integer,text)                           |
+| function pcp_attach_node(integer,text,integer,text,text)         |
+| function pcp_detach_node(integer,boolean,text)                   |
+| function pcp_detach_node(integer,boolean,text,integer,text,text) |
+| function pcp_health_check_stats(integer,text)                    |
+| function pcp_health_check_stats(integer,text,integer,text,text)  |
+| function pcp_node_count(text)                                    |
+| function pcp_node_count(text,integer,text,text)                  |
+| function pcp_node_info(integer,text)                             |
+| function pcp_node_info(integer,text,integer,text,text)           |
+| function pcp_pool_status(text)                                   |
+| function pcp_pool_status(text,integer,text,text)                 |
++------------------------------------------------------------------+
+```
+
 ## ** 1. Iniciar Pgpool-II con binarios en 192.168.1.10**
 
 ```bash
@@ -290,12 +352,6 @@ pgpool -n
 - `-F`: Ruta al archivo de configuración de PCP que define los usuarios y contraseñas que pueden ejecutar comandos administrativos en Pgpool-II.
 - `-a`: Ruta al archivo de autenticación `pool_hba.conf` similar a pg_hba.conf en PostgreSQL y define cómo los clientes pueden autenticarse en Pgpool-II
 
-# Ejemplo de pool_hba.conf
-host    all     all     192.168.1.0/24    md5
-
-# Ejemplo de pcp.conf
-pgpool_admin:md5e99a18c428cb38d5f260853678922e03
- 
 ```
 
 
