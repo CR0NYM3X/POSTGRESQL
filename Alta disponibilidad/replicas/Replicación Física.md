@@ -38,8 +38,8 @@ port = 55161
 listen_addresses = '*'
 max_replication_slots = 10
 
-max_standby_archive_delay -1 
-max_standby_streaming_delay: -1 
+max_standby_archive_delay = -1 
+max_standby_streaming_delay = -1 
 
 wal_log_hints = on
 wal_level = replica
