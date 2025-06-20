@@ -6,7 +6,7 @@ Es una herramienta de código abierto para la gestión de replicación y failove
 Este documento describe el proceso de **instalación, configuración y administración** de un clúster de **PostgreSQL** utilizando **Repmgr** para garantizar alta disponibilidad y failover automático.  
 
 ### Consenso en repmgr
-No implementa un sistema de consenso distribuido como etcd o Raft, pero **sí tiene una forma limitada de consenso interno**, llamada **primary visibility consensus**, introducida a partir de la versión 4.4. Es una técnica que permite a los nodos standby (réplicas) **consultarse entre sí** y con un nodo witness si existe— para decidir si el nodo primario sigue visible. Esto ayuda a evitar un failover innecesario si:
+No implementa un sistema de consenso distribuido como etcd o Raft, pero **sí tiene una forma limitada de consenso interno**, llamada **primary visibility consensus**, introducida a partir de la versión 4.4. Es una técnica que permite a los nodos standby (réplicas) **consultarse entre sí** y con un nodo witness si existe— para decidir si el nodo primario sigue visible. Esto ayuda a evitar un failover innecesario
 
 ### ¿Para qué sirve un Witness Node?
 Es un simple nodo que no participa en la replica pero necesita postgresql para funcionar y es un testigo que ayuda a los esclavos a validar si siguen en red en caso de que el primario falle, evita divisiones en el clúster (split-brain). ✅ Confirma el estado de los nodos maestro y standby en caso de falla. ✅ Ayuda a decidir si el failover debe ocurrir y cuál nodo debe ser promovido.
