@@ -357,15 +357,15 @@ process_management_mode = dynamic # define cómo se gestionan los procesos hijos
 ```
 
 ---- Opcion con comando pcp 
-pcp_detach_node -h localhost -U admin -n 0 -p 9898 -w # Marca como inactivo el nodo 0 anterior 
-pcp_promote_node -h localhost -U admin -n 1 -p 9898 -w # Promociona manualmente el nuevo maestro en Pgpool-II:
-pcp_attach_node -h localhost -U admin -n 0 -p 9898 -w # (Opcional) Adjunta nuevamente el nodo que cayó si se reintegró: 
+pcp_detach_node -h localhost -U pgpool -n 0 -p 9898 -w # Marca como inactivo el nodo 0 anterior 
+pcp_promote_node -h localhost -U pgpool -n 1 -p 9898 -w # Promociona manualmente el nuevo maestro en Pgpool-II:
+pcp_attach_node -h localhost -U pgpool -n 0 -p 9898 -w # (Opcional) Adjunta nuevamente el nodo que cayó si se reintegró: 
 
 ---- Opcion con comando SQL 
 CREATE EXTENSION pgpool_adm;
-SELECT * FROM pcp_node_info(9898, 'admin', 'tu_clave', 0); # Ver los nodos 
-SELECT pcp_detach_node(9898, 'admin', 'tu_clave', 0); # Desconectar un nodo: 
-SELECT pcp_promote_node(9898, 'admin', 'tu_clave', 1); # Promover un nodo: 
+SELECT * FROM pcp_node_info(9898, 'pgpool', 'tu_clave', 0); # Ver los nodos 
+SELECT pcp_detach_node(9898, 'pgpool', 'tu_clave', 0); # Desconectar un nodo: 
+SELECT pcp_promote_node(9898, 'pgpool', 'tu_clave', 1); # Promover un nodo: 
 
 ```
 
@@ -451,11 +451,82 @@ postgres@lvt-pruebas-dba-cln /etc/pgpool-II $
 bajaremos el servicio del puerto 55161
 pg_ctl stop -D /sysx/data16/DATANEW/data_secundario1
 
+# conclusion ahora que tiene configurado ALLOW_TO_FAILOVER cada nodo, la herramienta de manera automatica pudo validar que nodo estaba caido gracias a las funcionalidades de health_check, sr_check y sacar al nodo caido, despues  reinicio el pgpool  para que todo siga funcionando , se realizo una consulta de nuevo al puerto 9999 y ya respondio sin problemas, comparto el log
+
+--------- log pgpool-2025-06-19_162453.log ---------
+
+2025-06-19 16:25:47.967: health_check1 pid 319191: LOG:  failed to connect to PostgreSQL server on "127.0.0.1:55161", getsockopt() failed
+2025-06-19 16:25:47.967: health_check1 pid 319191: DETAIL:  Operation now in progress
+2025-06-19 16:25:47.967: health_check1 pid 319191: LOG:  health check retrying on DB node: 1 (round:3)
+
+2025-06-19 16:25:49.083: sr_check_worker pid 319189: ERROR:  Failed to check replication time lag
+2025-06-19 16:25:49.083: sr_check_worker pid 319189: DETAIL:  No persistent db connection for the node 1
+2025-06-19 16:25:49.083: sr_check_worker pid 319189: HINT:  check sr_check_user and sr_check_password
+2025-06-19 16:25:49.083: sr_check_worker pid 319189: CONTEXT:  while checking replication time lag
+2025-06-19 16:25:49.086: sr_check_worker pid 319189: LOG:  failed to connect to PostgreSQL server on "127.0.0.1:55161", getsockopt() failed
+2025-06-19 16:25:49.086: sr_check_worker pid 319189: DETAIL:  Operation now in progress
+
+2025-06-19 16:25:49.967: health_check1 pid 319191: LOG:  failed to connect to PostgreSQL server on "127.0.0.1:55161", getsockopt() failed
+2025-06-19 16:25:49.967: health_check1 pid 319191: DETAIL:  Operation now in progress
+2025-06-19 16:25:49.968: health_check1 pid 319191: LOG:  health check failed on node 1 (timeout:0)
+2025-06-19 16:25:49.968: health_check1 pid 319191: LOG:  received degenerate backend request for node_id: 1 from pid [319191]
+2025-06-19 16:25:49.968: health_check1 pid 319191: LOG:  signal_user1_to_parent_with_reason(0)
+
+2025-06-19 16:25:49.968: main pid 319173: LOG:  Pgpool-II parent process received SIGUSR1
+2025-06-19 16:25:49.968: main pid 319173: LOG:  Pgpool-II parent process has received failover request
+2025-06-19 16:25:49.968: main pid 319173: LOG:  === Starting degeneration. shutdown host 127.0.0.1(55161) ===
+2025-06-19 16:25:49.970: main pid 319173: LOG:  Do not restart children because we are switching over node id 1 host: 127.0.0.1 port: 55161 and we are in streaming replication mode
+2025-06-19 16:25:49.970: main pid 319173: LOG:  failover: set new primary node: 0
+2025-06-19 16:25:49.970: main pid 319173: LOG:  failover: set new main node: 0
+2025-06-19 16:25:49.970: main pid 319173: LOG:  === Failover done. shutdown host 127.0.0.1(55161) ===
+2025-06-19 16:25:49.970: sr_check_worker pid 319189: ERROR:  Failed to check replication time lag
+2025-06-19 16:25:49.970: sr_check_worker pid 319189: DETAIL:  No persistent db connection for the node 1
+2025-06-19 16:25:49.970: sr_check_worker pid 319189: HINT:  check sr_check_user and sr_check_password
+2025-06-19 16:25:49.970: sr_check_worker pid 319189: CONTEXT:  while checking replication time lag
+2025-06-19 16:25:49.970: sr_check_worker pid 319189: LOG:  worker process received restart request
+2025-06-19 16:25:50.970: pcp_main pid 319188: LOG:  restart request received in pcp child process
+2025-06-19 16:25:50.971: main pid 319173: LOG:  PCP child 319188 exits with status 0 in failover()
+2025-06-19 16:25:50.972: main pid 319173: LOG:  fork a new PCP child pid 319589 in failover()
+2025-06-19 16:25:50.972: pcp_main pid 319589: LOG:  PCP process: 319589 started
+2025-06-19 16:25:50.972: sr_check_worker pid 319590: LOG:  process started
+
+2025-06-19 16:26:09.405: psql pid 319183: LOG:  failover or failback event detected
+2025-06-19 16:26:09.405: psql pid 319183: DETAIL:  restarting myself
+2025-06-19 16:26:09.405: psql pid 319182: LOG:  new connection received
+2025-06-19 16:26:09.405: psql pid 319182: DETAIL:  connecting host=127.0.0.1 port=52220
+2025-06-19 16:26:09.405: child pid 319184: LOG:  failover or failback event detected
+2025-06-19 16:26:09.405: child pid 319184: DETAIL:  restarting myself
+2025-06-19 16:26:09.405: psql pid 319182: LOG:  selecting backend connection
+2025-06-19 16:26:09.405: psql pid 319182: DETAIL:  failover or failback event detected, discarding existing connections
+2025-06-19 16:26:09.407: main pid 319173: LOG:  child process with pid: 319183 exited with success and will not be restarted
+2025-06-19 16:26:09.407: main pid 319173: LOG:  child process with pid: 319184 exited with success and will not be restarted
+2025-06-19 16:26:09.413: psql pid 319182: LOG:  statement: select current_setting('port'),* from clientes limit 1;
+2025-06-19 16:26:09.417: psql pid 319182: LOG:  statement: DISCARD ALL
+2025-06-19 16:26:09.418: psql pid 319182: LOG:  frontend disconnection: session time: 0:00:00.012 user=postgres database=test_db_master host=127.0.0.1 port=52220
 
 
 ```
 
 
+## Reintegrar nodo 1 q
+ ```
+# Reintegramos de nuevo el nodo 1 puerto 55161 que se habia caido y se volvio a levantar pero ya no pertenecia al listado de pgpool
+postgres@lvt-pruebas-dba /etc/pgpool-II $ pcp_attach_node -h 127.0.0.1 -p 9898 -U pgpool   -w -n 1 
+pcp_attach_node -- Command Successful
+
+# validamos la informacion de los nodos
+postgres@lvt-pruebas-dba-cln /etc/pgpool-II $ pcp_node_info -h 127.0.0.1 -p 9898 -U pgpool   -w
+127.0.0.1 55160 2 0.333333 up up primary primary 0 none none 2025-06-19 16:24:53
+127.0.0.1 55161 2 0.333333 up up standby standby 0 none none 2025-06-19 16:52:24
+127.0.0.1 55162 2 0.333333 up up standby standby 0 none none 2025-06-19 16:24:53
+```
+
+
+## Prueba de caida de primario 
+ ```
+# para esto se usa el bash 
+follow_master_command = '/etc/pgpool-II/follow_primary.sh %d %h %p %D %m %H %M %P %r %R %N %S'
+ ```
 
 
 ###  Comandos extras 
@@ -505,18 +576,7 @@ wd_heartbeat_port = 0    # No se enviarán "heartbeats" entre nodos Pgpool-II
 - `wd_lifecheck_user`: Usuario que ejecuta las verificaciones.  
 
 
-
--------- Reintrega un servidor a pg-pool en caso de que haya fallado y ya se haya recuperado --------
-
-# postgres2
-$ /usr/pgsql-13/bin/pg_ctl -D /data1/pgsql/13/data -m immediate stop
-$ pcp_recovery_node -h 10.0.0.163 -p 9898 -U pgpool -n 1 -w
-
-# postgres3
-$ /usr/pgsql-13/bin/pg_ctl -D /data1/pgsql/13/data -m immediate stop
-$ pcp_recovery_node -h 10.0.0.163 -p 9898 -U pgpool -n 1 -w
-
-
+ 
 
 ----------
 
