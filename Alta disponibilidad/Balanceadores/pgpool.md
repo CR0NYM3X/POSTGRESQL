@@ -133,13 +133,67 @@ vim /etc/pgpool-II-13/pgpool.conf.sample
 vim /etc/pgpool-II-13/pgpool.conf.sample-stream
 ```
 
-## **Laboratorio**
+## 🧩 Laboratorio de Alta Disponibilidad con PostgreSQL, Pgpool-II y repmgr
+
+### 🎯 Objetivo
+
+Diseñar un entorno en el que:
+
+- Se replique automáticamente el maestro en múltiples esclavos
+- Pgpool-II distribuya consultas SELECT (balanceo de lectura)
+- Repmgr maneje el failover automático al caerse el primario
+- Pgpool detecte y redirija automáticamente hacia el nuevo maestro
+
+
+
+### 🛠️ Arquitectura implementada
+
+- **1 nodo maestro:** PostgreSQL en `127.0.0.1:55160`
+- **3 nodos esclavos:** PostgreSQL en `127.0.0.1:55161`, `55162`, y `55163`
+- **Pgpool-II:** balanceador en `127.0.0.1:9999`
+- **repmgr:** para replicación y failover automático [aquí encontrara como hacerlo Manual](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Alta%20disponibilidad/Conmutaciones%20por%20Error/repmgr.md)
+
+
+
+
+### 🧪 Pruebas realizadas y resultados
+
+#### ✅ 1. Caída de esclavo (55161)
+
+- Se apagó el servicio del esclavo 1 manualmente
+- **Pgpool detectó automáticamente la caída** (`health_check` y `sr_check`)
+- Nodo se marcó como `down` y fue excluido del balanceo de lectura
+- Las consultas continuaron fluyendo hacia los demás nodos sin error
+
+#### ✅ 2. Caída del maestro (55160)
+
+- Se detuvo el servicio del maestro
+- **repmgr identificó la caída y promovió automáticamente** al esclavo 2 (55162)
+- En los logs de Pgpool:
+
+  ```
+  find_primary_node: standby node is 2
+  ```
+
+- Pgpool reconoció al nuevo maestro tras la promoción
+- El servicio continuó disponible para lecturas y escrituras
+
+
+### 📘 Próximos pasos opcionales
+
+- Configurar `Watchdog` para alta disponibilidad de Pgpool-II  
+- Integrar monitoreo con Prometheus, Zabbix o Grafana
+- Usar scripts post-promote en repmgr parametro ``promote_command`` para registrar el evento o notificar por (correo, msj, whatsapp, Discord, etc.) .
+- Exportar este playbook como documentación compartible
+
 
 ### DATAS de postgres a usar 
 ```bash
 /sysx/data16/DATANEW/data_maestro
-/sysx/data16/DATANEW/data_secundario1
-/sysx/data16/DATANEW/data_secundario2
+/sysx/data16/DATANEW/data_esclavo61
+/sysx/data16/DATANEW/data_esclavo62
+/sysx/data16/DATANEW/data_esclavo63
+
 ```
 
 
@@ -207,7 +261,7 @@ echo pgpool:$(/usr/pgpool-13/bin/pg_md5 mi_password123) >> /etc/pgpool-II/pcp.co
 
 
 ### 🔹 **Parámetros clave pgpool.conf**
-
+vim /etc/pgpool-II/pgpool.conf
 ```ini
 
 ########### Configuracion inicial ###########
@@ -287,6 +341,14 @@ backend_flag2 = 'ALLOW_TO_FAILOVER'
 backend_application_name0 = 'server2'
 
 
+backend_hostname3 = '127.0.0.1'
+backend_port3 = 55163
+backend_weight3 = 1
+#backend_data_directory0 = '/sysx/data11-3'
+backend_flag3 = 'ALLOW_TO_FAILOVER'
+backend_application_name3 = 'server3'
+
+
 ###########  - Streaming - ###########
 # Objetivo : Cuando tienes load_balance_mode = on, Pgpool reparte consultas SELECT entre las réplicas. Pero si una réplica está muy atrasada, podrías obtener datos desactualizados.Pgpool mide el retraso de replicación (en bytes) cada sr_check_period segundos. 
 Si el retraso supera el delay_threshold, deja de enviar consultas a esa réplica hasta que se ponga al día.
@@ -355,7 +417,6 @@ process_management_mode = dynamic # define cómo se gestionan los procesos hijos
 	O si usas la extensión pgpool_adm, lo haces vía SQL.
 
 ```
-
 ---- Opcion con comando pcp 
 pcp_detach_node -h localhost -U pgpool -n 0 -p 9898 -w # Marca como inactivo el nodo 0 anterior 
 pcp_promote_node -h localhost -U pgpool -n 1 -p 9898 -w # Promociona manualmente el nuevo maestro en Pgpool-II:
@@ -366,7 +427,6 @@ CREATE EXTENSION pgpool_adm;
 SELECT * FROM pcp_node_info(9898, 'pgpool', 'tu_clave', 0); # Ver los nodos 
 SELECT pcp_detach_node(9898, 'pgpool', 'tu_clave', 0); # Desconectar un nodo: 
 SELECT pcp_promote_node(9898, 'pgpool', 'tu_clave', 1); # Promover un nodo: 
-
 ```
 
 
@@ -411,7 +471,60 @@ pgpool -n
 - `-a`: Ruta al archivo de autenticación `pool_hba.conf` similar a pg_hba.conf en PostgreSQL y define cómo los clientes pueden autenticarse en Pgpool-II
 
 ```
+**[NOTA]** ->  Cuando se levanto el servicio pgpool no detecto el nodo 3 esclavo63 puerto 55163, por lo que tuvimos que agregarlo de manera manual con el ``pcp_attach_node -h 127.0.0.1 -p 9898 -U pgpool   -w -n 3`` , despues realizamos pruebas reiniciando el servicio para validar si ya lo detectaba de forma predeterminada y todo salio correctamente. 
 
+
+### 🔧 1. Crear funciones
+
+```sql
+
+-------------  1-  insertar un nuevo cliente -------------
+
+
+CREATE OR REPLACE FUNCTION insertar_cliente(p_nombre TEXT, p_email TEXT)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO clientes(nombre, email)
+    VALUES (p_nombre, p_email);
+END;
+$$ LANGUAGE plpgsql;
+
+
+SELECT insertar_cliente('Juan Pérez', 'juan.perez@example.com');
+ 
+
+------------- 2-  Función para actualizar nombre y/o email de un cliente por ID ------------- 
+
+ 
+CREATE OR REPLACE FUNCTION actualizar_cliente(p_id INT, p_nombre TEXT, p_email TEXT)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE clientes
+    SET nombre = p_nombre,
+        email = p_email
+    WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+ 
+
+ 
+SELECT actualizar_cliente(1, 'Juan P. Actualizado', 'jp.actualizado@example.com');
+ 
+
+------------- 3. Función para eliminar un cliente por ID -------------
+
+ 
+CREATE OR REPLACE FUNCTION eliminar_cliente(p_id INT)
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM clientes
+    WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+ 
+SELECT eliminar_cliente(1);
+```
+ 
 
 
 ## **Pruebas de conexion**
@@ -419,8 +532,13 @@ pgpool -n
 -- Probando conexiones , veras que el puerto variara
 psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "select current_setting('port'),* from clientes limit 1;"
 
+--- Probando que redireciona a servidor maestro
+psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT insertar_cliente('Juan Pérez', 'juan.perez@excample.com');"
+psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT actualizar_cliente(1, 'Juan P. Actualizado', 'jp.actualizado@example.com');"
+psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT eliminar_cliente(2);"
+
 ---- ver distribución de carga
-psql -h 192.168.1.10 -p 9999 -U postgres -c "SHOW POOL_NODES;"
+psql -h 127.0.0.1 -p 9999 -d test_db_master -U postgres -c "SHOW POOL_NODES;"
 
 --- Para ver **cuántas conexiones hay activas** en Pgpool-II: 
 psql -p 9999 -c "SHOW POOL_PROCESSES;"
@@ -449,7 +567,8 @@ postgres@lvt-pruebas-dba-cln /etc/pgpool-II $
 ### Pruebas de caidas 
 ```bash
 bajaremos el servicio del puerto 55161
-pg_ctl stop -D /sysx/data16/DATANEW/data_secundario1
+
+pg_ctl stop -D /sysx/data16/DATANEW/data_esclavo61
 
 # conclusion ahora que tiene configurado ALLOW_TO_FAILOVER cada nodo, la herramienta de manera automatica pudo validar que nodo estaba caido gracias a las funcionalidades de health_check, sr_check y sacar al nodo caido, despues  reinicio el pgpool  para que todo siga funcionando , se realizo una consulta de nuevo al puerto 9999 y ya respondio sin problemas, comparto el log
 
