@@ -317,36 +317,35 @@ postgres 2484680 1679705  0 15:58 pts/9    00:00:00 grep --color=auto repmgr.con
 # Insertar datos en maestro 
 psql -p 55160
 ```SQL
+create database test_db_master;
+\c test_db_master
 
--- Crear la base de datos
-CREATE DATABASE prueba_db;
-
--- conectarse a la db
-\c  prueba_db;
-
--- Crear la tabla
-CREATE TABLE usuarios (
-    id SERIAL PRIMARY KEY,  -- En PostgreSQL, usa SERIAL; en MySQL, usa AUTO_INCREMENT
-    nombre VARCHAR(50) NOT NULL,
-    edad INT NOT NULL
+-- truncate clientes RESTART IDENTITY ;  
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,  -- Identificador único autoincremental
+    nombre VARCHAR(100) NOT NULL,  -- Nombre del cliente
+    email VARCHAR(255) UNIQUE,  -- Correo electrónico único
+    fecha_registro TIMESTAMP DEFAULT NOW()  -- Fecha de registro automática
 );
+ 
 
--- Insertar algunos datos
-INSERT INTO usuarios (nombre, edad) VALUES
-('Ana', 25),
-('Carlos', 30),
-('María', 22),
-('Juan', 28);
+INSERT INTO clientes (nombre, email, fecha_registro)  
+SELECT 
+    'Cliente ' || id,  
+    'cliente' || id || '@example.com',  
+    NOW() - (id || ' days')::INTERVAL  -- Cada fecha será distinta, restando días según el ID
+FROM generate_series(1, 100) AS id;
 
-select * from usuarios;
+select * from clientes;
+
 ```
 
 ### Validar datos en los tres nodos esclavos
 ```SQL
-psql -X -p 55160 -d prueba_db -c "select * from usuarios limit 1"
-psql -X -p 55161 -d prueba_db -c "select * from usuarios limit 1"
-psql -X -p 55162 -d prueba_db -c "select * from usuarios limit 1"
-psql -X -p 55163 -d prueba_db -c "select * from usuarios limit 1"
+psql -X -p 55160 -d prueba_db -c "select * from clientes limit 1"
+psql -X -p 55161 -d prueba_db -c "select * from clientes limit 1"
+psql -X -p 55162 -d prueba_db -c "select * from clientes limit 1"
+psql -X -p 55163 -d prueba_db -c "select * from clientes limit 1"
 ```
 
 
