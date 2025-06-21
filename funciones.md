@@ -108,15 +108,16 @@ El optimizador de PostgreSQL no hace suposiciones sobre una función `VOLATILE`.
 **Ejemplo:**
 
 ```sql
-CREATE OR REPLACE FUNCTION obtener_aleatorio()
-RETURNS double precision AS $$
+CREATE FUNCTION doble(x integer)
+RETURNS integer
+IMMUTABLE
+AS $$
 BEGIN
-    RETURN random();
+  RETURN x * 2;
 END;
-$$ LANGUAGE plpgsql VOLATILE;
+$$ LANGUAGE plpgsql;
 
 -- En esta consulta, obtener_aleatorio() se ejecutará una vez por cada fila de la tabla 'productos'.
-SELECT nombre_producto, obtener_aleatorio() FROM productos;
 ```
 
 
@@ -137,19 +138,18 @@ El optimizador sabe que puede reutilizar el resultado de una función `STABLE` s
 **Ejemplo:**
 
 ```sql
-CREATE OR REPLACE FUNCTION obtener_nombre_categoria(id_categoria integer)
-RETURNS text AS $$
-DECLARE
-    nombre_cat text;
+CREATE FUNCTION dia_actual()
+RETURNS date
+STABLE
+AS $$
 BEGIN
-    SELECT nombre INTO nombre_cat FROM categorias WHERE id = id_categoria;
-    RETURN nombre_cat;
+  RETURN current_date;
 END;
-$$ LANGUAGE plpgsql STABLE;
+$$ LANGUAGE plpgsql;
 
 -- El optimizador puede llamar a obtener_nombre_categoria(1) una sola vez
 -- y reutilizar el resultado para todas las filas que cumplan la condición.
-SELECT * FROM productos WHERE obtener_nombre_categoria(categoria_id) = 'Electrónicos';
+-- Esta función no cambia dentro de una misma consulta, pero sí puede cambiar entre consultas. Hoy te devuelve un día, mañana otro. No accede a tablas, por eso no es VOLATILE, pero no puede ser IMMUTABLE porque su resultado no es fijo.
 ```
 
 
@@ -186,6 +186,7 @@ SELECT * FROM pedidos WHERE total = calcular_precio_final(100, 0.21);
 -- Creación de un índice funcional
 CREATE INDEX idx_nombre_mayusculas ON usuarios (UPPER(nombre));
 -- La función UPPER es IMMUTABLE, lo que permite esta optimización.
+-- -- Esta función siempre va a devolver el mismo resultado si le das el mismo valor. Por ejemplo, doble(4) siempre devuelve 8, sin importar qué día sea, quién la use, o en qué momento del universo se ejecute. Por eso puede marcarse como IMMUTABLE.
 ```
 
 
