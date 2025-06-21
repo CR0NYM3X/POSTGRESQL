@@ -445,6 +445,8 @@ select CLOCK_TIMESTAMP()   -- 2022-11-30 16:36:18 hora
 
 --- colocar formato a la fecha
 SELECT TO_DATE('October 09, 2012', 'Month DD, YYYY');
+SELECT TO_DATE('Jul 28, 2025', 'Mon DD, YYYY')  ;
+
 
 --- darle formato a la hora 
 SELECT TO_TIMESTAMP('10:00:00', 'HH24:MI:SS')::TIME AS formatted_time;
