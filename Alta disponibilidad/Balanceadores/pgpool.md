@@ -88,16 +88,16 @@ Con PCP puedes:
 - Consultar parámetros (`pcp_pool_status`)
 - Ver estado del watchdog (`pcp_watchdog_info`)
 
+###  ¿Es obligatorio usar PCP?
+No, pero **es muy útil** si quieres administrar Pgpool-II sin reiniciar el servicio o si estás en un entorno distribuido. Incluso puedes integrarlo con scripts o monitoreo.
 
 3. **Ejecuta comandos PCP**  
    Por ejemplo, para ver los nodos:
-   ```bash
+```bash
    pcp_node_info -h localhost -p 9898 -U admin -n 0 -w
-   ```
+```
  
-###  ¿Es obligatorio usar PCP?
 
-No, pero **es muy útil** si quieres administrar Pgpool-II sin reiniciar el servicio o si estás en un entorno distribuido. Incluso puedes integrarlo con scripts o monitoreo.
 ---
 
  ###  ¿Qué es una Virtual IP (VIP)?
@@ -133,7 +133,7 @@ vim /etc/pgpool-II-13/pgpool.conf.sample
 vim /etc/pgpool-II-13/pgpool.conf.sample-stream
 ```
 
-## 🧩 Laboratorio de Alta Disponibilidad con PostgreSQL, Pgpool-II y repmgr
+# 🧩 Laboratorio de Alta Disponibilidad con PostgreSQL, Pgpool-II y repmgr
 
 ### 🎯 Objetivo
 
@@ -151,7 +151,7 @@ Diseñar un entorno en el que:
 - **1 nodo maestro:** PostgreSQL en `127.0.0.1:55160`
 - **3 nodos esclavos:** PostgreSQL en `127.0.0.1:55161`, `55162`, y `55163`
 - **Pgpool-II:** balanceador en `127.0.0.1:9999`
-- **repmgr:** para replicación y failover automático [aquí encontrara como hacerlo Manual](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Alta%20disponibilidad/Conmutaciones%20por%20Error/repmgr.md)
+- **repmgr:** para replicación y failover automático [aquí encontrará como configurar repmgr](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Alta%20disponibilidad/Conmutaciones%20por%20Error/repmgr.md)
 
 
 
@@ -294,6 +294,7 @@ log_connections = on
 log_disconnections = on
 log_pcp_processes = on
 log_statement = on # este parametro registra las consultas en el log hay que tener cuidado ya que puede ocupar mucho espacio en   disco si es muy transacional
+log_per_node_statement = on # para ver en los logs a qué nodo se envía cada consulta
 client_min_messages = warning
 log_min_messages = warning 
 
@@ -402,6 +403,11 @@ process_management_mode = dynamic # define cómo se gestionan los procesos hijos
 	# 'static'   # (por defecto) Crea todos los procesos hijos al arrancar
 	# 'dynamic'  # Crea procesos según demanda y elimina los que sobran
 
+####### Configurar funciones en caso de necesitarlo #######
+-- como esta funcion realiza una actualizacion y despues retorna los datos entonces se coloca en el paremtro write_function_list
+write_function_list = 'consultar_clientes'
+#read_only_function_list = ''
+
 ```
 
 ---
@@ -472,17 +478,49 @@ pgpool -n
 
 ```
 **[NOTA]** ->  Cuando se levanto el servicio pgpool no detecto el nodo 3 esclavo63 puerto 55163, por lo que tuvimos que agregarlo de manera manual con el ``pcp_attach_node -h 127.0.0.1 -p 9898 -U pgpool   -w -n 3`` , despues realizamos pruebas reiniciando el servicio para validar si ya lo detectaba de forma predeterminada y todo salio correctamente. 
+----
+ 
+###  1. **Volatilidad de la función**
 
+Pgpool analiza si la función es:
+
+- `IMMUTABLE` o `STABLE` → se considera de **lectura**
+- `VOLATILE` → se considera de **escritura**
+
+
+
+###  2. **Listas explícitas en `pgpool.conf`**
+
+Puedes definir manualmente funciones como de escritura o solo lectura usando:
+
+```ini
+write_function_list = 'mi_funcion_escritura1,mi_funcion_escritura2'
+read_only_function_list = 'mi_funcion_lectura1,mi_funcion_lectura2'
+```
+
+Esto es útil si tienes funciones `VOLATILE` que en realidad no escriben, o funciones `STABLE` que sí lo hacen (por ejemplo, si usan `dblink`, `NOTIFY`, etc.).
+
+---
+
+### ⚠️ Importante
+
+Incluso un `SELECT` puede ser tratado como escritura si:
+
+- Llama a una función `VOLATILE`
+- Usa `SELECT INTO`, `FOR UPDATE`, `FOR SHARE`
+- Está dentro de una transacción explícita (`BEGIN ... COMMIT`) y ya se ejecutó una instrucción de escritura
+
+ 
 
 ### 🔧 1. Crear funciones
+Pgpool valida que las funciones que escriben en el sitema solo sean volatile de lo contrario te marcara error  "ERROR:  UPDATE is not allowed in a non-volatile function" ya que intentara ejecutarla en algun servidor esclavo que es de pura lectura 
 
 ```sql
 
 -------------  1-  insertar un nuevo cliente -------------
-
-
 CREATE OR REPLACE FUNCTION insertar_cliente(p_nombre TEXT, p_email TEXT)
-RETURNS VOID AS $$
+RETURNS VOID
+VOLATILE AS $$
 BEGIN
     INSERT INTO clientes(nombre, email)
     VALUES (p_nombre, p_email);
@@ -497,7 +535,8 @@ SELECT insertar_cliente('Juan Pérez', 'juan.perez@example.com');
 
  
 CREATE OR REPLACE FUNCTION actualizar_cliente(p_id INT, p_nombre TEXT, p_email TEXT)
-RETURNS VOID AS $$
+RETURNS VOID 
+VOLATILE AS $$
 BEGIN
     UPDATE clientes
     SET nombre = p_nombre,
@@ -515,7 +554,8 @@ SELECT actualizar_cliente(1, 'Juan P. Actualizado', 'jp.actualizado@example.com'
 
  
 CREATE OR REPLACE FUNCTION eliminar_cliente(p_id INT)
-RETURNS VOID AS $$
+RETURNS VOID 
+VOLATILE AS $$
 BEGIN
     DELETE FROM clientes
     WHERE id = p_id;
@@ -523,6 +563,29 @@ END;
 $$ LANGUAGE plpgsql;
  
 SELECT eliminar_cliente(1);
+
+
+
+------------- 4.  solo consulta -------------
+
+--- Estas son las funciones peligrosas ya que retornan resultados y tambien escriben y las cuales pueden genererar errores como
+--- ERROR:  cannot execute UPDATE in a read-only transaction
+-- DROP FUNCTION consultar_clientes();
+CREATE OR REPLACE FUNCTION consultar_clientes()
+RETURNS TABLE (
+    id INT,
+    nombre VARCHAR,
+    email VARCHAR,
+    fecha_registro TIMESTAMP
+) VOLATILE AS $$
+BEGIN
+    UPDATE clientes SET nombre = 'jajaja'  WHERE clientes.id = 1;
+	
+    RETURN QUERY     SELECT *     FROM clientes as a ;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM consultar_clientes();
 ```
  
 
@@ -533,9 +596,12 @@ SELECT eliminar_cliente(1);
 psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "select current_setting('port'),* from clientes limit 1;"
 
 --- Probando que redireciona a servidor maestro
-psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT insertar_cliente('Juan Pérez', 'juan.perez@excample.com');"
-psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT actualizar_cliente(1, 'Juan P. Actualizado', 'jp.actualizado@example.com');"
-psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT eliminar_cliente(2);"
+psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT current_setting('port'),* from insertar_cliente('Juan Pérez', 'juan.perez@excample.com');"
+psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT current_setting('port'),* from actualizar_cliente(1, 'Juan P. Actualizado', 'jp.actualizado@example.com');"
+psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT current_setting('port'),* from eliminar_cliente(2);"
+psql -h 127.0.0.1 -p 9999 -U postgres  -d test_db_master -c "SELECT current_setting('port'),* FROM consultar_clientes() limit 1;"
+
+
 
 ---- ver distribución de carga
 psql -h 127.0.0.1 -p 9999 -d test_db_master -U postgres -c "SHOW POOL_NODES;"
@@ -558,9 +624,6 @@ postgres@lvt-pruebas-dba /etc/pgpool-II $ pcp_node_info -h 127.0.0.1 -p 9898 -U 
 Password:
 127.0.0.1 55160 2 0.333333 up up primary primary 0 none none 2025-06-19 15:46:05
 postgres@lvt-pruebas-dba-cln /etc/pgpool-II $
-
-
-
 ```
 
 
