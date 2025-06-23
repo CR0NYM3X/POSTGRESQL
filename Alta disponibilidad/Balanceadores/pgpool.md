@@ -312,10 +312,10 @@ log_rotation_age = 1d
 ########### Desactivar failover ###########
 # Objetivo :  - Evita cualquier intento de cambiar roles entre servidores. y se enfocará exclusivamente en distribuir carga.
 
-auto_failback = off # Evita la recuperación automática de nodos
+auto_failback = off #  Cuando un nodo (por ejemplo, una réplica) falla y luego vuelve a estar disponible, auto_failback permite que Pgpool-II lo reintegre automáticamente al clúster sin intervención manual.
 failover_command = '' # Desactiva el failover automático, en caso de necesitarlo -> failover_command = '/etc/pgpool-II/failover.sh %d %H %P %R'
-follow_primary_command = '' Desactiva indicarle los esclavos seguir a los primario , en caso de necesitarlo -> follow_primary_command = '/etc/pgpool-II/follow_primary.sh %d %H %P %R'
-
+follow_primary_command = '' # Desactiva indicarle los esclavos seguir a los primario , en caso de necesitarlo -> follow_primary_command = '/etc/pgpool-II/follow_primary.sh %d %H %P %R'
+failback_command = '' # se ejecuta cuando un nodo vuelve a estar disponible despues de una falla , en caso de ser necesario puede usar failback_command = '/etc/pgpool-II/failback.sh'
 
 
 
@@ -371,7 +371,6 @@ delay_threshold = 10240 # Este valor (en KB) define el umbral de retraso aceptab
 ###########  - Monitoreo de nodos postgresql - ###########
 # Objetivo : permite detectar si alguno de los nodos PostgreSQL se ha caído o está inaccesible, y así evitar enviarle consultas.
 
-
 health_check_period = 10               # Intervalo (segundos) entre cada verificación de salud de los backends
 health_check_timeout = 5               # Tiempo máximo (segundos) para que la conexión responda antes de considerarla fallida
 health_check_user = 'pgpool_monitor'           # Usuario que Pgpool usará para conectarse al backend y hacer el health check
@@ -417,6 +416,15 @@ write_function_list = 'consultar_clientes'
 
 # Parametro extra en caso de requerirse 
 # primary_routing_query_pattern_list = '.*pg_stat_activity.*' # permite forzar que ciertas consultas vayan siempre al nodo primario. Cuando tienes consultas que, aunque parezcan de solo lectura, dependen de datos muy recientes o usan funciones que requieren consistencia total, puedes definir patrones (regex) para que esas consultas no se balanceen.
+
+
+### Estos parametros requieren que este on el parámetro auto_failback 
+recovery_user = 'postgres' #  usuario que se l usará para conectarse al nodo maestro durante el proceso de recuperación de un nodo caído
+recovery_password = 'tu_password' # Es la contraseña del usuario definido en recovery_user
+# recovery_1st_stage.sample
+recovery_1st_stage_command = 'replication_mode_recovery_1st_stage'
+recovery_2nd_stage_command = 'replication_mode_recovery_2nd_stage'
+
 
 
 
