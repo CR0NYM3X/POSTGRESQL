@@ -554,8 +554,11 @@ https://www.postgresql.org/docs/current/contrib-dblink-function.html
 ```
 
 ### BIBLIOGRAFIAS:
-[Documentación Oficial FDW](https://www.postgresql.org/docs/current/sql-createforeigndatawrapper.html) <br>
-https://www.postgresql.fastware.com/postgresql-insider-fdw-ove <br>
-[FDW English #1](https://dbsguru.com/steps-to-setup-a-foreign-data-wrapperpostgres_fdw-in-postgresql)<br>
-[FDW English #2](https://towardsdatascience.com/how-to-set-up-a-foreign-data-wrapper-in-postgresql-ebec152827f3)<br>
-[FDW Español](https://blogvisionarios.com/articulos-data/virtualizacion-datos-postgresql-foreign-data-wrappers/)
+```
+[Documentación Oficial FDW](https://www.postgresql.org/docs/current/sql-createforeigndatawrapper.html)  
+https://www.postgresql.fastware.com/postgresql-insider-fdw-ove  
+[FDW English #1](https://dbsguru.com/steps-to-setup-a-foreign-data-wrapperpostgres_fdw-in-postgresql) 
+[FDW English #2](https://towardsdatascience.com/how-to-set-up-a-foreign-data-wrapper-in-postgresql-ebec152827f3) 
+[FDW Español](https://blogvisionarios.com/articulos-data/virtualizacion-datos-postgresql-foreign-data-wrappers/) 
+ mysql_fdw https://dbsguru.com/access-mysql-database-from-postgresql-using-mysql-foreign-data-wrapper-mysql_fdw/
+```
