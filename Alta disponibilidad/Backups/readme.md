@@ -193,6 +193,7 @@ Ahora, **PostgreSQL 17** permite hacer **respaldos incrementales directamente co
 
 ## Bibliografía 
 ```
+https://dbsguru.com/physical-postgresql-backup/
 https://www.mafiree.com/readBlog/incremental-backup-in-postgresql-17
 https://www.mydbops.com/blog/postgresql-17-incremental-backup-pg-basebackup-pg-combinebackup
 ```
