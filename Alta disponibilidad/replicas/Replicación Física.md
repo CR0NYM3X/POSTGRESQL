@@ -10,11 +10,14 @@ Esta replicación se basa en la copia de los archivos de datos binarios (WAL - W
 ### Archivos que se usan en replica
 ```sql
 1. **`standby.signal`**:
-    - Es un marcador que le indica a PostgreSQL que debe operar en modo standby, es decir, como una réplica de solo lectura que recibe datos desde un servidor primario. Sustituye el antiguo recovery.conf → En versiones anteriores de PostgreSQL (antes de v12), se usaba recovery.conf. Ahora, simplemente la presencia de standby.signal activa el modo réplica.
+    - Se usa un archivo vacío llamado standby.signal para indicar que el nodo debe arrancar como réplica/Esclavo/Secundario
 
 2. **`postgresql.auto.conf`**:
     - Ahora contiene los parámetros de recuperación.
     - Los cambios se realizan en este archivo, no en `recovery.conf`.
+
+3. **recovery.conf**
+    - El archivo recovery.conf fue eliminado a partir de PostgreSQL 12. Hasta la versión 11, este archivo era esencial para configurar los parametros "primary_conninfo y standby_mode = on " entre otros  
 ```
 
 # Ejemplo de replica striming
@@ -155,7 +158,7 @@ pg_basebackup -h 127.0.0.1 -U user_replicador -p 55161 -D /sysx/data16/DATANEW/d
 - **`-S replica_slot`** → Asigna el nombre `replica_slot` al **slot de replicación**.
 - **`-Fp`** → Usa el formato **"plain"**, lo que significa que la copia mantiene la estructura original de los archivos, en lugar de generar un solo archivo comprimido.
 - **`-P`** → Muestra un indicador de progreso mientras se ejecuta el proceso de copia.
-- **`-R`** → Genera el archivo `recovery.conf o standby.signal`, necesario para que el servidor secundario funcione como réplica.
+- **`-R`** → Genera el archivo `(recovery.conf - NOTA fue eliminado a partir de PostgreSQL 12) o postgresql.auto.conf`, necesario para que el servidor secundario funcione como réplica.
 - **`-v`** → Activa el modo **verbose**, mostrando mensajes detallados sobre el proceso de copia.
 
 ```
