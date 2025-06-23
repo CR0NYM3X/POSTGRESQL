@@ -1,4 +1,21 @@
  
+---
+
+# **ISO/IEC 9075** 
+
+El estándar de SQL más ampliamente reconocido es el **SQL ANSI (American National Standards Institute)**, también conocido como **ISO/IEC 9075**. Este conjunto de normas define cómo debe funcionar el lenguaje de consulta estructurado (SQL) para asegurar interoperabilidad entre diferentes sistemas de bases de datos.
+
+Desde su primera versión en 1986, el estándar ha evolucionado con múltiples actualizaciones importantes, como:
+- **SQL-92**: estableció muchas de las características básicas que hoy son comunes.
+- **SQL:1999 (SQL3)**: introdujo programación orientada a objetos, expresiones recursivas y más.
+- **SQL:2003**: incluyó XML y secuencias.
+- **SQL:2008** y **SQL:2011**: añadieron soporte para funciones como `TRUNCATE`, mejoras a tipos de datos y nuevas expresiones.
+- **SQL:2016** y versiones más recientes: integraron soporte para JSON, funciones analíticas mejoradas y otras modernizaciones.
+
+Aunque muchos sistemas como MySQL, PostgreSQL, SQL Server y Oracle implementan partes del estándar, **cada uno tiene extensiones propias** que pueden no ser compatibles entre sí.
+
+--- 
+ 
 
 
 ### Archivos de configuración 
