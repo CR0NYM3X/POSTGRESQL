@@ -285,6 +285,9 @@ pcp_port = 9898
 pcp_socket_dir = '/etc/pgpool-II/info'
 
 
+search_primary_node_timeout = 5min # Define cuánto tiempo Pgpool espera mientras busca un nuevo nodo primario tras un failover.  Evita que Pgpool se quede esperando indefinidamente si no encuentra un primario válido. Por defecto: 5min.
+detach_false_primary = on # Reduce el riesgo de split-brain cuando esta en (on), hace que Pgpool desconecte automáticamente un nodo que cree ser primario pero no lo es realmente (por ejemplo, si quedó desincronizado tras un failover). Evita que un nodo "zombi" que cree ser primario reciba escrituras y cause corrupción.
+
 ########### Configuracion Log ###########
 
 logdir = '/etc/pgpool-II/info/'
@@ -309,8 +312,12 @@ log_rotation_age = 1d
 ########### Desactivar failover ###########
 # Objetivo :  - Evita cualquier intento de cambiar roles entre servidores. y se enfocará exclusivamente en distribuir carga.
 
-failover_command = '' # Desactiva el failover automático
 auto_failback = off # Evita la recuperación automática de nodos
+failover_command = '' # Desactiva el failover automático, en caso de necesitarlo -> failover_command = '/etc/pgpool-II/failover.sh %d %H %P %R'
+follow_primary_command = '' Desactiva indicarle los esclavos seguir a los primario , en caso de necesitarlo -> follow_primary_command = '/etc/pgpool-II/follow_primary.sh %d %H %P %R'
+
+
+
 
 
 
@@ -407,6 +414,11 @@ process_management_mode = dynamic # define cómo se gestionan los procesos hijos
 -- como esta funcion realiza una actualizacion y despues retorna los datos entonces se coloca en el paremtro write_function_list
 write_function_list = 'consultar_clientes'
 #read_only_function_list = ''
+
+# Parametro extra en caso de requerirse 
+# primary_routing_query_pattern_list = '.*pg_stat_activity.*' # permite forzar que ciertas consultas vayan siempre al nodo primario. Cuando tienes consultas que, aunque parezcan de solo lectura, dependen de datos muy recientes o usan funciones que requieren consistencia total, puedes definir patrones (regex) para que esas consultas no se balanceen.
+
+
 
 ```
 
