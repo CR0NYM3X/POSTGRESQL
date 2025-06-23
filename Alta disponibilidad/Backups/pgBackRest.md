@@ -8,6 +8,7 @@
    - **Gestión de múltiples repositorios**
 
  ```
+https://pgbackrest.org/
 https://dbsguru.com/setup-streaming-replication-with-pgbackrest-in-postgresql/
 https://dev.to/hujan/pgbackrest-configuration-from-standby-database-iho
 https://www.ashnik.com/whitepaper/postgresql/step-by-step-guide-to-pgbackrest-secure-and-optimize-your-postgresql-data/
