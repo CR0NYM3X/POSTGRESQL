@@ -139,6 +139,10 @@ Crear el slot es **opcional** ya que al usar pg_basebackup lo crea automaticamen
 
 pg_basebackup -h 127.0.0.1 -U user_replicador -p 55161 -D /sysx/data16/DATANEW/data_secundario -c fast -X stream -C -S replica_slot -Fp -R -P
 
+-- Es lo mismo que la linea de arriba pero con los nombres de los parámetros
+-- pg_basebackup --host=127.0.0.1 --username=user_replicador --port=55161 --pgdata=/sysx/data16/DATANEW/data_secundario --checkpoint=fast --wal-method=stream  --create-slot --slot=replica_slot  --format=p --write-recovery-conf --progress --no-password
+
+
 ### Parámetros:
 - **`pg_basebackup`** → Herramienta de PostgreSQL para hacer una copia de seguridad del servidor primario.
 - **`-h 127.0.0.1`** → Se conecta al servidor local (`localhost`), lo que indica que el backup se realiza en la misma máquina.
