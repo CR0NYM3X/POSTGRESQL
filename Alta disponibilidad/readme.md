@@ -141,6 +141,7 @@ se veran temas :
 - Distribución de carga 
  ETc 
 
+High Available PostgreSQL Cluster Arhitecture [PostgreSQL + Patroni |  HAProxy + Keepalived |  pgBackRest ] - https://ozwizard.medium.com/high-available-postgresql-cluster-arhitecture-c405c00c8c71 <br>
 https://github.com/kashifmeo/postgreSQL/blob/main/postgreSQLPatroniCluster <br>
 https://www.youtube.com/watch?v=qpxKlH7DBjU&list=PLBrWqg4Ny6vVwwrxjgEtJgdreMVbWkBz0 <br>
 https://www.youtube.com/results?search_query=high+availability+postgresql <br>
