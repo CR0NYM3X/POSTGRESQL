@@ -418,12 +418,13 @@ write_function_list = 'consultar_clientes'
 # primary_routing_query_pattern_list = '.*pg_stat_activity.*' # permite forzar que ciertas consultas vayan siempre al nodo primario. Cuando tienes consultas que, aunque parezcan de solo lectura, dependen de datos muy recientes o usan funciones que requieren consistencia total, puedes definir patrones (regex) para que esas consultas no se balanceen.
 
 
-### Estos parametros requieren que este on el parámetro auto_failback 
-recovery_user = 'postgres' #  usuario que se l usará para conectarse al nodo maestro durante el proceso de recuperación de un nodo caído
-recovery_password = 'tu_password' # Es la contraseña del usuario definido en recovery_user
+### Estos parametros no se configuran pero se deja como ejemplo en caso que se  requieran
+#recovery_user = 'postgres' #  usuario que se l usará para conectarse al nodo maestro durante el proceso de recuperación de un nodo caído
+#recovery_password = 'tu_password' # Es la contraseña del usuario definido en recovery_user
 # recovery_1st_stage.sample
-recovery_1st_stage_command = 'replication_mode_recovery_1st_stage'
-recovery_2nd_stage_command = 'replication_mode_recovery_2nd_stage'
+#recovery_1st_stage_command = 'recovery_1st_stage.sh' # se ejecuta en la primera etapa del proceso de recuperación de un nodo.repara el nodo que se va a reintegrar. 
+#recovery_2nd_stage_command = 'recovery_2nd_stage.sh' # se ejecuta en la segunda etapa del proceso de recuperación. Este script finaliza la recuperación.   
+
 
 
 
