@@ -164,63 +164,96 @@ Incluye:
 - Escenarios de crisis y respuestas planificadas
 
 
---- 
 
-# Lograr un **99.999% de disponibilidad** 
-(también conocido como “five nines”) en PostgreSQL no es magia, sino el resultado de una arquitectura cuidadosamente diseñada para minimizar cualquier punto único de falla. Aquí te explico cómo se consigue:
+---
 
-### 1. **Redundancia total**
-Se implementan múltiples nodos (servidores) que contienen réplicas exactas de la base de datos. Si uno falla, otro toma el control sin interrumpir el servicio.
+# Diponibilidad 
 
-### 2. **Replicación en tiempo real**
-PostgreSQL permite replicación **síncrona** o **asíncrona**. En la síncrona, los datos se escriben en el nodo principal y en al menos un nodo secundario antes de confirmar la transacción, asegurando consistencia.
+###   **¿Por qué es importante medir la disponibilidad?**
 
-### 3. **Failover automático**
-Herramientas como **Patroni**, **repmgr** o soluciones en la nube detectan fallos y promueven automáticamente un nodo secundario a primario, sin intervención humana.
+Porque la **disponibilidad refleja de forma directa la confiabilidad real de tus servicios**. Conocer este dato te permite:
 
-### 4. **Balanceadores de carga**
-Se usan herramientas como **HAProxy** o **PgBouncer** para redirigir el tráfico a nodos disponibles, evitando interrupciones visibles para el usuario.
+- **Cumplir con los SLAs (acuerdos de nivel de servicio)** prometidos a clientes o usuarios internos.
+- **Tomar decisiones objetivas** sobre cuándo necesitas invertir en réplicas, balanceo, failover o mejoras de infraestructura.
+- **Justificar el presupuesto** y el valor del área de TI: si puedes demostrar una disponibilidad del 99.98 %, estás protegiendo ingresos, productividad y reputación.
+- **Simular escenarios de falla o mejora**, usando MTBF/MTTR, para reducir tiempos de recuperación o aumentar el tiempo entre fallos.
+- **Prepararte para auditorías o certificaciones** de calidad y continuidad operativa.
 
-### 5. **Monitoreo y alertas proactivas**
-Sistemas como **Prometheus + Grafana** permiten detectar anomalías antes de que se conviertan en fallos graves.
-
-### 6. **Backups consistentes y recuperación rápida**
-Se implementan copias de seguridad automáticas con recuperación a un punto en el tiempo (PITR), para restaurar el sistema rápidamente ante errores humanos o corrupción de datos.
-
-### 7. **Infraestructura distribuida**
-En entornos más avanzados, se despliegan nodos en **zonas de disponibilidad distintas** o incluso en **regiones geográficas separadas**, para resistir desastres naturales o cortes de energía.
-
-
-
-# Calcular el **porcentaje real de disponibilidad** de tus servidores 
-Servidores en producción con alta disponibilidad (HA), necesitas medir el tiempo total que el sistema estuvo disponible frente al tiempo total esperado de operación. Aquí te explico cómo hacerlo paso a paso:
-
-###  Fórmula básica
-```plaintext
-Disponibilidad (%) = [(Tiempo total - Tiempo de inactividad) / Tiempo total] × 100
-```
-
-Por ejemplo, si en un mes (30 días = 43,200 minutos) tuviste 5 minutos de caída:
-
-```plaintext
-Disponibilidad = [(43200 - 5) / 43200] × 100 ≈ 99.988%
-```
 
 ###  Cómo obtener esos datos en la práctica
 
 1. **Monitoreo de uptime**: Usa herramientas como Prometheus, Zabbix, Nagios o Datadog para registrar el tiempo de actividad e inactividad de tus servicios.
 2. **Logs de eventos y alertas**: Revisa los registros de failover, caídas de red, reinicios inesperados, etc.
-3. **SLA y reportes automáticos**: Muchas plataformas generan reportes mensuales de disponibilidad. Si usas Kubernetes, por ejemplo, puedes combinar métricas de `kube-state-metrics` con Prometheus para obtener datos precisos.
+3. **SLA y reportes automáticos**: Mediante un proveedor que exige un SLA. Muchas plataformas generan reportes mensuales de disponibilidad. 
 4. **Dashboards**: Grafana es ideal para visualizar la disponibilidad en tiempo real y generar históricos.
 
 ###  Consejo extra
 Si ya tienes HA implementado, asegúrate de que tus herramientas de monitoreo estén midiendo la **disponibilidad del servicio final**, no solo la del nodo principal. A veces un nodo falla pero el sistema sigue funcionando gracias al failover, y eso **no debería contar como caída**.
+
+
+
+### Fórmula 1 (MTBF y MTTR): 
+
+Cuando usarlo: Para planificar, hacer simulaciones predictivas, justificar inversiones o diseñar alta disponibilidad, Explicar el impacto de la confiabilidad del sistema a áreas no técnicas, usa la fórmula con MTBF/MTTR.
+
+- **MTBF (Mean Time Between Failures)** = cuánto tiempo un sistema duro funcionando correctamente antes de fallar.
+- **MTTR (Mean Time To Repair)** = cuánto tiempo tarda en recuperarse un sistema después de una falla.
+
+ 
+$$ 
+\text{Disponibilidad} = \frac{\text{MTBF}}{\text{MTBF} + \text{MTTR}}
+$$ 
+
+- **Unidad:** también tiempo (minutos, horas, etc.), pero nuevamente, ambas deben estar en la **misma unidad**.  
+- El resultado es un **número decimal** entre 0 y 1 (o lo puedes multiplicar por 100 para convertirlo en porcentaje).
+
+**Ejemplo:**  
+MTBF = 1000 horas, MTTR = 1 hora:
+
+$$ 
+\frac{1000}{1000 + 1} = 0.999 \Rightarrow 99.9\%
+$$ 
+
+
+### Fórmula 2:  
+
+Cuando usarlo : Para evaluar tu desempeño actual real si ya conoces la duración exacta de interrupciones en un periodo (mes, año, semana) usa la fórmula basada en tiempo de inactividad
+
+
+$$ 
+\text{Disponibilidad (\%)} = \left( \frac{\text{Tiempo total} - \text{Tiempo inactivo}}{\text{Tiempo total}} \right) \times 100
+$$ 
+
+- **Unidad:** _tiempo_ (puede ser minutos, horas, días, etc.)  
+- Lo importante es usar **la misma unidad** tanto en el numerador como en el denominador.  
+- El resultado final es un **porcentaje (%)**.
+
+**Ejemplo:**  
+Si el mes tiene 43,200 minutos y hubo 30 minutos de caída:
+
+$$ 
+\left( \frac{43200 - 30}{43200} \right) \times 100 = 99.93\%
+$$ 
+
+
+
+ 
+---
+
+
+
+
+ 
+
+
+
 
 ### **Consideraciones para Réplicas:**
 
     * **Objetivo de Nivel de Servicio (SLO):** Define qué nivel de disponibilidad esperas para tu servicio de PostgreSQL. Por ejemplo, "99.9% de disponibilidad para la escritura y 99.99% para la lectura."
     * **Failover y Switchover:** Cuando ocurre un failover (cambio automático de primaria) o un switchover (cambio manual), habrá un período breve de indisponibilidad para la primaria original y/o para el clúster mientras se reconfigura. Tu sistema de monitoreo debe poder registrar estos eventos y el tiempo de inactividad asociado.
     * **Retraso de Replicación (Replication Lag):** Aunque un servidor esté "arriba", si su replicación está muy atrasada, podría considerarse "no disponible" para ciertas operaciones que requieren datos actualizados. Puedes monitorear `pg_stat_replication` (por ejemplo, `write_lag`, `flush_lag`, `replay_lag`) para esto y definir umbrales.
+
  
  
  
