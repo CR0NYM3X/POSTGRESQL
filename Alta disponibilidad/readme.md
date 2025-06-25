@@ -216,7 +216,13 @@ Disponibilidad = [(43200 - 5) / 43200] × 100 ≈ 99.988%
 ###  Consejo extra
 Si ya tienes HA implementado, asegúrate de que tus herramientas de monitoreo estén midiendo la **disponibilidad del servicio final**, no solo la del nodo principal. A veces un nodo falla pero el sistema sigue funcionando gracias al failover, y eso **no debería contar como caída**.
 
+### **Consideraciones para Réplicas:**
 
+    * **Objetivo de Nivel de Servicio (SLO):** Define qué nivel de disponibilidad esperas para tu servicio de PostgreSQL. Por ejemplo, "99.9% de disponibilidad para la escritura y 99.99% para la lectura."
+    * **Failover y Switchover:** Cuando ocurre un failover (cambio automático de primaria) o un switchover (cambio manual), habrá un período breve de indisponibilidad para la primaria original y/o para el clúster mientras se reconfigura. Tu sistema de monitoreo debe poder registrar estos eventos y el tiempo de inactividad asociado.
+    * **Retraso de Replicación (Replication Lag):** Aunque un servidor esté "arriba", si su replicación está muy atrasada, podría considerarse "no disponible" para ciertas operaciones que requieren datos actualizados. Puedes monitorear `pg_stat_replication` (por ejemplo, `write_lag`, `flush_lag`, `replay_lag`) para esto y definir umbrales.
+ 
+ 
  
 
 se veran temas : 
