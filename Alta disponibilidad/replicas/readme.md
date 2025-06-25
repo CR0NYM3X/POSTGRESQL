@@ -1,3 +1,21 @@
+
+
+
+Reestructuración esta carpeta 
+
+*** Replica ***
+- Conceptos clave.
+- Evaluación de Resiliencia y Desempeño de Réplicas
+- Herramientas.
+- Parámetros para replicas (Pre-Replica).
+- Monitoreo de Replicas (Post-Replica).
+- Topologias.
+- Preguntas.
+- Buenas practicas.
+
+
+
+
  
 ## 🎯 ¿Para qué sirve hacer réplicas en PostgreSQL?
 
