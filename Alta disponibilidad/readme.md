@@ -42,6 +42,40 @@ Incluye:
 - Recuperación de servidores y redes
 - Procedimientos técnicos para volver a operar
 
+
+---
+
+### 🧭 ¿Para qué sirve la documentación de un DRP?
+La documentación de un **DRP (Disaster Recovery Plan)** es una herramienta esencial para garantizar la **resiliencia tecnológica** de una organización. Tener el DRP documentado no solo es una buena práctica, sino que puede **salvar tu operación** cuando todo lo demás falla. ¿Quieres que te ayude a armar una plantilla básica o revisar si tu documentación cubre lo esencial?
+
+1. **Establece procedimientos claros** para recuperar sistemas críticos tras un desastre (fallo de hardware, ciberataque, incendio, etc.).
+2. **Minimiza el tiempo de inactividad** y la pérdida de datos.
+3. **Asigna responsabilidades**: quién hace qué, cuándo y cómo.
+4. **Facilita auditorías y cumplimiento normativo** (por ejemplo, ISO 27001, PCI-DSS).
+5. **Sirve como guía de entrenamiento** para nuevos miembros del equipo de TI o seguridad.
+
+
+
+### 🧪 Escenarios donde es útil
+
+- **Caída de servidores o bases de datos**: el DRP indica cómo restaurar servicios desde respaldos o sitios alternos.
+- **Ataques de ransomware**: define cómo aislar sistemas, restaurar datos y comunicar el incidente.
+- **Errores humanos o fallos de software**: permite revertir cambios o recuperar versiones anteriores.
+- **Desastres naturales**: si tu centro de datos queda inutilizado, el DRP detalla cómo operar desde una ubicación secundaria.
+
+
+### 📚 ¿Qué debe incluir la documentación?
+
+- Inventario de sistemas críticos.
+- Procedimientos de respaldo y restauración.
+- Contactos de emergencia.
+- Planes de comunicación interna y externa.
+- Cronogramas de recuperación (RTO/RPO).
+- Resultados de pruebas y simulacros.
+
+---
+
+
 ---
 
 ## 🕒 ¿Qué es RPO y RTO?
