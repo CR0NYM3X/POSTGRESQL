@@ -359,7 +359,7 @@ backend_application_name3 = 'server3'
 
 ###########  - Streaming - ###########
 # Objetivo : Cuando tienes load_balance_mode = on, Pgpool reparte consultas SELECT entre las réplicas. Pero si una réplica está muy atrasada, podrías obtener datos desactualizados.Pgpool mide el retraso de replicación (en bytes) cada sr_check_period segundos. 
-Si el retraso supera el delay_threshold, deja de enviar consultas a esa réplica hasta que se ponga al día.
+Si el retraso supera el delay_threshold, deja de enviar consultas, desactivandolo del balanceo de carga. las replicas deben estar sincronizadas con el nodo primario para no tener inconsistencia de datos 
 
 sr_check_period = 5 # Verifica el retraso de replicación (WAL lag) entre el nodo primario y los nodos standby.
 sr_check_user = 'pgpool_monitor' # usuario que usará para conectarse a los nodos y hacer la verificación.
