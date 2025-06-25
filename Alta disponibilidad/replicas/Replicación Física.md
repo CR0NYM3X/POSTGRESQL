@@ -140,10 +140,10 @@ Crear el slot es **opcional** ya que al usar pg_basebackup lo crea automaticamen
 ```SQL
 --nohup  &
 
-pg_basebackup -h 127.0.0.1 -U user_replicador -p 55161 -D /sysx/data16/DATANEW/data_secundario -c fast -X stream -C -S replica_slot -Fp -R -P
+pg_basebackup -h 127.0.0.1 -U user_replicador -p 55161 -D /sysx/data16/DATANEW/data_secundario -c fast -X stream -C -S replica_slot -Fp -R -P --manifest-checksums=SHA256 --manifest-force-encode
 
 -- Es lo mismo que la linea de arriba pero con los nombres de los parámetros
--- pg_basebackup --host=127.0.0.1 --username=user_replicador --port=55161 --pgdata=/sysx/data16/DATANEW/data_secundario --checkpoint=fast --wal-method=stream  --create-slot --slot=replica_slot  --format=p --write-recovery-conf --progress --no-password
+# pg_basebackup --host=127.0.0.1 --username=user_replicador --port=55161 --pgdata=/sysx/data16/DATANEW/data_secundario --checkpoint=fast --wal-method=stream  --create-slot --slot=replica_slot  --format=p --write-recovery-conf --progress --no-password --manifest-checksums=SHA256 --manifest-force-encode
 
 
 ### Parámetros:
@@ -160,6 +160,9 @@ pg_basebackup -h 127.0.0.1 -U user_replicador -p 55161 -D /sysx/data16/DATANEW/d
 - **`-P`** → Muestra un indicador de progreso mientras se ejecuta el proceso de copia.
 - **`-R`** → Genera el archivo `(recovery.conf - NOTA fue eliminado a partir de PostgreSQL 12) o postgresql.auto.conf`, necesario para que el servidor secundario funcione como réplica.
 - **`-v`** → Activa el modo **verbose**, mostrando mensajes detallados sobre el proceso de copia.
+--manifest-checksums : define qué algoritmo de checksum se usará para calcular la integridad de cada archivo listado en el manifiesto.
+--manifest-force-encode :  fuerza a que todos los nombres de archivo en el manifiesto se codifiquen en hexadecimal, incluso si no contienen caracteres especiales. Evita problemas si los nombres de archivo contienen caracteres no ASCII o raros.
+
 
 ```
 
