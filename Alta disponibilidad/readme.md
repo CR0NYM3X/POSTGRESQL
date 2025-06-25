@@ -163,6 +163,60 @@ Incluye:
 - Protocolos de comunicación interna y externa
 - Escenarios de crisis y respuestas planificadas
 
+
+--- 
+
+# Lograr un **99.999% de disponibilidad** 
+(también conocido como “five nines”) en PostgreSQL no es magia, sino el resultado de una arquitectura cuidadosamente diseñada para minimizar cualquier punto único de falla. Aquí te explico cómo se consigue:
+
+### 1. **Redundancia total**
+Se implementan múltiples nodos (servidores) que contienen réplicas exactas de la base de datos. Si uno falla, otro toma el control sin interrumpir el servicio.
+
+### 2. **Replicación en tiempo real**
+PostgreSQL permite replicación **síncrona** o **asíncrona**. En la síncrona, los datos se escriben en el nodo principal y en al menos un nodo secundario antes de confirmar la transacción, asegurando consistencia.
+
+### 3. **Failover automático**
+Herramientas como **Patroni**, **repmgr** o soluciones en la nube detectan fallos y promueven automáticamente un nodo secundario a primario, sin intervención humana.
+
+### 4. **Balanceadores de carga**
+Se usan herramientas como **HAProxy** o **PgBouncer** para redirigir el tráfico a nodos disponibles, evitando interrupciones visibles para el usuario.
+
+### 5. **Monitoreo y alertas proactivas**
+Sistemas como **Prometheus + Grafana** permiten detectar anomalías antes de que se conviertan en fallos graves.
+
+### 6. **Backups consistentes y recuperación rápida**
+Se implementan copias de seguridad automáticas con recuperación a un punto en el tiempo (PITR), para restaurar el sistema rápidamente ante errores humanos o corrupción de datos.
+
+### 7. **Infraestructura distribuida**
+En entornos más avanzados, se despliegan nodos en **zonas de disponibilidad distintas** o incluso en **regiones geográficas separadas**, para resistir desastres naturales o cortes de energía.
+
+
+
+# Calcular el **porcentaje real de disponibilidad** de tus servidores 
+Servidores en producción con alta disponibilidad (HA), necesitas medir el tiempo total que el sistema estuvo disponible frente al tiempo total esperado de operación. Aquí te explico cómo hacerlo paso a paso:
+
+###  Fórmula básica
+```plaintext
+Disponibilidad (%) = [(Tiempo total - Tiempo de inactividad) / Tiempo total] × 100
+```
+
+Por ejemplo, si en un mes (30 días = 43,200 minutos) tuviste 5 minutos de caída:
+
+```plaintext
+Disponibilidad = [(43200 - 5) / 43200] × 100 ≈ 99.988%
+```
+
+###  Cómo obtener esos datos en la práctica
+
+1. **Monitoreo de uptime**: Usa herramientas como Prometheus, Zabbix, Nagios o Datadog para registrar el tiempo de actividad e inactividad de tus servicios.
+2. **Logs de eventos y alertas**: Revisa los registros de failover, caídas de red, reinicios inesperados, etc.
+3. **SLA y reportes automáticos**: Muchas plataformas generan reportes mensuales de disponibilidad. Si usas Kubernetes, por ejemplo, puedes combinar métricas de `kube-state-metrics` con Prometheus para obtener datos precisos.
+4. **Dashboards**: Grafana es ideal para visualizar la disponibilidad en tiempo real y generar históricos.
+
+###  Consejo extra
+Si ya tienes HA implementado, asegúrate de que tus herramientas de monitoreo estén midiendo la **disponibilidad del servicio final**, no solo la del nodo principal. A veces un nodo falla pero el sistema sigue funcionando gracias al failover, y eso **no debería contar como caída**.
+
+
  
 
 se veran temas : 
