@@ -440,19 +440,20 @@ SSL-Session:
 
 ## **Identificar el Certificado Raíz (Root CA):**
 - Si `Issuer` y `Subject` son iguales, es el **certificado raíz (root.crt)**.
+- Tiene la extensión **CA:TRUE**:
 - Ejecuta este comando para cada `.crt`:
 - **comando:**  openssl x509 -in /tmp/pki/CA/root.crt -text -noout | grep -E "Issuer:|Subject:"
 	 
 	 
-## **Identificar el Certificado Intermedio (si existe):**
+## **Identificar el Certificado Intermedio (en caso de que exista y no sabes cual es):**
    - El `Issuer` y `Subject` son diferentes, y su `Issuer` coincidirá con el `Subject` del root CA.
-   - Tiene la extensión **CA:TRUE**:
-   - **comando:** openssl x509 -in /tmp/pki/CA/intermediate.crt -text -noout | grep -E "CA:TRUE|Issuer:|Subject:"
+   - Tiene la extensión **CA:FALSE**:
+   - **comando:** openssl x509 -in /tmp/pki/CA/intermediate.crt -text -noout | grep -E "CA:|Issuer:|Subject:"
  
 
 
 ## **Identificar el Certificado del server.crt o client.crt:**
-- Verifica si su `Issuer` coincide con el `Subject` de otro certificado (el *intermediate.crt* el root.crt, si existe).
+- Verifica si su `Issuer` coincide con el `Subject` de otro certificado (el *intermediate.crt* o el root.crt, si existe).
 - Busca la extensión **X509v3 Extended Key Usage**:
 **comando:**  openssl x509 -in /tmp/pki/certs/server.crt -text -noout | grep -Ei "TLS Web|Issuer|Subject"
 	 
@@ -460,6 +461,7 @@ SSL-Session:
 ## **Verificar de quien es la clave privada (.key):**
    - La clave privada debe coincidir con el archivo (root.crt, intermediate.crt, server.crt o client.crt) 
    - Compara el módulo público de la clave y el certificado:
+   - El modulus es un número muy grande que forma parte de la clave pública RSA del certificado. Es único para cada par de claves (pública/privada) y se usa para verificar que el certificado y la clave privada coinciden.
      ``` 
 		 openssl rsa -in /tmp/pki/private/server.key -modulus -noout | openssl sha256 # Obtener hash del módulo de la clave privada
 
