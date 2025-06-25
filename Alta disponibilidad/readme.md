@@ -192,7 +192,8 @@ Si ya tienes HA implementado, asegúrate de que tus herramientas de monitoreo es
 
 
 
-### Fórmula 1 (MTBF y MTTR): 
+### Fórmula 1 (MTBF y MTTR): [[1]](https://simpliroute.com/es/blog/mttr-mtbf) [[2]](https://www.emaint.com/es/mtbf-mttf-mttr-maintenance-kpis/)
+
 
 Cuando usarlo: Para planificar, hacer simulaciones predictivas, justificar inversiones o diseñar alta disponibilidad, Explicar el impacto de la confiabilidad del sistema a áreas no técnicas, usa la fórmula con MTBF/MTTR.
 
@@ -240,13 +241,7 @@ $$
  
 ---
 
-
-
-
  
-
-
-
 
 ### **Consideraciones para Réplicas:**
 
