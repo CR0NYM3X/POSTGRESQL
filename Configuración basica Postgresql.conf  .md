@@ -11,7 +11,36 @@ Doc Man:
 
 # inicializar postgresql
 ```sql
-/usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data
+/usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data    --data-checksums  &>/dev/null
+
+  
+# checksum 
+sirve para  Detectar corrupción a tiempo y puede salvarte de un desastre. PostgreSQL calcula una suma de verificación para cada bloque de datos que escribe en disco. Luego, al leer ese bloque, verifica que la suma coincida. Si no coincide, detecta corrupción silenciosa (por ejemplo, por fallos de hardware o discos defectuosos).  Puedes usarla como parte de un proceso de mantenimiento o verificación periódica.
+
+--- Cuando usarlo pg_checksums---
+- Antes o después de una migración.
+- Antes de hacer un pg_basebackup o un pg_upgrade.
+- Después de un fallo de hardware o corte de energía.
+- Como parte de un mantenimiento programado. 
+- Verificaciones periódicas en entornos críticos.
+
+# el servidor debe estar apagado completamente, ya que necesita acceso exclusivo a los archivos de datos para usar la herramienta pg_checksums.
+ $PGBIN16/pg_ctl stop -D /sysx/data16/DATANEW/data_maestro
+ 
+
+# Verificar integridad
+$PGBIN16/pg_checksums -D /sysx/data16/DATANEW/data_maestro --check --progress
+
+45/45 MB (100%) computed
+Checksum operation completed
+Files scanned:   1857
+Blocks scanned:  5826
+Bad checksums:  0
+Data checksum version: 1
+
+# Activar o desactivar checksum
+$PGBIN16/pg_checksums -D /sysx/data16/DATANEW/data_esclavo62 --enable --progress 
+$PGBIN16/pg_checksums -D /sysx/data16/DATANEW/data_esclavo62 --disable --progress 
 ``` 
 
 ### Postmaster 
@@ -579,7 +608,7 @@ log_statement = 'all'
 	mod: Solo se registran las consultas de modificación de datos (DML), como INSERT, UPDATE, DELETE, etc.
 	all: Se registran todas las consultas, tanto DDL como DML.*/
 
-log_temp_files = 0  # controla si se debe registrar información sobre la creación y eliminación de archivos temporales en PostgreSQL. |  -1 disables, 0 logs all temp files
+log_temp_files = 0  # controla si se debe registrar información sobre la creación y eliminación de archivos temporales en PostgreSQL. |  -1 disables, 0 logs all temp files | puede indicar falta de memoria de trabajo (work_mem) o consultas mal optimizadas. temp_files: número de archivos temporales creados (por ejemplo, para ordenamientos grandes, operaciones con DISTINCT, GROUP BY, ORDER BY, etc.). temp_bytes: tamaño total de esos archivos.  tabla pg_stat_database 
 
 log_timezone = 'America/mazatlan' # configura la hora del log
 
@@ -928,8 +957,7 @@ Archivo : pg_hba.conf
 
 
 
-# Inicializar o crear los archivos data 
-initdb -D $PGDATA -U postgres >/dev/null 2>&1
+
 
 # realizar reinicios
 pg_ctl start -D $PGDATA
