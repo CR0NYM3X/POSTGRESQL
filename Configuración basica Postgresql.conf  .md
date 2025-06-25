@@ -597,7 +597,7 @@ stats_temp_directory = 'pg_stat_tmp'
 
  track_counts = on: ¿Quieres saber cuántas filas están siendo afectadas por tus consultas de inserción, actualización o eliminación? Al activar este parámetro, PostgreSQL registrará automáticamente el número de filas afectadas por cada tipo de comando, lo que te proporciona información valiosa sobre el rendimiento de tu base de datos y la eficacia de tus operaciones de manipulación de datos.
 
- track_io_timing = off: Si estás preocupado por el rendimiento de las operaciones de lectura y escritura en tu base de datos, puedes activar este parámetro para que PostgreSQL registre el tiempo que tarda en realizar operaciones de entrada/salida en el disco. Esto te ayuda a identificar cuellos de botella de E/S y a optimizar el rendimiento de tu sistema de almacenamiento.
+ track_io_timing = off: Si estás preocupado por el rendimiento de las operaciones de lectura y escritura en tu base de datos, puedes activar este parámetro para que PostgreSQL registre el tiempo que tarda en realizar operaciones de entrada/salida en el disco. Esto te ayuda a identificar cuellos de botella de E/S y a optimizar el rendimiento de tu sistema de almacenamiento. esto nos permite visualizar los valores en las columnas blk_read_time y blk_write_time en la tabla pg_stat_database
 
  track_wal_io_timing = off: Similar al parámetro anterior, pero específico para el registro de escritura de registros de WAL. Al activarlo, PostgreSQL registrará el tiempo que tarda en escribir los registros de WAL en disco, lo que te permite evaluar el rendimiento de la escritura de registros y optimizar la configuración de tu sistema de registro.
 
