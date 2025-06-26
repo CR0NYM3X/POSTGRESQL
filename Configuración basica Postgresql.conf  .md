@@ -477,6 +477,17 @@ limitado por `max_parallel_workers`
 ```sql
 
 
+
+# Para elegir este metodo utiliza el siguiente comando colocando la ruta donde se guardan los logs "pg_test_fsync -f /var/lib/postgresql/data/test.out -s 10"
+#wal_sync_method = fsync                # the default is the first option
+                                        # supported by the operating system:
+                                        #   open_datasync
+                                        #   fdatasync (default on Linux and FreeBSD)
+                                        #   fsync
+                                        #   fsync_writethrough
+                                        #   open_sync
+
+
 max_wal_size = 2GB  # Tamaño máximo de WAL antes de forzar checkpoint.
 min_wal_size = 1GB
 
