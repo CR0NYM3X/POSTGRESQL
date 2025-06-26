@@ -1266,7 +1266,85 @@ Non-sync'ed 8kB writes:
 
 
 ```
+ 
 
+###   Unidades clave
+
+- **ops/sec** = operaciones por segundo (más alto = mejor rendimiento).
+- **usecs/op** = microsegundos por operación (más bajo = más rápido).  
+- **1 microsegundo** = 1 millonésima de segundo.
+- **µs** =  es la abreviatura de microsegundos.
+---
+
+###   ¿Qué está probando?
+
+Está comparando distintos métodos de sincronización de disco que PostgreSQL puede usar para escribir los archivos de WAL (Write-Ahead Log). Estos métodos aseguran que los datos realmente se escriban en disco y no se queden en caché.
+
+---
+
+###   Secciones explicadas
+
+#### 1. **Compare file sync methods using one 8kB write**
+Evalúa cuántas veces por segundo puede escribir un bloque de 8 kilobytes usando cada método:
+
+| Método           | Rendimiento | Tiempo por operación |
+|------------------|-------------|-----------------------|
+| `fdatasync`      | **2779 ops/sec** | **360 µs/op** ✅ más rápido  
+| `open_datasync`  | 2382 ops/sec | 420 µs/op  
+| `fsync`          | 1532 ops/sec | 653 µs/op  
+| `open_sync`      | 1200 ops/sec | 833 µs/op  
+| `fsync_writethrough` | n/a     | No soportado en tu sistema  
+
+**Conclusión:** `fdatasync` es el más eficiente en tu sistema.
+
+---
+
+#### 2. **Compare file sync methods using two 8kB writes**
+Misma prueba, pero con dos escrituras de 8kB por operación. Aquí también gana `fdatasync`.
+
+---
+
+#### 3. **Compare open_sync with different write sizes**
+Mide cuánto cuesta escribir 16kB usando distintos tamaños de bloque:
+
+- 1 escritura de 16kB = 900 µs  
+- 16 escrituras de 1kB = 15,349 µs 😱
+
+**Lección:** Escribir en bloques grandes es mucho más eficiente que hacerlo en muchos bloques pequeños.
+
+---
+
+#### 4. **Test if fsync on non-write file descriptor is honored**
+Verifica si `fsync()` puede sincronizar datos escritos desde otro descriptor de archivo. En tu caso, **sí lo hace**, porque los tiempos son similares.
+
+---
+
+#### 5. **Non-sync'ed 8kB writes**
+Esto es una referencia de velocidad **sin sincronización** (sin garantizar que los datos lleguen al disco).  
+Resultado: ¡235,000 ops/sec! Pero **no es seguro para bases de datos reales**.
+
+---
+
+###   ¿Qué hacer con esta información?
+
+- En tu `postgresql.conf`, asegúrate de que `wal_sync_method = fdatasync` (es el más rápido en tu sistema).
+- Si ya está así (es el valor por defecto en Linux), ¡estás bien optimizado!
+
+
+### métodos para escribir de forma segura los archivos de WAL (Write-Ahead Log) en disco. 
+
+| Método              | Ventajas                                                                 | Desventajas                                                                 |
+|---------------------|--------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| **`fdatasync`**      | - Rápido en Linux (es el valor por defecto)- Solo sincroniza datos, no metadatos | - No garantiza que los metadatos del archivo (como fecha de modificación) se escriban |
+| **`open_datasync`**  | - Similar a `fdatasync`, pero se activa al abrir el archivo con `O_DSYNC`- Puede ser más eficiente en algunos sistemas | - No está disponible en todos los sistemas operativos                        |
+| **`fsync`**          | - Sincroniza tanto datos como metadatos- Muy seguro y ampliamente soportado | - Más lento que `fdatasync` porque escribe más información                   |
+| **`open_sync`**      | - Sincroniza automáticamente en cada escritura (`O_SYNC`)- Garantiza consistencia inmediata | - Puede ser muy lento, especialmente con escrituras pequeñas o frecuentes    |
+| **`fsync_writethrough`** | - Fuerza que los datos pasen por la caché del disco hasta el medio físico- Máxima seguridad contra pérdida de datos | - Muy lento- No está disponible en muchos sistemas (en tu prueba salió como `n/a`) |
+
+ **Consejo práctico:** En Linux, `fdatasync` suele ser la mejor opción por su equilibrio entre seguridad y rendimiento. Pero si estás en otro sistema operativo o usas hardware con cachés agresivas, conviene probar con `pg_test_fsync` como hiciste tú.
+ 
+ 
+ 
  
 
 ###  ¿Qué es el LOBs "ya no están referenciados por ninguna tabla"?
