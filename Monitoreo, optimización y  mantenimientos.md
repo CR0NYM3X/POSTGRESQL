@@ -1365,7 +1365,7 @@ Esto se refiere a los **Large Objects (LOBs)** que se almacenan en PostgreSQL us
 
 ####   Ejemplo de uso potente y paralelo:
 ```bash
-/usr/pgsql-16/bin/vacuumdb -p 5416 -d postgres -U admin_user  --full  --analyze --jobs=4 --verbose --echo  > salida_vacuum.txt 2>&1
+/usr/pgsql-16/bin/vacuumdb -p 5416 -d postgres -U admin_user  --full  --analyze --jobs=4 --verbose --echo  > salida_vacuum.txt 2>&1 &
 
 Este comando:
 - Hace un `VACUUM FULL` (compacta tablas).
@@ -1374,6 +1374,7 @@ Este comando:
 - Intenta usar 2 workers por tabla (`--parallel=2`).
 - Muestra salida detallada (`--verbose`).
 - Muestra los comandos ejecutados (`--echo`).
+- ejecutar tu comando en segundo plano agregando &
 
 ```
 
