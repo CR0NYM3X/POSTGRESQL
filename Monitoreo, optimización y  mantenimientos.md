@@ -244,6 +244,29 @@ Con el tiempo, estas tuplas muertas pueden acumularse y ocupar un espacio signif
   - Configurar correctamente el **autovacuum** es esencial. Este servicio realiza acciones de vacuum en tablas e índices según ciertas condiciones, evitando afectar el funcionamiento normal de la base de datos.
 
 
+**bloat** se refiere al **espacio desperdiciado** dentro de las tablas o índices que ya no se utiliza pero que **sigue ocupando disco**. Es como si tuvieras un cajón lleno de papeles viejos que ya no sirven, pero que nadie ha sacado todavía.
+
+###   ¿Por qué ocurre?
+PostgreSQL usa un sistema llamado **MVCC (Multiversion Concurrency Control)**. Esto significa que cuando haces un `UPDATE` o `DELETE`, **no se borra físicamente la fila**. En su lugar:
+- `UPDATE` crea una nueva versión de la fila y marca la anterior como “muerta”.
+- `DELETE` simplemente marca la fila como “muerta”.
+
+Estas filas muertas se acumulan y **no se eliminan automáticamente**, lo que genera bloat.
+
+###   ¿Por qué es un problema?
+- Aumenta el tamaño de las tablas e índices.
+- Hace que las consultas sean más lentas (más páginas que leer).
+- Consume más memoria y disco innecesariamente.
+
+
+###   ¿Cómo se combate?
+- **`VACUUM`**: limpia las filas muertas.
+- **`VACUUM FULL`**: reescribe la tabla y recupera espacio en disco.
+- **`REINDEX`**: reconstruye índices inflados.
+- **`pgstattuple`**: extensión que te permite medir el nivel de bloat con precisión.
+ 
+  
+
  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  
  
