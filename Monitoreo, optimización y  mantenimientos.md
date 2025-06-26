@@ -1209,5 +1209,67 @@ backend> select version();
 <0--5 3::09 MST     769 6737aad9.9930b >LOG:  duration: .93 ms
 backend>
 ```
+
+ 
+###   ¿Cómo usar `pg_test_fsync`?
+
+`pg_test_fsync` es una herramienta que prueba **qué método de sincronización de disco (`fsync`) es más rápido** en tu sistema. Esto es importante porque PostgreSQL usa estos métodos para asegurar que los datos se escriban correctamente en disco (especialmente los WAL).
+
+
+Esto ejecutará pruebas por defecto durante 5 segundos por método y te dirá cuál es más rápido.
+
+####  Opciones útiles:
+- `-f archivo`: especifica el archivo de prueba (debe estar en el mismo disco que `pg_wal`).
+- `-s segundos`: cuánto tiempo probar cada método.
+
+```bash
+pg_test_fsync -f /var/lib/postgresql/data/test.out -s 10
+```
+
+ 
+
+###  ¿Qué es el LOBs "ya no están referenciados por ninguna tabla"?
+
+Esto se refiere a los **Large Objects (LOBs)** que se almacenan en PostgreSQL usando funciones como `lo_import()`.
+
+- Cuando insertas un archivo binario (como una imagen) en una tabla, se guarda como un LOB y se le asigna un OID.
+- Si luego **borras la fila de la tabla**, el LOB **no se borra automáticamente**.
+- Ese LOB queda "huérfano", es decir, **ya no está referenciado por ninguna tabla**.
+
+  `vacuumlo` busca esos LOBs huérfanos y los elimina para liberar espacio.
+
+---
+
+###   ¿Cómo usar `vacuumdb` al máximo y en paralelo?
+
+`vacuumdb` es una herramienta de línea de comandos para ejecutar `VACUUM` y `ANALYZE` desde fuera de PostgreSQL.
+
+####   Ejemplo de uso potente y paralelo:
+```bash
+psql -p 5416 -d postgres -U admin_user  --full  --analyze --jobs=4 --parallel=2 --verbose --echo
+
+Este comando:
+- Hace un `VACUUM FULL` (compacta tablas).
+- Ejecuta `ANALYZE` (actualiza estadísticas).
+- Usa 4 conexiones paralelas (`--jobs=4`).
+- Intenta usar 2 workers por tabla (`--parallel=2`).
+- Muestra salida detallada (`--verbose`).
+- Muestra los comandos ejecutados (`--echo`).
+
+```
+
+ 
+
+####   Tips para máximo rendimiento:
+- Usa `--jobs` con un valor acorde a tus núcleos de CPU.
+- Puedes combinar con `--table` para vaciar tablas específicas:
+  ```bash
+  vacuumdb -U postgres -d mibasededatos --table=clientes --full --analyze --verbose
+  ```
+- Para todas las bases de datos:
+  ```bash
+  vacuumdb --all --analyze --jobs=6
+  ```
+ 
  
 https://postgresconf.org/system/events/document/000/00/3/Troubleshoot_PG_Perf-070.pdf
