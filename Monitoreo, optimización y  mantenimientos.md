@@ -790,7 +790,7 @@ es un comando combinado que ayuda a mantener la base de datos PostgreSQL en un e
 Recupera espacio inmediatamente eliminando las filas obsoletas y compactando la tabla. Este proceso bloquea la tabla durante su ejecución.
   ```sh
 VACUUM FULL table_name;  -- individual
-VACUUM FULL -- en todas las tablas 
+VACUUM FULL VERBOSE ANALYZE -- en todas las tablas 
   ```
 
 Congela todas las filas de la tabla, lo que es útil cuando se necesita garantizar que una tabla no cambie para realizar copias de seguridad.
