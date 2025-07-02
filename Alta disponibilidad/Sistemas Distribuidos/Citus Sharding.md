@@ -462,4 +462,6 @@ PostgreSQL: 1 trillion rows in Citus -> https://www.cybertec-postgresql.com/en/p
 
 Bases de datos distribuidas PostgreSQL al límite -> https://www.youtube.com/watch?v=5SZVJgg94k4
 
+Manejo de miles de millones de filas en PostgreSQL ( TimescaleDB ) -> https://medium.com/timescale/handling-billions-of-rows-in-postgresql-80d3bd24dabb
+
 ```
