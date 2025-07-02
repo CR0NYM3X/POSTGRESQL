@@ -365,7 +365,7 @@ certificatePolicies = 2.23.140.1.2.2
 	- **Comando:** `openssl s_server -key server.key -cert server.crt -tls1_2 -accept 4433 `
 	
 
-- **iniciar un servidor TLS/SSL simple para pruebas **
+- **Validar el servidor de pruebas**
 	- **Comando:** `openssl s_client -connect 127.0.0.1:4433 -tls1_2`
 
 
@@ -375,7 +375,7 @@ certificatePolicies = 2.23.140.1.2.2
  
 **Comando:**
 ```sh
-openssl s_client -connect 172.10.10.100:5432 -starttls postgres -tls1_2  -tlsextdebug -status
+openssl s_client -connect 172.10.10.100:5416 -starttls postgres -tls1_3 -ciphersuites TLS_AES_256_GCM_SHA384  -CAfile  combined.crt -verify_return_error -tlsextdebug -status
 openssl s_client -connect 127.0.0.1:5416 -starttls postgres -tls1_2 -cert /tmp/pki/certs/client_new.crt -key /tmp/pki/private/client_new.key -CAfile /tmp/pki/CA/ca-chain.crt
 
 ```
