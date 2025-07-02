@@ -44,7 +44,7 @@ El certificado intermedio (Intermediate CA) es una capa de seguridad entre el Ro
 
 
 ¿Por qué los clientes se conectan con certificados vencidos?
-	- **Comportamiento predeterminado:** PostgreSQL no verifica la fecha de expiración de los certificados SSL/TLS del lado del servidor o del cliente, a menos que se configuren parámetros específicos.
+	- **Comportamiento predeterminado:** PostgreSQL no verifica la fecha de expiración de los certificados SSL/TLS del lado del servidor o del cliente, a menos que se configuren parámetros específicos como ssl_crl_file .
 	- **Tu escenario:**  
 	  - El certificado (`server.crt`) está vencido (las fechas `notBefore` y `notAfter` están fuera del rango actual).  
 	  - Los clientes se conectan usando SSL (como muestra `pg_stat_ssl`), pero **PostgreSQL no está validando la expiración del certificado**.
