@@ -77,22 +77,21 @@ Time: 0.557 ms
 
 
 ### Información importante 
+Hay varias opciones de configurar los parámetros  ssl_ca_file y sslrootcert . esto depende como generaste tu certificado.
  ```markdown
+****** Crear archivo combined.crt a veces tambien lo llaman full_chain.crt ********
  (cat /tmp/pki/CA/intermediate.crt /tmp/pki/CA/root.crt > /tmp/pki/CA/combined.crt)
 
   ### Opción #1 Si el archivo server.crt fue emitido por un intermediate.crt puedes usar esta tipo de configuración:
- 	# ssl_ca_file = /tmp/pki/CA/combined.crt -> sslrootcert = /tmp/pki/CA/root.crt
+ 	# ssl_ca_file = /tmp/pki/CA/combined.crt  y  sslrootcert = /tmp/pki/CA/root.crt
 
-  ### Opción #1 Si el archivo server.crt fue emitido por un intermediate.crt puedes usar esta tipo de configuración:
-        # ssl_ca_file = root.crt  -> sslrootcert = combined.crt (cat /tmp/pki/CA/intermediate.crt /tmp/pki/CA/root.crt > /tmp/pki/CA/combined.crt)  
-
+  ### Opción #2 Si el archivo server.crt fue emitido por un intermediate.crt puedes usar esta tipo de configuración:
+        # ssl_ca_file = root.crt  Y sslrootcert = combined.crt
 
   ###  Si el server.crt fue emitido por el root.crt 
         # ssl_ca_file = root.crt  -> sslrootcert = root.crt
 
-
-
-	### ** Verificación de la Cadena de Certificados:**  `server.crt` → `intermedio.crt` → `root.crt` 
+	### ** Verificación de la Cadena de Certificados:**   `root.crt`  → `intermedio.crt` →   `server.crt`
 
 
 
@@ -525,9 +524,17 @@ Por eso ves el error "certificate verify failed at depth 1" - está fallando en 
 
 
 
-### [Tipos de sslmode](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION)
+### [Parámetros del lado del cliente ](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION)
 
 ```sql
+
+sslrootcert -> Para verificar que el certificado que proporciona el servidor fue emitido por una CA confiable. Protege contra servidores falsos. por ejemplo esto lo hace comparando el certificado "server.crt"  que  proporcionado por el servidor  con el root.crt que tiene el cliente y se especifico en este parámetro
+
+sslcert -> Para identificarse con certificado si se usa autenticación por certificado.
+sslkey -> Clave privada que acompaña al sslcert para probar que el cliente es el dueño del certificado.
+
+-------------------------------------------------
+
 El modo define el nivel de seguridad y verificación de certificados durante la conexión SSL/TLS.
 
 ### **Diagrama de Seguridad**
@@ -568,7 +575,7 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
 
 
  
-### [Parámetros y sus usos:](https://www.postgresql.org/docs/current/runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SSL)
+### [Parámetros del lado del servidor](https://www.postgresql.org/docs/current/runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SSL)
 ```sql
 1. ssl
 
@@ -576,7 +583,7 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
 	Uso recomendado: Si deseas encriptar las conexiones entre clientes y el servidor para mayor seguridad.
 
 2. ssl_ca_file
-	¿Para qué sirve? Especifica la ubicación del archivo de la Autoridad de Certificación (CA) que se usa para verificar los certificados de los clientes.
+	¿Para qué sirve? Especifica la ubicación del archivo de la Autoridad de Certificación (CA) y el servidor lo utiliza para verificar el certificado de autenticacion que le proporciona el cliente y validar que sea valido, es como hacer esto "openssl verify -CAfile /tmp/pki/CA/root.crt /tmp/pki/CA/intermediate.crt"
 	Uso recomendado: solo cuando usar el sslmode verify-full  o verify-ca
 
 3. ssl_cert_file
