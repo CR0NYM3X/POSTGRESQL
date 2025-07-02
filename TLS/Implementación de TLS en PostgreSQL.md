@@ -682,3 +682,31 @@ En caso de que la llave privada este protegida con una contraseña , es necesari
 	ssl_passphrase_command_supports_reload = on
 	ssl_passphrase_command = '/path/to/get_passphrase.sh'	
 ```
+
+
+---
+
+# conjunto de **cipher suites** (algoritmos de cifrado) 
+los cipher suites Están **ligado directamente a la versión de TLS**. Cada versión del protocolo define qué algoritmos son compatibles, seguros y recomendados.
+
+
+## 🔐 Comparativa de versiones TLS y sus características criptográficas
+
+| 🧾 **Versión TLS** | ⚙️ **Características Criptográficas**                                                                 | 🔑 **Cipher Suites Representativos**                                    | 🚨 **Estado Actual / Compatibilidad**                  |
+|-------------------|--------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|--------------------------------------------------------|
+| **TLS 1.0 / 1.1** | Utiliza algoritmos considerados inseguros como `RC4`, `3DES`, `MD5`. No soporta cifrado AEAD moderno.  | `TLS_RSA_WITH_3DES_EDE_CBC_SHA`<br>`TLS_RSA_WITH_RC4_128_MD5`          | ⚠️ Obsoletos — deshabilitados por defecto en sistemas modernos |
+| **TLS 1.2**       | Introduce soporte para `AES-GCM`, `SHA256`, `SHA384`, `ECDHE`. Permite mayor flexibilidad en cifrado.  | `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`<br>`TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384` | ✅ Amplio uso, pero algunos cipher suites han sido desaprobados |
+| **TLS 1.3**       | Simplifica el handshake y elimina ciphers inseguros. Solo permite cifrado AEAD moderno con autenticación integrada. | `TLS_AES_128_GCM_SHA256`<br>`TLS_AES_256_GCM_SHA384`<br>`TLS_CHACHA20_POLY1305_SHA256` | 🔒 Recomendado — cipher suites modernizados y más seguros |
+ 
+
+##   ¿Por qué se eliminan ciphers?
+
+Porque algunos algoritmos han demostrado ser inseguros con el tiempo. TLS 1.3 fue diseñado para:
+
+- Simplificar el handshake
+- Eliminar vulnerabilidades conocidas
+- Usar solo cifrado moderno y robusto
+
+
+---
+
