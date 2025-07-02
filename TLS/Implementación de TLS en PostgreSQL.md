@@ -173,7 +173,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
 8. **Sexta capa de seguridad nivel configuración ( Verficiación de Certificados  `postgresql.conf` )** 
    ```sql
    #  Verifica que el certificado presentado por el cliente ha sido emitido por una CA de confianza. 
-   # Esto se habilita cuando del lado del cliente  usara las opciones sslmode=verify-ca o verify-full  y aumenta la seguridad 
+   # Esto se habilita si el cliente se autentica con certificados y usara las opciones sslmode=verify-ca o verify-full, para aumenta la seguridad, en caso de que el cliente no use certificado para autenticar no se ocupa configurar en este ejemplo si lo usaremos.
     ssl_ca_file = '/tmp/pki/CA/combined.crt' # Incluye Root + Intermedia
    ```
    
