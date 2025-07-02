@@ -375,8 +375,23 @@ certificatePolicies = 2.23.140.1.2.2
  
 **Comando:**
 ```sh
-openssl s_client -connect 172.10.10.100:5416 -starttls postgres -tls1_3 -ciphersuites TLS_AES_256_GCM_SHA384  -CAfile  combined.crt -verify_return_error -tlsextdebug -status
+openssl s_client -connect 172.10.10.100:5416 -starttls postgres -tls1_3 -ciphersuites TLS_AES_256_GCM_SHA384  -CAfile  combined.crt -verify_return_error -tlsextdebug -status  -showcerts
 openssl s_client -connect 127.0.0.1:5416 -starttls postgres -tls1_2 -cert /tmp/pki/certs/client_new.crt -key /tmp/pki/private/client_new.key -CAfile /tmp/pki/CA/ca-chain.crt
+
+
+ Parámetro                     ¿Qué hace?                                                                 
+----------------------------------------------------------------------------------------------------------
+ `-connect host:port`         Especifica la dirección y puerto del servidor al que deseas conectarte     
+ `-starttls protocolo`        Inicia un *handshake* TLS para protocolos como `postgres`, `smtp`, `ftp`   
+ `-tls1_2`, `-tls1_3`         Fuerza la versión de TLS que deseas usar en la conexión                    
+ `-ciphersuites`              Seleccionas  explícitamente cual cipher suites usar , Ejemplo ->   TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256             
+ `-cipher`                    aqui filtras los cipher suites. Ejemplo -> 'HIGH:!aNULL:!MD5:!3DES:!RC4:!DES:!IDEA:!RC2'                
+ `-CAfile archivo.crt`        Usa certificados raíz/intermedios para validar el certificado del servidor 
+ `-verify_return_error`       Falla la conexión si no se puede verificar el certificado                   
+ `-showcerts`                 Muestra todos los certificados entregados por el servidor                  
+ `-servername nombre`         Establece el SNI (Server Name Indication), útil si el servidor tiene múltiples dominios 
+ `-quiet`                     Silencia detalles del protocolo para una salida más limpia
+ `-brief`                      mostrar una salida más concisa y enfocada durante la simulación de una conexión TLS/SSL. En lugar de imprimir todo el certificado, la cadena completa
 
 ```
 Salida esperada TLSv1.2:
