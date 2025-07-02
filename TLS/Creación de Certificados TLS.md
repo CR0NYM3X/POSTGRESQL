@@ -127,7 +127,9 @@ keyUsage = critical, digitalSignature, keyCertSign, cRLSign
 [ v3_ca_intermediate ]
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid:always,issuer
-basicConstraints = critical, CA:true, pathlen:0
+
+#  pathlen:0  Es una restricción de longitud de cadena. ignifica que este certificado CA puede emitir certificados, pero solo de tipo end-entity (usuarios, servidores, etc.). - No puede emitir otros certificados CA (intermedios).
+basicConstraints = critical, CA:true, pathlen:0 
 keyUsage = critical, digitalSignature, keyCertSign, cRLSign
 certificatePolicies = 2.16.840.1.114412.2.1, 2.23.140.1.1, 2.23.140.1.2.1, 2.23.140.1.2.2, 2.23.140.1.2.3
 
