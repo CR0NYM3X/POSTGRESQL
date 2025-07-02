@@ -153,6 +153,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    ```sql
    ssl_prefer_server_ciphers = on
    ssl_ciphers = 'HIGH:!aNULL:!MD5:!3DES:!RC4:!DES:!IDEA:!RC2' # Este para entornos Criticos (Bancos, Tiendas, Etc)
+      # ssl_ciphers =  'HIGH:!MD5:!RC4:!3DES:!DES:!IDEA:!RC2:!SHA1:!NULL:!aNULL:!EXP' # aun mas exigentes que el primero
       # ssl_ciphers = 'HIGH:MEDIUM:!aNULL:!MD5:!RC4' # Este para entornos Normales
 
    	Explicación de la Configuración:
