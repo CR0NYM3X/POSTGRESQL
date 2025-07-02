@@ -12,6 +12,7 @@ Reestructuración esta carpeta
 - Topologias.
 - Preguntas.
 - Buenas practicas.
+- Best Practices for Postgres Database Replication -> https://medium.com/timescale/best-practices-for-postgres-database-replication-b5ed69caf96d
 
 
 
