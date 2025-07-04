@@ -1,6 +1,6 @@
 
 https://www.postgresql.org/docs/current/indexes-types.html
-
+https://medium.com/@jramcloud1/reindexing-in-postgresql-17-the-complete-dba-guide-to-keeping-your-indexes-healthy-20d0cd8e828f
 
 Imagina que tienes un libro enorme con miles de páginas llenas de información, como nombres, números o fechas. Si alguien te pidiera buscar una palabra específica en ese libro, tendrías dos opciones:
 
