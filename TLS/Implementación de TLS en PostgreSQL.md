@@ -711,3 +711,47 @@ Porque algunos algoritmos han demostrado ser inseguros con el tiempo. TLS 1.3 fu
 
 ---
 
+
+
+ 
+
+### 🔍 ¿Qué es SNI (Server Name Indication)?
+
+- Es una **extensión del protocolo TLS**, **no** del certificado.
+- Permite que un cliente (como `psql`, navegadores, etc.) **indique el nombre del host** al que quiere conectarse **durante el handshake TLS**.
+- Esto ayuda al servidor a presentar el **certificado SSL correcto** si aloja varios dominios en una misma IP.
+- **No está dentro del certificado X.509**, se transmite aparte como parte del protocolo TLS.
+
+---
+
+### ⚙️ ¿Qué es el parámetro `sslsni` en PostgreSQL?
+
+- Es un **parámetro de conexión** que se puede usar desde **PostgreSQL 14 en adelante**.
+- Cuando está activado (`sslsni=1` o `sslsni=true`), **el cliente incluye el hostname** como parte del handshake TLS (usando SNI).
+- Es útil si:
+  - El servidor tiene certificados distintos por dominio.
+  - Hay un **proxy o balanceador SSL** que requiere esa información.
+
+---
+
+### 🧪 ¿Dónde se configura?
+
+- Se coloca como parte de la **cadena de conexión** o en **variables de entorno** del cliente (como `psql`, `libpq`, drivers JDBC, etc.).
+- **Ejemplo básico usando `psql`:**
+
+```bash
+psql "host=db.miempresa.com port=5432 dbname=miapp user=usuario password=secreto sslmode=require sslsni=1"
+```
+
+- **En variables de entorno (UNIX):**
+
+```bash
+export PGHOST=db.miempresa.com
+export PGDATABASE=miapp
+export PGUSER=usuario
+export PGPASSWORD=secreto
+export PGSSLMODE=require
+export PGSSLSNI=1
+psql
+```
+ 
