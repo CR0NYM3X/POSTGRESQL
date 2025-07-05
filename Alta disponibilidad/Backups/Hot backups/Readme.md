@@ -92,15 +92,17 @@ Así tienes:
 - El respaldo del clúster consistente.
 - Los WAL necesarios para recuperación (PITR).
 
-
-
-
 ###  ¿Por qué excluir `pg_wal/`?
 
 - Porque contiene archivos temporales y en uso.
 - Porque los WAL archivados son más seguros y estables.
 - Porque durante restauración, PostgreSQL usará `restore_command` para leer los WAL archivados, no los activos.
 
+### 🧾 ¿Por qué se hace así?
+
+- El respaldo base debe ser **consistente**, por eso se usa `pg_backup_start()` y `stop()`.
+- Los WAL archivados son **independientes** y se pueden copiar después, incluso mientras el servidor sigue funcionando.
+- El archivo `backup_label` generado por `pg_backup_stop()` indica **desde qué WAL se debe comenzar la recuperación**.
 
 --- 
 
