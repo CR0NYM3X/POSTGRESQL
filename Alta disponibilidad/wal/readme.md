@@ -1,0 +1,1 @@
+todo sobre los wal
