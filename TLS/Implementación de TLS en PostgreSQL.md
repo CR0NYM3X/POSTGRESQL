@@ -221,7 +221,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
  
 
 1. **Primera capa de seguridad nivel Usuario ( Conexión con sslmode=verify-ca )**
-   
+   [32.1.1. Connection Strings](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING)
    ```sql
     psql "host=127.0.0.1  port=5416  user=conssl dbname=postgres sslmode=verify-ca  sslrootcert=/tmp/pki/CA/combined.crt"
    
