@@ -1,54 +1,117 @@
+### ¿Qué pasa al iniciar el servicio en modo recuperación?
+
+- PostgreSQL **entra en modo recuperación** y comienza a **reproducir los archivos WAL** desde el backup base hasta el punto de recuperación que definiste (`recovery_target_time`, por ejemplo).
+- Durante este proceso:
+  - El servidor **no acepta conexiones de escritura**.
+  - Puede aceptar **conexiones de solo lectura**, pero **solo si ya alcanzó un estado consistente** (esto depende de la configuración y del momento exacto del WAL replay).
+  - El sistema **no está completamente restaurado** hasta que se alcanza el punto objetivo.
+
+ 
+
+###  ¿Cuándo se considera “restaurado”?
+
+- Cuando PostgreSQL alcanza el `recovery_target_time`, ejecuta la acción definida en `recovery_target_action` (como `promote`).
+- En ese momento:
+  - El servidor **sale del modo recuperación**.
+  - Se **promueve** y comienza a aceptar conexiones normales (lectura y escritura).
+  - Se elimina el archivo `recovery.signal` automáticamente.
+ 
+ 
+--- 
+
+# Como validar si ya se restauro.
+
+### 1. Usa `pg_is_in_recovery()`
+
+Ejecuta esta consulta:
+
+```sql
+SELECT pg_is_in_recovery();
+```
+
+- Si devuelve `TRUE`, el servidor **sigue en modo recuperación**.
+- Si devuelve `FALSE`, la recuperación **ya terminó** y el servidor fue promovido.
+
+###  2. Revisa los logs del servidor
+
+Busca mensajes como:
+
+- `recovery stopping before commit of transaction...`
+- `pausing at the end of recovery`
+- `database system is ready to accept connections`
+
+Puedes usar:
+
+```bash
+tail -n 100 /ruta/a/pg_log/postgresql.log
+```
+
+Esto te mostrará si el servidor alcanzó el `recovery_target_time` y si se promovió automáticamente.
+
+
+###  3. Verifica si el archivo `recovery.signal` aún existe
+
+Si el archivo `recovery.signal` **ya no está en el directorio de datos**, significa que PostgreSQL **salió del modo recuperación**.
+
+```bash
+ls /sysx/8850696_V2/data/recovery.signal
+```
+
+- Si **no existe**, la recuperación terminó.
+- Si **existe**, el servidor sigue en recuperación.
+
+
+
+###  4. Consulta el estado de promoción
+
+Si usaste `recovery_target_action = 'promote'`, PostgreSQL debería haberse promovido automáticamente al alcanzar el punto deseado. Pero si configuraste `pause`, entonces debes ejecutar manualmente:
+
+```sql
+
+SELECT pg_wal_replay_resume(); -- sirve para reanudar la reproducción de los archivos WAL (Write-Ahead Log) cuando el servidor está en modo recuperación y ha sido pausado.
+pg_wal_replay_pause() -- para detener temporalmente la reproducción de WAL.
+```
+
+
 
 Para el recovery se puede utlizar esto 
 
-
+# Parametros importantes 
 ```
-# - Archiving -
+postgres@postgres# select name,setting from pg_settings where name ilike '%recov%';
++-----------------------------+---------+
+|            name             | setting |
++-----------------------------+---------+
+| log_recovery_conflict_waits | off     |
+| recovery_end_command        |         |
+| recovery_init_sync_method   | fsync   |
+| recovery_min_apply_delay    | 0       |
+| recovery_prefetch           | try     |
+| recovery_target             |         |
+| recovery_target_action      | pause   |
+| recovery_target_inclusive   | on      |
+| recovery_target_lsn         |         |
+| recovery_target_name        |         |
+| recovery_target_time        |         |
+| recovery_target_timeline    | latest  |
+| recovery_target_xid         |         |
+| trace_recovery_messages     | log     |
++-----------------------------+---------+
+(14 rows)
 
-#archive_mode = off		# enables archiving; off, on, or always
-				# (change requires restart)
-#archive_library = ''		# library to use to archive a WAL file
-				# (empty string indicates archive_command should
-				# be used)
-#archive_command = ''		# command to use to archive a WAL file
-				# placeholders: %p = path of file to archive
-				#               %f = file name only
-				# e.g. 'test ! -f /mnt/server/archivedir/%f && cp %p /mnt/server/archivedir/%f'
-#archive_timeout = 0		# force a WAL file switch after this
-				# number of seconds; 0 disables
+postgres=# select name,setting from pg_settings where name ilike '%archive%';
++---------------------------+------------+
+|           name            |  setting   |
++---------------------------+------------+
+| archive_cleanup_command   |            |
+| archive_command           | (disabled) |
+| archive_library           |            |
+| archive_mode              | off        |
+| archive_timeout           | 0          |
+| max_standby_archive_delay | 30000      |
++---------------------------+------------+
+(6 rows)
 
-# - Archive Recovery -
 
-# These are only used in recovery mode.
 
-#restore_command = ''		# command to use to restore an archived WAL file
-				# placeholders: %p = path of file to restore
-				#               %f = file name only
-				# e.g. 'cp /mnt/server/archivedir/%f %p'
-#archive_cleanup_command = ''	# command to execute at every restartpoint
-#recovery_end_command = ''	# command to execute at completion of recovery
-
-# - Recovery Target -
-
-# Set these only when performing a targeted recovery.
-
-#recovery_target = ''		# 'immediate' to end recovery as soon as a
-                                # consistent state is reached
-				# (change requires restart)
-#recovery_target_name = ''	# the named restore point to which recovery will proceed
-				# (change requires restart)
-#recovery_target_time = ''	# the time stamp up to which recovery will proceed
-				# (change requires restart)
-#recovery_target_xid = ''	# the transaction ID up to which recovery will proceed
-				# (change requires restart)
-#recovery_target_lsn = ''	# the WAL LSN up to which recovery will proceed
-				# (change requires restart)
-#recovery_target_inclusive = on # Specifies whether to stop:
-				# just after the specified recovery target (on)
-				# just before the recovery target (off)
-				# (change requires restart)
-#recovery_target_timeline = 'latest'	# 'current', 'latest', or timeline ID
-				# (change requires restart)
-#recovery_target_action = 'pause'	# 'pause', 'promote', 'shutdown'
-				# (change requires restart)
 ```
