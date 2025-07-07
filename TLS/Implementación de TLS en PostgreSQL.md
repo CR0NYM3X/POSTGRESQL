@@ -687,3 +687,19 @@ En caso de que la llave privada este protegida con una contraseña , es necesari
 	ssl_passphrase_command = '/path/to/get_passphrase.sh'	
 ```
 
+
+## Mensajes de error en el log
+```
+*************** Mensaje de postgresql cuando usas una version no permitida  *****************
+
+
+<2025-07-07 14:17:30 MST 127.0.0.1(63686) [unknown] [unknown] [unknown] 1777790 686c396a.1b207e >LOG:  connection received: host=127.0.0.1 port=63686
+<2025-07-07 14:17:30 MST 127.0.0.1(63686) [unknown] [unknown] [unknown] 1777790 686c396a.1b207e >LOG:  could not accept SSL connection: unsupported protocol
+<2025-07-07 14:17:30 MST 127.0.0.1(63686) [unknown] [unknown] [unknown] 1777790 686c396a.1b207e >HINT:  This may indicate that the client does not support any SSL protocol version between TLSv1.2 and TLSv1.3.
+
+*************** Mensaje de postgresql cuando usas cipher ecluido  *****************
+
+<2025-07-07 14:19:12 MST 127.0.0.1(3152) [unknown] [unknown] [unknown] 1778672 686c39d0.1b23f0 >LOG:  connection received: host=127.0.0.1 port=3152
+<2025-07-07 14:19:12 MST 127.0.0.1(3152) [unknown] [unknown] [unknown] 1778672 686c39d0.1b23f0 >LOG:  could not accept SSL connection: no shared cipher
+```
+
