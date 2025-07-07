@@ -274,5 +274,24 @@ export PGSSLMODE=require
 export PGSSLSNI=1
 psql
 ```
- 
+ --- 
 
+### ALPN (Application-Layer Protocol Negotiation) 
+Es una **extensión del protocolo TLS** que permite al cliente y al servidor negociar qué protocolo de aplicación usar (como HTTP/1.1 o HTTP/2) **durante el proceso de handshake TLS**, sin necesidad de hacer más rondas de comunicación.
+
+### 🔍 ¿Cómo funciona ALPN?
+- El **cliente** envía una lista de protocolos que soporta (por ejemplo, `["http/1.1", "h2"]`) en el mensaje `ClientHello`.
+- El **servidor** elige uno de esos protocolos y responde en el `ServerHello` con el protocolo seleccionado.
+- Esto permite que ambos lados sepan qué protocolo usar **antes de que empiece la comunicación real**, optimizando el rendimiento.
+
+### 📦 ¿Por qué es útil?
+- Permite usar **HTTP/2 y HTTP/1.1 en el mismo puerto** (como el 443 para HTTPS).
+- Evita redireccionamientos o negociaciones adicionales.
+- Mejora la compatibilidad entre navegadores, servidores y proxies.
+
+### 🧪 Ejemplo práctico
+Si usas `curl -v https://ejemplo.com`, puedes ver algo como:
+```
+* ALPN, offering h2
+* ALPN, server accepted h2
+``` 
