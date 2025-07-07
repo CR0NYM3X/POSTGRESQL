@@ -593,7 +593,8 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
 
 
 4. ssl_ciphers
-	¿Para qué sirve? Permite definir qué conjuntos de cifrados (cipher suites) se pueden usar en las conexiones SSL.
+	¿Para qué sirve?  Define qué algoritmos de cifrado (cipher suites) están permitidos para conexiones SSL/TLS.
+			  Filtra los cipher suites que el servidor está dispuesto a usar.
 	Uso recomendado: Para restringir los cifrados inseguros y mejorar la seguridad.
 	Ejemplo: HIGH:!aNULL:!MD5 (solo cifrados fuertes).
 
@@ -656,7 +657,9 @@ El modo define el nivel de seguridad y verificación de certificados durante la 
 
 
 15. ssl_prefer_server_ciphers
-	¿Para qué sirve? Si está en on, el servidor define qué cifrado usar en lugar del cliente.
+	¿Para qué sirve? Indica quién tiene prioridad al elegir el cipher suite durante el handshake TLS:
+			 Si está en on: el servidor impone su orden de preferencia de ciphers (según ssl_ciphers).
+			 Si está en off: el cliente puede elegir el cipher suite que prefiera, siempre que esté permitido.
 	Uso recomendado: Para asegurar que se usen cifrados seguros definidos por el servidor.
 ```
 
