@@ -66,6 +66,12 @@ PITR se basa en **dos componentes esenciales**:
 
 ---
 
+### Iniciar el DATA
+```
+/usr/pgsql-16/bin/initdb -E UTF-8 -D /sysx/data16/DATANEW/PITR --data-checksums
+```
+
+
 ###   Configuración y ejecución del laboratorio
 
 #### 1.   Configura el `postgresql.conf`
@@ -344,9 +350,142 @@ postgres=# select name,setting from pg_settings where name ilike '%archive%';
 
 ```
 
+ ---
  
+## 📦 Contexto de tu infraestructura
+
+- Tienes un **servidor PostgreSQL (origen)** y un **servidor central de respaldo (destino)** con mucho almacenamiento.
+- El directorio en el servidor de respaldo es: `/mnt/backup/base_backup/`.
+- Quieres copiar cada WAL en cuanto se genera, usando `scp`.
+
+ 
+
+##   Requisitos previos
+
+Antes de configurar el `archive_command`, asegúrate de:
+
+1. Tener acceso SSH sin contraseña desde el servidor PostgreSQL hacia el servidor central:
+   - Genera las claves:
+     ```bash
+     ssh-keygen -t rsa
+     ssh-copy-id postgres@servidor-respaldo
+     ```
+
+2. Que el usuario de PostgreSQL (`postgres`) tenga permisos para ejecutar `scp`.
+
+3. Que el directorio remoto exista: `/mnt/backup/base_backup/wal/YYYY-MM-DD/`
+
+
+
+##  Diseño del `archive_command` con clasificación por fecha
+
+Usaremos una solución intermedia: un script local que organiza por fecha y hace el `scp`.
+
+###   `/usr/local/bin/archive_wal_scp.sh`
+
+```bash
+#!/bin/bash
+
+# Variables
+FECHA=$(date +%F)
+ARCHIVO="$1"
+DESTINO="$2"
+
+# Extrae solo el nombre del archivo WAL
+FNAME=$(basename "$ARCHIVO")
+
+# Ruta remota
+REMOTE_DIR="postgres@servidor-respaldo:/mnt/backup/base_backup/wal/${FECHA}"
+
+# Enviar archivo
+scp "$ARCHIVO" "$REMOTE_DIR/$FNAME"
+```
+
+Dale permisos de ejecución:
+
+```bash
+chmod +x /usr/local/bin/archive_wal_scp.sh
+```
+
 ---
 
+##  Configuración del `archive_command` en `postgresql.conf`
+
+```conf
+archive_mode = on
+archive_command = '/usr/local/bin/archive_wal_scp.sh %p %f'
+```
+
+> ✅ `%p` es la ruta local del WAL generado  
+> ✅ `%f` es solo el nombre del archivo WAL, útil para clasificar
+
+
+# cron para que cree subcarpetas con fecha para pg_basebackup:
+
+```bash
+DATE=$(date +\%Y/\%m/\%d)
+DEST="/mnt/backup/base_backup/${DATE}"
+mkdir -p "$DEST"
+pg_basebackup -D "$DEST" -F tar -U replication -Xs -P
+```
+
+
+---
+
+
+## ⚠️ Desventajas de usar `scp` directo en `archive_command`
+
+###   1. **Bloqueo si hay lentitud en la red**
+- PostgreSQL **espera a que `archive_command` termine** antes de marcar el WAL como archivado.
+- Si hay **latencia**, caídas o lentitud en la red, el archivo WAL no se considera archivado, y eso puede:
+  - Llenar el `pg_wal` y bloquear nuevas escrituras
+  - Generar retrasos o detener el motor
+
+> Esto es **crítico** si tienes alto volumen de escritura.
+
+ 
+
+###  2. **Sin reintentos ni verificación automática**
+- `scp` **no tiene lógica de reintentos** por sí solo.
+- Si por cualquier razón el envío falla, **PostgreSQL volverá a intentar**, pero no sabrá si el archivo se subió incompleto o no.
+- No hay verificación de checksum ni confirmación de integridad.
+
+ 
+
+###  3. **Sin control de concurrencia ni gestión de archivos**
+- Si múltiples archivos WAL se envían a la vez:
+  - Puedes saturar la conexión SSH
+  - Tienes múltiples procesos `scp` abiertos
+- No tienes control de rotación, limpieza o índice de respaldo.
+
+ 
+
+###  4. **Escalabilidad limitada**
+- Funciona bien en entornos pequeños.
+- Pero en bases de datos con mucha actividad de escritura y múltiples WAL por minuto, puede volverse un cuello de botella.
+- Herramientas especializadas como **pgBackRest** o **Barman** solucionan este problema con buffers, verificación de archivos, y recuperación eficiente.
+
+ 
+
+##  ¿Alternativas?
+
+| Opción           | Ventajas                                                  |
+|------------------|-----------------------------------------------------------|
+| `rsync` en tareas batch | Permite sincronizar varias WALs en una sola operación |
+| `pgBackRest`      | Reintentos automáticos, compresión, cifrado, retención   |
+| `wal-g`           | Envío asíncrono, integración con cloud (S3, etc)         |
+
+ 
+
+##  En resumen
+
+> Usar `scp` dentro del `archive_command` es simple y funcional, pero **no es resiliente** ni escalable por sí solo.  
+> Es mejor usarlo solo si:  
+> - Tienes baja carga de escritura  
+> - Red confiable y rápida  
+> - Supervisas constantemente el resultado
+
+ ---
 
 ### Info Extra
 ```
