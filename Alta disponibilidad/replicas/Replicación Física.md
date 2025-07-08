@@ -341,7 +341,7 @@ max_wal_sender: especifica el número máximo con los servidores en espera.
 
 El parámetro wal_keep_segments fue reemplazado por wal_keep_size a partir de PostgreSQL 13.
     • wal_keep_segments: (Versiones anteriores a PostgreSQL 13): Definía la cantidad de segmentos WAL a mantener en disco.
-    • wal_keep_size (PostgreSQL 13 en adelante): Define el tamaño total en MB o GB de los archivos WAL que se conservarán.
+    • wal_keep_size (PostgreSQL 13 en adelante): Define el tamaño total en MB o GB de los archivos WAL que se conservarán. controla cuánto espacio mínimo (en megabytes) de archivos WAL se deben conservar en el directorio pg_wal, incluso si ya no son necesarios para la recuperación local.
 
     • hot_standby: Habilita el modo de réplica en caliente, permitiendo consultas de solo lectura en la réplica.
     • primary_conninfo: Especifica cómo la réplica se conectará al servidor principal.
