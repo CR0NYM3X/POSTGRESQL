@@ -64,7 +64,7 @@ PITR se basa en **dos componentes esenciales**:
 | Directorio de WALs archivados    | `/sysx/data16/DATANEW/PITR/backup_wal`                 |
 | Backup base (pg_basebackup)      | `/sysx/data16/DATANEW/base_backup`                     |
 
----
+ 
 
 ### Iniciar el DATA
 ```
@@ -99,7 +99,7 @@ Reinicia PostgreSQL:
 /usr/pgsql-16/bin/pg_ctl restart -D /sysx/data16/DATANEW/PITR
 ```
 
----
+ 
 
 #### 2.   Crear backup base
 
@@ -109,7 +109,7 @@ Reinicia PostgreSQL:
 
 Asegúrate de tener la variable de entorno `PGPASSWORD` o `.pgpass` configurada para la autenticación.
 
----
+ 
 
 #### 3.  Forzar archivo de WAL
 Fuerza a PostgreSQL a cerrar el archivo WAL actual y comenzar uno nuevo, incluso si el archivo actual no está lleno.
@@ -118,7 +118,7 @@ Garantiza que el archivo WAL actual se archive completamente, útil para que el 
 psql -U postgres -c "SELECT pg_switch_wal();"
 ```
 
----
+ 
 
 #### 4.   Simular desastre
 
@@ -127,7 +127,7 @@ sudo systemctl stop postgresql-16
 rm -rf /sysx/data16/DATANEW/PITR/*
 ```
 
----
+ 
 
 #### 5.   Restaurar con PITR
 
@@ -169,7 +169,7 @@ psql -U postgres -c "SELECT pg_is_in_recovery();"
 ```
 
  
-## 🧪 Generar y validar datos antes y después del PITR
+# 🧪 Generar y validar datos antes y después del PITR
 
 ### 1.   Crear tabla de prueba
 
@@ -238,7 +238,6 @@ SELECT * FROM laboratorio_pitr ORDER BY id;
 ---
 
  
---- 
 
 # Como validar si ya se restauro.
 
@@ -292,6 +291,8 @@ Si usaste `recovery_target_action = 'promote'`, PostgreSQL debería haberse prom
 SELECT pg_wal_replay_resume(); -- sirve para reanudar la reproducción de los archivos WAL (Write-Ahead Log) cuando el servidor está en modo recuperación y ha sido pausado.
 pg_wal_replay_pause() -- para detener temporalmente la reproducción de WAL.
 ```
+
+--- 
 
 ## Como buscar si se tienen los wal de una fecha o hora 
 ```
@@ -347,12 +348,63 @@ postgres=# select name,setting from pg_settings where name ilike '%archive%';
 (6 rows)
 
 
-
+postgres@postgres#  select name,setting,context from pg_settings where name ilike '%wal%' order by context;
++-------------------------------+-----------+------------+
+|             name              |  setting  |  context   |
++-------------------------------+-----------+------------+
+| wal_segment_size              | 16777216  | internal   |
+| wal_block_size                | 8192      | internal   |
+| wal_log_hints                 | off       | postmaster |
+| wal_level                     | replica   | postmaster |
+| max_wal_senders               | 10        | postmaster |
+| wal_buffers                   | 2048      | postmaster |
+| wal_writer_flush_after        | 128       | sighup     |
+| max_wal_size                  | 2048      | sighup     |
+| min_wal_size                  | 1024      | sighup     |
+| wal_keep_size                 | 0         | sighup     |
+| wal_receiver_status_interval  | 10        | sighup     |
+| wal_receiver_timeout          | 60000     | sighup     |
+| wal_retrieve_retry_interval   | 5000      | sighup     |
+| wal_sync_method               | fdatasync | sighup     |
+| wal_writer_delay              | 200       | sighup     |
+| max_slot_wal_keep_size        | -1        | sighup     |
+| wal_receiver_create_temp_slot | off       | sighup     |
+| wal_init_zero                 | on        | superuser  |
+| wal_consistency_checking      |           | superuser  |
+| wal_compression               | off       | superuser  |
+| wal_recycle                   | on        | superuser  |
+| wal_skip_threshold            | 2048      | user       |
+| wal_sender_timeout            | 60000     | user       |
++-------------------------------+-----------+------------+
 ```
 
- ---
- 
-## 📦 Contexto de tu infraestructura
+---
+
+## 🗂️ Estructura recomendada para organizar tus backups
+
+```bash
+/base_backup/
+├── 2025/
+│   ├── 07/
+│   │   ├── 01/
+│   │   │   └── base.tar.gz
+│   │   ├── 15/
+│   │   │   └── base.tar.gz
+│   │   └── wal/
+│   │       ├── 01/
+│   │       ├── 02/
+│   │       └── ...
+│   └── 08/
+│       └── ...
+```
+
+### ¿Qué contiene cada carpeta?
+
+- `/base_backup/2025/07/01/` → Backup base del 1 de julio
+- `/base_backup/2025/07/wal/01/` → WALs generados el 1 de julio
+- `/base_backup/2025/07/wal/02/` → WALs del 2 de julio, y así sucesivamente
+
+## Contexto de tu infraestructura
 
 - Tienes un **servidor PostgreSQL (origen)** y un **servidor central de respaldo (destino)** con mucho almacenamiento.
 - El directorio en el servidor de respaldo es: `/mnt/backup/base_backup/`.
