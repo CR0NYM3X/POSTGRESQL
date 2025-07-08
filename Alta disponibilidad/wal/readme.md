@@ -199,31 +199,36 @@ Por ejemplo:
 
 # Extras
 ```
-tantor@centraldata# select proname from pg_proc where proname ilike '%wal%';
-+-------------------------------+
-|            proname            |
-+-------------------------------+
-| pg_ls_waldir                  |
-| pg_stat_get_wal_senders       |
-| pg_stat_get_wal_receiver      |
-| pg_stat_get_wal               |
-| pg_current_wal_lsn            |
-| pg_current_wal_insert_lsn     |
-| pg_current_wal_flush_lsn      |
-| pg_walfile_name_offset        |
-| pg_walfile_name               |
-| pg_split_walfile_name         |
-| pg_wal_lsn_diff               |
-| pg_last_wal_receive_lsn       |
-| pg_last_wal_replay_lsn        |
-| pg_is_wal_replay_paused       |
-| pg_get_wal_replay_pause_state |
-| pg_get_wal_resource_managers  |
-| pg_switch_wal                 |
-| pg_wal_replay_pause           |
-| pg_wal_replay_resume          |
-+-------------------------------+
-(19 rows)
+tantor@centraldata#  select name,setting,context from pg_settings where name ilike '%wal%' order by context;
+             name              |  setting  |  context
+-------------------------------+-----------+------------
+ wal_block_size                | 8192      | internal
+ wal_segment_size              | 16777216  | internal
+ wal_decode_buffer_size        | 524288    | postmaster
+ wal_log_hints                 | off       | postmaster
+ wal_buffers                   | 2048      | postmaster
+ max_wal_senders               | 10        | postmaster
+ wal_level                     | replica   | postmaster
+ wal_writer_flush_after        | 128       | sighup
+ max_wal_size                  | 2048      | sighup
+ min_wal_size                  | 1024      | sighup
+ wal_receiver_create_temp_slot | off       | sighup
+ wal_receiver_status_interval  | 10        | sighup
+ wal_receiver_timeout          | 60000     | sighup
+ wal_retrieve_retry_interval   | 5000      | sighup
+ wal_sync_method               | fdatasync | sighup
+ wal_writer_delay              | 200       | sighup
+ max_slot_wal_keep_size        | -1        | sighup
+ wal_keep_size                 | 30720     | sighup
+ wal_compression               | off       | superuser
+ wal_recycle                   | on        | superuser
+ wal_consistency_checking      |           | superuser
+ wal_init_zero                 | on        | superuser
+ track_wal_io_timing           | off       | superuser
+ wal_sender_timeout            | 60000     | user
+ wal_skip_threshold            | 2048      | user
+(25 rows)
+
 
 ----------- herramientas
 https://github.com/CR0NYM3X/POSTGRESQL/blob/main/pg_wal%20y%20transacciones.md#3-pg_archivecleanup
