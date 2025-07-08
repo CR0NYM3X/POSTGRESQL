@@ -62,7 +62,7 @@ PITR se basa en **dos componentes esenciales**:
 | Binarios de PostgreSQL           | `/usr/pgsql-16/bin`                                    |
 | Directorio de datos activo       | `/sysx/data16/DATANEW/PITR`                            |
 | Directorio de WALs archivados    | `/sysx/data16/DATANEW/backup_wal`                 |
-| Backup base (pg_basebackup)      | `/sysx/data16/DATANEW/base_backup`                     |
+| Backup base (pg_basebackup)      | `/sysx/data16/DATANEW/backup_base`                     |
 
  
 
@@ -90,8 +90,8 @@ port=5599
 Crea carpeta de WALs:
 
 ```bash
-mkdir -p /sysx/data16/DATANEW/PITR/backup_wal
-chown postgres:postgres /sysx/data16/DATANEW/PITR/backup_wal
+mkdir -p /sysx/data16/DATANEW/backup_wal
+chown postgres:postgres /sysx/data16/DATANEW/backup_wal
 ```
 
 Reinicia PostgreSQL:
@@ -105,7 +105,7 @@ Reinicia PostgreSQL:
 #### 2.   Crear backup base
 
 ```bash
- /usr/pgsql-16/bin/pg_basebackup -D /sysx/data16/DATANEW/base_backup -F p -U postgres -Xs -P -v -h 127.0.0.1
+ /usr/pgsql-16/bin/pg_basebackup -D /sysx/data16/DATANEW/backup_base -F p -U postgres -Xs -P -v -h 127.0.0.1 -p 5499
 ```
 
 Asegúrate de tener la variable de entorno `PGPASSWORD` o `.pgpass` configurada para la autenticación.
@@ -116,7 +116,7 @@ Asegúrate de tener la variable de entorno `PGPASSWORD` o `.pgpass` configurada 
 Fuerza a PostgreSQL a cerrar el archivo WAL actual y comenzar uno nuevo, incluso si el archivo actual no está lleno.
 Garantiza que el archivo WAL actual se archive completamente, útil para que el backup esté consistente.
 ```bash
-psql -U postgres -c "SELECT pg_switch_wal();"
+psql -p 5499 -U postgres -c "SELECT pg_switch_wal();"
 ```
 
  
@@ -135,7 +135,7 @@ rm -rf /sysx/data16/DATANEW/PITR/*
 Copia el backup al directorio de datos:
 
 ```bash
-cp -r /sysx/data16/DATANEW/base_backup/* /sysx/data16/DATANEW/PITR/
+cp -r /sysx/data16/DATANEW/backup_base/* /sysx/data16/DATANEW/PITR/
 ```
 
 Crea `recovery.signal`:
@@ -147,7 +147,7 @@ touch /sysx/data16/DATANEW/PITR/recovery.signal
 Agrega en `postgresql.auto.conf` o `postgresql.conf`:
 
 ```conf
-restore_command = 'cp /sysx/data16/DATANEW/PITR/backup_wal/%f %p'
+restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
 recovery_target_time = '2025-07-08 08:00:00'  # ⏰ Ajusta según tu objetivo
 ```
 
@@ -200,7 +200,7 @@ select now();
 +-------------------------------+
 |              now              |
 +-------------------------------+
-| 2025-07-08 13:11:48.199411-07 |
+| 2025-07-08 14:25:06.124532-07 |
 +-------------------------------+
 (1 row)
 
@@ -397,7 +397,7 @@ postgres@postgres#  select name,setting,context from pg_settings where name ilik
 ## 🗂️ Estructura recomendada para organizar tus backups
 
 ```bash
-/base_backup/
+/backup_base/
 ├── 2025/
 │   ├── 07/
 │   │   ├── 01/
@@ -414,14 +414,14 @@ postgres@postgres#  select name,setting,context from pg_settings where name ilik
 
 ### ¿Qué contiene cada carpeta?
 
-- `/base_backup/2025/07/01/` → Backup base del 1 de julio
-- `/base_backup/2025/07/wal/01/` → WALs generados el 1 de julio
-- `/base_backup/2025/07/wal/02/` → WALs del 2 de julio, y así sucesivamente
+- `/backup_base/2025/07/01/` → Backup base del 1 de julio
+- `/backup_base/2025/07/wal/01/` → WALs generados el 1 de julio
+- `/backup_base/2025/07/wal/02/` → WALs del 2 de julio, y así sucesivamente
 
 ## Contexto de tu infraestructura
 
 - Tienes un **servidor PostgreSQL (origen)** y un **servidor central de respaldo (destino)** con mucho almacenamiento.
-- El directorio en el servidor de respaldo es: `/mnt/backup/base_backup/`.
+- El directorio en el servidor de respaldo es: `/mnt/backup/backup_base/`.
 - Quieres copiar cada WAL en cuanto se genera, usando `scp`.
 
  
@@ -439,7 +439,7 @@ Antes de configurar el `archive_command`, asegúrate de:
 
 2. Que el usuario de PostgreSQL (`postgres`) tenga permisos para ejecutar `scp`.
 
-3. Que el directorio remoto exista: `/mnt/backup/base_backup/wal/YYYY-MM-DD/`
+3. Que el directorio remoto exista: `/mnt/backup/backup_base/wal/YYYY-MM-DD/`
 
 
 
@@ -461,7 +461,7 @@ DESTINO="$2"
 FNAME=$(basename "$ARCHIVO")
 
 # Ruta remota
-REMOTE_DIR="postgres@servidor-respaldo:/mnt/backup/base_backup/wal/${FECHA}"
+REMOTE_DIR="postgres@servidor-respaldo:/mnt/backup/backup_base/wal/${FECHA}"
 
 # Enviar archivo
 scp "$ARCHIVO" "$REMOTE_DIR/$FNAME"
@@ -490,7 +490,7 @@ archive_command = '/usr/local/bin/archive_wal_scp.sh %p %f'
 
 ```bash
 DATE=$(date +\%Y/\%m/\%d)
-DEST="/mnt/backup/base_backup/${DATE}"
+DEST="/mnt/backup/backup_base/${DATE}"
 mkdir -p "$DEST"
 pg_basebackup -D "$DEST" -F tar -U replication -Xs -P
 ```
