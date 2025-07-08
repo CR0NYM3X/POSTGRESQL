@@ -61,7 +61,7 @@ PITR se basa en **dos componentes esenciales**:
 |----------------------------------|--------------------------------------------------------|
 | Binarios de PostgreSQL           | `/usr/pgsql-16/bin`                                    |
 | Directorio de datos activo       | `/sysx/data16/DATANEW/PITR`                            |
-| Directorio de WALs archivados    | `/sysx/data16/DATANEW/PITR/backup_wal`                 |
+| Directorio de WALs archivados    | `/sysx/data16/DATANEW/backup_wal`                 |
 | Backup base (pg_basebackup)      | `/sysx/data16/DATANEW/base_backup`                     |
 
  
@@ -81,7 +81,7 @@ Ubicado en `/sysx/data16/DATANEW/PITR/postgresql.conf`:
 ```conf
 wal_level = replica
 archive_mode = on
-archive_command = 'cp %p /sysx/data16/DATANEW/PITR/backup_wal/%f'
+archive_command = 'cp %p /sysx/data16/DATANEW/backup_wal/%f'
 max_wal_senders = 5
 wal_keep_size = 512MB
 port=5599
@@ -197,14 +197,14 @@ INSERT INTO laboratorio_pitr (nombre, creado_en) VALUES
 ('registro_2', '2025-07-08 07:50:00');
 
 select now();
-+------------------------------+
-|             now              |
-+------------------------------+
-| 2025-07-08 13:06:02.32011-07 |
-+------------------------------+
++-------------------------------+
+|              now              |
++-------------------------------+
+| 2025-07-08 13:11:48.199411-07 |
++-------------------------------+
 (1 row)
 
-
+ 
 -- Insertar a la 2pm
 INSERT INTO laboratorio_pitr (nombre, creado_en) VALUES
 ('registro_3', '2025-07-08 08:05:00');  -- Este debería desaparecer si haces PITR a las 08:00
