@@ -1,3 +1,35 @@
+
+##   ¿Qué es exactamente PITR en PostgreSQL?
+
+**PITR (Point-In-Time Recovery)** es una técnica de recuperación que permite restaurar una base de datos PostgreSQL a un momento específico en el pasado. Es especialmente útil para:
+
+- Recuperarse de errores humanos (como un `DROP TABLE`)
+- Revertir cambios no deseados
+- Restaurar tras corrupción o fallos
+
+ 
+##   ¿Cómo funciona PITR?
+
+PITR se basa en **dos componentes esenciales**:
+
+| Componente         | Descripción                                                                 |
+|--------------------|-----------------------------------------------------------------------------|
+| **Backup base**    | Una copia completa del directorio de datos (`data_directory`) en un momento determinado. Se hace **una sola vez** como punto de partida. |
+| **Archivos WAL**   | Archivos de registro de transacciones (**Write-Ahead Logs**) que PostgreSQL genera constantemente. Se deben **archivar de forma continua** para poder reproducir los cambios posteriores al backup base. |
+
+ 
+## 🔄 Flujo resumido del proceso PITR
+
+1. 🔧 **Configuras PostgreSQL** para que archive los WALs (`archive_mode = on`).
+2. 📸 **Tomas un backup base** con `pg_basebackup` y lo guardas en un lugar seguro.
+3. 🔁 **PostgreSQL sigue funcionando** y generando archivos WAL que se copian a un directorio externo.
+4. 💥 Si ocurre un desastre, **restauras el backup base**.
+5. 🕰 Luego, **PostgreSQL reproduce los WALs** hasta el punto en el tiempo que tú defines (`recovery_target_time`).
+6. ✅ El sistema queda en el estado exacto que tenía en ese momento.
+
+---
+
+
 ### ¿Qué pasa al iniciar el servicio en modo recuperación?
 
 - PostgreSQL **entra en modo recuperación** y comienza a **reproducir los archivos WAL** desde el backup base hasta el punto de recuperación que definiste (`recovery_target_time`, por ejemplo).
@@ -85,36 +117,6 @@ SELECT * FROM pg_stat_archiver;
 ls /sysx/data/pg_wal/archive_status/
 ```
 
---- 
-
-###  ¿Qué contiene `pg_wal/archive_status`?
-Esta carpeta guarda **archivos de estado** que indican si un segmento WAL ha sido archivado correctamente o no y no contienen información.
-
-- **`*.ready`** → El archivo WAL está **listo para ser archivado**.
-- **`*.done`** → El archivo WAL **ya fue archivado con éxito**.
-
-Por ejemplo:
-```bash
-000000010000000000000002.ready
-000000010000000000000003.done
-```
-
-
-###  ¿Cómo se usa en el proceso de archivado?
-
-1. Cuando se llena un archivo WAL, PostgreSQL crea un archivo `*.ready` en `pg_wal/archive_status`.
-2. El proceso de archivado (`archive_command`) se ejecuta y copia el archivo WAL al destino configurado.
-3. Si el comando tiene éxito (retorna 0), PostgreSQL cambia el archivo a `*.done`.
-4. Si falla, el archivo `*.ready` permanece y PostgreSQL lo volverá a intentar más tarde.
-
-###  ¿Por qué es importante?
-
-- Permite a PostgreSQL **saber qué archivos ya fueron archivados** y cuáles aún están pendientes.
-- Evita que se **reciclen o eliminen archivos WAL** antes de ser archivados.
-- Es esencial para **Point-in-Time Recovery (PITR)** y replicación.
-
----
-
 
 
 Para el recovery se puede utlizar esto 
@@ -158,3 +160,116 @@ postgres=# select name,setting from pg_settings where name ilike '%archive%';
 
 
 ```
+
+# Laboratorio 
+
+
+##   Laboratorio PITR con PostgreSQL 16 — Rutas 100% personalizadas
+
+### 📁 Estructura de rutas
+
+| Propósito                         | Ruta                                                  |
+|----------------------------------|--------------------------------------------------------|
+| Binarios de PostgreSQL           | `/usr/pgsql-16/bin`                                    |
+| Directorio de datos activo       | `/sysx/data16/DATANEW/PITR`                            |
+| Directorio de WALs archivados    | `/sysx/data16/DATANEW/PITR/backup_wal`                 |
+| Backup base (pg_basebackup)      | `/sysx/data16/DATANEW/base_backup`                     |
+
+---
+
+###   Configuración y ejecución del laboratorio
+
+#### 1.   Configura el `postgresql.conf`
+
+Ubicado en `/sysx/data16/DATANEW/PITR/postgresql.conf`:
+
+```conf
+wal_level = replica
+archive_mode = on
+archive_command = 'cp %p /sysx/data16/DATANEW/PITR/backup_wal/%f'
+max_wal_senders = 5
+wal_keep_size = 512MB
+```
+
+Crea carpeta de WALs:
+
+```bash
+mkdir -p /sysx/data16/DATANEW/PITR/backup_wal
+chown postgres:postgres /sysx/data16/DATANEW/PITR/backup_wal
+```
+
+Reinicia PostgreSQL:
+
+```bash
+/usr/pgsql-16/bin/pg_ctl restart -D /sysx/data16/DATANEW/PITR
+```
+
+---
+
+#### 2.   Crear backup base
+
+```bash
+/usr/pgsql-16/bin/pg_basebackup -D /sysx/data16/DATANEW/base_backup -F p -U replication -Xs -P -v -h localhost
+```
+
+Asegúrate de tener la variable de entorno `PGPASSWORD` o `.pgpass` configurada para la autenticación.
+
+---
+
+#### 3.  Forzar archivo de WAL
+Fuerza a PostgreSQL a cerrar el archivo WAL actual y comenzar uno nuevo, incluso si el archivo actual no está lleno.
+Garantiza que el archivo WAL actual se archive completamente, útil para que el backup esté consistente.
+```bash
+psql -U postgres -c "SELECT pg_switch_wal();"
+```
+
+---
+
+#### 4.   Simular desastre
+
+```bash
+sudo systemctl stop postgresql-16
+rm -rf /sysx/data16/DATANEW/PITR/*
+```
+
+---
+
+#### 5.   Restaurar con PITR
+
+Copia el backup al directorio de datos:
+
+```bash
+cp -r /sysx/data16/DATANEW/base_backup/* /sysx/data16/DATANEW/PITR/
+```
+
+Crea `recovery.signal`:
+
+```bash
+touch /sysx/data16/DATANEW/PITR/recovery.signal
+```
+
+Agrega en `postgresql.auto.conf` o `postgresql.conf`:
+
+```conf
+restore_command = 'cp /sysx/data16/DATANEW/PITR/backup_wal/%f %p'
+recovery_target_time = '2025-07-08 08:00:00'  # ⏰ Ajusta según tu objetivo
+```
+
+Permisos:
+
+```bash
+chown -R postgres:postgres /sysx/data16/DATANEW/PITR
+```
+
+Inicia la base:
+
+```bash
+/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/PITR
+```
+
+Verifica estado:
+
+```bash
+psql -U postgres -c "SELECT pg_is_in_recovery();"
+```
+ 
