@@ -276,3 +276,28 @@ pg_backup_start(): Marca el inicio del respaldo en el WAL y prepara el servidor 
 pg_backup_stop(): Marca el final del respaldo y asegura que todos los cambios estén registrados.
 
 ```
+
+
+
+##  `max_wal_size`
+Este parámetro establece el **tamaño máximo total** que puede alcanzar el conjunto de archivos WAL acumulados en el directorio `pg_wal/`, antes de que PostgreSQL decida realizar un **checkpoint automático**.
+> Es decir, **la suma** de todos los archivos `.wal` acumulados, **no el tamaño de cada archivo individual**.
+
+
+##  Ejemplo ilustrativo
+
+Con `wal_segment_size = 16MB` y `max_wal_size = 2GB`:
+
+```bash
+2GB / 16MB = 128 archivos WAL
+```
+
+→ PostgreSQL acumulará hasta 128 archivos WAL antes de forzar un checkpoint (a menos que se dispare uno por tiempo o manualmente).
+
+
+
+## `wal_keep_size`?
+
+(PostgreSQL 13 en adelante): Define el tamaño total en MB o GB de los archivos WAL que se conservarán. controla cuánto espacio mínimo (en megabytes) de archivos WAL se deben conservar en el directorio pg_wal, incluso si ya no son necesarios para la recuperación local. no borra ni recicla archivos WAL hasta que al menos se hayan acumulado X megabytes de ellos. en caso de llegar al limite definido empieza a reciclar o borrar
+
+
