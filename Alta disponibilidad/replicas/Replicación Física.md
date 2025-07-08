@@ -333,7 +333,7 @@ wal_keep_size
 wal_log_hints: Este parámetro es requerido para que el servicio pg_rewind sea capaz de sincronizar con el servidor primario.
 wal_level: Establece el nivel de registro WAL necesario  y se utiliza este parámetro para habilitar la réplica streaming. Los posibles valores son “minimal”, “logical” o “replica”.
 max_wal_size: Es usado para especificar el tamaño máximo del archivo WAL.
-hot_standby:  el modo de hot standby permite conexiones de solo lectura en un servidor de espera mientras se recupera de un estado de archivo o se replica desde el servidor principal. Esto es útil para tareas de replicación y restauración precisa de copias de seguridad. OFF =PRINCIPAL  ON  =SOPORTE
+hot_standby:  el modo de hot standby permite conexiones de solo lectura en un servidor de espera mientras se recupera de un estado de archivo o se replica desde el servidor principal. Esto es útil para tareas de replicación y restauración precisa de copias de seguridad.  OFF =PRINCIPAL  ON  =SOPORTE
   
 max_wal_sender: especifica el número máximo con los servidores en espera.
 
@@ -341,7 +341,7 @@ max_wal_sender: especifica el número máximo con los servidores en espera.
 
 El parámetro wal_keep_segments fue reemplazado por wal_keep_size a partir de PostgreSQL 13.
     • wal_keep_segments: (Versiones anteriores a PostgreSQL 13): Definía la cantidad de segmentos WAL a mantener en disco.
-    • wal_keep_size (PostgreSQL 13 en adelante): Define el tamaño total en MB o GB de los archivos WAL que se conservarán. controla cuánto espacio mínimo (en megabytes) de archivos WAL se deben conservar en el directorio pg_wal, incluso si ya no son necesarios para la recuperación local.
+    • wal_keep_size (PostgreSQL 13 en adelante): Define el tamaño total en MB o GB de los archivos WAL que se conservarán. controla cuánto espacio mínimo (en megabytes) de archivos WAL se deben conservar en el directorio pg_wal, incluso si ya no son necesarios para la recuperación local. no borra  ni recicla archivos WAL hasta que al menos se hayan acumulado X megabytes de ellos, por si un servidor en espera (standby) los necesita para replicación.
 
     • hot_standby: Habilita el modo de réplica en caliente, permitiendo consultas de solo lectura en la réplica.
     • primary_conninfo: Especifica cómo la réplica se conectará al servidor principal.
