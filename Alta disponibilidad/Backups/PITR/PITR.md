@@ -18,14 +18,29 @@ PITR se basa en **dos componentes esenciales**:
 | **Archivos WAL**   | Archivos de registro de transacciones (**Write-Ahead Logs**) que PostgreSQL genera constantemente. Se deben **archivar de forma continua** para poder reproducir los cambios posteriores al backup base. |
 
  
-## 🔄 Flujo resumido del proceso PITR
+## 🔁 **Flujo de PITR (Recuperación a un Punto en el Tiempo)**
 
-1. 🔧 **Configuras PostgreSQL** para que archive los WALs (`archive_mode = on`).
-2. 📸 **Tomas un backup base** con `pg_basebackup` y lo guardas en un lugar seguro.
-3. 🔁 **PostgreSQL sigue funcionando** y generando archivos WAL que se copian a un directorio externo.
-4. 💥 Si ocurre un desastre, **restauras el backup base**.
-5. 🕰 Luego, **PostgreSQL reproduce los WALs** hasta el punto en el tiempo que tú defines (`recovery_target_time`).
-6. ✅ El sistema queda en el estado exacto que tenía en ese momento.
+### 🧱 Etapas del flujo de PITR:
+
+1. 📦 **Backup base completo**
+   - Se toma con `pg_basebackup` o similar.
+   - Refleja el estado completo del clúster.
+
+2. 🔁 **Archivado continuo de WALs**
+   - PostgreSQL guarda todos los cambios incrementales en los WALs.
+   - Se configuran con `archive_mode` y `archive_command`.
+
+3. 💥 **Ocurre un incidente**
+   - Puede ser corrupción, error humano, eliminación de datos, etc.
+
+4. 🧯 **Restaura el backup base**
+   - Se reestablecen los archivos del backup en un nuevo data_directory.
+
+5. ▶️ **Reproduce los WALs hasta el punto deseado**
+   - PostgreSQL aplica los cambios hasta el `recovery_target_time` configurado.
+
+6. ✅ **Promociona el clúster**
+   - Una vez alcanzado el punto objetivo, se elimina `recovery.signal` y el sistema vuelve a estar en producción.
 
 ---
 
