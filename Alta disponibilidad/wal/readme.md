@@ -163,6 +163,40 @@ Resultado:
 
 - Cuando el segmento llega a `FFFFFFFF`, el número lógico alto (`76`) se incrementa.
 
+
+---
+ 
+
+###  ¿Qué contiene `pg_wal/archive_status`?
+Esta carpeta guarda **archivos de estado** que indican si un segmento WAL ha sido archivado correctamente o no y no contienen información.
+
+- **`*.ready`** → El archivo WAL está **listo para ser archivado**.
+- **`*.done`** → El archivo WAL **ya fue archivado con éxito**.
+
+Por ejemplo:
+```bash
+000000010000000000000002.ready
+000000010000000000000003.done
+```
+
+
+###  ¿Cómo se usa en el proceso de archivado?
+
+1. Cuando se llena un archivo WAL, PostgreSQL crea un archivo `*.ready` en `pg_wal/archive_status`.
+2. El proceso de archivado (`archive_command`) se ejecuta y copia el archivo WAL al destino configurado.
+3. Si el comando tiene éxito (retorna 0), PostgreSQL cambia el archivo a `*.done`.
+4. Si falla, el archivo `*.ready` permanece y PostgreSQL lo volverá a intentar más tarde.
+
+###  ¿Por qué es importante?
+
+- Permite a PostgreSQL **saber qué archivos ya fueron archivados** y cuáles aún están pendientes.
+- Evita que se **reciclen o eliminen archivos WAL** antes de ser archivados.
+- Es esencial para **Point-in-Time Recovery (PITR)** y replicación.
+
+---
+
+ 
+
 # Extras
 ```
 tantor@centraldata# select proname from pg_proc where proname ilike '%wal%';
