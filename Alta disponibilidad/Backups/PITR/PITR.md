@@ -223,6 +223,14 @@ select now();
 -- Insertar a la 2pm
 INSERT INTO laboratorio_pitr (nombre, creado_en) VALUES
 ('registro_3', '2025-07-08 08:05:00');  -- Este debería desaparecer si haces PITR a las 08:00
+
+select now();
++-------------------------------+
+|              now              |
++-------------------------------+
+| 2025-07-08 17:21:46.953409-07 |
++-------------------------------+
+(1 row)
 ```
 
  
