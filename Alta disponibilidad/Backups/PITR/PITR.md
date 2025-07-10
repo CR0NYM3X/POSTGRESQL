@@ -164,6 +164,7 @@ Agrega en `postgresql.auto.conf` o `postgresql.conf`:
 ```conf
 restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
 recovery_target_time = '2025-07-08 08:00:00'  # ⏰ Ajusta según tu objetivo
+recovery_target_action = 'promote'
 ```
 
 Permisos:
