@@ -73,49 +73,46 @@ Permite restaurar la base de datos a un punto exacto en el tiempo.
 
 
  
----
+ 
 
-## 🔁 2. **Respaldo diferencial**
+### 🔄 Respaldo Incremental
 
-### 📌 ¿Qué es?
-- Copia **solo los cambios** realizados desde el **último respaldo completo**.
+- **¿Qué guarda?** Solo los *cambios* realizados desde el último respaldo (sea completo o incremental).
+- **Ventajas**:
+  - Usa menos espacio.
+  - Es más rápido de generar.
+- **Desventajas**:
+  - La restauración requiere *toda la cadena* de respaldos (completo + cada incremental siguiente).
+- **Ejemplo**:
+  - Día 1: respaldo completo.
+  - Día 2: respaldo incremental (solo cambios desde Día 1).
+  - Día 3: respaldo incremental (solo cambios desde Día 2).
+ 
 
-### ✅ Ventajas:
-- Más rápido que un respaldo completo.
-- Restauración más rápida que con incrementales (solo necesitas el respaldo completo + el último diferencial).
+### 📈 Respaldo Diferencial
 
-### ❌ Desventajas:
-- Aumenta de tamaño con el tiempo hasta el próximo respaldo completo.
+- **¿Qué guarda?** Todos los *cambios* hechos desde el último respaldo **completo**, sin importar cuántos diferenciales haya en el medio.
+- **Ventajas**:
+  - Restaurar es más simple (solo el completo + el último diferencial).
+- **Desventajas**:
+  - Tamaño crece con el tiempo si no se hace respaldo completo con frecuencia.
+- **Ejemplo**:
+  - Día 1: respaldo completo.
+  - Día 2: respaldo diferencial (cambios desde Día 1).
+  - Día 3: respaldo diferencial (cambios desde Día 1 nuevamente).
 
-### 🧠 ¿Cuándo usarlo?
-- Cuando necesitas un equilibrio entre velocidad de respaldo y velocidad de restauración.
+ 
 
----
+### 🆚 Comparación rápida
 
-## 🔄 3. **Respaldo incremental**
+| Característica            | Incremental             | Diferencial             |
+|---------------------------|--------------------------|--------------------------|
+| Base de comparación       | Último respaldo (cualquiera) | Último respaldo **completo** |
+| Espacio usado             | 🟢 Menos                 | 🟡 Más (va creciendo)     |
+| Restauración              | 🔴 Más compleja          | 🟢 Más sencilla           |
+| Velocidad de respaldo     | 🟢 Rápido                | 🟡 Intermedio             |
 
-### 📌 ¿Qué es?
-- Copia **solo los cambios** desde el **último respaldo (ya sea completo o incremental)**.
-
-### ✅ Ventajas:
-- Muy eficiente en espacio y tiempo de respaldo.
-- Ideal para respaldos frecuentes (cada hora, por ejemplo).
-
-### ❌ Desventajas:
-- Restauración más lenta (necesitas el respaldo completo + todos los incrementales hasta el punto deseado).
-
-### 🧠 ¿Cuándo usarlo?
-- En entornos con muchos cambios y necesidad de respaldos frecuentes.
-
----
-
-## 📊 Comparación rápida
-
-| Tipo         | Tamaño | Velocidad de respaldo | Velocidad de restauración | Dependencias |
-|--------------|--------|------------------------|----------------------------|--------------|
-| Completo     | Grande | Lento                  | Rápido                     | Ninguna      |
-| Diferencial  | Medio  | Medio                  | Medio                      | Completo     |
-| Incremental  | Pequeño| Rápido                 | Lento                      | Completo + todos los incrementales |
+ 
 
 ---
 
