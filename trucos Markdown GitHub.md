@@ -5,9 +5,10 @@
 1. [Introducción a WAL y PITR](#1)
 2. [Configuración inicial del entorno PostgreSQL](#2)
 
-<a name="1"></a>
+<a name="1"></a>  
+## 1. titulo 
 <a name="2"></a>
-
+## 2. titulo 
 --- 
 
 ```SQL 
