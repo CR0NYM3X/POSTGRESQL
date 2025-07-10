@@ -14,6 +14,7 @@ https://database.build/db/m6elcqyum78z69ug
 
 # Páginas interesantes 
 ```
+Postgres Administration Esentials - https://pgadminedb.readthedocs.io/en/latest/
 https://bensonyerima.com/
 https://www.postgresql.org/list/
   https://www.postgresql.org/list/pgsql-general/
