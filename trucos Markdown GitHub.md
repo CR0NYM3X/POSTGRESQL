@@ -1,48 +1,14 @@
 # trucos Markdown GitHub
  
-```stl
- solid pyramid
-  facet normal 0 0 0
-    outer loop
-      vertex 0 0 0
-      vertex 1 0 0
-      vertex 0.5 0.5 1
-    endloop
-  endfacet
-  facet normal 0 0 0
-    outer loop
-      vertex 1 0 0
-      vertex 1 1 0
-      vertex 0.5 0.5 1
-    endloop
-  endfacet
-  facet normal 0 0 0
-    outer loop
-      vertex 1 1 0
-      vertex 0 1 0
-      vertex 0.5 0.5 1
-    endloop
-  endfacet
-  facet normal 0 0 0
-    outer loop
-      vertex 0 1 0
-      vertex 0 0 0
-      vertex 0.5 0.5 1
-    endloop
-  endfacet
-  facet normal 0 0 0
-    outer loop
-      vertex 0 0 0
-      vertex 1 0 0
-      vertex 1 1 0
-      vertex 0 1 0
-    endloop
-  endfacet
-endsolid pyramid
+## 🛠️ Índice
 
-```
+1. [Introducción a WAL y PITR](#1)
+2. [Configuración inicial del entorno PostgreSQL](#2)
 
+<a name="1"></a>
+<a name="2"></a>
 
+--- 
 
 ```SQL 
 SELECT * FROM TABLAS WHERE NOMBRE= 'JOOSE;'
