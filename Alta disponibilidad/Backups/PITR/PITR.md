@@ -591,9 +591,16 @@ pg_wal_replay_resume()
 https://www.highgo.ca/2021/10/01/postgresql-14-continuous-archiving-and-point-in-time-recovery/
 https://www.highgo.ca/2023/05/09/various-restoration-techniques-using-postgresql-point-in-time-recovery/
 https://www.highgo.ca/2020/10/01/postgresql-wal-archiving-and-point-in-time-recovery/
+https://medium.com/@dickson.gathima/pitr-in-postgresql-using-pg-basebackup-and-wal-6b5c4a7273bb
+https://shivendrasingh243.medium.com/postgresql-backup-point-in-time-recovery-e5b3527a94b2
+https://medium.com/@sajawalhamza252/unlocking-data-consistency-with-postgres-14-lsn-based-point-in-time-recovery-a-comprehensive-guide-22b46ca567eb
+https://blog.devgenius.io/setup-continuous-archiving-and-point-in-time-recovery-pitr-with-postgresql-db-7e670523e8e4
+https://www.pivert.org/point-in-time-recovery-pitr-of-postgresql-database/
 https://github.com/MBmousavi/PostgreSQL-Point-In-Time-Recovery
 https://habr.com/ru/companies/otus/articles/786216/
 https://www.youtube.com/watch?v=4az6P3ePQ8E
 https://www.youtube.com/watch?v=qRvlJUUPpKU
+
+
 
 ```
