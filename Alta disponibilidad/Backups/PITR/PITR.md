@@ -120,7 +120,9 @@ Reinicia PostgreSQL:
 Fuerza a PostgreSQL a cerrar el archivo WAL actual y comenzar uno nuevo, incluso si el archivo actual no está lleno.
 Garantiza que el archivo WAL actual se archive completamente, útil para que el backup esté consistente.
 ```bash
-psql -p 5499 -U postgres -c "SELECT pg_switch_wal();"
+SELECT pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn();
+SELECT pg_switch_wal();
+SELECT pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn();
 ```
 
 #### 3.   Crear backup base
@@ -164,6 +166,7 @@ Agrega en `postgresql.auto.conf` o `postgresql.conf`:
 ```conf
 restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
 recovery_target_time = '2025-07-08 08:00:00'  # ⏰ Ajusta según tu objetivo
+# recovery_target_lsn = 'BBE/697CACC0' -- Esto si quiere restaurar un lsn en especifico
 recovery_target_action = 'promote'
 ```
 
