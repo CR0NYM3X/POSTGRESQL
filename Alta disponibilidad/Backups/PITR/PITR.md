@@ -594,6 +594,6 @@ https://www.highgo.ca/2020/10/01/postgresql-wal-archiving-and-point-in-time-reco
 https://github.com/MBmousavi/PostgreSQL-Point-In-Time-Recovery
 https://habr.com/ru/companies/otus/articles/786216/
 https://www.youtube.com/watch?v=4az6P3ePQ8E
-
+https://www.youtube.com/watch?v=qRvlJUUPpKU
 
 ```
