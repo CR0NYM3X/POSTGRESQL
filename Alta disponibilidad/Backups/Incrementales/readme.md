@@ -1,4 +1,5 @@
-.
+ 
+
 **PostgreSQL 17**, ya existe **soporte nativo para respaldos incrementales**
 
 
