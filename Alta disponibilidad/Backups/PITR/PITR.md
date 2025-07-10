@@ -79,7 +79,16 @@ PITR se basa en **dos componentes esenciales**:
 | Directorio de WALs archivados    | `/sysx/data16/DATANEW/backup_wal`                 |
 | Backup base (pg_basebackup)      | `/sysx/data16/DATANEW/backup_base`                     |
 
- 
+### Crear directorios y agregarlo como dueño
+```
+mkdir -p /sysx/data16/DATANEW/backup_base 
+mkdir -p /sysx/data16/DATANEW/backup_wal 
+mkdir -p /sysx/data16/DATANEW/PITR
+
+chown postgres:postgres /sysx/data16/DATANEW/backup_base 
+chown postgres:postgres  /sysx/data16/DATANEW/backup_wal 
+chown postgres:postgres  /sysx/data16/DATANEW/PITR
+```
 
 ### Iniciar el DATA
 ```
@@ -102,14 +111,9 @@ wal_keep_size = 512MB
 port=5599
 ```
 
-Crea carpeta de WALs:
+ 
 
-```bash
-mkdir -p /sysx/data16/DATANEW/backup_wal
-chown postgres:postgres /sysx/data16/DATANEW/backup_wal
-```
-
-Reinicia PostgreSQL:
+Iniciar PostgreSQL:
 
 ```bash
 /usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/PITR
@@ -120,73 +124,24 @@ Reinicia PostgreSQL:
 Fuerza a PostgreSQL a cerrar el archivo WAL actual y comenzar uno nuevo, incluso si el archivo actual no está lleno.
 Garantiza que el archivo WAL actual se archive completamente, útil para que el backup esté consistente.
 ```bash
-SELECT pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn();
+
+
+SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
+-- Asegurar que el archivo WAL que marca el inicio del respaldo sea archivado inmediatamente y se cree el .backup
 SELECT pg_switch_wal();
-SELECT pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn();
+SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
 ```
 
 #### 3.   Crear backup base
 
 ```bash
- /usr/pgsql-16/bin/pg_basebackup -D /sysx/data16/DATANEW/backup_base -F p -U postgres -Xs -P -v -h 127.0.0.1 -p 5499
+ /usr/pgsql-16/bin/pg_basebackup -D /sysx/data16/DATANEW/backup_base -F p -U postgres -Xs -P -v -h 127.0.0.1 -p 5519
 ```
 
 Asegúrate de tener la variable de entorno `PGPASSWORD` o `.pgpass` configurada para la autenticación.
 
  
 
-
- 
-
-#### 4.   Simular desastre
-
-```bash
-sudo systemctl stop postgresql-16
-rm -rf /sysx/data16/DATANEW/PITR/*
-```
-
- 
-
-#### 5.   Restaurar con PITR
-
-Copia el backup al directorio de datos:
-
-```bash
-cp -r /sysx/data16/DATANEW/backup_base/* /sysx/data16/DATANEW/PITR/
-```
-
-Crea `recovery.signal`:
-
-```bash
-touch /sysx/data16/DATANEW/PITR/recovery.signal
-```
-
-Agrega en `postgresql.auto.conf` o `postgresql.conf`:
-
-```conf
-restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
-recovery_target_time = '2025-07-08 08:00:00'  # ⏰ Ajusta según tu objetivo
-# recovery_target_lsn = 'BBE/697CACC0' -- Esto si quiere restaurar un lsn en especifico
-recovery_target_action = 'promote'
-```
-
-Permisos:
-
-```bash
-chown -R postgres:postgres /sysx/data16/DATANEW/PITR
-```
-
-Inicia la base:
-
-```bash
-/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/PITR
-```
-
-Verifica estado:
-
-```bash
-psql -U postgres -c "SELECT pg_is_in_recovery();"
-```
 
  
 # 🧪 Generar y validar datos antes y después del PITR
@@ -215,26 +170,32 @@ INSERT INTO laboratorio_pitr (nombre, creado_en) VALUES
 ('registro_1', '2025-07-08 07:45:00'),
 ('registro_2', '2025-07-08 07:50:00');
 
-select now();
-+-------------------------------+
-|              now              |
-+-------------------------------+
-| 2025-07-08 14:25:06.124532-07 |
-+-------------------------------+
-(1 row)
 
- 
--- Insertar a la 2pm
-INSERT INTO laboratorio_pitr (nombre, creado_en) VALUES
-('registro_3', '2025-07-08 08:05:00');  -- Este debería desaparecer si haces PITR a las 08:00
+postgres@postgres# SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
++-------------------------------+--------------------------+--------------------+
+|              now              |     pg_walfile_name      | pg_current_wal_lsn |
++-------------------------------+--------------------------+--------------------+
+| 2025-07-10 11:36:33.027786-07 | 000000010000000000000004 | 0/4031EE8          |
++-------------------------------+--------------------------+--------------------+
 
-select now();
-+-------------------------------+
-|              now              |
-+-------------------------------+
-| 2025-07-08 17:21:46.953409-07 |
-+-------------------------------+
-(1 row)
+SELECT pg_create_restore_point('punto_laboratorio');
+
+-- ejecutar  después de insertar   datos y te ayuda a forzar que se archive el WAL donde está ese evento importante, y puedas usarlo como referencia durante la recuperación.
+postgres@postgres# SELECT pg_switch_wal();
++---------------+
+| pg_switch_wal |
++---------------+
+| 0/4031F00     |
++---------------+
+postgres@postgres# SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
++-------------------------------+--------------------------+--------------------+
+|              now              |     pg_walfile_name      | pg_current_wal_lsn |
++-------------------------------+--------------------------+--------------------+
+| 2025-07-10 11:36:35.582515-07 | 000000010000000000000004 | 0/5000000          |
++-------------------------------+--------------------------+--------------------+
+
+
+
 ```
 
  
@@ -242,20 +203,117 @@ select now();
 ### 3.  Validar antes del desastre
 
 ```sql
-SELECT * FROM laboratorio_pitr ORDER BY id;
+postgres@postgres# SELECT * FROM laboratorio_pitr ORDER BY id;
++----+------------+---------------------+
+| id |   nombre   |      creado_en      |
++----+------------+---------------------+
+|  1 | registro_1 | 2025-07-08 07:45:00 |
+|  2 | registro_2 | 2025-07-08 07:50:00 |
++----+------------+---------------------+
 ```
 
-Deberías ver los tres registros.
+Deberías ver los dos registros.
+
+ 
+ 
 
  
 
-### 4.  Simular desastre y aplicar PITR
+#  Simular desastre
 
-Haz PITR con:
+# Deneter el servico y borrar el DATA
+```bash
+# Deneter el servicio
+/usr/pgsql-16/bin/pg_ctl stop -D /sysx/data16/DATANEW/PITR
+
+# Borrar los directorios del DATA de postgresql
+rm -r /sysx/data16/DATANEW/PITR/*
+```
+
+
+#### 2.   Restaurar con PITR
+
+Copia el backup al directorio de datos:
+
+```bash
+cp -r /sysx/data16/DATANEW/backup_base/* /sysx/data16/DATANEW/PITR/
+```
+
+Crea `recovery.signal`:
+
+```bash
+touch /sysx/data16/DATANEW/PITR/recovery.signal
+```
+
+Agrega en `postgresql.auto.conf` o `postgresql.conf`:
 
 ```conf
-recovery_target_time = '2025-07-08 08:00:00'
+restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
+recovery_target_time = '2025-07-08 08:00:00'  # ⏰ Ajusta según tu objetivo
+# recovery_target_lsn = 'BBE/697CACC0' # Esto si quiere restaurar un lsn en especifico
+# recovery_target_name = 'punto_laboratorio' # Se puede usar si quieres restaurar con algun nombre y usaste la fun pg_create_restore_point
+recovery_target_action = 'promote'
+recovery_target_timeline = '1'
+
 ```
+
+Permisos:
+
+```bash
+chown -R postgres:postgres /sysx/data16/DATANEW/PITR
+```
+
+en otra terminal monitorear el log 
+```bash
+  tail -f /sysx/data16/DATANEW/PITR/log/postgresql-Thu.log
+```
+
+
+
+Inicia la base:
+
+```bash
+/usr/pgsql-16/bin/pg_ctl start -D /sysx/data16/DATANEW/PITR
+```
+
+Verifica estado:
+
+```bash
+psql -U postgres -c "SELECT pg_is_in_recovery();"
+```
+
+Salida del log 
+```
+
+2025-07-10 12:04:16.558 MST [455015] LOG:  starting PostgreSQL 16.9 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-26), 64-bit
+2025-07-10 12:04:16.560 MST [455015] LOG:  listening on IPv6 address "::1", port 5519
+2025-07-10 12:04:16.560 MST [455015] LOG:  listening on IPv4 address "127.0.0.1", port 5519
+2025-07-10 12:04:16.561 MST [455015] LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5519"
+2025-07-10 12:04:16.563 MST [455015] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5519"
+2025-07-10 12:04:16.566 MST [455019] LOG:  database system was interrupted while in recovery at log time 2025-07-10 11:59:27 MST
+2025-07-10 12:04:16.566 MST [455019] HINT:  If this has occurred more than once some data might be corrupted and you might need to choose an earlier recovery target.
+cp: cannot stat '/sysx/data16/DATANEW/backup_wal/00000002.history': No such file or directory
+2025-07-10 12:04:16.612 MST [455019] LOG:  starting point-in-time recovery to "punto_laboratorio"
+2025-07-10 12:04:16.628 MST [455019] LOG:  restored log file "000000010000000000000003" from archive
+2025-07-10 12:04:16.647 MST [455019] LOG:  redo starts at 0/3000028
+2025-07-10 12:04:16.665 MST [455019] LOG:  restored log file "000000010000000000000004" from archive
+2025-07-10 12:04:16.679 MST [455019] LOG:  consistent recovery state reached at 0/3000100
+2025-07-10 12:04:16.679 MST [455015] LOG:  database system is ready to accept read-only connections
+2025-07-10 12:04:16.697 MST [455019] LOG:  restored log file "000000010000000000000005" from archive
+cp: cannot stat '/sysx/data16/DATANEW/backup_wal/000000010000000000000006': No such file or directory
+2025-07-10 12:04:16.719 MST [455019] LOG:  recovery stopping at restore point "punto_laboratorio", time 2025-07-10 11:59:47.693563-07
+2025-07-10 12:04:16.719 MST [455019] LOG:  redo done at 0/4031E70 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.07 s
+2025-07-10 12:04:16.719 MST [455019] LOG:  last completed transaction was at log time 2025-07-10 11:59:38.623946-07
+2025-07-10 12:04:16.735 MST [455019] LOG:  restored log file "000000010000000000000004" from archive
+cp: cannot stat '/sysx/data16/DATANEW/backup_wal/00000002.history': No such file or directory
+2025-07-10 12:04:16.756 MST [455019] LOG:  selected new timeline ID: 2
+cp: cannot stat '/sysx/data16/DATANEW/backup_wal/00000001.history': No such file or directory
+2025-07-10 12:04:16.796 MST [455019] LOG:  archive recovery complete
+2025-07-10 12:04:16.797 MST [455017] LOG:  checkpoint starting: end-of-recovery immediate wait
+2025-07-10 12:04:16.805 MST [455017] LOG:  checkpoint complete: wrote 56 buffers (0.3%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.004 s, sync=0.002 s, total=0.009 s; sync files=43, longest=0.001 s, average=0.001 s; distance=16583 kB, estimate=16583 kB; lsn=0/4031ED8, redo lsn=0/4031ED8
+2025-07-10 12:04:16.811 MST [455015] LOG:  database system is ready to accept connections
+```
+
 
  
 
@@ -278,7 +336,15 @@ SELECT * FROM laboratorio_pitr ORDER BY id;
 
 ---
 
- 
+# borrar datos del laboratorio 
+```bash
+rm -r /sysx/data16/DATANEW/backup_base 
+rm -r /sysx/data16/DATANEW/backup_wal 
+rm -r /sysx/data16/DATANEW/PITR
+```
+
+
+---
 
 # Como validar si ya se restauro.
 
