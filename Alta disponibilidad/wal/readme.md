@@ -301,3 +301,35 @@ Con `wal_segment_size = 16MB` y `max_wal_size = 2GB`:
 (PostgreSQL 13 en adelante): Define el tamaño total en MB o GB de los archivos WAL que se conservarán. controla cuánto espacio mínimo (en megabytes) de archivos WAL se deben conservar en el directorio pg_wal, incluso si ya no son necesarios para la recuperación local. no borra ni recicla archivos WAL hasta que al menos se hayan acumulado X megabytes de ellos. en caso de llegar al limite definido empieza a reciclar o borrar
 
 
+
+
+----
+
+ 
+### 🛡️ `SELECT pg_control_checkpoint();`
+
+📌 **¿Qué hace?**  
+Devuelve información sobre el **último checkpoint registrado** en el archivo `pg_control`.
+
+🔍 **¿Para qué sirve?**
+- Verifica cuándo ocurrió el último checkpoint.
+- Muestra el LSN de checkpoint y redo point.
+- Indica el timeline ID actual del clúster.
+- Ayuda a diagnosticar si la recuperación alcanzó el punto esperado.
+
+🧪 **Ejemplo de uso en PITR:**
+Después de recuperar un backup base, esta función confirma si el estado es consistente y en qué momento finalizó la aplicación de WALs.
+ 
+
+### 🔄 `SELECT pg_control_recovery();`
+
+📌 **¿Qué hace?**  
+Entrega detalles sobre la **configuración de recuperación** usada durante el último arranque del clúster.
+
+🔍 **¿Para qué sirve?**
+- Muestra el tipo de recuperación: por tiempo, LSN, nombre, etc.
+- Indica si el servidor fue promovido o aún está en modo recuperación.
+- Es útil para auditar qué parámetros se usaron (`recovery_target_time`, `restore_command`, etc.).
+
+⚠️ **Solo tiene datos si el clúster inició en modo recovery.** Si ya fue promovido, puede devolver valores vacíos.
+ 
