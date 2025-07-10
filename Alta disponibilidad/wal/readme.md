@@ -333,3 +333,13 @@ Entrega detalles sobre la **configuración de recuperación** usada durante el �
 
 ⚠️ **Solo tiene datos si el clúster inició en modo recovery.** Si ya fue promovido, puede devolver valores vacíos.
  
+
+
+---
+```
+select pg_current_wal_lsn(), pg_current_wal_insert_lsn(),pg_current_wal_flush_lsn() ;
+
+pg_current_wal_lsn() te dirá el punto desde donde empezará la próxima escritura.
+pg_current_wal_insert_lsn() te muestra hasta dónde ya se insertaron los datos en la memoria.
+pg_current_wal_flush_lsn() te muestra hasta dónde esos datos ya están escritos en el disco duro (persistencia completa).
+```
