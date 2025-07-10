@@ -584,3 +584,16 @@ pg_switch_wal()
 -- te permite reanudar la recuperación si PostgreSQL se detuvo en un punto específico (por ejemplo, al alcanzar recovery_target_time con recovery_target_action = 'pause').
 pg_wal_replay_resume()
 ```
+
+
+## Bibliografias
+```
+https://www.highgo.ca/2021/10/01/postgresql-14-continuous-archiving-and-point-in-time-recovery/
+https://www.highgo.ca/2023/05/09/various-restoration-techniques-using-postgresql-point-in-time-recovery/
+https://www.highgo.ca/2020/10/01/postgresql-wal-archiving-and-point-in-time-recovery/
+https://github.com/MBmousavi/PostgreSQL-Point-In-Time-Recovery
+https://habr.com/ru/companies/otus/articles/786216/
+https://www.youtube.com/watch?v=4az6P3ePQ8E
+
+
+```
