@@ -262,7 +262,7 @@ se veran temas :
 - alta Disponibilidad 
 - Distribución de carga 
  ETc 
-
+```
 High Available PostgreSQL Cluster Arhitecture [PostgreSQL + Patroni |  HAProxy + Keepalived |  pgBackRest ] - https://ozwizard.medium.com/high-available-postgresql-cluster-arhitecture-c405c00c8c71 <br>
 https://github.com/kashifmeo/postgreSQL/blob/main/postgreSQLPatroniCluster <br>
 https://www.youtube.com/watch?v=qpxKlH7DBjU&list=PLBrWqg4Ny6vVwwrxjgEtJgdreMVbWkBz0 <br>
@@ -270,6 +270,6 @@ https://www.youtube.com/results?search_query=high+availability+postgresql <br>
 https://www.youtube.com/watch?v=A_t_ytq1lpA <br>
 https://www.youtube.com/watch?v=f69j5beCtU8&list=PL0oKv1pqr890hczYB903pyPIFUCIhNj40 <br>
 https://www.youtube.com/watch?v=-OjhYXNJPYM&list=PLn6POgpklwWonHjoGXXSIXJWYzPSy2FeJ&index=27
-
-
+PostgreSQL Disaster Recovery: Easy Steps for Effective Backup and Restoration -> https://www.mydbops.com/blog/master-postgresql-disaster-recovery-backup-restore
+```
 
