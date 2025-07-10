@@ -116,8 +116,14 @@ Reinicia PostgreSQL:
 ```
 
  
+#### 2.  Forzar archivo de WAL
+Fuerza a PostgreSQL a cerrar el archivo WAL actual y comenzar uno nuevo, incluso si el archivo actual no está lleno.
+Garantiza que el archivo WAL actual se archive completamente, útil para que el backup esté consistente.
+```bash
+psql -p 5499 -U postgres -c "SELECT pg_switch_wal();"
+```
 
-#### 2.   Crear backup base
+#### 3.   Crear backup base
 
 ```bash
  /usr/pgsql-16/bin/pg_basebackup -D /sysx/data16/DATANEW/backup_base -F p -U postgres -Xs -P -v -h 127.0.0.1 -p 5499
@@ -127,12 +133,6 @@ Asegúrate de tener la variable de entorno `PGPASSWORD` o `.pgpass` configurada 
 
  
 
-#### 3.  Forzar archivo de WAL
-Fuerza a PostgreSQL a cerrar el archivo WAL actual y comenzar uno nuevo, incluso si el archivo actual no está lleno.
-Garantiza que el archivo WAL actual se archive completamente, útil para que el backup esté consistente.
-```bash
-psql -p 5499 -U postgres -c "SELECT pg_switch_wal();"
-```
 
  
 
