@@ -1,13 +1,12 @@
- 
 
 ## 🧱 TIPOS DE RESPALDOS EN POSTGRESQL
 
-### 1. 🧠 **Backup lógico**
+# 1. 🧠 **Backup lógico**
 Realiza una copia de los datos en formato SQL o personalizado.
 
 #### Herramientas:
-- `pg_dump`
-- `pg_dumpall`
+- `pg_dump : solo una base de datos`
+- `pg_dumpall : Todas las base de datos`
 
 #### Características:
 - Puedes respaldar **una base de datos o una tabla específica**.
@@ -25,7 +24,10 @@ pg_dump -U usuario -d mibasedatos -f respaldo.sql
 
 ---
 
-### 2. 💽 **Backup físico**
+# 2. 💽 **Backup físico**
+
+
+### 2.1 Respaldo Completo del DATA 
 Copia **todo el directorio de datos** de PostgreSQL.
 
 #### Herramientas:
@@ -47,7 +49,7 @@ pg_basebackup -h localhost -D /ruta/destino -U replicador -Fp -Xs -P
 
 ---
 
-### 3. ⏳ **Backup incremental / PITR (Point-In-Time Recovery)**
+### 2.2. ⏳ **Backup incremental / PITR (Point-In-Time Recovery)**
 Permite restaurar la base de datos a un punto exacto en el tiempo.
 
 #### Requiere:
@@ -69,33 +71,8 @@ Permite restaurar la base de datos a un punto exacto en el tiempo.
 
 ---
 
-## 📌 Comparación rápida
-
-| Tipo de respaldo | Nivel | Flexible | Rápido | Ideal para |
-|------------------|-------|----------|--------|------------|
-| Lógico (`pg_dump`) | Tabla/BD | ✅ Sí | 🟡 Medio | Migraciones, respaldo parcial |
-| Físico (`pg_basebackup`) | Servidor completo | ❌ No | ✅ Rápido | Recuperación total, réplicas |
-| PITR | Servidor completo + tiempo | 🟡 Parcial | 🟡 Medio | Recuperación ante errores |
-
 
  
-## 🧱 1. **Respaldo completo (Full Backup)**
-
-### 📌 ¿Qué es?
-- Copia **todo** el contenido de la base de datos (o del sistema) en un solo respaldo.
-
-### ✅ Ventajas:
-- Restauración rápida y directa.
-- Independiente de otros respaldos.
-
-### ❌ Desventajas:
-- Consume más espacio.
-- Toma más tiempo en bases de datos grandes.
-
-### 🧠 ¿Cuándo usarlo?
-- Como respaldo base.
-- Antes de actualizaciones importantes.
-
 ---
 
 ## 🔁 2. **Respaldo diferencial**
@@ -152,42 +129,6 @@ PostgreSQL **no tiene respaldo incremental o diferencial nativo** como tal, pero
 
 
 
-**PostgreSQL 17**, ya existe **soporte nativo para respaldos incrementales**
-
-
-## 🆕 ¿Qué cambia en PostgreSQL 17?
-
-### ✅ **Respaldo incremental nativo**
-Antes, para hacer respaldos incrementales o diferenciales, necesitabas herramientas externas como **pgBackRest** o **Barman**.  
-Ahora, **PostgreSQL 17** permite hacer **respaldos incrementales directamente con `pg_basebackup`**, gracias a nuevas funcionalidades integradas .
-
----
-
-## 🔧 ¿Cómo funciona?
-
-1. **Primero haces un respaldo completo** con `pg_basebackup`.
-2. Luego, puedes hacer respaldos incrementales que solo copian los **cambios desde el último respaldo** (ya sea completo o incremental).
-3. Se usa un nuevo parámetro:  
-   ```bash
-   pg_basebackup --incremental=PATH_TO_MANIFEST
-   ```
-4. También se puede usar la herramienta nueva `pg_combinebackup` para **reconstruir el respaldo completo** a partir del respaldo base + incrementales.
-
----
-
-## 📌 Requisitos
-
-- PostgreSQL 17.
-- Activar el parámetro `summarize_wal = on` en `postgresql.conf`.
-- No se puede usar si `wal_level = minimal`.
-
----
-
-## 🧠 ¿Qué beneficios trae?
-
-- **Menor uso de espacio**: solo se respaldan los archivos modificados.
-- **Más rápido**: ideal para respaldos frecuentes.
-- **Integración nativa**: sin necesidad de herramientas externas.
 
 ---
 
