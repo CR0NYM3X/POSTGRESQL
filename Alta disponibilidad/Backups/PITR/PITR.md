@@ -128,10 +128,10 @@ Garantiza que el archivo WAL actual se archive completamente, útil para que el 
 ```bash
 
 
-SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
+SELECT CLOCK_TIMESTAMP(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
 -- Asegurar que el archivo WAL que marca el inicio del respaldo sea archivado inmediatamente y se cree el .backup
 SELECT pg_switch_wal();
-SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
+SELECT CLOCK_TIMESTAMP(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
 ```
 
 #### 3.   Crear backup base
@@ -153,10 +153,13 @@ Asegúrate de tener la variable de entorno `PGPASSWORD` o `.pgpass` configurada 
 Antes de hacer el backup base:
 
 ```sql
-CREATE TABLE laboratorio_pitr (
+CREATE TABLE wal_tracking (
     id SERIAL PRIMARY KEY,
-    nombre TEXT NOT NULL,
-    creado_en TIMESTAMP DEFAULT now()
+    fecha TIMESTAMP NOT NULL,
+    wal_file_name TEXT NOT NULL,
+    wal_lsn TEXT NOT NULL,
+    wal_insert_lsn TEXT NOT NULL,
+    pg_current_wal_flush_lsn  TEXT NOT NULL
 );
 ```
 
@@ -168,17 +171,28 @@ Inserta algunos registros con marcas de tiempo distintas:
 
 ```sql
 -- Insertar a la 1pm 
-INSERT INTO laboratorio_pitr (nombre, creado_en) VALUES
-('registro_1', '2025-07-08 07:45:00'),
-('registro_2', '2025-07-08 07:50:00');
 
+INSERT INTO wal_tracking (fecha, wal_file_name, wal_lsn, wal_insert_lsn,pg_current_wal_flush_lsn)
+SELECT 
+    CLOCK_TIMESTAMP(),
+    pg_walfile_name(pg_current_wal_lsn()),
+    pg_current_wal_lsn(),
+    pg_current_wal_insert_lsn(),
+    pg_current_wal_flush_lsn()
+	FROM generate_series(1, 5) AS gs where pg_sleep(5) is not null;
+	
+postgres@postgres# select * from wal_tracking;
++----+----------------------------+--------------------------+-----------+----------------+--------------------------+
+| id |           fecha            |      wal_file_name       |  wal_lsn  | wal_insert_lsn | pg_current_wal_flush_lsn |
++----+----------------------------+--------------------------+-----------+----------------+--------------------------+
+|  1 | 2025-07-10 14:20:00.121288 | 000000010000000000000003 | 0/302FEA0 | 0/302FEA0      | 0/302FEA0                |
+|  2 | 2025-07-10 14:20:05.126869 | 000000010000000000000003 | 0/3030078 | 0/3030078      | 0/3030078                |
+|  3 | 2025-07-10 14:20:10.132004 | 000000010000000000000003 | 0/3030078 | 0/3030138      | 0/3030078                |
+|  4 | 2025-07-10 14:20:15.137129 | 000000010000000000000003 | 0/3030078 | 0/30301F8      | 0/3030078                |
+|  5 | 2025-07-10 14:20:20.140877 | 000000010000000000000003 | 0/30302F0 | 0/30302F0      | 0/30302F0                |
++----+----------------------------+--------------------------+-----------+----------------+--------------------------+
+(5 rows)
 
-postgres@postgres# SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
-+-------------------------------+--------------------------+--------------------+
-|              now              |     pg_walfile_name      | pg_current_wal_lsn |
-+-------------------------------+--------------------------+--------------------+
-| 2025-07-10 11:36:33.027786-07 | 000000010000000000000004 | 0/4031EE8          |
-+-------------------------------+--------------------------+--------------------+
 
 SELECT pg_create_restore_point('punto_laboratorio');
 
@@ -187,40 +201,30 @@ postgres@postgres# SELECT pg_switch_wal();
 +---------------+
 | pg_switch_wal |
 +---------------+
-| 0/4031F00     |
+| 0/3078AD0     |
 +---------------+
-postgres@postgres# SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
-+-------------------------------+--------------------------+--------------------+
-|              now              |     pg_walfile_name      | pg_current_wal_lsn |
-+-------------------------------+--------------------------+--------------------+
-| 2025-07-10 11:36:35.582515-07 | 000000010000000000000004 | 0/5000000          |
-+-------------------------------+--------------------------+--------------------+
+(1 row)
 
 
+postgres@postgres# SELECT CLOCK_TIMESTAMP(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn(),pg_current_wal_flush_lsn();
++-------------------------------+--------------------------+--------------------+---------------------------+--------------------------+
+|        clock_timestamp        |     pg_walfile_name      | pg_current_wal_lsn | pg_current_wal_insert_lsn | pg_current_wal_flush_lsn |
++-------------------------------+--------------------------+--------------------+---------------------------+--------------------------+
+| 2025-07-10 14:20:57.542894-07 | 000000010000000000000004 | 0/4000060          | 0/4000060                 | 0/4000060                |
++-------------------------------+--------------------------+--------------------+---------------------------+--------------------------+
+(1 row)
+
+
+ 
+pg_walfile_name()  convierte un LSN (Log Sequence Number) en el nombre del archivo físico WAL correspondiente.
+pg_current_wal_lsn() te dirá el punto desde donde empezará la próxima escritura.
+pg_current_wal_insert_lsn() te muestra hasta dónde ya se insertaron los datos en la memoria.
+pg_current_wal_flush_lsn() te muestra hasta dónde esos datos ya están escritos en el disco duro (persistencia completa).
 
 ```
 
  
-
-### 3.  Validar antes del desastre
-
-```sql
-postgres@postgres# SELECT * FROM laboratorio_pitr ORDER BY id;
-+----+------------+---------------------+
-| id |   nombre   |      creado_en      |
-+----+------------+---------------------+
-|  1 | registro_1 | 2025-07-08 07:45:00 |
-|  2 | registro_2 | 2025-07-08 07:50:00 |
-+----+------------+---------------------+
-```
-
-Deberías ver los dos registros.
-
  
- 
-
- 
-
 #  Simular desastre
 
 # Deneter el servico y borrar el DATA
@@ -252,7 +256,7 @@ Agrega en `postgresql.auto.conf` o `postgresql.conf`:
 ```conf
 echo "
 restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
-recovery_target_time = '2025-07-10 12:36:52.242927-07'  # ⏰ Ajusta según tu objetivo
+recovery_target_time = '2025-07-10 14:20:05.126869'  # ⏰ Ajusta según tu objetivo
 # recovery_target_lsn = 'BBE/697CACC0' # Esto si quiere restaurar un lsn en especifico
 # recovery_target_name = 'punto_laboratorio' # Se puede usar si quieres restaurar con algun nombre y usaste la fun pg_create_restore_point
 recovery_target_action = 'promote'
@@ -282,60 +286,47 @@ Inicia la base:
 Verifica estado:
 
 ```bash
-psql -U postgres -c "SELECT pg_is_in_recovery();"
+psql -p 5599 -U postgres -c "SELECT pg_is_in_recovery();"
 ```
 
 Salida del log 
 ```
-
-2025-07-10 12:04:16.558 MST [455015] LOG:  starting PostgreSQL 16.9 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-26), 64-bit
-2025-07-10 12:04:16.560 MST [455015] LOG:  listening on IPv6 address "::1", port 5599
-2025-07-10 12:04:16.560 MST [455015] LOG:  listening on IPv4 address "127.0.0.1", port 5599
-2025-07-10 12:04:16.561 MST [455015] LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5599"
-2025-07-10 12:04:16.563 MST [455015] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5599"
-2025-07-10 12:04:16.566 MST [455019] LOG:  database system was interrupted while in recovery at log time 2025-07-10 11:59:27 MST
-2025-07-10 12:04:16.566 MST [455019] HINT:  If this has occurred more than once some data might be corrupted and you might need to choose an earlier recovery target.
+2025-07-10 14:23:12.196 MST [496327] LOG:  starting PostgreSQL 16.9 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-26), 64-bit
+2025-07-10 14:23:12.199 MST [496327] LOG:  listening on IPv6 address "::1", port 5599
+2025-07-10 14:23:12.199 MST [496327] LOG:  listening on IPv4 address "127.0.0.1", port 5599
+2025-07-10 14:23:12.200 MST [496327] LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5599"
+2025-07-10 14:23:12.202 MST [496327] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5599"
+2025-07-10 14:23:12.206 MST [496331] LOG:  database system was interrupted; last known up at 2025-07-10 14:19:06 MST
+2025-07-10 14:23:12.242 MST [496331] LOG:  starting point-in-time recovery to 2025-07-10 14:20:05.126869-07
+2025-07-10 14:23:12.242 MST [496331] LOG:  starting backup recovery with redo LSN 0/2000028, checkpoint LSN 0/2000060, on timeline ID 1
+2025-07-10 14:23:12.259 MST [496331] LOG:  restored log file "000000010000000000000002" from archive
+2025-07-10 14:23:12.278 MST [496331] LOG:  redo starts at 0/2000028
+2025-07-10 14:23:12.295 MST [496331] LOG:  restored log file "000000010000000000000003" from archive
+2025-07-10 14:23:12.307 MST [496331] LOG:  completed backup recovery with redo LSN 0/2000028 and end LSN 0/2000100
+2025-07-10 14:23:12.307 MST [496331] LOG:  consistent recovery state reached at 0/2000100
+2025-07-10 14:23:12.307 MST [496327] LOG:  database system is ready to accept read-only connections
+2025-07-10 14:23:12.309 MST [496331] LOG:  recovery stopping before commit of transaction 731, time 2025-07-10 14:20:20.140998-07
+2025-07-10 14:23:12.309 MST [496331] LOG:  redo done at 0/30303B0 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.03 s
+2025-07-10 14:23:12.309 MST [496331] LOG:  last completed transaction was at log time 2025-07-10 14:19:18.956055-07
 cp: cannot stat '/sysx/data16/DATANEW/backup_wal/00000002.history': No such file or directory
-2025-07-10 12:04:16.612 MST [455019] LOG:  starting point-in-time recovery to "punto_laboratorio"
-2025-07-10 12:04:16.628 MST [455019] LOG:  restored log file "000000010000000000000003" from archive
-2025-07-10 12:04:16.647 MST [455019] LOG:  redo starts at 0/3000028
-2025-07-10 12:04:16.665 MST [455019] LOG:  restored log file "000000010000000000000004" from archive
-2025-07-10 12:04:16.679 MST [455019] LOG:  consistent recovery state reached at 0/3000100
-2025-07-10 12:04:16.679 MST [455015] LOG:  database system is ready to accept read-only connections
-2025-07-10 12:04:16.697 MST [455019] LOG:  restored log file "000000010000000000000005" from archive
-cp: cannot stat '/sysx/data16/DATANEW/backup_wal/000000010000000000000006': No such file or directory
-2025-07-10 12:04:16.719 MST [455019] LOG:  recovery stopping at restore point "punto_laboratorio", time 2025-07-10 11:59:47.693563-07
-2025-07-10 12:04:16.719 MST [455019] LOG:  redo done at 0/4031E70 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.07 s
-2025-07-10 12:04:16.719 MST [455019] LOG:  last completed transaction was at log time 2025-07-10 11:59:38.623946-07
-2025-07-10 12:04:16.735 MST [455019] LOG:  restored log file "000000010000000000000004" from archive
-cp: cannot stat '/sysx/data16/DATANEW/backup_wal/00000002.history': No such file or directory
-2025-07-10 12:04:16.756 MST [455019] LOG:  selected new timeline ID: 2
+2025-07-10 14:23:12.315 MST [496331] LOG:  selected new timeline ID: 2
 cp: cannot stat '/sysx/data16/DATANEW/backup_wal/00000001.history': No such file or directory
-2025-07-10 12:04:16.796 MST [455019] LOG:  archive recovery complete
-2025-07-10 12:04:16.797 MST [455017] LOG:  checkpoint starting: end-of-recovery immediate wait
-2025-07-10 12:04:16.805 MST [455017] LOG:  checkpoint complete: wrote 56 buffers (0.3%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.004 s, sync=0.002 s, total=0.009 s; sync files=43, longest=0.001 s, average=0.001 s; distance=16583 kB, estimate=16583 kB; lsn=0/4031ED8, redo lsn=0/4031ED8
-2025-07-10 12:04:16.811 MST [455015] LOG:  database system is ready to accept connections
+2025-07-10 14:23:12.353 MST [496331] LOG:  archive recovery complete
+2025-07-10 14:23:12.354 MST [496329] LOG:  checkpoint starting: end-of-recovery immediate wait
+2025-07-10 14:23:12.363 MST [496329] LOG:  checkpoint complete: wrote 55 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.002 s, total=0.010 s; sync files=43, longest=0.001 s, average=0.001 s; distance=16576 kB, estimate=16576 kB; lsn=0/30303B0, redo lsn=0/30303B0
+2025-07-10 14:23:12.368 MST [496327] LOG:  database system is ready to accept connections
 ```
 
 
- 
 
 ### 5.   Validar después del PITR
 
 Una vez que PostgreSQL arranque tras la recuperación:
 
 ```sql
-SELECT * FROM laboratorio_pitr ORDER BY id;
+psql -p 5599 -U postgres -c "SELECT * FROM wal_tracking ORDER BY id;"
 ```
-
-**Resultado esperado:**
-
-| id | nombre      | creado_en           |
-|----|-------------|---------------------|
-| 1  | registro_1  | 2025-07-08 07:45:00 |
-| 2  | registro_2  | 2025-07-08 07:50:00 |
-
-> El `registro_3` **no debería aparecer**, ya que fue insertado después del `recovery_target_time`.
+ 
 
 ---
 
@@ -349,9 +340,57 @@ rm -r /sysx/data16/DATANEW/PITR
 
 # Extra información
 ```
+pg_controldata -D /sysx/data16/DATANEW/PITR
+
+postgres@lvt-pruebas-dba-cln /sysx/data16/DATANEW $ cat backup_wal/000000010000000000000002.00000028.backup
+START WAL LOCATION: 0/2000028 (file 000000010000000000000002)
+STOP WAL LOCATION: 0/2000100 (file 000000010000000000000002)
+CHECKPOINT LOCATION: 0/2000060
+BACKUP METHOD: streamed
+BACKUP FROM: primary
+START TIME: 2025-07-10 18:29:47 MST
+LABEL: pg_basebackup base backup
+START TIMELINE: 1
+STOP TIME: 2025-07-10 18:29:47 MST
+STOP TIMELINE: 1
+
+postgres@lvt-pruebas-dba-cln /sysx/data16/DATANEW $ cat backup_wal/00000004.history
+1 0/4030378     before 2025-07-10 18:30:45.455757-07
+
 SELECT * from  pg_control_checkpoint(); -- Validar información sobre el último checkpoint registrado en el archivo pg_control 
 SELECT * from   pg_control_recovery(); -- detalles sobre la configuración de recuperación usada durante el último arranque del clúster. si ya se recupero no devolverá nada
 ```
+
+---
+
+ 
+### 🗂️ Archivo `.backup`
+
+- 🔹 Se genera automáticamente cuando ejecutas un **`pg_basebackup`** con la opción de streaming WAL (`-Xs`).
+- 🔹 Marca **el punto exacto en el WAL** donde inicia un respaldo base.
+- 🔹 Sirve para que PostgreSQL sepa **dónde empezar a aplicar los WALs** durante una recuperación.
+
+ **Sin este archivo, PITR puede fallar** si no hay un punto de inicio válido para el proceso de recuperación.
+
+---
+
+### 🗂️ Archivos `.history`
+
+- 🔹 Se generan cuando hay un **cambio de línea de tiempo (timeline)**. Por ejemplo, al promover un servidor en recuperación.
+- 🔹 Contienen información sobre **cómo se dividieron las líneas de tiempo** y cuál era la anterior.
+- 🔹 Ayudan a PostgreSQL a entender la evolución de los WALs en escenarios de replicación o PITR avanzados.
+
+ **Es útil en recuperaciones donde se necesita seguir una timeline específica**, como `recovery_target_timeline = 'latest'`.
+
+
+
+- `000000010000000000000003.backup` → punto donde comenzó el backup base.
+- `00000002.history` → el sistema fue promovido al timeline 2.
+
+---
+
+
+
 
 ---
 
@@ -653,7 +692,43 @@ pg_basebackup -D "$DEST" -F tar -U replication -Xs -P
 > - Red confiable y rápida  
 > - Supervisas constantemente el resultado
 
- ---
+
+---
+
+## ¿Qué es una timeline en PostgreSQL?
+
+Cada vez que un servidor en recuperación es **promovido** (se convierte en primario), PostgreSQL inicia una **nueva línea de tiempo**. Esto se hace para evitar conflictos con WALs anteriores y mantener un historial claro de eventos.
+
+Ejemplo:  
+- Timeline 1: base original  
+- Timeline 2: recuperación o promoción  
+- Timeline 3: otro failover o restauración  
+Esto se refleja en los archivos `.history` y en los nombres WAL, como `00000002.history` o `000000010000000000000005`.
+ 
+
+##   ¿Para qué sirve `recovery_target_timeline`?
+
+Cuando realizas una recuperación, PostgreSQL necesita saber **hasta qué línea de tiempo debe leer los archivos WAL**. Si no lo especificas correctamente, podrías quedarte corto en archivos o terminar en una timeline equivocada.
+
+ 
+
+##   Valores posibles
+
+| Valor                      | ¿Qué hace?                                                                 |
+|----------------------------|----------------------------------------------------------------------------|
+| `'latest'`                | 🧭 Recupera usando la **última línea de tiempo disponible** en los archivos `.history`. Útil si hubo promociones o réplicas. |
+| `'current'`               | 🕒 Recupera **usando la misma línea de tiempo** en la que se hizo el backup base. No sigue `.history`. |
+| `'N'` (por ejemplo `'1'`) | 🔢 Recupera en la **timeline específica N**. Necesitas el archivo `0000000N.history` en `restore_command`. |
+
+
+###   Recomendaciones
+
+- Si tu entorno es simple (solo un backup y un set de WALs), puedes usar `'current'`.
+- Si has hecho **recuperaciones múltiples** o promociones de servidores, mejor usa `'latest'`.
+- Si estás haciendo restauración en clústeres distribuidos o escenarios avanzados, puedes usar un número específico (pero asegúrate de tener el `.history` correspondiente archivado).
+
+---
+
 
 ### Info Extra
 ```
@@ -695,7 +770,7 @@ syncing data to disk ... ok
 initdb: warning: enabling "trust" authentication for local connections
 initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
 
-Success. You can now start the database server using:
+Success. You can CLOCK_TIMESTAMP start the database server using:
 
     /usr/pgsql-16/bin/pg_ctl -D /sysx/data16/DATANEW/PITR -l logfile start
 
@@ -740,11 +815,11 @@ Type "help" for help.
 
 postgres@postgres#
 postgres@postgres#
-postgres@postgres# SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
+postgres@postgres# SELECT CLOCK_TIMESTAMP(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
 SELECT pg_switch_wal();
-SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
+SELECT CLOCK_TIMESTAMP(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
 +------------------------------+--------------------------+--------------------+---------------------------+
-|             now              |     pg_walfile_name      | pg_current_wal_lsn | pg_current_wal_insert_lsn |
+|             CLOCK_TIMESTAMP              |     pg_walfile_name      | pg_current_wal_lsn | pg_current_wal_insert_lsn |
 +------------------------------+--------------------------+--------------------+---------------------------+
 | 2025-07-10 12:35:43.07584-07 | 000000010000000000000001 | 0/17273B8          | 0/17273B8                 |
 +------------------------------+--------------------------+--------------------+---------------------------+
@@ -762,10 +837,10 @@ postgres@postgres# SELECT pg_switch_wal();
 (1 row)
 
 Time: 15.850 ms
-postgres@postgres# SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
+postgres@postgres# SELECT CLOCK_TIMESTAMP(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
 
 +-------------------------------+--------------------------+--------------------+---------------------------+
-|              now              |     pg_walfile_name      | pg_current_wal_lsn | pg_current_wal_insert_lsn |
+|              CLOCK_TIMESTAMP              |     pg_walfile_name      | pg_current_wal_lsn | pg_current_wal_insert_lsn |
 +-------------------------------+--------------------------+--------------------+---------------------------+
 | 2025-07-10 12:35:43.928874-07 | 000000010000000000000002 | 0/2000060          | 0/2000060                 |
 +-------------------------------+--------------------------+--------------------+---------------------------+
@@ -796,7 +871,7 @@ Type "help" for help.
 postgres@postgres# CREATE TABLE laboratorio_pitr (
 postgres(#     id SERIAL PRIMARY KEY,
 postgres(#     nombre TEXT NOT NULL,
-postgres(#     creado_en TIMESTAMP DEFAULT now()
+postgres(#     creado_en TIMESTAMP DEFAULT CLOCK_TIMESTAMP()
 postgres(# );
 CREATE TABLE
 Time: 8.312 ms
@@ -808,10 +883,10 @@ postgres-# ('registro_1', '2025-07-08 07:45:00'),
 postgres-# ('registro_2', '2025-07-08 07:50:00');
 INSERT 0 2
 Time: 1.342 ms
-postgres@postgres# SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
+postgres@postgres# SELECT CLOCK_TIMESTAMP(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
 
 +-------------------------------+--------------------------+--------------------+---------------------------+
-|              now              |     pg_walfile_name      | pg_current_wal_lsn | pg_current_wal_insert_lsn |
+|              CLOCK_TIMESTAMP              |     pg_walfile_name      | pg_current_wal_lsn | pg_current_wal_insert_lsn |
 +-------------------------------+--------------------------+--------------------+---------------------------+
 | 2025-07-10 12:36:52.242927-07 | 000000010000000000000004 | 0/4031EA8          | 0/4031EA8                 |
 +-------------------------------+--------------------------+--------------------+---------------------------+
@@ -838,10 +913,10 @@ postgres@postgres#  SELECT pg_switch_wal();
 (1 row)
 
 Time: 28.146 ms
-postgres@postgres#  SELECT now(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
+postgres@postgres#  SELECT CLOCK_TIMESTAMP(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_lsn(),pg_current_wal_insert_lsn();
 
 +-------------------------------+--------------------------+--------------------+---------------------------+
-|              now              |     pg_walfile_name      | pg_current_wal_lsn | pg_current_wal_insert_lsn |
+|              CLOCK_TIMESTAMP              |     pg_walfile_name      | pg_current_wal_lsn | pg_current_wal_insert_lsn |
 +-------------------------------+--------------------------+--------------------+---------------------------+
 | 2025-07-10 12:37:04.101391-07 | 000000010000000000000004 | 0/5000000          | 0/5000028                 |
 +-------------------------------+--------------------------+--------------------+---------------------------+
@@ -979,7 +1054,7 @@ postgres@lvt-pruebas-dba-cln /sysx/data16/DATANEW/PITR $ grep -A 100 "2025-07-10
 2025-07-10 12:40:57.312 MST [466529] LOG:  listening on IPv4 address "127.0.0.1", port 5599
 2025-07-10 12:40:57.314 MST [466529] LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5599"
 2025-07-10 12:40:57.316 MST [466529] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5599"
-2025-07-10 12:40:57.320 MST [466533] LOG:  database system was interrupted; last known up at 2025-07-10 12:36:00 MST
+2025-07-10 12:40:57.320 MST [466533] LOG:  database system was interrupted; last kCLOCK_TIMESTAMPn up at 2025-07-10 12:36:00 MST
 2025-07-10 12:40:57.365 MST [466533] LOG:  starting point-in-time recovery to 2025-07-10 12:36:52.242927-07
 2025-07-10 12:40:57.365 MST [466533] LOG:  starting backup recovery with redo LSN 0/3000028, checkpoint LSN 0/3000060, on timeline ID 1
 2025-07-10 12:40:57.386 MST [466533] LOG:  restored log file "000000010000000000000003" from archive
