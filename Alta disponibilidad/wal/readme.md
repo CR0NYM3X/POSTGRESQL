@@ -336,6 +336,76 @@ Entrega detalles sobre la **configuración de recuperación** usada durante el �
 
 
 ---
+ 
+### 🗂️ Archivo `.backup`
+
+- 🔹 Se genera automáticamente cuando ejecutas un **`pg_basebackup`** con la opción de streaming WAL (`-Xs`).
+- 🔹 Marca **el punto exacto en el WAL** donde inicia un respaldo base.
+- 🔹 Sirve para que PostgreSQL sepa **dónde empezar a aplicar los WALs** durante una recuperación.
+
+ **Sin este archivo, PITR puede fallar** si no hay un punto de inicio válido para el proceso de recuperación.
+
+---
+
+### 🗂️ Archivos `.history`
+
+- 🔹 Se generan cuando hay un **cambio de línea de tiempo (timeline)**. Por ejemplo, al promover un servidor en recuperación.
+- 🔹 Contienen información sobre **cómo se dividieron las líneas de tiempo** y cuál era la anterior.
+- 🔹 Ayudan a PostgreSQL a entender la evolución de los WALs en escenarios de replicación o PITR avanzados.
+
+ **Es útil en recuperaciones donde se necesita seguir una timeline específica**, como `recovery_target_timeline = 'latest'`.
+
+
+
+---
+
+## 🧭 ¿Qué es una Timeline en PostgreSQL?
+
+Una “timeline” en PostgreSQL es como una *rama en un árbol de historia* de la base de datos. Cada vez que haces una restauración, o promocionas una réplica a servidor principal, PostgreSQL genera una nueva **línea de tiempo** para evitar conflictos entre archivos WAL antiguos y nuevos.
+
+Imagina esto:
+
+- Timeline 1: el mundo original
+- Timeline 2: el universo alterno que creaste al restaurar a un punto anterior
+- Timeline 3: el universo alterno del alterno, si restauras otra vez
+
+ 
+## ️ ¿Para qué sirve `recovery_target_timeline`?
+
+Te dice **cuál de esas líneas de tiempo** quieres usar al recuperar los datos. Sin esto, PostgreSQL no sabrá si debe seguir los WAL antiguos, nuevos o de restauraciones previas.
+
+ 
+
+##  Los valores disponibles y su uso
+
+| Valor                         | ¿Qué hace?                                                                 | ¿Cuándo usarlo?                                                              |
+|------------------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| `1`, `2`, `3`, etc.          | Recupera desde una **timeline específica**. 🛠️ Debes tener el archivo `.history`. | 🧪 Escenarios avanzados con múltiples promociones o restauraciones.          |
+| `'current'`                  | Recupera usando la **misma timeline** en la que se creó el backup base.     | ✅ Restauración simple, sin promociones previas ni múltiples timelines.       |
+| `'latest'`                   | Recupera usando la **última timeline disponible** en los archivos WAL.      | 🧲 Restauraciones después de una promoción anterior (por ejemplo, PITR luego de PITR). |
+
+ 
+
+## ️ ¿Qué pasa si usas el valor equivocado?
+
+- Si usas `1` pero no tienes el archivo `00000001.history`, **el servidor NO inicia**.
+- Si usas `'latest'` pero los archivos `.history` están incompletos, PostgreSQL **se detiene en recuperación** sin promoción.
+- Si usas `'current'` pero hubo promociones previas, te quedarás **atascado en la timeline equivocada** y no verás los datos más recientes.
+ 
+
+##  Ejemplo típico de uso
+
+### Escenario básico
+🔹 Solo tienes un backup base y los archivos WAL → usa `'current'`.
+
+### Escenario con promoción
+🔸 Restauraste antes, promoviste el clúster, y ahora quieres hacer otra recuperación → usa `'latest'`.
+
+### Escenario controlado
+🔸 Quieres restaurar **exactamente** a la timeline `2` porque hiciste una réplica → usa `recovery_target_timeline = '2'` y asegúrate que esté el `.history`.
+ 
+---
+
 ```
 select pg_current_wal_lsn(), pg_current_wal_insert_lsn(),pg_current_wal_flush_lsn() ;
 
@@ -343,3 +413,7 @@ pg_current_wal_lsn() te dirá el punto desde donde empezará la próxima escritu
 pg_current_wal_insert_lsn() te muestra hasta dónde ya se insertaron los datos en la memoria.
 pg_current_wal_flush_lsn() te muestra hasta dónde esos datos ya están escritos en el disco duro (persistencia completa).
 ```
+
+
+
+
