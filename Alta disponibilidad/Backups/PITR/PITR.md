@@ -727,7 +727,41 @@ Cuando realizas una recuperación, PostgreSQL necesita saber **hasta qué línea
 - Si has hecho **recuperaciones múltiples** o promociones de servidores, mejor usa `'latest'`.
 - Si estás haciendo restauración en clústeres distribuidos o escenarios avanzados, puedes usar un número específico (pero asegúrate de tener el `.history` correspondiente archivado).
 
+--- 
+
+## ✅ `recovery_target_action = 'pause'`
+
+###  ¿Qué hace?
+
+- Detiene la recuperación **justo al llegar al punto indicado**.
+- El servidor queda en **modo recuperación suspendida**, no se promueve, no acepta escrituras.
+- Sirve para **verificar el estado antes de continuar**, revisar registros, hacer auditoría o decidir si quieres avanzar más.
+
+### ¿Cuándo usarlo?
+
+- Si estás haciendo restauraciones exploratorias o forenses.
+- Cuando quieres validar si un dato ya existe sin consolidar la promoción.
+- si vas hacer varias restauraciones con los mismos wal.
+
+ 
+
+## ✅ `recovery_target_action = 'promote'`
+
+###  ¿Qué hace?
+
+- Promueve automáticamente el servidor una vez que llega al punto de recuperación.
+- Elimina el archivo `recovery.signal`.
+- Cambia de línea de tiempo.
+- El servidor empieza a aceptar **escrituras**, es considerado normal.
+
+###  ¿Cuándo usarlo?
+
+- Una vez que encontraste el momento ideal de recuperación.
+- Quieres dejar el clúster en funcionamiento como primario.
+- Estás listo para salir del modo recuperación definitivamente.
+
 ---
+
 
 
 ### Info Extra
