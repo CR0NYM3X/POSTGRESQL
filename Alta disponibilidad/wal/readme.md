@@ -348,7 +348,7 @@ Entrega detalles sobre la **configuración de recuperación** usada durante el �
 ---
 
 ### 🗂️ Archivos `.history`
-
+- 🔹 se genera tambien cuando haces un PITR
 - 🔹 Se generan cuando hay un **cambio de línea de tiempo (timeline)**. Por ejemplo, al promover un servidor en recuperación.
 - 🔹 Contienen información sobre **cómo se dividieron las líneas de tiempo** y cuál era la anterior.
 - 🔹 Ayudan a PostgreSQL a entender la evolución de los WALs en escenarios de replicación o PITR avanzados.
