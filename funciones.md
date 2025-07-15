@@ -690,6 +690,24 @@ $$ LANGUAGE plpgsql;
 
  select  * from mi_funcion_registro();
 
+
+--/***********  OPCIÓN #3 Usando un Registro ***********\
+
+CREATE OR REPLACE FUNCTION ejemplo()
+RETURNS TABLE(saludo TEXT, idioma TEXT) AS $$
+BEGIN
+  saludo := 'Hola';
+  idioma := 'Español';
+  RETURN NEXT;
+
+  saludo := 'Hello';
+  idioma := 'English';
+  RETURN NEXT;
+END;
+$$ LANGUAGE plpgsql;
+
+select * from ejemplo();
+
 ```
 
 ### Agregar alias a los parámetros 
@@ -906,6 +924,8 @@ $$ LANGUAGE plpgsql;
 
 select * from mi_funcion_ejemplo();
 ```
+
+ 
 
 
 #  FOR UPDATE y SKIP LOCKED
