@@ -469,6 +469,7 @@ SELECT slot_name, pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),restart_ls
 
 ## Bibliografía
 ```
+[PostgreSQL Replication Deep Dive] - https://medium.com/@danielonthenet/postgresql-replication-deep-dive-53b593243f3f
 
 [Multi-Master] Active Active in Postgres 16 -> https://www.crunchydata.com/blog/active-active-postgres-16
 
