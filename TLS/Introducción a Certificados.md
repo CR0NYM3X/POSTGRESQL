@@ -134,7 +134,7 @@ Un certificado TLS contiene información técnica y metadatos que permiten auten
      - **Subject Alternative Names (SAN)**: Lista de dominios cubiertos (ej: `DNS:example.com`, `DNS:www.example.com`).
      - **Key Usage**: identificas  el propósito de un certificado.  ej: ( `Server Authentication`  para aplicaciones como postgresql ) . 
      - **Extended Key Usage**: Casos específicos (ej: `TLS Web Server Authentication`).
-     - **Basic Constraints**: Indica si el certificado es de una CA (generalmente `CA:FALSE` para certificados de servidor).
+     - **Basic Constraints**: Indica si el certificado es de una CA (generalmente `CA:FALSE` para certificados finales como para instalar en servidor o clientes).
      - **CRL Distribution Points**: URL para listas de revocación (CRL).
      - **Authority Key Identifier**: Identificador de la CA que lo firmó.
      - **Certificate Policies**: Políticas de la CA (ej: `2.23.140.1.2.1` para certificados validados por dominio).
