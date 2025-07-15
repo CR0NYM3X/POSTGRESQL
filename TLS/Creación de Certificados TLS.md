@@ -452,6 +452,12 @@ SSL-Session:
 - **Sin certificado**: si no retorna el texto "-----BEGIN CERTIFICATE-----" hay algun problema con el tls
   
 
+### Escalera de restricciones
+```
+ CA:true -> Certificado Padre 
+ CA:true, pathlen:0  -> Certificado Intermedio 
+ CA:false -> Certificado final para servidores o clientes
+```
 
 
 
@@ -460,11 +466,12 @@ SSL-Session:
 - Tiene la extensión **CA:TRUE**:
 - Ejecuta este comando para cada `.crt`:
 - **comando:**  openssl x509 -in /tmp/pki/CA/root.crt -text -noout | grep -E "Issuer:|Subject:"
-	 
+
+  
 	 
 ## **Identificar el Certificado Intermedio (en caso de que exista y no sabes cual es):**
    - El `Issuer` y `Subject` son diferentes, y su `Issuer` coincidirá con el `Subject` del root CA.
-   - Tiene la extensión **CA:FALSE**:
+   - Tiene la extensión **CA:TRUE , pathlen:0 **:
    - **comando:** openssl x509 -in /tmp/pki/CA/intermediate.crt -text -noout | grep -E "CA:|Issuer:|Subject:"
  
 
