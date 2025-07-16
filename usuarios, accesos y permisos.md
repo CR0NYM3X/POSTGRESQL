@@ -1573,5 +1573,7 @@ JOIN
 - **inherit_option**: Indica si el miembro hereda automáticamente los privilegios del rol.
 - **set_option**: Indica si el miembro puede usar `SET ROLE` para adquirir los privilegios del rol .
 
+SELECT rolname, rolinherit FROM pg_roles WHERE rolname = 'postgres'; 
+
 
 ```
