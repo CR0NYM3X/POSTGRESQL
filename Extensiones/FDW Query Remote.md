@@ -442,6 +442,16 @@ rpm -qa | grep -Ei FreeTDS
 
 --- ver las configuraciones 
 vim /etc/freetds.conf
+
+-- parametros importantes 
+grep -Ei "text size|timeout" /etc/freetds.conf
+        # Command and connection timeouts
+;       timeout = 10 # Tiempo máximo en segundos para recibir respuesta luego de conectado
+;       connect timeout = 10 # Tiempo máximo en segundos para establecer una conexión
+        # IMAGE) try setting 'text size' to a reasonable limit
+;       text size = 64512
+
+
 ```
 
 ```sql 
