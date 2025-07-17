@@ -50,7 +50,7 @@ Detectar index compuestos
 -- ********* Query ver conexiones con alto consumo de CPU  *********
 
 # Obtener PIDs de procesos postgres y su % de memoria
-PG_PIDS=$(ps -C postgres -o pid=,%mem=,size=,%cpu= --sort=-%mem | awk '{print $","$","$3","$}')
+PG_PIDS=$(ps -C postgres -o pid=,%mem=,size=,%cpu= --sort=-%mem | awk '{print $1","$2","$3","$4}')
 
 # Generar lista de PIDs para la query SQL (ej: "3,.3;5678,5.6")
 PG_PIDS_LIST=$(echo "$PG_PIDS" | tr '\n' ';' | sed 's/;$//')
