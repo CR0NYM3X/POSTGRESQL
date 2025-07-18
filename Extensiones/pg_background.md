@@ -57,11 +57,124 @@ Otros procesos que puedes ajustar
 
 1. **Ejecutar una consulta en segundo plano**:
    ```sql
-   SELECT pg_background_launch('VACUUM FULL my_table');
+create EXTENSION pg_background;
+   
+-- Crear tabla básica
+-- DROP TABLE empleados;
+CREATE TABLE empleados (
+  id SERIAL PRIMARY KEY,
+  nombre VARCHAR(100),
+  puesto VARCHAR(50),
+  salario DECIMAL(10,2)
+);
 
-   select * from pg_background_launch($$ insert into t  select round(random()*10) where  pg_sleep(20) is not null $$);
 
-   select pg_background_launch($$ select 5555,(current_user || '-' ||session_user|| '-' || random()::text)::text as jajaa   where  pg_sleep(20) is not null  $$);
+-- Insertar registros
+INSERT INTO empleados (nombre, puesto, salario) VALUES
+('Ana Gómez', 'Desarrolladora', 85000.00),
+('Luis Martínez', 'Administrador', 72000.00),
+('Carla Ruiz', 'Analista de datos', 79000.00);
+
+postgres@postgres# SELECT * FROM empleados;
++----+---------------+-------------------+----------+
+| id |    nombre     |      puesto       | salario  |
++----+---------------+-------------------+----------+
+|  1 | Ana Gómez     | Desarrolladora    | 85000.00 |
+|  2 | Luis Martínez | Administrador     | 72000.00 |
+|  3 | Carla Ruiz    | Analista de datos | 79000.00 |
+
+
+
+
+postgres@postgres#   SELECT pg_background_launch('VACUUM VERBOSE public.empleados');
++----------------------+
+| pg_background_launch |
++----------------------+
+|              3848023 |
++----------------------+
+(1 row)
+
+Time: 1.394 ms
+postgres@postgres# SELECT * FROM pg_background_result(3848023) foo(result TEXT);
+INFO:  vacuuming "postgres.public.empleados"
+INFO:  finished vacuuming "postgres.public.empleados": index scans: 0
+pages: 0 removed, 1 remain, 1 scanned (100.00% of total)
+tuples: 0 removed, 3 remain, 0 are dead but not yet removable
+removable cutoff: 55947, which was 0 XIDs old when operation ended
+index scan not needed: 0 pages from table (0.00% of total) had 0 dead item identifiers removed
+avg read rate: 0.000 MB/s, avg write rate: 0.000 MB/s
+buffer usage: 43 hits, 0 misses, 0 dirtied
+WAL usage: 0 records, 0 full page images, 0 bytes
+system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
++--------+
+| result |
++--------+
+| VACUUM |
++--------+
+(1 row)
+
+Time: 0.374 ms
+
+
+postgres@postgres# select * from pg_background_launch($$  INSERT INTO empleados (nombre, puesto, salario) VALUES ('JOSE Gómez', 'Desarrolladora', 85000.00); $$);
++----------------------+
+| pg_background_launch |
++----------------------+
+|              3848356 |
++----------------------+
+(1 row)
+
+Time: 1.279 ms
+postgres@postgres# SELECT * FROM pg_background_result(3848356) foo(result TEXT);
++------------+
+|   result   |
++------------+
+| INSERT 0 1 |
++------------+
+(1 row)
+
+Time: 0.707 ms
+postgres@postgres# SELECT * FROM pg_background_result(3848356) foo(result TEXT);
+ERROR:  PID 3848356 is not attached to this session
+Time: 1.002 ms
+
+postgres@postgres# SELECT * FROM empleados;
++----+---------------+-------------------+----------+
+| id |    nombre     |      puesto       | salario  |
++----+---------------+-------------------+----------+
+|  1 | Ana Gómez     | Desarrolladora    | 85000.00 |
+|  2 | Luis Martínez | Administrador     | 72000.00 |
+|  3 | Carla Ruiz    | Analista de datos | 79000.00 |
+|  4 | JOSE Gómez    | Desarrolladora    | 85000.00 |
++----+---------------+-------------------+----------+
+(4 rows)
+
+
+--- esta forma espera a que el proceso retorne el resultado y luego te muestra el resultado
+postgres@postgres# SELECT * FROM pg_background_result(pg_background_launch($$ SELECT 5555::INT AS count WHERE pg_sleep(2) IS NOT NULL $$)) AS foo(count INT);
++-------+
+| count |
++-------+
+|  5555 |
++-------+
+(1 row)
+
+Time: 2007.009 ms (00:02.007)
+
+
+
+postgres@postgres# SELECT * FROM pg_background_result(pg_background_launch($$ SELECT * FROM empleados; $$)) AS foo(  id INT,nombre VARCHAR(100),puesto VARCHAR(50),salario DECIMAL(10,2));
++----+---------------+-------------------+----------+
+| id |    nombre     |      puesto       | salario  |
++----+---------------+-------------------+----------+
+|  1 | Ana Gómez     | Desarrolladora    | 85000.00 |
+|  2 | Luis Martínez | Administrador     | 72000.00 |
+|  3 | Carla Ruiz    | Analista de datos | 79000.00 |
+|  4 | JOSE Gómez    | Desarrolladora    | 85000.00 |
++----+---------------+-------------------+----------+
+(4 rows)
+
+Time: 6.548 ms
 
    
    ```
