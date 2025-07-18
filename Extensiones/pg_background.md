@@ -38,6 +38,7 @@ Otros procesos que puedes ajustar
 - `**max_parallel_workers**`    #máximo de trabajadores paralelos en el servidor. Ajusta según tus necesidades
 - `**shared_buffers**`    # Tamaño de memoria compartida. Ajusta según la cantidad de RAM disponible
 - `**work_mem**`   # : Memoria disponible por proceso.  Ajusta según la carga de trabajo
+- `max_locks_per_transaction`
   
    ```sql
 	postgres@postgres# SELECT * FROM lanzar_y_validar_procesos(15);
