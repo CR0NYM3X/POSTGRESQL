@@ -58,7 +58,7 @@ Otros procesos que puedes ajustar
 
 
 1. **Ejecutar una consulta en segundo plano**:
-   ```sql
+```sql
 create EXTENSION pg_background;
    
 -- Crear tabla básica
@@ -178,8 +178,7 @@ postgres@postgres# SELECT * FROM pg_background_result(pg_background_launch($$ SE
 
 Time: 6.548 ms
 
-   
-   ```
+```
 
 2. **Obtener el resultado de un proceso en segundo plano**:
    Hay que tener cuidado con los type ya que esto puede generar errores 
