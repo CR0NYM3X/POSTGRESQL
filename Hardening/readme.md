@@ -1,0 +1,7 @@
+- Enmascaramiento de datos.
+- Cifrado de datos.
+- TLS
+- Tipos de Autenticación (LDAP, GSSAPI, KERBEROS).
+- Configuración de parámetros.
+- Buenas practicas.
+- Tecnicas de seguridad.
