@@ -36,6 +36,7 @@ Tienes un limite de procesos para abrir y esto depende como tienes configurado t
 Otros procesos que puedes ajustar 
  
 - `**max_parallel_workers**`    #máximo de trabajadores paralelos en el servidor. Ajusta según tus necesidades
+- `max_worker_processes` # Este es el numero máximo de procesos que se pueden abrir yo le coloco 100
 - `**shared_buffers**`    # Tamaño de memoria compartida. Ajusta según la cantidad de RAM disponible
 - `**work_mem**`   # : Memoria disponible por proceso.  Ajusta según la carga de trabajo
 - `max_locks_per_transaction`
