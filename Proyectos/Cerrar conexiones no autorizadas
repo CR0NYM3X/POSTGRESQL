@@ -5,7 +5,7 @@
 * [APROVADO] - Función plpgsql  
 	.- Comportamiento : Esta funcion entra a un bucle infinito, que valida las conexiones pg_admin  de la vista pg_stat_activity  y las cierra con la funcion pg_terminate_backend y registra la actividad en un archivo csv.
 	.- Ventaja :  facil de implementar y no llena los registros del log postgresql.
-	.- Desventaja :  permite consultas que sean rapida y no tarden igual o mas de 1 seg.
+	.- Desventaja :  permite consultas que sean rapida ya que tiene un retardo de detección.
 
 
 * [DESCARTADO] - Extensión session_exec   
