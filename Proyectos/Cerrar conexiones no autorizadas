@@ -127,7 +127,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql  
 
--- Configurar parámetros para que no genere logs y no tunve la funcion.
+-- Configurar parámetros para que no genere logs y no tumbe  la funcion.
 SET client_min_messages = 'notice'
 SET log_statement  = 'none'  
 SET log_min_messages = 'panic' 
