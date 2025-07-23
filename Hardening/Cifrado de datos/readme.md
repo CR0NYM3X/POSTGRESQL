@@ -95,3 +95,14 @@ La herramienta intercepta y:
 - No requieren modificar el motor de base de datos ni instalar extensiones como `pgcrypto`.
 
  
+
+
+```sql
+https://medium.com/myntra-engineering/data-security-and-privacy-data-at-rest-encryption-approaches-eb4977b5d723
+
+https://www.primefactors.com/data-protection/encryptright/?utm_term=data%20at%20rest%20encryption&utm_campaign=Encryption&utm_source=adwords&utm_medium=ppc&hsa_acc=2387905330&hsa_cam=10151999730&hsa_grp=102556252035&hsa_ad=438979470922&hsa_src=g&hsa_tgt=kwd-326727796234&hsa_kw=data%20at%20rest%20encryption&hsa_mt=e&hsa_net=adwords&hsa_ver=3&gad_source=1&gad_campaignid=10151999730&gbraid=0AAAAAD_ndveZpBFEgTT51Rie3qESsjhkZ&gclid=CjwKCAjw7fzDBhA7EiwAOqJkh2ebxKMUi6BPWfrhK1aO8mxtw4rFW_hLhMIqiQAlnQw-my3trEoUpRoCg9kQAvD_BwE
+
+https://www.imperva.com/learn/data-security/data-at-rest/
+
+https://www.opentext.com/what-is/encryption?__hstc=188543543.4b44870ec4a577029c49e44b73bd3bee.1692576000803.1692576000804.1692576000805.1&__hssc=188543543.1.1692576000806&__hsfp=954974628
+```
