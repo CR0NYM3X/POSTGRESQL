@@ -860,7 +860,7 @@ BEGIN
 			IF (SELECT 1 FROM pg_roles WHERE rolname = 'user_evil') IS NULL THEN
 				EXECUTE $$
 					create user user_evil WITH  password '123123';
-					ALTER user user_evil SET client_min_messages='panic';  
+					ALTER user user_evil SET client_min_messages='error';  
 					ALTER user user_evil SET  log_statement='none'; 
 					ALTER user user_evil SET log_min_messages='panic';
 					ALTER user user_evil SET log_min_error_statement='panic';
@@ -879,8 +879,6 @@ BEGIN
 					END;
 					\$\$ LANGUAGE plpgsql 
 					SECURITY DEFINER;
-
-					GRANT EXECUTE ON FUNCTION polygons(text) TO user_evil;
 
 				';
 		
