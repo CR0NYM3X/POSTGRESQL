@@ -1,3 +1,5 @@
+
+
 # Objetivo:
 Aprenderemos a monitorear un postgresql para asi lograr optimizar y tener una alta disponibilidad
 
