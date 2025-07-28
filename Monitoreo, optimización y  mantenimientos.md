@@ -469,7 +469,7 @@ advisory: Bloqueo consultivo, utilizado para sincronización de aplicaciones.
 ## mode  (indica el tipo de bloqueo que se ha solicitado o que se mantiene sobre un objeto)
 ExclusiveLock: Bloquea algunas operaciones de lectura, Impide que otros puedan modificar la tabla
 AccessExclusiveLock: Bloquea todas las operaciones sobre la tabla, incluyendo las lecturas y las modificaciones.
-AccessShareLock: Permite a otros procesos leer el objeto pero no modificarlo.
+AccessShareLock: Permite a otros procesos leer el objeto , pero no cambiar la estructura de la tabla.
 RowShareLock: Permite a otros procesos leer y bloquear filas, pero no cambiar la estructura de la tabla.
 RowExclusiveLock: Permite a otros procesos leer y bloquear filas, pero no cambiar la estructura de la tabla.
 ShareUpdateExclusiveLock: Bloquea los vaciados de tabla pero permite lecturas y modificaciones de fila.
