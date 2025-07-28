@@ -176,6 +176,7 @@ WHERE
       a.pid <> pg_backend_pid()
 	  AND state <> 'idle'
 	  --AND b.mode ilike '%Exclusive%'
+          -- AND wait_event_type  = 'Lock'
 	  AND b.mode in('AccessExclusiveLock','RowExclusiveLock'); 
 
 ```
@@ -221,3 +222,68 @@ log_lock_waits = on
 <05-0-0 0:07:5 MST     70937 6780c57.9577e >LOG:  process 70937 acquired AccessShareLock on relation 965 of database 0 after 76687.60 ms
 ```
 
+## Parámetros relacionado con los locks
+```sql
+postgres@postgres# select name,setting,context from pg_settings where name in( 'log_lock_waits','lock_timeout','max_locks_per_transaction');
++---------------------------+---------+------------+
+|           name            | setting |  context   |
++---------------------------+---------+------------+
+| lock_timeout              | 0       | user       |
+| log_lock_waits            | off     | superuser  |
+| max_locks_per_transaction | 64      | postmaster |
++---------------------------+---------+------------+
+
+¿Qué hace timeout ?
+Define el tiempo en milisegundos máximo que una transacción esperará para adquirir un bloqueo antes de cancelarse automáticamente.
+
+	SET lock_timeout = '3s';
+
+¿Qué hace log_lock_waits ?
+Si está en on, PostgreSQL registrará en el log cada vez que una transacción espere por un bloqueo más tiempo del definido en deadlock_timeout (por defecto 1s). Es útil para auditar y diagnosticar cuellos de botella causados por bloqueos prolongados
+
+	SET log_lock_waits = on;
+
+¿Qué hace max_locks_per_transaction?
+Define el número máximo de objetos bloqueables (como tablas, filas, índices) que una sola transacción puede bloquear. controlar el uso de memoria compartida (shared memory) y prevenir que una transacción consuma demasiados recursos.
+	
+	max_locks_per_transaction = 128
+
+```
+---
+
+### ¿Puede una sola consulta en PostgreSQL generar bloqueos?
+
+Sí, **una sola consulta en PostgreSQL puede generar bloqueos**, dependiendo de lo que haga y del contexto en el que se ejecute.
+
+
+#### 1. **Consultas con `SELECT ... FOR UPDATE`**
+Aunque es una lectura, este tipo de consulta **bloquea las filas** para evitar que otras transacciones las modifiquen.
+y practicamente hace lo siguiente
+"Quiero leer estas filas y además bloquearlas para que nadie más pueda modificarlas hasta que yo termine (haga COMMIT o ROLLBACK)"
+
+```sql
+SELECT * FROM empleados WHERE ID=1 FOR UPDATE;
+```
+ 
+ 
+###   ¿Para qué se usa?
+
+1. **Evitar condiciones de carrera (race conditions)**  
+   Si varias transacciones intentan procesar los mismos registros al mismo tiempo, `FOR UPDATE` asegura que **solo una lo haga primero**.
+
+2. **Preparar datos para una actualización segura**  
+   Es común usarlo cuando vas a leer una fila y luego actualizarla. Así te aseguras de que **nadie más la cambie entre la lectura y la escritura**.
+
+3. **Implementar lógica de negocio segura**  
+   Por ejemplo, en un sistema de pedidos, puedes seleccionar el siguiente pedido pendiente y bloquearlo para que otro proceso no lo tome al mismo tiempo.
+---
+
+## Bibliografías
+```
+Postgres Locks — A Deep Dive : https://medium.com/@hnasr/postgres-locks-a-deep-dive-9fc158a5641c
+Understanding Database Locks in PostgreSQL : https://medium.com/@aditimishra_541/understanding-database-locks-in-postgresql-0392f0ab52d1
+Understanding Postgres Locks and Managing Concurrent Transactions :  https://medium.com/@sonishubham65/understanding-postgres-locks-and-managing-concurrent-transactions-1ededce53d59
+Postgres concurrency, locks and isolation levels :  https://medium.com/@zeeshan.shamsuddeen/postgres-concurrency-locks-and-isolation-levels-ef222204484d
+https://www.bytebase.com/reference/postgres/how-to/how-to-show-postgres-locks/
+
+```
