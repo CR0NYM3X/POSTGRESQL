@@ -45,9 +45,7 @@ UPDATE inventario SET cantidad = cantidad - 10 WHERE producto = 'Producto B';
 UPDATE inventario SET cantidad = cantidad - 20 WHERE producto = 'Producto A';
 
 
-SET deadlock_timeout = '2s';
-SET lock_timeout = '5s';
-SET log_lock_waits = on;
+
 
 ```
 
@@ -63,6 +61,8 @@ SET log_lock_waits = on;
 
 ## Parámetros 
 ```
+SET log_lock_waits = on; -- permite a postgresql registrar los lock  en el log
+
 SET deadlock_timeout = '2s';
 Comportamiento: Si Ana y Juan quedan bloqueados por un deadlock, PostgreSQL esperará 2 segundos antes de comprobar si hay un deadlock. Si se detecta un deadlock, PostgreSQL abortará una de las transacciones, permitiendo que la otra continúe.
 
