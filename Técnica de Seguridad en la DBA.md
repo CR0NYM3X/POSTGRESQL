@@ -956,7 +956,7 @@ set disable-completion on
 
 # Parámetros de seguridad en vistas 
 Antes de la versión 15, todas las vistas se ejecutaban como su propietario, lo que dificultaba la interacción con RLS. A partir de la versión 15, las vistas marcadas como security_invoker"se ejecutan" con los privilegios del usuario que las invoca, no del propietario de la vista. Esto simplifica el trabajo con las políticas de RLS.
-[security_invoker  y security_barrier ](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Aplicar%20reglas%20a%20tablas.md#security_barrier-en-vistas)
+[security_invoker  y security_barrier ](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Aplicar%20reglas%20a%20tablas.md#security_barrier-en-vistas)  [[2]](https://medium.com/@mydbopsdatabasemanagement/exploring-security-invoker-views-in-postgresql-15-a-step-towards-safer-data-access-04131a96fa79)
 
 Ejemplo problema de seguridad
 ```
