@@ -255,29 +255,105 @@ Define el número máximo de objetos bloqueables (como tablas, filas, índices) 
 
 Sí, **una sola consulta en PostgreSQL puede generar bloqueos**, dependiendo de lo que haga y del contexto en el que se ejecute.
 
-
-#### 1. **Consultas con `SELECT ... FOR UPDATE`**
-Aunque es una lectura, este tipo de consulta **bloquea las filas** para evitar que otras transacciones las modifiquen.
-y practicamente hace lo siguiente
-"Quiero leer estas filas y además bloquearlas para que nadie más pueda modificarlas hasta que yo termine (haga COMMIT o ROLLBACK)"
-
-```sql
-SELECT * FROM empleados WHERE ID=1 FOR UPDATE;
-```
- 
- 
-###   ¿Para qué se usa?
-
-1. **Evitar condiciones de carrera (race conditions)**  
-   Si varias transacciones intentan procesar los mismos registros al mismo tiempo, `FOR UPDATE` asegura que **solo una lo haga primero**.
-
-2. **Preparar datos para una actualización segura**  
-   Es común usarlo cuando vas a leer una fila y luego actualizarla. Así te aseguras de que **nadie más la cambie entre la lectura y la escritura**.
-
-3. **Implementar lógica de negocio segura**  
-   Por ejemplo, en un sistema de pedidos, puedes seleccionar el siguiente pedido pendiente y bloquearlo para que otro proceso no lo tome al mismo tiempo.
 ---
 
+
+# Control de concurrencia mediante cláusulas de bloqueo en PostgreSQL 
+
+###   Cláusulas de bloqueo (`FOR`) en PostgreSQL
+
+1. **`FOR UPDATE`**
+   - Bloquea las filas seleccionadas para que no puedan ser modificadas por otras transacciones hasta que finalice la actual.
+   - Uso típico: cuando planeas actualizar esas filas.
+
+2. **`FOR NO KEY UPDATE`**
+   - Similar a `FOR UPDATE`, pero menos restrictivo: permite que otras transacciones hagan cambios que no afecten claves únicas o claves foráneas.
+   - Útil cuando no se van a modificar claves primarias o foráneas.
+
+3. **`FOR SHARE`**
+   - Permite que otras transacciones lean las filas, pero no las modifiquen.
+   - Ideal para operaciones de solo lectura que necesitan consistencia.
+
+4. **`FOR KEY SHARE`**
+   - Similar a `FOR SHARE`, pero más permisivo: permite actualizaciones que no cambien claves foráneas.
+   - Se usa comúnmente en relaciones con claves foráneas.
+
+### Ejemplos
+
+```sql
+SELECT * FROM empleados WHERE id = 1 FOR UPDATE;
+SELECT * FROM empleados WHERE id = 1 FOR NO KEY UPDATE;
+SELECT * FROM empleados WHERE id = 1 FOR SHARE;
+SELECT * FROM empleados WHERE id = 1 FOR KEY SHARE;
+```
+
+### Opcional: `NOWAIT` y `SKIP LOCKED`
+
+Puedes agregar estas opciones para controlar el comportamiento si las filas ya están bloqueadas:
+
+- `NOWAIT`: lanza un error si no puede obtener el bloqueo inmediatamente.
+- `SKIP LOCKED`: omite las filas bloqueadas por otras transacciones.
+
+```sql
+SELECT * FROM empleados WHERE id = 1 FOR UPDATE NOWAIT;
+SELECT * FROM empleados WHERE id = 1 FOR UPDATE SKIP LOCKED;
+```
+
+
+
+### 🎯 Usos principales de las cláusulas `FOR` en PostgreSQL
+
+1. **Evitar condiciones de carrera**
+   - Aseguran que dos transacciones no modifiquen la misma fila simultáneamente.
+   - Ejemplo: dos usuarios intentando reservar el mismo asiento al mismo tiempo.
+
+2. **Mantener la integridad de los datos**
+   - Garantizan que los datos no cambien entre el momento en que se leen y el momento en que se actualizan.
+   - Muy útil en operaciones tipo *read-modify-write*.
+
+3. **Implementar lógica de negocio segura**
+   - Por ejemplo, seleccionar un pedido pendiente para procesar y marcarlo como "en proceso" sin que otra transacción lo tome al mismo tiempo.
+
+4. **Evitar bloqueos muertos (deadlocks) y esperas innecesarias**
+   - Con opciones como `NOWAIT` o `SKIP LOCKED`, puedes controlar cómo se comporta la consulta si las filas ya están bloqueadas.
+
+5. **Soporte para operaciones con claves foráneas**
+   - Las variantes como `FOR KEY SHARE` permiten proteger relaciones entre tablas sin bloquear más de lo necesario.
+
+
+
+## En proyectos reales
+
+
+###  1. **Sistemas de facturación o contabilidad**
+- **Escenario**: Al generar una factura, se consulta el inventario y se descuenta el stock.
+- **Uso del bloqueo**: Se usa `FOR UPDATE` para evitar que dos facturas descuenten el mismo producto al mismo tiempo.
+
+###  2. **Sistemas de inventario o logística**
+- **Escenario**: Un proceso automático asigna productos a pedidos.
+- **Uso del bloqueo**: Se bloquean los productos disponibles con `FOR UPDATE SKIP LOCKED` para que otros procesos no los asignen al mismo tiempo.
+
+###  3. **Sistemas de asignación de tareas**
+- **Escenario**: Un sistema distribuye tareas pendientes a trabajadores o bots.
+- **Uso del bloqueo**: Se selecciona una tarea con `FOR UPDATE SKIP LOCKED` para que solo un proceso la tome.
+
+### ️ 4. **Sistemas de reservas (boletos, asientos, habitaciones)**
+- **Escenario**: Dos usuarios intentan reservar el mismo asiento.
+- **Uso del bloqueo**: Se bloquea el asiento con `FOR UPDATE` al momento de seleccionarlo, antes de confirmar la reserva.
+
+###  5. **Operaciones bancarias o financieras**
+- **Escenario**: Transferencias entre cuentas.
+- **Uso del bloqueo**: Se bloquean ambas cuentas con `FOR UPDATE` para evitar inconsistencias si hay operaciones simultáneas.
+
+###  6. **Procesamiento por lotes o colas de trabajo**
+- **Escenario**: Un sistema procesa registros pendientes en segundo plano.
+- **Uso del bloqueo**: Se seleccionan registros con `FOR UPDATE SKIP LOCKED` para que múltiples procesos trabajen en paralelo sin interferencia.
+
+## 7. **Sistemas de cola de mensajes**
+En una cola de mensajes (como una tabla que almacena trabajos o eventos pendientes), múltiples procesos o hilos pueden estar intentando leer y procesar mensajes al mismo tiempo. Para evitar que dos procesos tomen el mismo mensaje, se usa una cláusula de bloqueo.
+
+
+---
 ## Bibliografías
 ```
 Postgres Locks — A Deep Dive : https://medium.com/@hnasr/postgres-locks-a-deep-dive-9fc158a5641c
