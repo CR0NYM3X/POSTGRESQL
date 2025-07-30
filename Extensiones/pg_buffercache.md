@@ -159,5 +159,6 @@ LIMIT 10;
 
 # Referencia 
 ```sql
+https://medium.com/@linz07m/postgresql-buffer-cache-how-it-helps-with-faster-queries-94e377c0d3cf
 https://www.postgresql.org/docs/16/pgbuffercache.html
 ```
