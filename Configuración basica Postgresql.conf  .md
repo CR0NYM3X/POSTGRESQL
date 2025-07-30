@@ -1,14 +1,4 @@
 
-
-
-------- AQUI PODRAS ENCONTRAR TODOS LOS  PARAMETRO
-https://www.postgresql.org/docs/17/admin.html <br>
-https://pgpedia.info/ <br>
-https://postgresqlco.nf/doc/en/param/?q=password_encryption#
-
-Doc Man: 
-/usr/pgsql-16/share/man/man1/psql.1
-
 # inicializar postgresql
 ```sql
 /usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data    --data-checksums  &>/dev/null
@@ -1465,3 +1455,17 @@ END $$;
 ```
 
 
+### Bibliografias 
+```
+PostgreSQL Configuration Tuning: Best Practices and Tools for Production-Ready Performance : 
+https://medium.com/@ukhore/postgresql-configuration-tuning-best-practices-and-tools-for-production-ready-performance-ac121eb37061
+
+------- AQUI PODRAS ENCONTRAR TODOS LOS  PARAMETRO
+https://www.postgresql.org/docs/17/admin.html <br>
+https://pgpedia.info/ <br>
+https://postgresqlco.nf/doc/en/param/?q=password_encryption#
+
+Doc Man: 
+/usr/pgsql-16/share/man/man1/psql.1
+
+```
