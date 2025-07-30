@@ -1753,3 +1753,9 @@ middle -[hidden]-> leaf
 @enduml
 
 ```
+
+
+### Bibliografia 
+```
+https://medium.com/@moinullabaig/part-1-unlocking-postgresql-performance-with-index-only-scans-6b3639cea96e
+```
