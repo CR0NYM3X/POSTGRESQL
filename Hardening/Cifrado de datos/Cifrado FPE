@@ -1,0 +1,37 @@
+## 🔐 1. Cifrado FPE (Format-Preserving Encryption)
+
+### ¿Qué es?
+Es un tipo de cifrado de los datos que **mantiene el formato original**  (por ejemplo, longitud y tipo) y lo transforma de forma segura. Es **reversible** si se tiene la clave.
+Utiliza algoritmos como FF1 o FF3 definidos por NIST y Requiere una clave secreta para cifrar y descifrar
+
+### ¿Para qué sirve?
+- Para proteger datos sensibles **sin alterar el esquema** de la base de datos.
+- Ideal en sistemas que requieren que el dato cifrado **parezca válido** (por ejemplo, tarjetas de crédito, CURP, etc.).
+
+### Casos de uso reales:
+- Bancos cifran números de tarjeta sin cambiar su longitud.
+- Gobiernos cifran identificadores personales (CURP, RFC).
+- Empresas de salud cifran números de expediente manteniendo el formato.
+
+### Cumplimientos:
+- ✅ **PCI DSS**: Aceptado si se gestiona correctamente la clave.
+- ⚠️ **GDPR**: Solo si el dato no puede revertirse fácilmente.
+- ✅ **HIPAA**: Permitido si se protege adecuadamente.
+
+### Ventajas:
+- Reversible.
+- Compatible con sistemas existentes.
+- No requiere rediseñar la base de datos.
+
+### Desventajas:
+- Requiere gestión segura de claves.
+- No elimina completamente el riesgo de reidentificación.
+- Implementación más compleja.
+
+
+### Ejemplos:
+- **Número de tarjeta**: `4111111111111111` → `4928374659283746`  
+- **Correo electrónico**: `ana.martinez@email.com` → `xqz.lwqjv@qzjv.mom`  
+- **CURP**: `MARA800101HDFRNN09` → `XKTL920304JGHZTT83`
+
+🔸 *Observación*: El formato se mantiene (misma longitud, estructura), pero el contenido está cifrado. Es reversible si tienes la clave.
