@@ -1,0 +1,271 @@
+************************************************************************************
+************************************************************************************
+				HARDENING APARTIR DE LA VERSION 10 EN ADELANTE 
+************************************************************************************
+************************************************************************************
+
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+LISTADO DE PARÁMETROS DE HARDENING 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+3.1.5 Ensure the filename pattern for log files is set correctly
+4.5 Ensure excessive function privileges are revoked
+3.1.9 Ensure the maximum log file size is set correctly
+3.1.13 Ensure the program name for PostgreSQL syslog messages is correct
+3.1.21 Ensure 'log_disconnections' is enabled
+3.1.15 Ensure the correct SQL statements generating errors are recorded
+3.1.6 Ensure the log file permissions are set correctly
+3.1.18 Ensure 'debug_print_plan' is disabled
+3.1.24 Ensure 'log_line_prefix' is set correctly
+3.1.10 Ensure the correct syslog facility is selected
+3.1.4 Ensure the log file destination directory is set correctly
+3.1.11 Ensure syslog messages are not suppressed
+3.1.14 Ensure the correct messages are written to the server log
+3.1.22 Ensure 'log_error_verbosity' is set correctly
+3.1.23 Ensure 'log_hostname' is set correctly
+3.1.8 Ensure the maximum log file lifetime is set correctly
+3.1.19 Ensure 'debug_pretty_print' is enabled
+3.1.25 Ensure 'log_statement' is set correctly
+3.1.17 Ensure 'debug_print_rewritten' is disabled
+3.1.2 Ensure the log destinations are set correctly
+6.8 Ensure TLS is enabled and configured correctly
+6.9 Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled
+3.1.16 Ensure 'debug_print_parse' is disabled
+3.1.20 Ensure 'log_connections' is enabled
+3.1.3 Ensure the logging collector is enabled
+3.1.12 Ensure syslog messages are not lost due to size
+3.1.7 Ensure 'log_truncate_on_rotation' is enabled
+
+
+
+
+/******************* PARAMETROS *******************\
+debug_print_parse = off
+debug_print_rewritten = off
+debug_pretty_print = on
+debug_print_plan = off 
+log_file_mode = 0600
+log_error_verbosity = default
+client_min_messages = warning                      
+log_min_error_statement = warning 
+log_min_messages  = warning 
+log_connections     = on                         
+log_disconnections  = on                         
+log_hostname        = off                        
+log_filename        = 'postgresql-%y%m%d.log'     
+log_line_prefix  = '<%t %r %a %d %u %p %c %i>' 
+log_rotation_age = 1d 
+log_rotation_size  = 0 
+log_truncate_on_rotation = on
+password_encryption = 'scram-sha-256' -- no soportado en vesiones < 10 
+ssl = on
+ssl_min_protocol_version = 'TLSv1.3'  ---  TLSv1.2 or TLSv1.3
+ 
+ 
+ 
+ 
+/******************* versiones de tls que se pueden configurar   *******************\
+Versión de PostgreSQL	Valores Posibles para ssl_min_protocol_version
+10	No disponible
+11	No disponible
+12	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
+13	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
+14	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
+15	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
+16	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
+17	TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3
+
+ 
+ 
+ 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  0.- VALIDAR VERSION DE POSTGRESQL
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# SE VALIDA YA QUE EL PARAMETRO 
+   psql -X  -c "select version()"
+ 
+ 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1.- HACER RESPALDO  Y VALIDAR QUE SI SE HAYA CREADO 
+ 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# DECLARACION DE VARIABLES 
+fecha=$(date +%y%m%d)
+vardata=/sysx/data11
+varport=5411
+dictory_backup=$vardata/respaldos_conf
+
+
+
+# CREACION DE CARPETA 
+mkdir $dictory_backup
+
+# BACKUP DE ARCHIVOS CONF
+psql -X  -p $varport       -c "COPY (select name ||' = ''' ||setting|| '''' from pg_settings ) TO '$dictory_backup/pg_settings-$fecha.csv'"
+cp  $vardata/postgresql.conf  $dictory_backup/postgresql.conf-RESP-$fecha
+cp $vardata/postgresql.auto.conf $dictory_backup/postgresql.auto.conf-RESP-$fecha
+ls -lhtra  $dictory_backup
+
+
+cd $vardata
+
+
+
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+ 2.- VALIDAR QUE NO TENGA ERRORES LOS ARCHIVOS CONF
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Valida que el postgresql.conf no tenga errores 
+psql -X  -p $varport     -c "select * from pg_catalog.pg_file_settings where error is not null; "
+
+# Valida que el pg_hba.conf no tenga errores  
+psql -X  -p $varport     -c "select * from pg_hba_file_rules where error is not null; "
+
+# Valida si posgresql soporta scram-sha , en la columna enumvals  = {md5,scram-sha-256}, de igual forma ya sabemos que scram-sha-256 se implementeo en la version 10 en adelante
+psql -X  -p $varport     -xc "select *  from pg_settings where name = 'password_encryption'"
+
+
+
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  3.- VALIDAR PARÁMETROS  QUE OCUPAN HARDENING, SI APARECEN REGISTROS  ES PORQUE ESTAN MAL CONFIGURADOS 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+# ESTA QUERY TE MUESTRA LOS PARAMETROS QUE SE TIENEN QUE CONFIGURAR, TE INIDICA EL VALOR ACTUAL Y COMO DEBE DE ESTAR , TAMBIEN TE OTORGA EL SED DE LINUX PARA QUE REALICES LA MODIFICACION DE MANERA SEGURA 
+ echo -e '\n\n' && psql   -Xx -p $varport      -c " SELECT a.name as name_setting,setting as current_setting_incorrect, coalesce(b.correct_setting,c.correct_setting) as correct_setting ,  short_desc,
+  
+ case when a.name != 'server_version' then  format('sed -i %s/%s[[:space:]]*=/ s/.*/%s = %s%s%s  #&/%s %s/postgresql.conf ',chr(34) , a.name  , a.name , chr(39) ,replace(coalesce(b.correct_setting,c.correct_setting),'/','\/'),chr(39),chr(34),  current_setting('data_directory')   ) end as command_modify FROM pg_settings  as a 
+  
+ left join (select * from (VALUES 
+ ('data_directory', '/sysx/data')
+,('log_filename', 'postgresql-%y%m%d.log')
+,('client_min_messages', 'warning')
+,('log_min_messages', 'warning')
+,('log_min_error_statement', 'warning')
+,('log_connections', 'on')
+,('log_disconnections', 'on')
+,('log_hostname', 'off')
+,('log_rotation_age', '1440')
+,('log_rotation_size', '0')
+,('log_truncate_on_rotation', 'on')
+,('password_encryption', 'scram-sha-256')
+,('debug_print_parse', 'off')
+,('debug_print_rewritten', 'off')
+,('debug_print_plan', 'off')
+,('debug_pretty_print', 'on')
+,('log_file_mode', '0600')
+,('log_error_verbosity', 'default')
+,('log_directory', 'pg_log')
+,('log_statement', 'all')
+,('log_line_prefix', '<%t %r %a %d %u %p %c %i>' )
+,('ssl', 'on' )
+,('ssl_min_protocol_version', 'TLSv1.3' )
+) AS acl_privs(name, correct_setting)) as b on a.name = b.name
+
+left join (
+select * from (VALUES 
+ ('server_version', '17')
+,('server_version', '16.4')
+,('server_version', '15.8')
+,('server_version', '14.13')
+,('server_version', '13.16')
+,('server_version', '12.20')
+,('server_version', '11.22')
+,('server_version', '10.23')
+)
+ AS acl_privs(name, correct_setting)) as c  on a.name = c.name and split_part(setting,'.',1) = split_part(c.correct_setting,'.',1) and a.name = 'server_version'
+ where
+ 
+(
+	(a.name = 'data_directory' and not setting ilike '/sysx%')
+or	(a.name = 'log_filename' and not setting= 'postgresql-%y%m%d.log')
+or  (a.name = 'client_min_messages' and not setting = 'warning')
+or  (a.name = 'log_min_messages' and not setting = 'warning')
+or  (a.name = 'log_min_error_statement' and not setting = 'warning' )	
+or  (a.name = 'log_connections' and not setting = 'on' )	
+or  (a.name = 'log_disconnections' and not setting = 'on' )	
+or  (a.name = 'log_hostname' and not setting = 'off' )	
+or  (a.name = 'log_rotation_age'  and not setting = '1440')
+or  (a.name = 'log_rotation_size'  and not  setting = '0')
+or  (a.name = 'log_truncate_on_rotation' and not setting= 'on')
+or  (a.name = 'password_encryption'  and not setting= 'scram-sha-256')
+or  (a.name = 'debug_print_parse'  and not setting = 'off')
+or  (a.name = 'debug_print_rewritten'  and not setting = 'off')
+or  (a.name = 'debug_print_plan'  and not setting = 'off')
+or  (a.name = 'debug_pretty_print'  and not setting = 'on')
+or  (a.name = 'log_file_mode'  and not setting = '0600')
+or  (a.name = 'log_error_verbosity'  and not setting = 'default')
+or  (a.name = 'log_directory'  and not setting = 'pg_log')
+or  (a.name = 'log_statement'  and not setting = 'all')	
+or  (a.name = 'log_line_prefix'   and replace(setting,' ','') != '<%t%r%a%d%u%p%c%i>' )
+or  (a.name = 'ssl'  and not setting = 'on')	
+or  (a.name = 'ssl_min_protocol_version'  and not (setting = 'TLSv1.2' or setting = 'TLSv1.3'))	  
+or  (a.name = 'server_version' and not setting in( '10.23','11.22','12.20','13.16','14.13','15.8','16.4','17' ))	
+) order by a.name;"
+
+
+
+
+ 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+5.- MODIFICAMOS EL ARCHIVO POSTGRESQL.CONF
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Ingresamos a la carpeta data
+cd $vardata
+
+
+Al ejecutar a query del paso #3 te mostrara la columna "command_modify"  el cual debes de colocar en la terminal de linux para que se realice el cambio en el archivo postgresql.conf
+ 
+
+
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+4.- HACEMOS ENLACES SIMBOLICOS HACIA EL DISCO EN CASO DE MODIFICAR EL PARAMETRO log_directory
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	ln -s /pg_log/ $vardata/pg_log 
+
+
+
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+5.-	HACEMOS EL RELOAD Y VALIDAMOS LOGS 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+ 
+# Limpiamos y realizamos el reload 
+clear
+pg_ctl reload -D $vardata
+
+
+# Validamos que el log haya cambiado de nombre 
+psql -X  -p $varport     -c "select pg_current_logfile();"
+
+
+# Validamos si genero algun error el log 
+grep -A 14 -Ei "SIGHUP"  $vardata/pg_log/postgresql-$fecha.log 
+
+head -n 30  $vardata/pg_log/postgresql-$fecha.log |  grep -A 14 -Ei "error|fatal|warrnig|reloading|SIGHUP"
+
+ 
+
+ 
+  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+6.- VALIDAR DE NUEVO SI GENERO ALGUN ERROR LOS ARCHIVOS LOG 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Valida que el postgresql.conf no tenga errores 
+psql -X  -p $varport     -c "select * from pg_catalog.pg_file_settings where error is not null; "
+ 
+ 
+ 
+
+
+
+  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+7.- SE TOMA COMO HARDENING EXITOSO EN CASO DE NINGUN ERROR 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
