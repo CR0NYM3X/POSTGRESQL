@@ -1,4 +1,4 @@
-## 🔐 **Tokenización**
+## 🔐 **SST (Secure Storage Tokenization)**
 
 ### ¿Qué es?
 La **tokenización y DesTokenización** es una técnica de protección de datos que consiste en **reemplazar un dato sensible por un valor alternativo (token)** que **no tiene valor fuera del sistema que lo genera**. A diferencia del cifrado, el token **no se deriva matemáticamente del dato original**, lo que lo hace inútil si se intercepta.
