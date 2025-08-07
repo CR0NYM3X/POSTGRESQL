@@ -1010,6 +1010,16 @@ where U&"_0070_0072_006f_006e_0061_006d_0065" UESCAPE '_' is not null
 
 ```
 
+### 🛡️ **¿Qué es una "appliance"? **
+
+- En ciberseguridad, un **appliance** (o dispositivo/aparato de seguridad) es un **equipo físico o virtual especializado** que realiza funciones de protección de red, como:
+  - **Firewall**
+  - **VPN**
+  - **Antivirus**
+  - **Detección y prevención de intrusos (IDS/IPS)**
+  - **Filtrado de contenido web o correo electrónico**  
+
+- Estos dispositivos están diseñados para ser **eficientes, seguros y fáciles de administrar**, y suelen formar parte de soluciones como **UTM (Unified Threat Management)**, que combinan varias funciones en un solo equipo.
 
 # Buscar herramientas de monitoro y de seguridad instaladas en mi S.O
 ```
