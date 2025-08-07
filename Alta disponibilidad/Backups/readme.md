@@ -124,7 +124,51 @@ PostgreSQL **no tiene respaldo incremental o diferencial nativo** como tal, pero
 - **WAL Archiving + PITR**: puedes simular incrementales al guardar los WALs entre respaldos completos.
  
 
+---
 
+## 🛡️ Estrategia 3-2-1 en un Plan de Recuperación ante Desastres (DRP)
+
+Dentro de un **DRP (Disaster Recovery Plan)**, existe una estrategia ampliamente recomendada para respaldos llamada **metodología 3-2-1**, considerada una buena práctica en la gestión de backups.
+
+
+
+### 📦 ¿Qué es la regla 3-2-1 de respaldo?
+
+La regla establece:
+
+- 🔒 **3 copias de los datos**  
+- 🗃️ **2 tipos de almacenamiento diferentes**  
+- ☁️ **1 copia fuera del sitio (off-site)**  
+ 
+### ✅ Desglosado
+
+#### 🔹 3 copias de los datos
+- 1 copia principal (original) + 2 copias de seguridad.
+- Protege contra errores humanos, corrupción de archivos, malware, etc.
+
+#### 🔹 2 tipos de almacenamiento diferentes
+- Ejemplos: disco duro + cinta, nube + NAS.
+- Reduce el riesgo de fallo por una misma tecnología o medio.
+
+#### 🔹 1 copia off-site (fuera del sitio físico)
+- Puede estar en la nube, otra oficina o centro de datos remoto.
+- Protege contra desastres físicos como incendios, inundaciones o robos.
+
+
+
+### 🛡️ ¿Cómo se aplica en un DRP?
+
+- Garantiza disponibilidad de datos incluso si el entorno principal se destruye.
+- Se integra en el análisis de riesgo, continuidad de negocio y métricas RTO/RPO.
+- Se complementa con **pruebas periódicas de restauración** para validar la efectividad de los respaldos.
+
+
+
+### 🔁 Variantes modernas
+
+#### 📌 **Regla 3-2-1-1-0**
+- **1 copia inmutable** (no puede ser modificada ni eliminada).
+- **0 errores** en las pruebas de restauración.
 
 
 ---
@@ -135,3 +179,5 @@ https://dbsguru.com/physical-postgresql-backup/
 https://www.mafiree.com/readBlog/incremental-backup-in-postgresql-17
 https://www.mydbops.com/blog/postgresql-17-incremental-backup-pg-basebackup-pg-combinebackup
 ```
+
+
