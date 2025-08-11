@@ -740,3 +740,9 @@ DROP DOMAIN positive_integer;
 
 rollback ; 
 ```
+
+
+```
+JSON: https://medium.com/team-resilience/odc-supercharge-your-advanced-sql-with-postgresql-json-functions-6ca3e9520a56
+
+```
