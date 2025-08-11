@@ -356,6 +356,8 @@ En una cola de mensajes (como una tabla que almacena trabajos o eventos pendient
 ---
 ## Bibliografías
 ```
+
+The Strange Case of PostgreSQL Advisory Locks -> https://medium.com/@lsampath210/the-strange-case-of-postgresql-advisory-locks-bc6be6190788
 Postgres Locks — A Deep Dive : https://medium.com/@hnasr/postgres-locks-a-deep-dive-9fc158a5641c
 Understanding Database Locks in PostgreSQL : https://medium.com/@aditimishra_541/understanding-database-locks-in-postgresql-0392f0ab52d1
 Understanding Postgres Locks and Managing Concurrent Transactions :  https://medium.com/@sonishubham65/understanding-postgres-locks-and-managing-concurrent-transactions-1ededce53d59
