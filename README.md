@@ -12,8 +12,10 @@ https://database.build/db/m6elcqyum78z69ug
  ```
 
 
-# Páginas interesantes 
+# Páginas para adquirir conocimientos
 ```
+https://gitlab.com/xavki/presentations-postgresql
+
 Postgres Administration Esentials - https://pgadminedb.readthedocs.io/en/latest/
 https://bensonyerima.com/
 https://www.postgresql.org/list/
