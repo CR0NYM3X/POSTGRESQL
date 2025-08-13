@@ -27,6 +27,9 @@ ps aux --sort=-%cpu | head
 ps -C postgres -o pid=,%mem= --sort=-%mem | awk '{print $1","$2}'
 ps -p <PID> -o %cpu,%mem,cmd
 
+# USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+ps -auxww 
+
 vmstat -S m 1 5
 
 
