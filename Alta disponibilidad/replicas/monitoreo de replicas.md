@@ -28,21 +28,38 @@
 - Configura alertas si el WAL retenido supera cierto umbral (por ejemplo, 1 GB).
 
 
-# Descripcion de funciones
-```
-select pg_current_wal_lsn(), pg_current_wal_insert_lsn(),pg_current_wal_flush_lsn() ;
+## 🧠 Análisis de cada función
 
-pg_current_wal_lsn() te dirá el punto desde donde empezará la próxima escritura. -  devuelve el LSN (Log Sequence Number) actual del WAL (Write-Ahead Log), es decir, el punto más reciente en el que se ha escrito algo en el WAL
+| Función | ¿Qué mide? | ¿Sirve para medir retraso? | ¿Por qué? |
+|--------|-------------|----------------------------|-----------|
+| `pg_current_wal_lsn()` | Último LSN visible en el sistema | ✅ Sí | Representa el punto más avanzado del WAL que el sistema reconoce. |
+| `pg_current_wal_insert_lsn()` | Último LSN insertado en el WAL (aún no escrito) | ⚠️ No recomendado | Puede incluir datos aún no visibles ni comprometidos. |
+| `pg_current_wal_flush_lsn()` | Último LSN confirmado como escrito en disco | ✅ Sí | Representa el punto seguro y duradero del WAL. |
 
-
-pg_current_wal_insert_lsn() te muestra hasta dónde ya se insertaron los datos en la memoria.
-pg_current_wal_flush_lsn() te muestra hasta dónde esos datos ya están escritos en el disco duro (persistencia completa).
-```
 
  # Ver retraso de replica standby en KB
  ```
 -- Puedes calcular cuántos bytes y  calcular el tamaño del WALs retenido y que puedes dividir entre 1024 para obtener KB.
+--  DBAs avanzados prefieren confirmed_flush_lsn para monitoreo en tiempo real.
+
+SELECT
+    slot_name,
+    plugin,
+    slot_type,
+    active,
+    pg_current_wal_flush_lsn() AS current_flush_lsn,
+    confirmed_flush_lsn,
+    pg_current_wal_flush_lsn() - confirmed_flush_lsn AS wal_lag_bytes
+FROM 
+    pg_replication_slots
+WHERE 
+    confirmed_flush_lsn IS NOT NULL;
+
+-- Administradores de infraestructura usan restart_lsn para evitar problemas de almacenamiento.
 SELECT slot_name, pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),restart_lsn)) AS lag, active from pg_replication_slots WHERE slot_type='logical';
+
+
+
 ```
 
 # Otras validaciones
