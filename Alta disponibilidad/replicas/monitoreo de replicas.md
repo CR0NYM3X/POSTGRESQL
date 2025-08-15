@@ -27,15 +27,14 @@
 - Usa herramientas como `pg_stat_replication` para ver el estado de los consumidores.
 - Configura alertas si el WAL retenido supera cierto umbral (por ejemplo, 1 GB).
 
+ 
+## 🧠 Descripción de cada función
 
-## 🧠 Análisis de cada función
-
-| Función | ¿Qué mide? | ¿Sirve para medir retraso? | ¿Por qué? |
-|--------|-------------|----------------------------|-----------|
-| `pg_current_wal_lsn()` | Último LSN visible en el sistema | ✅ Sí | Representa el punto más avanzado del WAL que el sistema reconoce. |
-| `pg_current_wal_insert_lsn()` | Último LSN insertado en el WAL (aún no escrito) | ⚠️ No recomendado | Puede incluir datos aún no visibles ni comprometidos. |
-| `pg_current_wal_flush_lsn()` | Último LSN confirmado como escrito en disco | ✅ Sí | Representa el punto seguro y duradero del WAL. |
-
+| Función | ¿Qué devuelve? | ¿Qué representa? | ¿Para qué sirve? |
+|--------|----------------|------------------|------------------|
+| `pg_current_wal_insert_lsn()` | LSN más reciente **insertado** en el WAL (en memoria) | El punto donde se ha generado el último cambio, aunque aún no se haya escrito en disco | Diagnóstico de rendimiento y generación de WAL |
+| `pg_current_wal_flush_lsn()` | LSN más reciente **escrito en disco** | El punto hasta donde los cambios están garantizados y duraderos | Verificar durabilidad y sincronización con réplicas |
+| `pg_current_wal_lsn()` | LSN más reciente **visible para el sistema** | El punto más avanzado del WAL que el sistema reconoce como válido | Monitoreo general del estado del WAL |
 
  # Ver retraso de replica standby en KB
  ```
