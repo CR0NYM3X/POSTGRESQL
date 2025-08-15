@@ -19,7 +19,13 @@
    - No se han definido límites o alertas para el tamaño del WAL retenido.
    - No se están monitoreando los slots activamente.
   
-   
+### 🛠️ ¿Cómo evitar que un slot se vuelva pesado?
+
+- Monitorea regularmente el `restart_lsn` y compáralo con `pg_current_wal_lsn()`.
+- Elimina slots inactivos con `SELECT pg_drop_replication_slot('slot_name');` si ya no se usan.
+- Asegúrate de que el consumidor esté activo y procesando datos.
+- Usa herramientas como `pg_stat_replication` para ver el estado de los consumidores.
+- Configura alertas si el WAL retenido supera cierto umbral (por ejemplo, 1 GB).
 
  # Ver retraso de replica standby en KB
  ```
