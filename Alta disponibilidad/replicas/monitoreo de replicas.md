@@ -1,13 +1,29 @@
+### 🔍 **Causas por las que un slot puede estar reteniendo mucho WAL**
 
+1. **📉 Replicación lenta o pausada**
+   - El proceso que consume el slot (como Debezium, pglogical, etc.) está funcionando lentamente o está detenido.
+   - Esto hace que PostgreSQL no pueda eliminar los WAL antiguos, ya que el slot aún los necesita.
+
+2. **⏸️ Slot inactivo**
+   - El slot está definido pero **no tiene un consumidor activo** (`active = false`).
+   - PostgreSQL seguirá reteniendo WAL indefinidamente, lo que puede llenar el disco si no se gestiona.
+
+3. **🔁 Transacciones largas**
+   - Si el consumidor del slot está procesando una transacción muy larga, el `restart_lsn` no avanza hasta que se confirme.
+   - Esto puede causar acumulación de WAL.
+
+4. **🧱 Problemas de red o conectividad**
+   - Si el sistema que consume el slot está en otra red o nube y tiene problemas de conexión, puede retrasarse en leer los datos.
+
+5. **⚙️ Configuración incorrecta**
+   - No se han definido límites o alertas para el tamaño del WAL retenido.
+   - No se están monitoreando los slots activamente.
+  
+   
 
  # Ver retraso de replica standby en KB
  ```
----  Esto te da el retraso en bytes de una replica, que puedes dividir entre 1024 para obtener KB.
- SELECT application_name,
-       pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn) AS delay_bytes
-FROM pg_stat_replication;
-
---Puedes calcular cuántos bytes
+-- Puedes calcular cuántos bytes y  calcular el tamaño del WALs retenido y que puedes dividir entre 1024 para obtener KB.
 SELECT slot_name, pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),restart_lsn)) AS lag, active from pg_replication_slots WHERE slot_type='logical';
 ```
 
@@ -93,4 +109,8 @@ select specific_schema, routine_name  from  information_schema.routines  where r
 | pg_catalog      | pg_wal_replay_resume          |
 | pg_catalog      | pg_ls_waldir                  |
 
+
+select * from pg_control_checkpoint();
+
 ```
+
