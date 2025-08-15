@@ -27,6 +27,18 @@
 - Usa herramientas como `pg_stat_replication` para ver el estado de los consumidores.
 - Configura alertas si el WAL retenido supera cierto umbral (por ejemplo, 1 GB).
 
+
+# Descripcion de funciones
+```
+select pg_current_wal_lsn(), pg_current_wal_insert_lsn(),pg_current_wal_flush_lsn() ;
+
+pg_current_wal_lsn() te dirá el punto desde donde empezará la próxima escritura. -  devuelve el LSN (Log Sequence Number) actual del WAL (Write-Ahead Log), es decir, el punto más reciente en el que se ha escrito algo en el WAL
+
+
+pg_current_wal_insert_lsn() te muestra hasta dónde ya se insertaron los datos en la memoria.
+pg_current_wal_flush_lsn() te muestra hasta dónde esos datos ya están escritos en el disco duro (persistencia completa).
+```
+
  # Ver retraso de replica standby en KB
  ```
 -- Puedes calcular cuántos bytes y  calcular el tamaño del WALs retenido y que puedes dividir entre 1024 para obtener KB.
@@ -119,4 +131,110 @@ select specific_schema, routine_name  from  information_schema.routines  where r
 select * from pg_control_checkpoint();
 
 ```
+
+
+### 📋 **Funcion de `pg_control_checkpoint()`**
+
+| **Columna**               | **Descripción** |
+|---------------------------|-----------------|
+| `checkpoint_lsn`          | LSN donde se escribió el último checkpoint en el WAL. |
+| `redo_lsn`                | LSN desde donde debe comenzar la recuperación si hay fallo. Puede ser anterior al `checkpoint_lsn`. |
+| `redo_wal_file`           | Archivo WAL que contiene el `redo_lsn`. Útil para identificar qué archivo se necesita para recuperación. |
+| `timeline_id`             | ID de la línea de tiempo actual. Cambia en eventos como failover. |
+| `prev_timeline_id`        | ID de la línea de tiempo anterior. |
+| `full_page_writes`        | Indica si se están escribiendo páginas completas en el WAL (`t` = true). Mejora la recuperación ante fallos. |
+| `next_xid`                | Próximo ID de transacción que se asignará. |
+| `next_oid`                | Próximo OID (Object Identifier) que se asignará a objetos como tablas. |
+| `next_multixact_id`       | Próximo ID de multitransacción (usado en bloqueos compartidos). |
+| `next_multi_offset`       | Offset dentro del multixact actual. |
+| `oldest_xid`              | ID de transacción más antigua que aún puede afectar el sistema (usado para VACUUM). |
+| `oldest_xid_dbid`         | ID de la base de datos que contiene el `oldest_xid`. |
+| `oldest_active_xid`       | ID de la transacción activa más antigua. |
+| `oldest_multi_xid`        | ID de multitransacción más antigua aún relevante. |
+| `oldest_multi_dbid`       | ID de la base de datos que contiene el `oldest_multi_xid`. |
+| `oldest_commit_ts_xid`    | ID de transacción más antigua con marca de tiempo de commit. |
+| `newest_commit_ts_xid`    | ID de transacción más reciente con marca de tiempo de commit. |
+| `checkpoint_time`         | Fecha y hora en que se realizó el último checkpoint. |
+
+ 
+## 📊 Tabla `pg_replication_slots`
+
+Esta tabla contiene información sobre los **slots de replicación**, que son mecanismos para retener WAL hasta que los consumidores (como réplicas o procesos de análisis) lo hayan leído.
+
+### 📌 Descripción de columnas
+
+| Columna | Tipo | Descripción |
+|--------|------|-------------|
+| `slot_name` | `name` | Nombre único del slot de replicación. |
+| `plugin` | `name` | Nombre del plugin usado (solo en replicación lógica). |
+| `slot_type` | `text` | Tipo de slot: `physical` o `logical`. |
+| `datoid` | `oid` | OID de la base de datos asociada (solo en lógica). |
+| `database` | `name` | Nombre de la base de datos (solo lógica). |
+| `temporary` | `boolean` | Si el slot es temporal (se elimina al cerrar la sesión). |
+| `active` | `boolean` | Si el slot está siendo usado actualmente. |
+| `active_pid` | `integer` | PID del proceso que lo está usando (si está activo). |
+| `xmin` | `xid` | Mínimo XID retenido por el slot (solo lógica). |
+| `catalog_xmin` | `xid` | Mínimo XID del catálogo retenido (solo lógica). |
+| `restart_lsn` | `pg_lsn` | Punto desde el cual se puede reiniciar la replicación. |
+| `confirmed_flush_lsn` | `pg_lsn` | Último LSN confirmado por el consumidor (solo lógica). |
+
+ 
+ 
+## 📊 Tabla: `pg_stat_wal_receiver`
+
+Esta vista muestra el estado del proceso que **recibe los WAL desde el servidor primario** en una réplica física.
+
+### 📌 Descripción de columnas
+
+| Columna | Tipo | Descripción |
+|--------|------|-------------|
+| `pid` | `integer` | ID del proceso del receptor WAL. |
+| `status` | `text` | Estado actual del receptor (`streaming`, `stopped`, etc.). |
+| `receive_start_lsn` | `pg_lsn` | LSN donde comenzó a recibir datos. |
+| `receive_start_tli` | `integer` | Timeline ID donde comenzó la recepción. |
+| `written_lsn` | `pg_lsn` | Último LSN escrito en disco por el receptor. |
+| `flushed_lsn` | `pg_lsn` | Último LSN confirmado como escrito en disco. |
+| `received_lsn` | `pg_lsn` | Último LSN recibido desde el primario. |
+| `latest_end_lsn` | `pg_lsn` | Último LSN reportado por el primario como disponible. |
+| `latest_end_time` | `timestamp with time zone` | Hora del último LSN disponible en el primario. |
+| `slot_name` | `text` | Nombre del slot de replicación usado (si aplica). |
+| `sender_host` | `text` | IP o hostname del servidor primario. |
+| `sender_port` | `integer` | Puerto del servidor primario. |
+| `conninfo` | `text` | Cadena de conexión usada para conectarse al primario. |
+| `sync_priority` | `integer` | Prioridad de sincronización (si hay múltiples réplicas). |
+| `sync_state` | `text` | Estado de sincronización: `async`, `sync`, `quorum`. |
+
+
+
+## 📊 Tabla: `pg_stat_replication`
+
+Esta vista muestra el estado de las **réplicas conectadas al servidor primario**.
+
+### 📌 Descripción de columnas
+
+| Columna | Tipo | Descripción |
+|--------|------|-------------|
+| `pid` | `integer` | ID del proceso de backend que maneja la réplica. |
+| `usesysid` | `oid` | ID del rol que inició la conexión de replicación. |
+| `usename` | `name` | Nombre del rol que inició la conexión. |
+| `application_name` | `text` | Nombre de la aplicación (configurado en `primary_conninfo`). |
+| `client_addr` | `inet` | Dirección IP del cliente (réplica). |
+| `client_hostname` | `text` | Hostname del cliente (si está disponible). |
+| `client_port` | `integer` | Puerto del cliente. |
+| `backend_start` | `timestamp with time zone` | Hora en que se inició el proceso de backend. |
+| `backend_xmin` | `xid` | Mínimo XID retenido por el backend (replicación lógica). |
+| `state` | `text` | Estado actual: `streaming`, `catchup`, `startup`, etc. |
+| `sent_lsn` | `pg_lsn` | Último LSN enviado al cliente. |
+| `write_lsn` | `pg_lsn` | Último LSN escrito por el cliente. |
+| `flush_lsn` | `pg_lsn` | Último LSN confirmado como escrito por el cliente. |
+| `replay_lsn` | `pg_lsn` | Último LSN que el cliente ha aplicado. |
+| `write_lag` | `interval` | Diferencia entre `sent_lsn` y `write_lsn`. |
+| `flush_lag` | `interval` | Diferencia entre `sent_lsn` y `flush_lsn`. |
+| `replay_lag` | `interval` | Diferencia entre `sent_lsn` y `replay_lsn`. |
+| `sync_priority` | `integer` | Prioridad de sincronización. |
+| `sync_state` | `text` | Estado de sincronización: `async`, `sync`, `quorum`. |
+
+
+
+
 
