@@ -1343,3 +1343,47 @@ Es una estrategia clave para mantener aplicaciones escalables y confiables.
 
 ### **PoC (Proof of Concept, o Prueba de Concepto)**
 Es un **prototipo o demostración** que se desarrolla para comprobar si una idea, tecnología o solución es viable antes de invertir tiempo y recursos en su implementación completa. 
+
+--- 
+
+
+## 🧩 CQRS (Command Query Responsibility Segregation)
+
+**¿Qué es?**  
+Es un patrón que **separa las operaciones de lectura (queries)** de las **de escritura (commands)** en un sistema.
+
+### 🛠️ ¿Por qué hacerlo?
+Porque leer y escribir datos tienen necesidades distintas. Las lecturas suelen ser muchas, rápidas y optimizadas para mostrar información. Las escrituras pueden ser más complejas, con validaciones, reglas de negocio, etc.
+
+### 🎯 Ejemplo:
+Imagina una app de pedidos:
+
+- Cuando un cliente **consulta su historial de compras**, eso es una **query**.
+- Cuando **hace un nuevo pedido**, eso es un **command**.
+
+Con CQRS, puedes tener una base de datos optimizada para lecturas (por ejemplo, una base NoSQL como Redis o Elasticsearch) y otra para escrituras (como PostgreSQL).
+
+
+
+## 🧾 Event Sourcing
+
+**¿Qué es?**  
+En lugar de guardar solo el **estado actual** de los datos, guardas **todos los eventos que llevaron a ese estado**.
+
+### 🛠️ ¿Por qué hacerlo?
+Porque te da un historial completo de lo que ha pasado. Es como tener un "registro contable" de cada cambio.
+
+### 🎯 Ejemplo:
+En vez de guardar solo el saldo actual de una cuenta bancaria, guardas eventos como:
+
+- "Depósito de \$100"
+- "Retiro de \$50"
+- "Transferencia de \$20"
+
+Y si quieres saber el saldo, simplemente **reproduces los eventos**.
+
+
+
+## 🧠 ¿Y si los combinas?
+
+¡Boom! 💥 Puedes usar **Event Sourcing para las escrituras** (commands) y **una base optimizada para lecturas** (queries). Así tienes lo mejor de ambos mundos: historial completo + rendimiento en consultas.
