@@ -1,71 +1,84 @@
- 
 ## 📊 Escalera Jerárquica y Funciones en el Mundo de Bases de Datos y Datos
 
-### 1. 🏗️ Arquitecto de Base de Datos (Database Architect)
-- **Nivel jerárquico:** Alto — diseña la visión y estructura general.
-- **Foco:** Estructura lógica y física, modelado de datos, selección de tecnologías.
-- **Objetivo:** Escalabilidad, seguridad y eficiencia a largo plazo.
-- **Casos de uso:**
-  - Diseñar el sistema de datos de un banco.
-  - Migrar de monolítico a microservicios con bases distribuidas.
-  - Elegir entre PostgreSQL, Cassandra o un Data Lake.
 
----
+### 🔝 **Nivel Estratégico y de Gobierno**
 
-### 2. 🔧 Ingeniero de Datos (Data Engineer)
-- **Nivel jerárquico:** Medio-alto — construye y mantiene la “carretera de datos”.
-- **Foco:** Ingesta, transformación, almacenamiento, pipelines ETL/ELT.
-- **Objetivo:** Flujo confiable, rápido y limpio de datos.
-- **Casos de uso:**
-  - Pipeline de sensores IoT a Data Lake.
-  - Análisis en tiempo real con Kafka/Spark.
-  - Integración de APIs y bases heterogéneas.
+1. **Gobierno de Datos (Data Governance)**
+   - **Director de Datos Corporativo** — *Chief Data Officer (CDO)*  
+     Máximo responsable de la estrategia de datos. Define políticas, lidera iniciativas de gobernanza, asegura cumplimiento normativo y promueve el uso estratégico de los datos.
 
----
+   - **Director de Tecnología** — *Chief Information Officer (CIO)*  
+     Responsable de la infraestructura tecnológica. Colabora con el CDO para asegurar que los sistemas soporten la estrategia de datos.
 
-### 3. 🛡️ Administrador de Base de Datos (DBA)
-- **Nivel jerárquico:** Medio — guardián operativo.
-- **Foco:** Configuración, monitoreo, respaldo, seguridad, rendimiento.
-- **Objetivo:** Estabilidad, seguridad y optimización 24/7.
-- **Casos de uso:**
-  - Backups y restauraciones.
-  - Optimización de índices y consultas.
-  - Alta disponibilidad y replicación.
+   - **Líder de Gobierno de Datos** — *Data Governance Lead*  
+     Implementa la estrategia de gobernanza. Coordina equipos, capacita, monitorea cumplimiento y actúa como puente entre liderazgo y operación.
 
----
+   - **Comité de Gobierno de Datos** — *Data Governance Committee*  
+     Grupo multidisciplinario que define políticas, estándares y prioridades. Incluye líderes de IT, cumplimiento, negocio y seguridad.
 
-### 4. 🧱 Desarrollador de Base de Datos (Database Developer)
-- **Nivel jerárquico:** Medio — constructor de lógica interna.
-- **Foco:** Procedimientos almacenados, funciones, triggers, consultas.
-- **Objetivo:** Soporte a la lógica de negocio y datos listos para consumir.
-- **Casos de uso:**
-  - Consultas para reportes financieros.
-  - Validación de datos antes de insertarlos.
-  - Automatización de procesos SQL.
+2. **Estrategia de Datos (Data Strategy)**
+   - **Director de Datos / Jefe de Datos** — *Head of Data / Director of Data*  
+     Supervisa equipos técnicos y operativos, y traduce la estrategia en ejecución.
 
----
+   - **Gerente de Estrategia de Datos** — *Data Strategy Manager*  
+     Apoya al CDO en la planificación estratégica, análisis de riesgos y oportunidades, y alineación con objetivos de negocio.
 
-### 5. 📈 Analista de Datos (Data Analyst)
-- **Nivel jerárquico:** Medio-bajo — intérprete de datos procesados.
-- **Foco:** Análisis, limpieza, visualización, reportes.
-- **Objetivo:** Informes accionables para decisiones.
-- **Casos de uso:**
-  - Dashboards en Power BI o Tableau.
-  - Segmentación de clientes.
-  - Informes para auditorías.
 
----
 
-### 6. 🧠 Científico de Datos (Data Scientist)
-- **Nivel jerárquico:** Alto en la capa analítica.
-- **Foco:** Estadística, machine learning, IA, experimentación.
-- **Objetivo:** Descubrimiento de patrones y predicción.
-- **Casos de uso:**
-  - Predicción de demanda.
-  - Análisis de sentimientos.
-  - Motor de recomendación tipo Netflix.
+### 🧠 **Nivel de Diseño y Arquitectura**
 
----
+3. **Arquitectura de Datos (Data Architecture)**
+   - **Arquitecto de Datos** — *Data Architect*  
+     Diseña la estructura general de los datos, define estándares y guía la integración entre sistemas.
+
+   - **Arquitecto de Base de Datos** — *Database Architect*  
+     Se enfoca en el diseño físico y lógico de las bases de datos, optimización, escalabilidad y seguridad.
+
+
+
+### ⚙️ **Nivel Técnico y de Ingeniería**
+
+4. **Ingeniería de Datos (Data Engineering)**
+   - **Ingeniero de Datos** — *Data Engineer*  
+     Construye y mantiene pipelines ETL/ELT, transforma datos y asegura su disponibilidad para análisis.
+
+5. **Desarrollo de Bases de Datos (Database Development)**
+   - **Desarrollador de Base de Datos** — *Database Developer*  
+     Crea procedimientos, funciones, triggers y lógica de negocio dentro de las bases de datos.
+
+6. **Administración de Bases de Datos (Database Administration)**
+   - **Administrador de Base de Datos** — *Database Administrator (DBA)*  
+     Mantiene, respalda, monitorea y asegura el rendimiento y disponibilidad de las bases de datos.
+
+
+
+### 🔍 **Nivel Analítico y Científico**
+
+7. **Ciencia de Datos (Data Science)**
+   - **Científico de Datos** — *Data Scientist*  
+     Analiza grandes volúmenes de datos, crea modelos predictivos y extrae insights para la toma de decisiones.
+
+   - **Ingeniero de Machine Learning** — *Machine Learning Engineer*  
+     Implementa y optimiza modelos de aprendizaje automático en producción.
+
+8. **Análisis de Datos (Data Analytics)**
+   - **Analista de Datos** — *Data Analyst*  
+     Interpreta datos, genera reportes y visualizaciones para apoyar decisiones operativas y estratégicas.
+
+
+
+### 🧹 **Nivel Operaciones y Calidad**
+
+9. **Gestión Operativa y Calidad**
+   - **Propietario de Datos** — *Data Owner*  
+     Responsable de un conjunto específico de datos. Define políticas de uso, calidad y acceso.
+
+   - **Administrador de Calidad de Datos** — *Data Steward*  
+     Asegura la calidad, consistencia y cumplimiento de los datos en el día a día. Colabora con usuarios y equipos técnicos.
+
+   - **Administrador de Datos** — *Data Administrator*  
+     Orquesta el programa de gobernanza: modela datos, monitorea lineage, publica políticas y resuelve conflictos.
+
 
 ## 📌 Otros Roles Importantes
 
@@ -77,17 +90,6 @@
 | Data Governance Officer    | Alto        | Cumplimiento regulatorio                  | Asegurar GDPR / Ley de Protección de Datos         |
 | BI Developer               | Medio       | Dashboards y reportes                     | Reportes financieros interactivos                  |
 
----
-
-## 🔼 Resumen Jerárquico (de visión global a tareas operativas)
-
-1. Arquitecto de Base de Datos / Arquitecto de Datos Empresarial  
-2. Ingeniero de Datos / Ingeniero de Machine Learning  
-3. Científico de Datos  
-4. Administrador de Base de Datos  
-5. Desarrollador de Base de Datos  
-6. Analista de Datos  
-7. Otros especialistas (BI Developer, Data Steward, etc.)
 
 ---
 
