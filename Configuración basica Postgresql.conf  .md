@@ -1459,6 +1459,7 @@ END $$;
 ```
 PostgreSQL Configuration Tuning: Best Practices and Tools for Production-Ready Performance : 
 https://medium.com/@ukhore/postgresql-configuration-tuning-best-practices-and-tools-for-production-ready-performance-ac121eb37061
+https://medium.com/@itsmerob/supercharging-postgresql-5-powerful-techniques-for-enhanced-performance-and-scalability-692362eebd0a
 
 ------- AQUI PODRAS ENCONTRAR TODOS LOS  PARAMETRO
 https://www.postgresql.org/docs/17/admin.html <br>
