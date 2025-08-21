@@ -315,7 +315,285 @@ WHERE metaphone(palabra, 10) = metaphone('buscada', 10);
 
 
 
+----
 
+# **Full Text Search (FTS)** en PostgreSQL; 
+
+
+## ⚙️ 2. Crear columna para `tsvector` (opcional pero recomendado)
+
+```sql
+
+-- Existe la opcion de no agregar una columna extra como palabra_vector y mejor dejarle el trabajo a el index para que  guardar toda la información.
+-- ALTER TABLE diccionario ADD COLUMN palabra_vector tsvector GENERATED ALWAYS AS ( to_tsvector('spanish', palabra) ) STORED;
+
+```
+
+
+
+## 🚀 3. Crear índice para búsqueda rápida
+
+```sql
+CREATE INDEX idx_diccionario_tsv ON diccionario USING GIN (to_tsvector('spanish', palabra));
+
+-- Esta se usa en caso de de generar columna extra con GENERATED
+-- CREATE INDEX idx_diccionario_tsv ON diccionario USING GIN (palabra_vector);
+
+```
+
+Este índice permite búsquedas eficientes con `@@`.
+
+
+
+## 🔍 4. Consultas con Full Text Search
+
+### A. Búsqueda básica con `@@`
+
+```sql
+SELECT palabra
+FROM diccionario
+WHERE to_tsvector('spanish', palabra) @@ to_tsquery('spanish', 'buscado');
+```
+
+### B. Búsqueda con operadores lógicos
+
+```sql
+SELECT palabra
+FROM diccionario
+WHERE to_tsvector('spanish', palabra) @@ to_tsquery('spanish', 'buscar & rápido');
+```
+
+### C. Búsqueda con prefijos (`:*`)
+
+```sql
+SELECT palabra
+FROM diccionario
+WHERE to_tsvector('spanish', palabra) @@ to_tsquery('spanish', 'busc:*');
+```
+
+Esto encuentra palabras que **empiezan con "busc"**.
+
+
+
+## 🧠 Funciones más usadas en FTS
+
+| Función | Descripción |
+|--------|-------------|
+| `to_tsvector('spanish', texto)` | Convierte texto en vector de búsqueda. |
+| `to_tsquery('spanish', query)` | Convierte texto en consulta de búsqueda. |
+| `plainto_tsquery('spanish', texto)` | Similar a `to_tsquery`, pero más simple. |
+| `ts_rank(tsvector, tsquery)` | Calcula relevancia de coincidencias. |
+| `ts_headline('spanish', texto, tsquery)` | Resalta coincidencias en el texto. |
+
+
+
+### 📊 Ejemplo con `ts_rank`
+
+```sql
+SELECT palabra, ts_rank(to_tsvector('spanish', palabra), to_tsquery('spanish', 'buscador')) AS relevancia
+FROM diccionario
+WHERE to_tsvector('spanish', palabra) @@ to_tsquery('spanish', 'buscador')
+ORDER BY relevancia DESC;
+```
+ 
+ 
+  
+
+## 🔄 Flujo semántico de `to_tsvector` y `to_tsquery`
+
+### 🔸 `to_tsvector('idioma', texto)`
+**¿Qué hace?**
+1. **Tokeniza** el texto (lo divide en palabras).
+2. **Normaliza** las palabras (quita acentos, convierte a minúsculas).
+3. **Elimina stopwords** (palabras comunes como “el”, “de”, “y”).
+4. **Devuelve un vector** con las palabras significativas y sus posiciones.
+
+**Ejemplo:**
+```sql
+SELECT to_tsvector('spanish', 'La búsqueda de datos es importante');
+-- Resultado: 'busqueda':2 'dato':3 'importante':5
+```
+
+
+
+### 🔸 `to_tsquery('idioma', consulta)`
+**¿Qué hace?**
+1. **Interpreta la consulta** como una expresión lógica de búsqueda.
+2. **Tokeniza y normaliza** igual que `to_tsvector`.
+3. **Devuelve una estructura de búsqueda** que puede usarse con `@@`.
+
+**Ejemplo:**
+```sql
+SELECT to_tsquery('spanish', 'busqueda & datos');
+-- Resultado: 'busqueda' & 'dato'
+```
+
+
+
+### 🔁 ¿Cómo se conectan?
+
+```sql
+SELECT texto
+FROM tabla
+WHERE to_tsvector('spanish', texto) @@ to_tsquery('spanish', 'busqueda & datos');
+
+  
+  SELECT to_tsvector('spanish', 'buscando'); -> 'busc':1 
+  SELECT to_tsvector('spanish', 'buscando palabras en el texto'); --> 'busc':1 'palabr':2 'text':5
+  
+  select to_tsquery('spanish', 'buscado & biscado'); --> 'busc' & 'bisc' 
+  SELECT plainto_tsquery('spanish', 'traducter'); -->  'traduct' 
+ 
+  
+  -- el numero que esta aun lado de la palabra es la posición 
+  1.- buscando
+  2.- palabras
+  3.- en
+  4.- el
+  5.- texto
+  
+```
+
+- `to_tsvector(...)` convierte el texto de la tabla en un vector.
+- `to_tsquery(...)` convierte la consulta en una expresión lógica.
+- El operador `@@` verifica si el vector **cumple la condición semántica** de la consulta.
+
+
+
+  
+
+ --- 
+ 
+ 
+  
+### 🛠️ Script SQL: Crear tabla e insertar registros
+
+```sql
+CREATE TABLE articulos (
+    id SERIAL PRIMARY KEY,
+    titulo TEXT,
+    resumen TEXT,
+    contenido TEXT
+);
+
+INSERT INTO articulos (titulo, resumen, contenido) VALUES
+('Seguridad en bases de datos', 'Técnicas de protección de datos', 'La configuración de seguridad en bases de datos es esencial para proteger la información confidencial.'),
+('Configuración avanzada de PostgreSQL', 'Ajuste de parámetros de rendimiento', 'La configuración de PostgreSQL permite optimizar el rendimiento y la seguridad del sistema.'),
+('Introducción a la seguridad informática', 'Conceptos básicos de ciberseguridad', 'La seguridad informática incluye prácticas como el uso de firewalls, antivirus y políticas de acceso.'),
+('Bases de datos distribuidas', 'Distribución de datos y seguridad', 'Las bases de datos distribuidas requieren una configuración cuidadosa para garantizar la seguridad y la integridad.'),
+('Auditoría de seguridad en sistemas', 'Auditoría en entornos críticos', 'Una auditoría de seguridad permite identificar vulnerabilidades en la configuración de sistemas.'),
+('Optimización de consultas SQL', 'Mejorar el rendimiento de las consultas', 'La optimización de consultas SQL puede reducir el tiempo de respuesta y mejorar la eficiencia del sistema.'),
+('Seguridad en redes empresariales', 'Protección de infraestructura de red', 'La seguridad en redes empresariales incluye segmentación, monitoreo y control de acceso.'),
+('Configuración de firewalls', 'Uso de firewalls en seguridad', 'Los firewalls permiten controlar el tráfico de red y proteger los sistemas contra accesos no autorizados.'),
+('Gestión de usuarios en bases de datos', 'Control de acceso y privilegios', 'La gestión de usuarios en bases de datos es clave para mantener la seguridad y evitar accesos indebidos.'),
+('Cifrado de datos en tránsito', 'Protección de datos durante la transmisión', 'El cifrado de datos en tránsito asegura que la información no sea interceptada por terceros.'),
+('Seguridad en aplicaciones web', 'Prevención de ataques comunes', 'La seguridad en aplicaciones web incluye protección contra inyecciones SQL, XSS y CSRF.'),
+('Monitoreo de sistemas', 'Supervisión continua de seguridad', 'El monitoreo de sistemas permite detectar actividades sospechosas y responder rápidamente a incidentes.'),
+('Configuración de roles en PostgreSQL', 'Asignación de permisos y roles', 'La configuración de roles en PostgreSQL permite definir permisos específicos para cada usuario.'),
+('Auditoría de accesos', 'Registro de actividades de usuarios', 'La auditoría de accesos permite rastrear quién accede a qué recursos y cuándo.'),
+('Seguridad en la nube', 'Protección de datos en entornos cloud', 'La seguridad en la nube requiere cifrado, autenticación fuerte y monitoreo constante.'),
+('Configuración de backups seguros', 'Respaldo y recuperación de datos', 'Los backups seguros garantizan la disponibilidad de datos ante fallos o ataques.'),
+('Seguridad en dispositivos móviles', 'Protección de datos en smartphones', 'La seguridad en dispositivos móviles incluye cifrado, autenticación y control remoto.'),
+('Pruebas de penetración', 'Evaluación de vulnerabilidades', 'Las pruebas de penetración permiten identificar debilidades en la configuración de seguridad.'),
+('Seguridad en entornos virtualizados', 'Protección de máquinas virtuales', 'La seguridad en entornos virtualizados requiere aislamiento, monitoreo y control de acceso.'),
+('Configuración de autenticación multifactor', 'Mejorar la seguridad de acceso', 'La autenticación multifactor agrega una capa adicional de seguridad al proceso de inicio de sesión.');
+```
+ 
+ 
+ 
+
+## 🧠 Explicación detallada de funciones clave
+
+### 🔹 `phraseto_tsquery()`
+**¿Qué hace?**  
+Busca **frases exactas** en el texto, es decir, que las palabras aparezcan **juntas y en el mismo orden**.
+
+**¿Cuándo usarla?**  
+Cuando necesitas precisión, por ejemplo: `"configuración de seguridad"` debe aparecer como una frase, no solo como palabras separadas.
+
+**¿Con qué se combina?**  
+- `to_tsvector()` para convertir el texto a formato buscable.
+- `@@` para aplicar la búsqueda.
+- `ts_rank()` para medir relevancia.
+- `ts_headline()` para mostrar resultados resaltados.
+
+**Ejemplo:**
+```sql
+SELECT * 
+FROM articulos 
+WHERE to_tsvector(contenido) @@ phraseto_tsquery('configuración de seguridad');
+```
+
+---
+
+### 🔹 `ts_headline()`
+**¿Qué hace?**  
+Resalta los términos encontrados en el texto, útil para mostrar fragmentos como en un buscador.
+
+**¿Cuándo usarla?**  
+Cuando presentas resultados al usuario y quieres mostrar **dónde** se encontró la coincidencia.
+
+**¿Con qué se combina?**  
+- `to_tsquery()` o `phraseto_tsquery()` para definir la búsqueda.
+- `to_tsvector()` para preparar el texto.
+- `@@` para filtrar resultados.
+
+**Ejemplo:**
+```sql
+SELECT ts_headline('spanish', contenido, phraseto_tsquery('configuración de seguridad')) 
+FROM articulos 
+WHERE to_tsvector(contenido) @@ phraseto_tsquery('configuración de seguridad');
+```
+
+---
+
+### 🔹 `setweight()`
+**¿Qué hace?**  
+Asigna **prioridad** a diferentes columnas en el `tsvector`. Por ejemplo, el título puede tener más peso que el contenido.
+
+**¿Cuándo usarla?**  
+Cuando combinas varias columnas en la búsqueda y quieres que algunas influyan más en la relevancia.
+
+**¿Con qué se combina?**  
+- `to_tsvector()` para cada columna.
+- `ts_rank()` para que el peso influya en el cálculo de relevancia.
+
+**Ejemplo:**
+```sql
+SELECT setweight(to_tsvector(titulo), 'A') || 
+       setweight(to_tsvector(resumen), 'B') || 
+       setweight(to_tsvector(contenido), 'C') AS documento
+FROM articulos;
+```
+
+---
+
+### 🔹 `ts_rank()`
+**¿Qué hace?**  
+Calcula un **puntaje de relevancia** para cada documento según qué tan bien coincide con la consulta.
+
+**¿Cuándo usarla?**  
+Cuando quieres **ordenar los resultados** por relevancia, como en un motor de búsqueda.
+
+**¿Con qué se combina?**  
+- `setweight()` para ponderar columnas.
+- `to_tsquery()` o `phraseto_tsquery()` para definir la búsqueda.
+- `@@` para filtrar resultados.
+
+**Ejemplo completo:**
+```sql
+SELECT titulo,
+       ts_rank(
+         setweight(to_tsvector(titulo), 'A') || 
+         setweight(to_tsvector(resumen), 'B') || 
+         setweight(to_tsvector(contenido), 'C'),
+         phraseto_tsquery('configuración de seguridad')
+       ) AS relevancia,
+       ts_headline('spanish', contenido, phraseto_tsquery('configuración de seguridad')) AS resumen_destacado
+FROM articulos
+WHERE to_tsvector(titulo || ' ' || resumen || ' ' || contenido) @@ phraseto_tsquery('configuración de seguridad')
+ORDER BY relevancia DESC;
+```
 
 
 
@@ -433,6 +711,36 @@ aunque estén escritas de forma diferente. Es muy útil en sistemas de búsqueda
 
 ----
 
+### 🔹 **Vector (tsvector)**
+- En FTS, un **vector** es una estructura que representa un texto como un conjunto de **tokens indexables**.
+- Cada token es una palabra significativa (sin stopwords) y puede incluir su **posición** en el texto.
+- Ejemplo:  
+  ```sql
+  SELECT to_tsvector('spanish', 'buscando palabras en texto');
+  ```
+  Resultado:
+  ```
+  'buscando':1 'palabra':2 'texto':4
+  ```
+
+--- 
+
+### 🔹 **Dimensiones**
+- En el contexto de FTS, cada **palabra indexada** puede considerarse una **dimensión** del espacio vectorial.
+- El texto se transforma en un vector que vive en un espacio donde cada dimensión representa una palabra.
+- Esto permite comparar vectores (textos) usando operaciones como `@@` o `ts_rank`.
+
+
+### 🔹 **calcular la relevancia** 
+de las coincidencias en una búsqueda de texto completo. Es decir, **asigna un puntaje** que indica qué tan bien un documento (o texto) coincide con una consulta de búsqueda.
+
+### ¿Qué significa "relevancia de coincidencias"?
+
+Cuando haces una búsqueda de texto completo con `to_tsvector` y `to_tsquery`, puedes encontrar varios documentos que contienen las palabras buscadas. Pero no todos los documentos son igual de relevantes. Por ejemplo:
+
+- Un documento que contiene todas las palabras buscadas varias veces puede ser más relevante.
+- Un documento donde las palabras aparecen cerca unas de otras también puede ser más relevante.
+- Un documento que solo contiene una palabra buscada una vez puede ser menos relevante.
 
 
 ### Bibliografía
