@@ -1,5 +1,5 @@
 # Post Medium
-Aquí encontraras los links que te ayudaran adquirir más conocimientos del funcionamiento de postgresql
+Aquí encontraras los links gratis de Medium que te ayudaran adquirir más conocimientos del funcionamiento de postgresql
 
 
 # Semantica
