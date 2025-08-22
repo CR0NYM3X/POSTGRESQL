@@ -30,3 +30,13 @@ Proactively Detecting and Killing Long-Running Locks in PostgreSQL -> https://er
 Mastering PostgreSQL Performance: Identifying Slow Queries and Leveraging Indexes for Optimization -> https://medium.com/@jaouadirabeb/mastering-postgresql-performance-identifying-slow-queries-and-leveraging-indexes-for-optimization-c2f8f9b3b96d
 Análisis del rendimiento de PostgreSQL: Protocolo de consulta extendido vs. Protocolo de consulta simple -> https://medium.com/@tranaduc9x/postgresql-mvcc-a-hands-on-exploration-04c884ccb94f
 ```
+
+# H.A. - DRP 
+```
+ Building a Highly Available PostgreSQL Cluster with Patroni, etcd, and HAProxy ->  https://medium.com/@dickson.gathima/building-a-highly-available-postgresql-cluster-with-patroni-etcd-and-haproxy-1fd465e2c17f
+
+Patroni PostgreSQL High Availability with pgBackRest -> https://medium.com/@dickson.gathima/patroni-postgresql-high-availability-with-pgbackrest-c251b1accb0d
+
+PITR in PostgreSQL using pg_basebackup and WAL. -> https://medium.com/@dickson.gathima/pitr-in-postgresql-using-pg-basebackup-and-wal-6b5c4a7273bb
+
+```
