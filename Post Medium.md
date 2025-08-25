@@ -40,3 +40,11 @@ Patroni PostgreSQL High Availability with pgBackRest -> https://medium.com/@dick
 PITR in PostgreSQL using pg_basebackup and WAL. -> https://medium.com/@dickson.gathima/pitr-in-postgresql-using-pg-basebackup-and-wal-6b5c4a7273bb
 
 ```
+
+
+# Auditoria CDC 
+```
+Transmisión de datos en tiempo real con Debezium y CDC (captura de datos modificados) -> https://sefikcankanber.medium.com/real-time-data-streaming-with-debezium-and-cdc-change-data-capture-c1aa162585a9
+```
+
+
