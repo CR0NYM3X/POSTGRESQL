@@ -57,6 +57,9 @@ WHERE
 -- Administradores de infraestructura usan restart_lsn para evitar problemas de almacenamiento.
 SELECT slot_name, pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),restart_lsn)) AS lag, active from pg_replication_slots WHERE slot_type='logical';
 
+--- Tambien puedes usar esto para ver el retraso de replica
+SELECT redo_lsn, slot_name,restart_lsn,round((redo_lsn-restart_lsn) / 1024 / 1024 / 1024, 2) AS GB_behind FROM pg_control_checkpoint(), pg_replication_slots;
+
 
 
 ```
