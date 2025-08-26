@@ -25,6 +25,12 @@ https://infosecwriteups.com/postgresql-penetration-testing-a-comprehensive-guide
 Proactively Detecting and Killing Long-Running Locks in PostgreSQL -> https://erdmyzn.medium.com/proactively-detecting-and-killing-long-running-locks-in-postgresql-944f88e6e7f7
 ```
 
+# Mantenimiento
+```SQL
+PostgreSQL extensions — pg_visibility -> https://tomasz-gintowt.medium.com/postgresql-extensions-pg-visibility-876c57e8aa81
+
+```
+
 # Performance
 ```
 Mastering PostgreSQL Performance: Identifying Slow Queries and Leveraging Indexes for Optimization -> https://medium.com/@jaouadirabeb/mastering-postgresql-performance-identifying-slow-queries-and-leveraging-indexes-for-optimization-c2f8f9b3b96d
