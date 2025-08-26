@@ -7,9 +7,9 @@ Aquí encontraras los links gratis de Medium que te ayudaran adquirir más conoc
 PostgreSQL MVCC: A Hands-On Exploration -> https://medium.com/@tranaduc9x/postgresql-mvcc-a-hands-on-exploration-04c884ccb94f
 
 Database Fundamentals: Isolation Levels Explained in PostgreSQL -> https://medium.com/@tranaduc9x/database-fundamentals-isolation-levels-explained-in-postgresql-92ba9494d7e2
-
-
 Análisis profundo de PostgreSQL: páginas, tuplas y actualizaciones -> https://medium.com/@tranaduc9x/deep-dive-into-postgresql-pages-tuples-and-updates-cf9122f5f743
+
+Understanding Collations in PostgreSQL -> https://medium.com/@adarsh2801/understanding-collations-in-postgresql-648e4fa333e1
 ```
 
 
