@@ -123,9 +123,12 @@ Esto indica que el **43%** de las tuplas están muertas. Si además `pg_visibili
 
 ```mermaid
 flowchart TD
-    A[¿Hay muchas tuplas muertas?] -->|Sí| B[¿El bloat supera el 30%?]
-    B -->|Sí| C[¿Autovacuum no lo ha limpiado?]
-    C -->|Sí| D[¿Se puede bloquear la tabla?]
+    A[¿Hay muchas tuplas
+muertas?] -->|Sí| B[¿El bloat supera el 30%?]
+    B -->|Sí| C[¿Autovacuum no
+lo ha limpiado?]
+    C -->|Sí| D[¿Se puede bloquear
+la tabla?]
     D -->|Sí| E[Ejecutar VACUUM FULL]
     D -->|No| F[Usar pg_repack]
     C -->|No| G[Esperar autovacuum]
