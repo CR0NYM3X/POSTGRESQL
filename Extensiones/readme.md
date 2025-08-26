@@ -184,8 +184,6 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 - **pgBouncer:** Pool de conexiones ligero para optimizar el manejo de conexiones.
 
 ************ MONITOREO DE ESPACIO ************
-- **pgstattuple:** Proporciona estadísticas detalladas sobre la ocupación de espacio en las tablas e índices, incluyendo tuplas muertas y espacio desperdiciado.
-
 
 - **pg_stat_kcache:**  Extiende el monitoreo para incluir estadísticas del sistema operativo, como lecturas y escrituras de disco a nivel de bloque, ayudando a correlacionar el rendimiento de la base de datos con el uso de recursos a nivel del sistema.
  
@@ -204,17 +202,28 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 - **pganalyze:** Una herramienta externa que proporciona monitoreo avanzado, análisis de rendimiento y recomendaciones de optimización, basada en las estadísticas y configuraciones de tu instancia de PostgreSQL.
 
-
+ pgrowlocks en PostgreSQL se utiliza para mostrar información sobre los bloqueos de filas en una tabla específica. Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pgrowlocks('mi_tabla');
 
 
  
 
-************ MANTENIMIENTOS ************
+************ MANTENIMIENTOS o análisis  ************
 - **pg_repack:** Reorganiza tablas e índices sin bloquear operaciones.
 
 - ** pg_squeeze:** Automatiza la compactación de tablas y sus índices para eliminar bloat sin necesidad de bloquear las tablas, mejorando el rendimiento en entornos de alta concurrencia.
 
 - ** pg_ivm :**  permite actualizar vistas materializadas de manera incremental, lo que significa que solo se actualizan las partes que han cambiado
+
+ pg_freespacemap en PostgreSQL se utiliza para examinar el mapa de espacio libre (FSM) de una relación (tabla o índice). Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pg_freespace('mi_tabla');
+- **pg_visibility:** Permite investigar la visibilidad de las tuplas en las tablas y detectar problemas con vacuum.
+
+- **pgstattuple:** Proporciona estadísticas detalladas sobre la ocupación de espacio en las tablas e índices, incluyendo tuplas muertas y espacio desperdiciado.
+
+pageinspect  -> es una extensión de PostgreSQL que permite examinar el contenido de las páginas de la base de datos a bajo nivel. Mostrar información detallada sobre tuplas (filas) individuales
+
+- **pg_buffercache**: Permite monitorear el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia³(https://www.youtube.com/watch?v=prbF4O0d-7M).
+
+
 
 ************ BACKUP ************
 - **pg_dirtyread** Recuperar datos eliminados: Puedes acceder a las tuplas que han sido marcadas como eliminadas pero aún no han sido físicamente removidas. Auditoría y análisis: Permite realizar auditorías y análisis forenses de datos  https://github.com/df7cb/pg_dirtyread 
@@ -289,8 +298,6 @@ Citus es una extensión de código abierto para **PostgreSQL** que convierte la 
  
 ### **7. Rendimiento y Optimización:**
 
-pageinspect  -> es una extensión de PostgreSQL que permite examinar el contenido de las páginas de la base de datos a bajo nivel. Mostrar información detallada sobre tuplas (filas) individuales
-
  pgbench : herramienta de benchmarking para probar el rendimiento de PostgreSQL. Ejecuta una serie de comandos SQL repetidamente en múltiples sesiones concurrentes y calcula la tasa promedio de transacciones (transacciones por segundo).
  pgingester : herramienta de benchmarking para evaluar diferentes métodos de ingestión de datos en lotes en PostgreSQL2. Mide el rendimiento de métodos como INSERT, COPY, Binary COPY, y UNNEST en términos de filas por segundo y duración de la ingestión.
 - ** pg_partman:** Gestiona la partición de tablas de forma automática, lo cual es fundamental para mejorar el rendimiento en bases de datos con grandes volúmenes de datos, especialmente en tablas de series temporales.
@@ -298,7 +305,7 @@ pageinspect  -> es una extensión de PostgreSQL que permite examinar el contenid
 
 - **pg_timetable:** Herramienta para la planificación y ejecución de tareas cron en la base de datos.
 
-- ** pg_prewarm:** Pre-carga tablas o índices en la memoria compartida de PostgreSQL al inicio del servidor, mejorando el rendimiento de las consultas que acceden frecuentemente a estos datos.
+- ** pg_prewarm:** Pre-carga tablas o índices en la memoria compartida de PostgreSQL al inicio del servidor, mejorando el rendimiento de las consultas que acceden frecuentemente a estos datos. (https://www.youtube.com/watch?v=prbF4O0d-7M).
  
 - ** pg_hint_plan:** Permite a los administradores influir directamente en el planificador de consultas sugiriendo (hinting) cómo ejecutar consultas SQL, lo cual es útil para optimizar casos específicos donde el planificador no elige el mejor plan por defecto.
 
@@ -329,7 +336,7 @@ rendimiento general de la base de datos.
 - **GIN:** Optimiza la búsqueda en datos complejos, como arrays o textos largos.
 - **pg_qualstats:** Permite recopilar estadísticas sobre las cláusulas WHERE utilizadas en las consultas, ayudando a identificar posibles mejoras en los índices.
 - **amcheck:** Herramienta para verificar la integridad de los índices B-tree, útil para detectar y corregir corrupción de datos.
-- **pg_visibility:** Permite investigar la visibilidad de las tuplas en las tablas y detectar problemas con vacuum.
+
 
 
 
@@ -359,10 +366,6 @@ pg_analytics es una extensión que integra DuckDB dentro de PostgreSQL, permitie
 - **PL/Python:** Extensión para ejecutar funciones en Python dentro de PostgreSQL.
 - **cube:** Introduce un tipo de datos multidimensional que facilita el manejo y análisis de datos en múltiples dimensiones.
 
-
-### Extensiones y Herramientas
-- **pg_prewarm**: Esta extensión permite precargar tablas o índices en el buffer cache, lo que puede mejorar el rendimiento al reducir la necesidad de lecturas desde el disco³(https://www.youtube.com/watch?v=prbF4O0d-7M).
-- **pg_buffercache**: Permite monitorear el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia³(https://www.youtube.com/watch?v=prbF4O0d-7M).
 
 
 ### **9. Otros:**
@@ -443,10 +446,6 @@ https://www.dbi-services.com/blog/postgresql-17-login-event-triggers/
 
 https://github.com/okbob/session_exec
 
-
-La extensión pgrowlocks en PostgreSQL se utiliza para mostrar información sobre los bloqueos de filas en una tabla específica. Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pgrowlocks('mi_tabla');
-s
-La extensión pg_freespacemap en PostgreSQL se utiliza para examinar el mapa de espacio libre (FSM) de una relación (tabla o índice). Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pg_freespace('mi_tabla');
 
 
 
