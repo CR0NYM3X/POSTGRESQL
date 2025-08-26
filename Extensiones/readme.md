@@ -175,10 +175,6 @@ Checkmk ->  herramienta de monitoreo de código abierto que ofrece monitoreo int
 SIEM  detección de amenazas
 Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia gama de funcionalidades para la detección de amenazas, el monitoreo de integridad y la respuesta a incidente
 
-************ MONITOREO EN CONSULTAS ************
-- **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
-- **pg_stat_monitor:** Extensión avanzada para monitoreo de consultas.
--  **powa (PostgreSQL Workload Analyzer):**  Un sistema de monitoreo que proporciona análisis detallados y gráficos sobre el rendimiento de las consultas, el uso de índices, y otras métricas clave, ayudando a los administradores a identificar y resolver problemas de rendimiento.
 
 ************ MONITOREO EN INICIO DE SESION ************
 - **pgBouncer:** Pool de conexiones ligero para optimizar el manejo de conexiones.
@@ -324,6 +320,9 @@ rendimiento general de la base de datos.
 
 - ** timescaledb:** Una extensión optimizada para manejar series temporales de manera eficiente, mejorando el rendimiento en consultas que involucran grandes volúmenes de datos temporales.
 
+- **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
+- **pg_stat_monitor:** Extensión avanzada para monitoreo de consultas.
+-  **powa (PostgreSQL Workload Analyzer):**  Un sistema de monitoreo que proporciona análisis detallados y gráficos sobre el rendimiento de las consultas, el uso de índices, y otras métricas clave, ayudando a los administradores a identificar y resolver problemas de rendimiento.
 
 
 
