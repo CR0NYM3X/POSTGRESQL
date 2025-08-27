@@ -95,7 +95,7 @@ Postgres Performance Nuances with Timestamp, Index and Order By -> https://mediu
 
 Mastering PostgreSQL Performance: Identifying Slow Queries and Leveraging Indexes for Optimization -> https://medium.com/@jaouadirabeb/mastering-postgresql-performance-identifying-slow-queries-and-leveraging-indexes-for-optimization-c2f8f9b3b96d
 
-
+Mastering PostgreSQL Performance: Identifying Slow Queries and Leveraging Indexes for Optimization -> https://medium.com/@jaouadirabeb/mastering-postgresql-performance-identifying-slow-queries-and-leveraging-indexes-for-optimization-c2f8f9b3b96d
 
 ```
 
