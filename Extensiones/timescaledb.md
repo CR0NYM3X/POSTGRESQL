@@ -37,6 +37,276 @@ El verdadero secreto de TimescaleDB radica en su capacidad para combinar la robu
 - **Índices optimizados**: Utiliza índices almacenados en RAM para acelerar la inserción y consulta de datos.
 - **Escalabilidad**: Puede manejar grandes volúmenes de datos de manera eficiente, ideal para aplicaciones como monitoreo de sistemas, plataformas de negociación y recopilación de métricas de sensores.
 
+--- 
+
+## 📘 1. Índice
+
+1.  Objetivo
+2.  Requisitos
+3.  Ventajas y Desventajas
+4.  Casos de Uso
+5.  Simulación de Problema Empresarial
+6.  Estructura Semántica
+7.  Visualizaciones
+8.  Procedimientos Técnicos Avanzados
+    *   Configuración inicial (`shared_preload_libraries`)
+    *   Creación correcta de hypertable
+    *   Continuous Aggregates
+    *   Políticas de compresión
+    *   Retención de datos
+    *   Monitoreo con `timescaledb_information`
+    *   Indexación avanzada
+    *   Reordenamiento de chunks
+    *   Multinode TimescaleDB (introducción)
+9.  Sección Final
+10. Bibliografía
+
+***
+
+## 🎯 2. Objetivo
+
+Implementar y dominar funcionalidades avanzadas de TimescaleDB para optimizar el rendimiento, almacenamiento y análisis de grandes volúmenes de datos temporales en PostgreSQL.
+
+***
+
+## ⚙️ 3. Requisitos
+
+*   PostgreSQL 12+
+*   TimescaleDB instalado
+*   Acceso a consola con privilegios de superusuario
+*   Editor de configuración (`vim`, `nano`, etc.)
+*   Conocimientos básicos de SQL y administración de PostgreSQL
+
+***
+
+## ✅ 4. Ventajas y ❌ Desventajas
+
+**Ventajas:**
+
+*   Compresión automática de datos históricos
+*   Agregación continua sin necesidad de recalcular
+*   Políticas automatizadas de mantenimiento
+*   Monitoreo interno de chunks y hypertables
+*   Compatible con SQL estándar
+
+**Desventajas:**
+
+*   Algunas funciones avanzadas requieren versión Enterprise
+*   Continuous Aggregates no actualizan datos en tiempo real
+*   Requiere configuración adicional (`shared_preload_libraries`)
+
+***
+
+## 🧪 5. Simulación de Problema Empresarial
+
+**Empresa:** *ClimaSat MX*\
+**Problema:** Reciben 100,000 registros por hora de sensores climáticos. Necesitan mantener datos recientes sin perder rendimiento y generar reportes agregados por hora y día.\
+**Solución:** Usar compresión, agregados continuos y políticas de retención con TimescaleDB.
+
+***
+
+## 🧠 6. Estructura Semántica
+
+*   **Hypertables**: Tablas particionadas por tiempo
+*   **Chunks**: Segmentos internos por rango temporal
+*   **Continuous Aggregates**: Vistas que se actualizan automáticamente
+*   **Policies**: Reglas programadas para compresión y retención
+*   **timescaledb\_information**: Esquema interno para monitoreo
+*   **Reorder Policies**: Reorganización de chunks para optimizar lectura
+
+***
+
+## 📊 7. Visualización de Arquitectura
+
+
+
+***
+
+## 🛠️ 8. Procedimientos Técnicos Avanzados
+
+### 🔧 8.1 Configuración inicial (`shared_preload_libraries`)
+
+```bash
+# Editar archivo de configuración
+sudo nano /etc/postgresql/14/main/postgresql.conf
+
+# Buscar y modificar línea:
+shared_preload_libraries = 'timescaledb'
+
+# Guardar y salir
+
+# Reiniciar servicio
+sudo systemctl restart postgresql
+```
+
+#### Simulación de salida esperada:
+
+```text
+Restart successful
+```
+
+***
+
+### 🧱 8.2 Creación correcta de hypertable
+
+```sql
+-- Crear tabla con clave primaria compuesta
+CREATE TABLE sensores (
+    dispositivo_id INT,
+    temperatura FLOAT,
+    humedad FLOAT,
+    timestamp TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (dispositivo_id, timestamp)
+);
+
+-- Activar extensión
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+-- Convertir a hypertable
+SELECT create_hypertable('sensores', 'timestamp');
+```
+
+#### Simulación de salida esperada:
+
+```text
+create_hypertable
+-------------------
+(1 row)
+```
+
+***
+
+### 🔁 8.3 Continuous Aggregates
+
+```sql
+-- Crear vista agregada por hora
+CREATE MATERIALIZED VIEW sensores_por_hora
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 hour', timestamp) AS hora,
+    dispositivo_id,
+    avg(temperatura) AS temp_promedio,
+    avg(humedad) AS humedad_promedio
+FROM sensores
+GROUP BY hora, dispositivo_id;
+```
+
+***
+
+### 🧼 8.4 Compresión automática
+
+```sql
+-- Activar compresión
+ALTER TABLE sensores SET (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'dispositivo_id'
+);
+
+-- Crear política de compresión para datos mayores a 7 días
+SELECT add_compression_policy('sensores', INTERVAL '7 days');
+```
+
+***
+
+### 🧹 8.5 Retención de datos
+
+```sql
+-- Eliminar datos mayores a 30 días automáticamente
+SELECT add_retention_policy('sensores', INTERVAL '30 days');
+```
+
+***
+
+### 🔍 8.6 Monitoreo interno
+
+```sql
+-- Ver chunks existentes
+SELECT * FROM timescaledb_information.chunks WHERE hypertable_name = 'sensores';
+
+-- Ver uso de compresión
+SELECT * FROM timescaledb_information.compressed_chunk_stats;
+```
+
+***
+
+### 🧭 8.7 Indexación avanzada
+
+```sql
+-- Indexar por dispositivo y tiempo
+CREATE INDEX ON sensores (dispositivo_id, timestamp DESC);
+
+-- Indexar por temperatura para búsquedas rápidas
+CREATE INDEX ON sensores (temperatura);
+```
+
+***
+
+### 🔄 8.8 Reordenamiento de chunks
+
+```sql
+-- Crear política de reordenamiento
+SELECT add_reorder_policy('sensores', 'timestamp');
+```
+
+***
+
+### 🌐 8.9 Introducción a Multinode TimescaleDB
+
+```text
+Multinode permite distribuir hypertables entre múltiples nodos PostgreSQL.
+Ideal para entornos con millones de registros por segundo.
+
+Requiere configuración de nodos "access node" y "data nodes".
+```
+
+***
+
+## 🔚 9. Sección Final
+
+### ✅ Consideraciones
+
+*   `shared_preload_libraries` es obligatorio para que TimescaleDB funcione correctamente
+*   Las políticas se ejecutan por background workers
+*   Continuous Aggregates no muestran datos recientes hasta que se refrescan
+
+### 📝 Notas
+
+*   Puedes refrescar vistas manualmente con `REFRESH MATERIALIZED VIEW`
+*   Las políticas se pueden eliminar con `remove_compression_policy`
+
+### 💡 Consejos
+
+*   Usa `EXPLAIN ANALYZE` para medir rendimiento
+*   Aplica compresión solo a datos que no cambian
+
+### 🧪 Buenas Prácticas
+
+*   Indexa por columnas de filtro frecuentes
+*   Usa `time_bucket()` en dashboards
+
+### 🔄 Otros Tipos
+
+*   Puedes usar `data retention` para eliminar datos antiguos automáticamente
+*   `Reorder policies` para optimizar chunks
+
+### 📊 Tabla Comparativa
+
+| Función                  | PostgreSQL | TimescaleDB |
+| ------------------------ | ---------- | ----------- |
+| Compresión automática    | ❌          | ✅           |
+| Agregados continuos      | ❌          | ✅           |
+| Retención programada     | ❌          | ✅           |
+| Monitoreo interno        | ❌          | ✅           |
+| Reordenamiento de chunks | ❌          | ✅           |
+
+***
+
+## 📚 10. Bibliografía
+
+*   <https://docs.timescale.com/>
+*   <https://www.postgresql.org/docs/>
+*   <https://github.com/timescale>
+
 
 # Bibliografias 
 ```
