@@ -176,12 +176,25 @@ create_hypertable
 
 ***
 
+
+#### Insertar datos simulados:
+```sql
+-- Insertar datos simulados
+INSERT INTO sensores (dispositivo_id, temperatura, humedad, timestamp)
+SELECT
+    (random()*10)::int,
+    (20 + random()*10)::numeric(4,2),
+    (40 + random()*20)::numeric(4,2),
+    NOW() - INTERVAL '1 minute' * generate_series(1, 10000);
+```
+
+
 ### 🔁 8.3 Continuous Aggregates
 
 ```sql
 -- Crear vista agregada por hora
 CREATE MATERIALIZED VIEW sensores_por_hora
-WITH (timescaledb.continuous) AS
+AS
 SELECT
     time_bucket('1 hour', timestamp) AS hora,
     dispositivo_id,
