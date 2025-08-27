@@ -19,6 +19,8 @@ Understanding Collations in PostgreSQL -> https://medium.com/@adarsh2801/underst
 
 Storages in PostgreSQL (Plain.Min,Extended)  -> https://medium.com/@udbhavsinghnitw/storages-in-postgresql-7ed53b5a4fe8
 
+Durabilidad de PostgreSQL: Cómo WAL le ayuda a recuperar datos -> https://medium.com/@tranaduc9x/postgresql-durability-how-wal-helps-you-recover-data-8b9858bfa24a
+
 ```
 
 
