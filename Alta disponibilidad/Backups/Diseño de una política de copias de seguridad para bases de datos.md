@@ -83,3 +83,9 @@ Espero que estos consejos te hayan dado una idea clara y útil. Ahora, **ponte m
 - Planifica  
 - Programa  
 - Documenta
+
+
+
+# autor: 
+
+https://dbasinapuros.com/como-programar-un-backup-de-una-base-de-datos-postgresql-en-un-servidor-en-windows-10/
