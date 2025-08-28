@@ -31,7 +31,8 @@ Porque se realiza **con el servidor encendido**, atendiendo conexiones, ejecutan
 
 - No es lo mismo que un respaldo automático con `pg_basebackup` o herramientas como `pgBackRest`.
 - Requiere cuidado: si copias sin las funciones `pg_backup_start()` / `stop()`, podrías tener inconsistencias.
-
+- Al finalizar para recuperar tienes que crear el archivo backup_label 
+- En caso de tener table_space se tiene que crear un archivo llamado tablespace_map
 
 ### ️ ¿Cómo se usa en la práctica?
 
@@ -56,6 +57,18 @@ rsync -a --exclude pg_wal /var/lib/postgresql/15/main/ /backups/cliente/
 
 ```sql
 SELECT pg_backup_stop();
++-----------------------------------------------------------------------------+
+|                               pg_backup_stop                                |
++-----------------------------------------------------------------------------+
+| (0/91000138,"START WAL LOCATION: 0/91000028 (file 000000010000000000000091)+|
+| CHECKPOINT LOCATION: 0/91000060                                            +|
+| BACKUP METHOD: streamed                                                    +|
+| BACKUP FROM: primary                                                       +|
+| START TIME: 2025-08-28 14:52:11 MST                                        +|
+| LABEL: respaldo_manual                                                     +|
+| START TIMELINE: 1                                                          +|
+| ","")                                                                       |
++-----------------------------------------------------------------------------+
 ```
 
 Esto marca el final del respaldo y PostgreSQL sabe que ese conjunto de archivos es consistente.
@@ -68,7 +81,23 @@ rsync -a /pg_wal/pg_backup/ /backups/cliente/wal/
 
  Estos se usan para restaurar el estado exacto (por ejemplo, para PITR).
 
+5.- Crear el archivo backup_label - Esto en caso de querer restarurar 
 
+```bash
+vim backup_label
+
+Pegas lo siguiente ->
+
+START WAL LOCATION: 0/91000028 (file 000000010000000000000091)
+CHECKPOINT LOCATION: 0/91000060    
+BACKUP METHOD: streamed            
+BACKUP FROM: primary               
+START TIME: 2025-08-28 14:52:11 MST
+LABEL: respaldo_manual
+```
+
+6.- Crear el archivo recovery.signal  - Esto en caso de querer restarurar 
+touch  recovery.signal
 
 
 
