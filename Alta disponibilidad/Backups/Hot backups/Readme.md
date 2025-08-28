@@ -38,13 +38,14 @@ Porque se realiza **con el servidor encendido**, atendiendo conexiones, ejecutan
 1. **Ejecutas**:
 
 ```sql
+checkpoint;
 SELECT pg_backup_start('respaldo_manual', true);
 ```
 
  Esto marca el inicio del respaldo y fuerza un checkpoint.
 
 2. **Copias tú mismo el directorio de datos**:
-
+[NOTA] -> No cerrar la session donde se ejecuto pg_backup_start ya que esto terminaria con el proceso y no quedaria salvado
 ```bash
 rsync -a --exclude pg_wal /var/lib/postgresql/15/main/ /backups/cliente/
 ```
