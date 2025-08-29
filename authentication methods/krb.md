@@ -86,3 +86,9 @@ sequenceDiagram
    - El servidor de la aplicación verifica el ST. Si es válido y la solicitud es legítima, se concede acceso al usuario.
    - Si hay algún problema con el ST (por ejemplo, ha expirado o es inválido), se deniega el acceso.
  
+
+
+# Bibliografía
+```
+https://medium.com/@yosra.dridi270/configuration-of-postgresql-authentication-with-kerberos-16b66948a2c3
+```
