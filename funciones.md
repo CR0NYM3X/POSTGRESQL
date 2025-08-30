@@ -27,6 +27,15 @@ CREATE FUNCTION my_function() RETURNS text AS $$
    SELECT 'Hello, World!';
 $$ LANGUAGE sql;
 
+create or replace function fn_articulos(p_id INT)
+returns text
+language sql
+as 
+$$
+select contenido from articulos where id= p_id;
+$$;
+
+select * from fn_articulos(1);
 
 
 **Funciones PL/pgSQL**: Estas funciones utilizan el lenguaje procedural PL/pgSQL, que es más potente y permite estructuras de control como bucles y condiciones.
@@ -947,10 +956,35 @@ SKIP LOCKED;
 ```
 
 
+# Extra 
+¿Para qué sirve?
+Agrupar varias operaciones SQL en una sola función sin necesidad de usar plpgsql.
+Garantizar atomicidad: si una operación falla, se revierte todo.
+Validar el código al momento de crear la función, detectando errores como tablas o columnas inexistentes.
+Optimizar el rendimiento de funciones SQL puras, que pueden ser más eficientes que las funciones plpgsql.
+
+
+```
+--- a partir de versiones recientes (desde PostgreSQL 14 en adelante)  
+create or replace function fn_articulos2(p_id INT)
+returns text
+language sql
+begin atomic
+
+select contenido from ventas where id= p_id;
+
+end;
+
+-- select name,setting,context from pg_settings where name ilike '%fun%'
+
+```
+
 https://postgresconf.org/system/events/document/000/001/086/plpgsql.pdf
 <br> https://www.postgresql.org/docs/current/sql-createfunction.html
 
 <br> https://www.postgresql.org/docs/16/plpgsql-statements.html
+
+
 
 
 
