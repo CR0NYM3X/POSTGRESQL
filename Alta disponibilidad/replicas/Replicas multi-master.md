@@ -315,6 +315,8 @@ rm -r /sysx/data16/DATANEW/data_maestro2
 
 ### Blibliografia 
 ```sql
+Sharded Is Not Distributed: What You Should Know When PostgreSQL Is Not Enough -> https://blog.ydb.tech/sharded-is-not-distributed-what-you-should-know-when-postgresql-is-not-enough-f743ad06b5be
+
 performance impact of REPLICA IDENTITY FULL in Postgres -> https://xata.io/blog/replica-identity-full-performance
 pglogical -> https://github.com/2ndQuadrant/pglogical
 Bidirectional replication in PostgreSQL using pglogical -> https://www.jamesarmes.com/2023/03/bidirectional-replication-postgresql-pglogical.html
@@ -326,3 +328,5 @@ Using pglogical for Logical Replication -> https://www.tencentcloud.com/document
 How to Use pglogical for Bidirectional Replication in PostgreSQL with Conflict Handling -> https://www.cybrosys.com/research-and-development/postgres/how-to-use-pglogical-for-bidirectional-replication-in-postgresql-with-conflict-handling
 
 ```
+
+
