@@ -198,3 +198,9 @@ Elegir entre UUIDs y claves secuenciales como `BIGSERIAL` depende del contexto t
 Los UUIDs ofrecen ventajas claras en sistemas distribuidos, pero su uso como clave primaria en PostgreSQL puede convertirse en una trampa silenciosa de rendimiento. Fragmentación de índices, baja eficiencia de caché y joins lentos son solo algunos de los problemas que pueden surgir.
 
 🔧 **Recomendación final**: Usa UUIDs con criterio. Evalúa tus necesidades de unicidad, rendimiento y escalabilidad. Considera enfoques híbridos o secundarios para mantener tu base de datos rápida, eficiente y preparada para crecer.
+
+
+# Links de referencias
+```
+https://medium.com/@Tom1212121/postgresql-uuid-and-bigserial-c943531d07c5
+```
