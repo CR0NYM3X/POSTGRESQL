@@ -92,8 +92,17 @@ where
 	AND a.grantee in('PUBLIC') 
 ORDER BY a.routine_schema,a.routine_name ;
 
-
 -- /************* Retirar permisos *************\
+
+pg_ctl stop -D /sysx/data16/DATANEW/test
+rm -r /sysx/data16/DATANEW/test/* 
+initdb -D  /sysx/data16/DATANEW/test
+echo "listen_addresses = '*'" >> /sysx/data16/DATANEW/test/postgresql.conf
+echo "host    all             all             all                 md5" >>  /sysx/data16/DATANEW/test/pg_hba.conf
+pg_ctl start -D /sysx/data16/DATANEW/test
+
+create user jose ;
+
 
 ------ Quitar permisos a esquemas ----- 
 REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
@@ -103,28 +112,34 @@ REVOKE ALL PRIVILEGES ON SCHEMA information_schema FROM PUBLIC;
 
 REVOKE ALL PRIVILEGES ON DATABASE postgres FROM PUBLIC;
 
+REVOKE all privileges on table pg_proc  from PUBLIC;
 
 
 
 [NOTA] si se otorga el permiso usage de los esquemas pg_catalog y information_schema hay que tener 
 cuidado ya que hay tablas con metadatos que pueden comprometer la información 
 
-
 --- Extra pero hay analisar bien si es viable aplicarlo 
+REVOKE all privileges on all tables in schema  public from PUBLIC;
 REVOKE all privileges on all tables in schema  pg_catalog from PUBLIC;
 REVOKE all privileges on all tables in schema  information_schema from PUBLIC;
-REVOKE all privileges on table pg_proc  from PUBLIC;
-
 
 REVOKE EXECUTE on all FUNCTIONS IN SCHEMA public from public;
 REVOKE EXECUTE on all FUNCTIONS IN SCHEMA pg_catalog from public;
 REVOKE EXECUTE on all FUNCTIONS IN SCHEMA information_schema from public;
 
 
+---- Pruebas 
+select name,setting,context FROM pg_show_all_settings();
+select name,setting,context from pg_settings where name ilike '%encod%';
+select proname from pg_proc;
+SELECT  has_schema_privilege('jose', 'public', 'CREATE') AS tiene_permiso;
+
+
 Buscar objetos que no deberian de terner permisos los usuarios personalizados o normales :
-select distinct  proname from pg_proc where proname ~* 'privilege|setting|conf' order by proname;
-select schemaname,viewname from pg_views where viewname ~* 'privilege|setting|conf' order by schemaname,viewname;
-select table_schema,table_name from information_schema.tables where table_name ~* 'privilege|setting|conf' order by  table_schema,table_name;
+select distinct  proname from pg_proc where proname ~* 'privilege|setting|conf|file|read|write|log' order by proname;
+select schemaname,viewname from pg_views where viewname ~* 'privilege|setting|conf|file|read|write|log' order by schemaname,viewname;
+select table_schema,table_name from information_schema.tables where table_name ~* 'privilege|setting|conf|file|read|write|log' order by  table_schema,table_name;
 
 
 https://www.qualoom.es/blog/administracion-usuarios-roles-postgresql/
