@@ -94,18 +94,31 @@ ORDER BY a.routine_schema,a.routine_name ;
 
 
 -- /************* Retirar permisos *************\
-REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON DATABASE postgres FROM PUBLIC;
 
+------ Quitar permisos a esquemas ----- 
+REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
+REVOKE ALL PRIVILEGES ON SCHEMA pg_catalog FROM PUBLIC; 
+REVOKE ALL PRIVILEGES ON SCHEMA information_schema FROM PUBLIC;
+
+
+REVOKE ALL PRIVILEGES ON DATABASE postgres FROM PUBLIC;
+
+
+
+
+[NOTA] si se otorga el permiso usage de los esquemas pg_catalog y information_schema hay que tener 
+cuidado ya que hay tablas con metadatos que pueden comprometer la información 
+
+
+--- Extra pero hay analisar bien si es viable aplicarlo 
 REVOKE all privileges on all tables in schema  pg_catalog from PUBLIC;
 REVOKE all privileges on all tables in schema  information_schema from PUBLIC;
+REVOKE all privileges on table pg_proc  from PUBLIC;
 
-REVOKE all privileges on table pg_proc   from PUBLIC;
 
-
---- Estos no se recomienda usar ya que tendrias que darle permiso a cada usuario para que pueda usar el esquema 
-REVOKE usage ON SCHEMA pg_catalog FROM PUBLIC;
-REVOKE usage ON SCHEMA information_schema FROM PUBLIC;
+REVOKE EXECUTE on all FUNCTIONS IN SCHEMA public from public;
+REVOKE EXECUTE on all FUNCTIONS IN SCHEMA pg_catalog from public;
+REVOKE EXECUTE on all FUNCTIONS IN SCHEMA information_schema from public;
 
 
 Buscar objetos que no deberian de terner permisos los usuarios personalizados o normales :
