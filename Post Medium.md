@@ -97,6 +97,8 @@ Mastering PostgreSQL Performance: Identifying Slow Queries and Leveraging Indexe
 
 Mastering PostgreSQL Performance: Identifying Slow Queries and Leveraging Indexes for Optimization -> https://medium.com/@jaouadirabeb/mastering-postgresql-performance-identifying-slow-queries-and-leveraging-indexes-for-optimization-c2f8f9b3b96d
 
+Understanding Query Performance: A Deep Dive into EXPLAIN ANALYZE -> https://medium.com/@rizqimulkisrc/understanding-query-performance-a-deep-dive-into-explain-analyze-d1d40a610bcc
+
 ```
 
 
@@ -121,6 +123,8 @@ Benefits of pg_partman: Efficient Partition Management in PostgreSQL -> https://
 
 
 PostgreSQL extensions — pg_visibility -> https://tomasz-gintowt.medium.com/postgresql-extensions-pg-visibility-876c57e8aa81
+
+Understanding and Managing Bloating in PostgreSQL: A Complete Guide for DBAs -> https://medium.com/@jramcloud1/understanding-and-managing-bloating-in-postgresql-a-complete-guide-for-dbas-95f50670b488
 
 ```
 
