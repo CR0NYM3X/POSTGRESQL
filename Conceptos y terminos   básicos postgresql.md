@@ -1291,7 +1291,7 @@ Aunque "с" (cirílico) y "c" (latino) son caracteres completamente diferentes e
 **ACID** es un acrónimo que representa cuatro propiedades fundamentales que deben cumplir las transacciones en una base de datos para garantizar su integridad y confiabilidad. Estas propiedades son:
 
 1. **Atomicidad (Atomicity)**: Asegura que todas las operaciones dentro de una transacción se completen con éxito o ninguna lo haga. Si una parte de la transacción falla, toda la transacción se revierte.
-2. **Consistencia (Consistency)**: Garantiza que una transacción lleve la base de datos de un estado válido a otro estado válido, manteniendo las reglas definidas en la base de datos.
+2. **Consistencia (Consistency)**: La consistencia garantiza que cada vez que se realiza una transacción en la base de datos, esta cumpla con todas las reglas y restricciones definidas (como claves primarias, relaciones entre tablas, tipos de datos, etc.). Es decir, la base de datos siempre pasa de un estado válido a otro estado válido. Si una transacción las rompe, no se guarda nada y la base de datos sigue como estaba antes.
 3. **Aislamiento (Isolation)**: Asegura que las operaciones de una transacción sean invisibles para otras transacciones hasta que se completen, evitando interferencias.
 4. **Durabilidad (Durability)**: Garantiza que una vez que una transacción se ha completado, los cambios realizados son permanentes, incluso en caso de fallos del sistema..
 
