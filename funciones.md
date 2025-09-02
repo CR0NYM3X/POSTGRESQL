@@ -912,6 +912,10 @@ FOUND se establece en FALSE en caso contrario
 es muy útil para obtener información sobre la ejecución(INSERT, UPDATE, DELETE, o MERGE) dentro de funciones
 GET DIAGNOSTICS filas_afectadas = ROW_COUNT;
 
+# Usar mejor esto para comparar que != 
+SELECT NULL IS DISTINCT FROM NULL;  -- Resultado: FALSE
+SELECT NULL IS DISTINCT FROM 5;     -- Resultado: TRUE
+SELECT NULL !=  5;     -- Resultado: NULL
 ```
 
 # Obtener nombre de la funcion que se ejecuta
