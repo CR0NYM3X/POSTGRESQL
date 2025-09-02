@@ -126,6 +126,8 @@ PostgreSQL extensions — pg_visibility -> https://tomasz-gintowt.medium.com/pos
 
 Understanding and Managing Bloating in PostgreSQL: A Complete Guide for DBAs -> https://medium.com/@jramcloud1/understanding-and-managing-bloating-in-postgresql-a-complete-guide-for-dbas-95f50670b488
 
+Zero-Downtime PostgreSQL 17 Table Optimization Using pg_repack -> https://medium.com/@jramcloud1/zero-downtime-postgresql-17-table-optimization-using-pg-repack-9e904d5d02b1
+
 ```
 
 
@@ -158,11 +160,18 @@ Techniques for Storing JSON Documents in PostgreSQL -> https://medium.tuanh.net/
 ```
 
 
+# Replicas
+```
+How to Clean Up WAL Files and Replication Slots in PostgreSQL (Complete Guide for DBAs) -> https://medium.com/@jramcloud1/how-to-clean-up-wal-files-and-replication-slots-in-postgresql-complete-guide-for-dbas-2ca33b3fdb3b
 
+```
 
 
 # Otros 
 ```
+
+Real-Time Data Streaming: Monitoring Database Changes with Postgres, Debezium, and Kafka -> https://medium.com/@jushijun/real-time-data-streaming-monitoring-database-changes-with-postgres-debezium-and-kafka-f37c85cc9975
+
 Cómo elegir la base de datos adecuada: PostgreSQL vs. MongoDB para almacenamiento de registros, datos semiestructurados y cargas de trabajo con mucha lectura y escritura -> https://dev-aditya.medium.com/choosing-the-right-database-postgresql-vs-mongodb-for-log-storage-semi-structured-data-74d7f487e18b
 
 Methods for Combining INSERT and UPDATE in PostgreSQL for Efficient Data Management  -> https://medium.tuanh.net/methods-for-combining-insert-and-update-in-postgresql-for-efficient-data-management-e0ccae7cb81d
