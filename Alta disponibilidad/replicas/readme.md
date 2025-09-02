@@ -498,7 +498,47 @@ select name,setting,context from pg_settings where name like '%read%';
   ```
 - **Ejemplo:** Si una transacción se inicia con `READ ONLY`, no podrá modificar datos hasta que se cierre.
 
+# 🔧 ¿Qué son los modos de espera en PostgreSQL?
 
+Son configuraciones de servidores secundarios que replican los datos del servidor principal (master o primary) y están listos para entrar en acción si el principal falla. Se dividen en tres tipos:
+
+### ✅ ¿Cuál elegir?
+
+Depende de tus necesidades:
+
+| Necesidad | Recomendación |
+|-----------|----------------|
+| Bajo costo, tolerancia a tiempo de recuperación | Cold Standby |
+| Recuperación moderada sin consultas | Warm Standby |
+| Alta disponibilidad y consultas en tiempo real | Hot Standby |
+
+ 
+ 
+
+### 🧊 1. **Modo en frío (Cold Standby)**
+
+- **Qué es**: El servidor de respaldo está **apagado o sin sincronización activa**. Solo se activa manualmente cuando el principal falla.
+- **Ventajas**: Simple y barato.
+- **Desventajas**: Tiempo de recuperación largo, posible pérdida de datos recientes.
+- **Ejemplo de uso**: Restaurar desde un backup y aplicar WALs (Write-Ahead Logs).
+
+ 
+
+### 🌥️ 2. **Modo templado (Warm Standby)**
+
+- **Qué es**: El servidor de respaldo está **encendido y aplicando WALs**, pero **no acepta conexiones**.
+- **Ventajas**: Recuperación más rápida que el modo en frío.
+- **Desventajas**: No se puede consultar hasta que se promueve como principal.
+- **Ejemplo de uso**: Usar `pg_standby` para aplicar logs continuamente.
+
+ 
+
+### 🔥 3. **Modo caliente (Hot Standby)**
+
+- **Qué es**: El servidor de respaldo está **activo, replicando en tiempo real** y **acepta consultas de solo lectura**.
+- **Ventajas**: Alta disponibilidad, balanceo de carga para consultas.
+- **Desventajas**: Requiere configuración más avanzada.
+- **Ejemplo de uso**: Configurar `streaming replication` con `hot_standby = on`.
 
 ## Bibliografía 
 ```
