@@ -912,9 +912,11 @@ FOUND se establece en FALSE en caso contrario
 es muy útil para obtener información sobre la ejecución(INSERT, UPDATE, DELETE, o MERGE) dentro de funciones
 GET DIAGNOSTICS filas_afectadas = ROW_COUNT;
 
-# Usar mejor esto para comparar que != 
-SELECT NULL IS DISTINCT FROM NULL;  -- Resultado: FALSE
-SELECT NULL IS DISTINCT FROM 5;     -- Resultado: TRUE
+# Usar mejor esto para comparar si son o no son diferentes
+# Es una comparación segura que trata NULL como un valor válido.
+SELECT NULL IS NOT DISTINCT FROM NULL;  -- Resultado: TRUE -> igual a  = 
+SELECT NULL IS DISTINCT FROM NULL;  -- Resultado: FALSE -> igual a  != 
+SELECT NULL IS DISTINCT FROM 5;     -- Resultado: TRUE -> igual a  != 
 SELECT NULL !=  5;     -- Resultado: NULL
 ```
 
