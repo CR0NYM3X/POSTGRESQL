@@ -991,7 +991,20 @@ SELECT nombre, edad
 FROM json_populate_recordset(NULL::ejemplo, '[{"nombre": "Juan", "edad": 30}, {"nombre": "Ana", "edad": 25}]');
 
 
-
+-- JSONB (clave-valor)
+SELECT jsonb_build_object(
+  'id', 1,
+  'nombre', 'Ana',
+  'activo', true
+); -- {"id": 1, "activo": true, "nombre": "Ana"} 
+ 
+-- crea un arreglo JSONB
+SELECT jsonb_build_array(1, 'texto', true, NULL); -- [1, "texto", true, null]
+ 
+-- Agrupa los resultados de una columna o expresión en un arreglo JSONB.
+SELECT categoria, jsonb_agg(jsonb_build_object('id', id, 'nombre', nombre))
+FROM productos
+GROUP BY categoria;
 
 -----------------------
 
