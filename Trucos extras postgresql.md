@@ -1119,8 +1119,10 @@ INSERT INTO empleados (info) VALUES
 
 select * from empleados;
  
- 
 ##  3. Consultas de búsqueda
+
+-- busca si existe algun elemento de los que estan en el array  ['Java','Excel','PHP'] en el array = hablidades es como el in
+SELECT *  FROM empleados  WHERE info->'habilidades' ?| ARRAY['Java','Excel','PHP'];
 
 -- Buscar por valor de una clave
 SELECT * FROM empleados
