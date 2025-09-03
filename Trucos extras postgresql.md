@@ -908,9 +908,7 @@ select CHR(34); -- Comilla dobles
 select CHR(9) ; -- tab
 
 
-
-**Funciones de JSON**: Estas funciones permiten trabajar con datos en formato JSON. Por ejemplo, `jsonb_array_elements`, `jsonb_each`.
-   SELECT jsonb_each('{"a":1, "b":2}');
+ 
 
 **Funciones de rango**: Estas funciones permiten trabajar con tipos de datos de rango. Por ejemplo, `range_merge`, `range_intersect`.
    SELECT range_merge(int4range(1, 5), int4range(3, 10));
@@ -1067,7 +1065,14 @@ FROM json_to_recordset('[
    SELECT jsonb_each('{"a":1, "b":2}');
 
 
+-- jsonb_array_elements Esta función descompone un array JSONB en múltiples filas, una por cada elemento del array.
+select  * from  (
+	SELECT jsonb_array_elements(  '[{"role_name": "933431111426"}, {"role_name": "444444444444444"}]'::jsonb) as clm 
+) as a   ;
 
+
+-- jsonb_each  Esta función descompone un objeto JSONB en pares clave-valor, una fila por cada par.
+ SELECT * from jsonb_each( '{"role_name": "933431111426", "pass_today": "SCRAM-SHA-256$..."}'::jsonb );
 
 
 ------------------------------------- EJEMPLO DE BUSQUEDA EN JSONB -----------------------------------------------------------------------------------------
