@@ -1126,6 +1126,16 @@ select * from empleados;
  
 ##  3. Consultas de búsqueda
 
+--- Descomponer el array y biscar un elemento en el 
+SELECT jsonb_array_elements(changes_pass)
+FROM  public.audit_users
+WHERE EXISTS (
+  SELECT 1
+  FROM jsonb_array_elements(changes_pass) AS elem
+  WHERE elem->>'role_name' IN ('55889966', '444444444444444')
+);
+
+
 -- busca si existe algun elemento de los que estan en el array  ['Java','Excel','PHP'] en el array = hablidades es como el in
 SELECT *  FROM empleados  WHERE info->'habilidades' ?| ARRAY['Java','Excel','PHP'];
 
