@@ -99,6 +99,10 @@ Mastering PostgreSQL Performance: Identifying Slow Queries and Leveraging Indexe
 
 Understanding Query Performance: A Deep Dive into EXPLAIN ANALYZE -> https://medium.com/@rizqimulkisrc/understanding-query-performance-a-deep-dive-into-explain-analyze-d1d40a610bcc
 
+01-PostgreSQL Performance Tuning: Understanding the Client-Server Model in PostgreSQL 17 -> https://medium.com/@jramcloud1/01-postgresql-performance-tuning-understanding-the-client-server-model-in-postgresql-17-5acc1094e317
+
+
+PostgreSQL Performance with pg_stat_io: Real-World Use Cases -> https://tomasz-gintowt.medium.com/postgresql-performance-with-pg-stat-io-real-world-use-cases-1ad42e97b3c1
 ```
 
 
