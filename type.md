@@ -277,6 +277,31 @@ ALTER TABLE nombre_de_la_tabla ALTER COLUMN columna_de_tipo_contacto TYPE tipo_c
   - **Límites**: Ilimitado.
   - **Espacio en memoria**: Variable, depende del tamaño de los datos.
   - **Desventajas**: Más lentos en comparación con tipos nativos.
+ 
+###   Comparativa entre `json` y `jsonb` en PostgreSQL
+
+| 🧩 Característica                  | 📝 `json` (Texto plano)                          | ⚙️ `jsonb` (Binario optimizado)                     |
+|-----------------------------------|--------------------------------------------------|-----------------------------------------------------|
+| **Formato de almacenamiento**     | Texto tal cual se recibe                         | Binario estructurado y optimizado                   |
+| **Validación**                    | Verifica que sea JSON válido                     | También valida, pero lo transforma internamente     |
+| **Orden de claves**               | Se conserva exactamente                          | Se pierde (las claves se ordenan internamente)      |
+| **Claves duplicadas**             | Se conservan todas                               | Se elimina duplicados, se conserva la última        |
+| **Consultas internas**            | Lentas y limitadas                               | Rápidas y eficientes                                |
+| **Modificaciones**                | No permite operaciones internas                  | Permite funciones como `jsonb_set`, `||`, `-`       |
+| **Indexación**                    | Limitada                                         | Compatible con índices GIN y otros                  |
+| **Tamaño de almacenamiento**      | Más pequeño si no se consulta                    | Puede ser más grande por el procesamiento binario   |
+| **Operadores disponibles**        | Solo básicos (`->`, `->>`)                       | Todos: `->`, `->>`, `#>`, `#>>`, `@>`, `<@`, `?`, `?|`, `?&`, `||`, `-`, `jsonb_set`, etc. |
+| **Uso recomendado**               | Almacenar JSON como texto sin procesar           | Consultas, búsquedas, modificaciones y rendimiento  |
+
+
+
+###   ¿Qué significa que **se conservan o se pierden las claves duplicadas**?
+
+En JSON estándar (como el tipo `json` en PostgreSQL), **puedes tener claves duplicadas** en un objeto. Aunque no es recomendable, es técnicamente válido. PostgreSQL con tipo `json` **almacena el texto tal cual**, sin procesarlo, por lo que **sí conserva las claves duplicadas**.
+
+En cambio, el tipo `jsonb` **procesa y normaliza** el JSON al convertirlo en binario. Durante ese proceso, **elimina las claves duplicadas**, conservando **solo la última**.
+
+
 
 ### 7. Otros Tipos
 - **UUID**
