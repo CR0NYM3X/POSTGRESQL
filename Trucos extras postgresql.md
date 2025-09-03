@@ -1063,7 +1063,103 @@ FROM json_to_recordset('[
 # jsonb_object_keys: Devuelve las claves (keys) de un objeto JSONB 
 	SELECT jsonb_object_keys('{"id": 1, "name": "Alice", "age": 25}'::jsonb); -- id name age
 
+ **Funciones de JSON**: Estas funciones permiten trabajar con datos en formato JSON. Por ejemplo, `jsonb_array_elements`, `jsonb_each`.
+   SELECT jsonb_each('{"a":1, "b":2}');
+
+
+
+
+
+------------------------------------- EJEMPLO DE BUSQUEDA EN JSONB -----------------------------------------------------------------------------------------
+
+
+##   1. Crear la tabla
+
+-- DROP TABLE empleados;
+CREATE TABLE empleados (
+    id SERIAL PRIMARY KEY,
+    info JSONB
+);
  
+ 
+##   2. Insertar datos
+ 
+INSERT INTO empleados (info) VALUES
+('{
+    "nombre": "Ana",
+    "edad": 30,
+    "departamento": "TI",
+    "habilidades": ["PostgreSQL", "Python", "Docker"],
+    "direccion": {
+        "ciudad": "Culiacán",
+        "pais": "México"
+    }
+}'),
+('{
+    "nombre": "Luis",
+    "edad": 40,
+    "departamento": "Finanzas",
+    "habilidades": ["Excel", "Contabilidad"],
+    "direccion": {
+        "ciudad": "Guadalajara",
+        "pais": "México"
+    }
+}'),
+('{
+    "nombre": "María",
+    "edad": 35,
+    "departamento": "TI",
+    "habilidades": ["Java", "PostgreSQL"],
+    "direccion": {
+        "ciudad": "Monterrey",
+        "pais": "México"
+    }
+}');
+
+
+select * from empleados;
+ 
+ 
+##  3. Consultas de búsqueda
+
+-- Buscar por valor de una clave
+SELECT * FROM empleados
+WHERE info->>'nombre' = 'Ana';
+ 
+
+--  Buscar por valor dentro de un objeto anidado
+SELECT * FROM empleados
+WHERE info->'direccion'->>'ciudad' = 'Culiacán';
+ 
+
+--  Extraer todos los nombres
+SELECT info->>'nombre' AS nombre FROM empleados;
+
+
+--  Filtrar por edad mayor a 30 (requiere casting)
+SELECT * FROM empleados
+WHERE (info->>'edad')::int > 30;
+
+
+--  Buscar si existe una clave
+SELECT * FROM empleados
+WHERE info ? 'departamento';
+
+
+--  Buscar si contiene un fragmento JSON
+SELECT * FROM empleados
+WHERE info @> '{"departamento": "TI"}';
+
+
+--  Buscar si una clave contiene un valor dentro de un array
+SELECT * FROM empleados
+WHERE info->'habilidades' ? 'PostgreSQL';
+
+
+--  Buscar si el array contiene **todos** los valores
+SELECT * FROM empleados
+WHERE info->'habilidades' @> '["PostgreSQL", "Python"]';
+
 
 ```
 
