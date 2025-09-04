@@ -185,6 +185,10 @@ Monitorear discos
 vmstat 1
 iostat -d -x 1  o iostat -d -x -k 1 3
 sar -d 1
+
+sudo iotop
+dstat -d --disk-util
+iostat -dx 1
 ```
 
 
