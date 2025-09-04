@@ -373,9 +373,11 @@ En entornos donde la aplicación no requiere una conexión persistente con la ba
 
 ```
 
-shared_buffers = 128MB  /*  Default min  128kB reasonable starting value for shared_buffers is 15%  to  25% of the memory in your system. Link: https://www.postgresql.org/docs/9.1/runtime-config-resource.html
-En versiones de PostgreSQL anteriores a 8.4, el valor máximo debe ser 2,5 GB,
+shared_buffers = 128MB  /* -- 25% a 40% de la RAM total si el servidor es dedicado a PostgreSQL. Nunca más del 50% para evitar que el sistema operativo se quede sin memoria.
 Es el parámetro que define cuánta memoria RAM PostgreSQL usará para almacenar páginas de datos en memoria antes de acceder al disco. Es uno de los más importantes para el rendimiento.
+https://www.postgresql.org/docs/9.1/runtime-config-resource.html
+En versiones de PostgreSQL anteriores a 8.4, el valor máximo debe ser 2,5 GB,
+
 
 
 --- Ver la memoria RAM 
@@ -492,7 +494,8 @@ checkpoint_warning = 30s		# 0 disables
 
 
 
-effective_cache_size = 4GB  /*Cuando PostgreSQL planea cómo ejecutar una consulta, necesita estimar cuánta de la data necesaria ya está almacenada en caché y cuánta tendrá que leer desde el disco. Esta estimación afecta significativamente la eficiencia de la ejecución de la consulta.  En un servidor dedicado podemos empezar con un 50% del total  e nuestra memoria. Como máximo  unos 2/3 (66%) del total. Por ejemplo, en un servidor con 4Gbytes de memoria, podemos usar 2048MB como valor inicial. effective_cache_size = 2048MB*/
+effective_cache_size = 4GB  /*Cuando PostgreSQL planea cómo ejecutar una consulta, necesita estimar cuanto de la data necesaria ya está almacenada en caché y cuánta tendrá que leer desde el disco. Esta estimación afecta significativamente la eficiencia de la ejecución de la consulta.
+En un servidor dedicado podemos empezar con un 50% del total  e nuestra memoria. Como máximo  unos 75% del total. Por ejemplo, en un servidor con 4Gbytes de memoria, podemos usar 2048MB como valor inicial. effective_cache_size = 2048MB*/
 
 checkpoint_segments = 3		/*# in logfile segments, min 1, 16MB each Este parámetro es muy importante en bases de datos con numerosas operaciones de escritura (insert,update,delete). Para empezar podemos empezar con un valor de 64. En grandes bases de datos con muchos  bytes de datos escritos podemos aumentar este valor hasta 128-256. checkpoint_segments = 64*/
 
