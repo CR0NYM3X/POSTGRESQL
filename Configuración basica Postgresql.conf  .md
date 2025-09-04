@@ -375,6 +375,8 @@ En entornos donde la aplicación no requiere una conexión persistente con la ba
 
 shared_buffers = 128MB  /*  Default min  128kB reasonable starting value for shared_buffers is 15%  to  25% of the memory in your system. Link: https://www.postgresql.org/docs/9.1/runtime-config-resource.html
 En versiones de PostgreSQL anteriores a 8.4, el valor máximo debe ser 2,5 GB,
+Es el parámetro que define cuánta memoria RAM PostgreSQL usará para almacenar páginas de datos en memoria antes de acceder al disco. Es uno de los más importantes para el rendimiento.
+
 
 --- Ver la memoria RAM 
 free -m 
