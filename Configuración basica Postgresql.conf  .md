@@ -1398,6 +1398,9 @@ END $$;
 
 ### Bibliografias 
 ```
+https://medium.com/@jramcloud1/04-postgresql-17-performance-tuning-checkpoints-explained-4972e78f4e56
+https://medium.com/@wasiualhasib/optimizing-postgresql-performance-how-the-fill-factor-setting-improve-i-o-performance-00091e5c951c
+
 https://medium.com/@jramcloud1/postgresql-17-kernel-tuning-guide-managing-system-parameters-for-optimal-performance-fe097de1dcdb
 https://blog.devops.dev/10-must-know-postgresql-performance-settings-1001aa1e668c
 https://www.cybertec-postgresql.com/en/services/postgresql-optimization-security/postgresql-performance-tuning/
