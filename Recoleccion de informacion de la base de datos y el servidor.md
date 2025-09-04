@@ -490,6 +490,11 @@ SHOW lc_time; -- formato de fechas y horas.
 
 ```
 
+### Revisar si es una maquina virtual
+```
+systemd-detect-virt
+lscpu | grep -Ei "Hypervisor vendor|Virtualization type"
+```
 
 ### Ver conf de kernel y limites 
 ```
