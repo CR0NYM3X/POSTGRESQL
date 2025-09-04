@@ -1322,67 +1322,6 @@ Puedes colocar un script en /etc/init.d/
 
 ```
 
-## Bibliofragías 
-```
- ---------> PDF  CONFIGURACION PSQL  <--------------
-
-[Recomendado LVL #1 ] https://www.postgresql.org/docs/current/runtime-config.html
- 
-[Recomendado #2 ]--> PostgreSQL Configuration Best Practices for Performance and Security
-https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Configuration.pdf
-
-[Recomendado #3  ] -- Este tiene varios temas como  PITR, respaldos, configuraciones etc, etc
-[Recomendado #4  ] https://www.visibilidadweb.unam.mx/capacitacion/perfilesTIC/responsableTIC/Manual-Curso-Basico-Postgres 
-
- [Recomendado #5  ] https://www.postgresql.org/docs/current/runtime-config.html
-
- [LVL recomendación 0 ]   https://wiki.postgresql.org/images/5/59/FlexiblePostgreSQLConfiguration.pdf
- [LVL recomendación 0 ]  https://ubuntu.com/server/docs/install-and-configure-postgresql
-
--- Todos los parametros de postgresql.conf
-https://pgdash.io/blog/postgres-configuration-cheatsheet.html
-https://helpcenter.netwrix.com/bundle/StealthDEFEND_2.7/page/Content/StealthDEFEND/Installation_Guide/Configure_the_Postgres.conf_File/Configure_the_Postgres.conf_File.htm
-
-
-
-  --------->  PDF SECURITY - PSQL   <--------------
-  [LVL recomendación 1 ] https://repository.unad.edu.co/bitstream/handle/10596/36746/ilovepdf_merged.pdf?sequence=3&isAllowed=y
-  [LVL recomendación 2] https://www.postgresql.eu/events/pgconfeu2023/sessions/session/4707/slides/444/P-DBI-E-20231214-PostgreSQL_security_with_demo.pdf
-  [LVL recomendación 0] https://www.crunchydata.com/files/stig/PGSQL-STIG-v1r1.pdf
-  [LVL recomendación 0]   https://rcci.uci.cu/?journal=rcci&page=article&op=viewFile&path[]=96&path[]=90
-
- 
- --------->  postgresql.conf DE PRUBEAS <--------------
- https://github.com/postgres/postgres/blob/master/src/backend/utils/misc/postgresql.conf.sample
- https://gist.github.com/sbrohme/3295547
- https://gist.github.com/64kramsystem/d780ce0f8dff7b90847b2728f506cdea
-
-
- --------->  test instalación <--------------
-
-https://gist.github.com/franklinbr/f968e832fb5f95250259f2a6031644fa
-https://gist.github.com/arcolife/d8e747f9bfafe841b3a25def91ed1afe
-https://gist.github.com/djyoda/5d243f7beddbe6f4d8a9
-https://gist.github.com/ryanguill/7928937
-
- --------->  CONFIGURACIÓN DE PARAMETROS ONLINE <--------------
-https://pgtune.leopard.in.ua/
-https://pgtuner.onrender.com/
-https://www.pgconfig.org/#/?max_connections=100&pg_version=16&environment_name=WEB&total_ram=4&cpus=2&drive_type=SSD&arch=x86-64&os_type=linux
-https://pgconfigurator.cybertec.at/
-
- --------->  DESCARGAR POSTGRESQL REDHAT <--------------
-https://www.postgresql.org/download/linux/redhat/
- 
-
-.. PACKETES....
-postgresql-client	libraries and client binaries
-postgresql-server	core database server
-postgresql-contrib	additional supplied modules
-postgresql-devel	libraries and headers for C language development
-
-```
-
 ### Conexto de cada parámetro 
 ```
 
@@ -1459,6 +1398,33 @@ END $$;
 
 ### Bibliografias 
 ```
+https://medium.com/@jramcloud1/postgresql-17-kernel-tuning-guide-managing-system-parameters-for-optimal-performance-fe097de1dcdb
+https://blog.devops.dev/10-must-know-postgresql-performance-settings-1001aa1e668c
+https://www.cybertec-postgresql.com/en/services/postgresql-optimization-security/postgresql-performance-tuning/
+https://medium.com/@jramcloud1/postgresql-17-performance-tuning-how-to-find-kill-and-analyze-long-running-and-blocked-queries-f1bbe30a8804
+https://medium.com/@jramcloud1/13-postgresql-17-performance-tuning-indexing-and-its-impact-on-performance-17293afdba96
+https://medium.com/@ankush.thavali/the-ultimate-guide-to-postgresql-performance-tuning-0d8134256125
+
+https://medium.com/@mydbopsdatabasemanagement/postgresql-performance-tuning-key-parameter-best-practices-for-2025-508965aa934e
+https://medium.com/@noeldsn/understanding-postgresql-memory-usage-and-performance-tuning-bcc02b5a9c2e
+https://levelup.gitconnected.com/sql-performance-tuning-in-prisma-orm-postgresql-for-beginners-9b60e4d1041d
+https://medium.com/@raymondafuye/rds-postgresql-performance-optimization-through-shared-buffers-parameter-tuning-bed8dd257f95
+https://medium.com/@akshaygupta.live/postgresql-query-performance-tuning-tips-75ebe1483cdd
+
+https://medium.com/@yuvrajkakkar1/master-postgresql-blazing-fast-increase-performance-with-practical-tips-a1c9301559be
+https://techblog.quantela.com/unleashing-postgresql-performance-a-comprehensive-guide-to-tuning-34a78b7a1da0
+https://medium.com/@burakkocakeu/optimizing-postgresql-database-performance-908f309a4156
+https://blog.devgenius.io/10-best-practices-for-optimizing-postgresql-performance-a655a6c91073
+https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-postgresql-shared-buffers-for-performance-tuning-0a61086edee7
+https://medium.com/@jramcloud1/19-postgresql-17-performance-tuning-gin-generalized-inverted-index-757c7a670b92
+https://medium.com/@jramcloud1/06-postgresql-17-performance-tuning-utility-processes-explained-bee2e8be9902
+https://medium.com/@jramcloud1/07-postgresql-17-performance-tuning-understanding-vacuum-in-detail-4914a06073fe
+https://medium.com/@jramcloud1/17-postgresql-17-performance-tuning-using-partial-indexes-f78fe8b06c68
+https://nidhig631.medium.com/ways-to-optimize-and-improve-postgresql-performance-47d1b1189454
+
+
+https://www.cybertec-postgresql.com/en/services/postgresql-optimization-security/postgresql-performance-tuning/
+
 PostgreSQL Configuration Tuning: Best Practices and Tools for Production-Ready Performance : 
 https://medium.com/@ukhore/postgresql-configuration-tuning-best-practices-and-tools-for-production-ready-performance-ac121eb37061
 https://medium.com/@itsmerob/supercharging-postgresql-5-powerful-techniques-for-enhanced-performance-and-scalability-692362eebd0a
@@ -1471,4 +1437,66 @@ https://postgresqlco.nf/doc/en/param/?q=password_encryption#
 Doc Man: 
 /usr/pgsql-16/share/man/man1/psql.1
 
+
+ ---------> PDF  CONFIGURACION PSQL  <--------------
+
+[Recomendado LVL #1 ] https://www.postgresql.org/docs/current/runtime-config.html
+ 
+[Recomendado #2 ]--> PostgreSQL Configuration Best Practices for Performance and Security
+https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Configuration.pdf
+
+[Recomendado #3  ] -- Este tiene varios temas como  PITR, respaldos, configuraciones etc, etc
+[Recomendado #4  ] https://www.visibilidadweb.unam.mx/capacitacion/perfilesTIC/responsableTIC/Manual-Curso-Basico-Postgres 
+
+ [Recomendado #5  ] https://www.postgresql.org/docs/current/runtime-config.html
+
+ [LVL recomendación 0 ]   https://wiki.postgresql.org/images/5/59/FlexiblePostgreSQLConfiguration.pdf
+ [LVL recomendación 0 ]  https://ubuntu.com/server/docs/install-and-configure-postgresql
+
+-- Todos los parametros de postgresql.conf
+https://pgdash.io/blog/postgres-configuration-cheatsheet.html
+https://helpcenter.netwrix.com/bundle/StealthDEFEND_2.7/page/Content/StealthDEFEND/Installation_Guide/Configure_the_Postgres.conf_File/Configure_the_Postgres.conf_File.htm
+
+
+
+
+
+  --------->  PDF SECURITY - PSQL   <--------------
+  [LVL recomendación 1 ] https://repository.unad.edu.co/bitstream/handle/10596/36746/ilovepdf_merged.pdf?sequence=3&isAllowed=y
+  [LVL recomendación 2] https://www.postgresql.eu/events/pgconfeu2023/sessions/session/4707/slides/444/P-DBI-E-20231214-PostgreSQL_security_with_demo.pdf
+  [LVL recomendación 0] https://www.crunchydata.com/files/stig/PGSQL-STIG-v1r1.pdf
+  [LVL recomendación 0]   https://rcci.uci.cu/?journal=rcci&page=article&op=viewFile&path[]=96&path[]=90
+
+ 
+ --------->  postgresql.conf DE PRUBEAS <--------------
+ https://github.com/postgres/postgres/blob/master/src/backend/utils/misc/postgresql.conf.sample
+ https://gist.github.com/sbrohme/3295547
+ https://gist.github.com/64kramsystem/d780ce0f8dff7b90847b2728f506cdea
+
+
+ --------->  test instalación <--------------
+
+https://gist.github.com/franklinbr/f968e832fb5f95250259f2a6031644fa
+https://gist.github.com/arcolife/d8e747f9bfafe841b3a25def91ed1afe
+https://gist.github.com/djyoda/5d243f7beddbe6f4d8a9
+https://gist.github.com/ryanguill/7928937
+
+ --------->  CONFIGURACIÓN DE PARAMETROS ONLINE <--------------
+https://pgtune.leopard.in.ua/
+https://pgtuner.onrender.com/
+https://www.pgconfig.org/#/?max_connections=100&pg_version=16&environment_name=WEB&total_ram=4&cpus=2&drive_type=SSD&arch=x86-64&os_type=linux
+https://pgconfigurator.cybertec.at/
+
+ --------->  DESCARGAR POSTGRESQL REDHAT <--------------
+https://www.postgresql.org/download/linux/redhat/
+ 
+
+.. PACKETES....
+postgresql-client	libraries and client binaries
+postgresql-server	core database server
+postgresql-contrib	additional supplied modules
+postgresql-devel	libraries and headers for C language development
+
 ```
+
+
