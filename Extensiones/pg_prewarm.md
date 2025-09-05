@@ -148,8 +148,7 @@ sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
 ### 🔹 9.5 Ejecutar consulta sin `pg_prewarm`
 
 ```sql
-EXPLAIN ANALYZE
-SELECT * FROM ventas WHERE fecha = CURRENT_DATE - INTERVAL '30 days';
+EXPLAIN ( ANALYZE true, VERBOSE true, COSTS true, TIMING true, BUFFERS true,  SETTINGS true, WAL true)  SELECT * FROM ventas WHERE fecha = CURRENT_DATE - INTERVAL '30 days';
 ```
 
 📌 *Simulación de salida:*
@@ -176,8 +175,7 @@ SELECT pg_prewarm('ventas');
 ### 🔹 9.7 Ejecutar nuevamente la consulta
 
 ```sql
-EXPLAIN ANALYZE
-SELECT * FROM ventas WHERE fecha = CURRENT_DATE - INTERVAL '30 days';
+EXPLAIN ( ANALYZE true, VERBOSE true, COSTS true, TIMING true, BUFFERS true,  SETTINGS true, WAL true)  SELECT * FROM ventas WHERE fecha = CURRENT_DATE - INTERVAL '30 days';
 ```
 
 📌 *Simulación de salida:*
@@ -316,6 +314,7 @@ CREATE EXTENSION IF NOT EXISTS pg_buffercache;
 
 -- Consulta para ver cuántos bloques/Paginas de 8KB de tu tabla están en caché
 SELECT
+    n.nspname AS esquema,
     c.relname,
     count(*) AS buffers
 FROM
@@ -324,10 +323,17 @@ JOIN
     pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
 JOIN
     pg_database d ON b.reldatabase = d.oid
---WHERE
---    c.relname = 'ventas'
+JOIN
+    pg_namespace n ON c.relnamespace = n.oid
+WHERE
+    n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+    AND n.nspname NOT LIKE 'pg_temp_%'
+    AND n.nspname NOT LIKE 'pg_toast_temp_%'
 GROUP BY
-    c.relname;
+    n.nspname, c.relname
+ORDER BY
+    buffers DESC;
+
 ```
 
 Esto te dirá cuántos bloques de la tabla están actualmente en el buffer pool.
