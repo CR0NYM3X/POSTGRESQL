@@ -103,6 +103,10 @@ Understanding Query Performance: A Deep Dive into EXPLAIN ANALYZE -> https://med
 
 
 PostgreSQL Performance with pg_stat_io: Real-World Use Cases -> https://tomasz-gintowt.medium.com/postgresql-performance-with-pg-stat-io-real-world-use-cases-1ad42e97b3c1
+
+https://tomasz-gintowt.medium.com/postgresql-extensions-pg-buffercache-b38b0dc08000
+https://tomasz-gintowt.medium.com/vacuum-in-postgresql-not-just-cleaning-up-c4dc154c6320
+
 ```
 
 
@@ -168,8 +172,13 @@ Techniques for Storing JSON Documents in PostgreSQL -> https://medium.tuanh.net/
 ```
 How to Clean Up WAL Files and Replication Slots in PostgreSQL (Complete Guide for DBAs) -> https://medium.com/@jramcloud1/how-to-clean-up-wal-files-and-replication-slots-in-postgresql-complete-guide-for-dbas-2ca33b3fdb3b
 
+
 ```
 
+# HA 
+```
+https://medium.com/@kaanberkozbek/how-i-automated-pgcat-with-consul-for-dynamic-postgresql-load-balancing-399ab0673b8b
+```
 
 # Otros 
 ```
