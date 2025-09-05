@@ -424,6 +424,47 @@ Puedes combinar esta vista con `pg_stat_user_tables` para ver también:
 Esto te ayuda a entender si la tabla está siendo accedida frecuentemente y cómo.
 
 
+--- 
+
+# **PostgreSQL no obtiene buen rendimiento de la caché**
+
+Cuando **PostgreSQL no obtiene buen rendimiento de la caché** (es decir, del **buffer pool** gestionado por `shared_buffers`), toma varias acciones para mantener la operación, aunque esto puede afectar el rendimiento general. Aquí te explico qué hace y cómo lo maneja:
+
+---
+
+### 🔄 1. **Evicción de páginas**
+Si el búfer está lleno y necesita cargar una nueva página, PostgreSQL usa un algoritmo tipo **LRU (Least Recently Used)** modificado para **reemplazar páginas menos usadas**. Si una página está sucia (`isdirty = true`), primero se escribe al disco antes de ser reemplazada.
+
+---
+
+### 📉 2. **Aumento de lecturas desde disco**
+Cuando la caché no es suficiente, PostgreSQL **lee más frecuentemente desde el disco**, lo cual es mucho más lento que leer desde memoria. Esto puede causar:
+
+- Mayor latencia en consultas.
+- Más carga de I/O en el sistema operativo.
+- Posible saturación de discos si hay muchas operaciones concurrentes.
+
+---
+
+### 🧠 3. **Uso de caché del sistema operativo**
+Además de `shared_buffers`, PostgreSQL **se apoya en la caché del sistema operativo** (page cache). Si `shared_buffers` no rinde, el SO puede ayudar, pero esto depende de la configuración de memoria total y del uso por otros procesos.
+
+---
+
+### 🧰 4. **Recomendaciones para mejorar el rendimiento de caché**
+
+- **Aumentar `shared_buffers`**: Si tienes suficiente RAM, puedes asignar más memoria a PostgreSQL.
+- **Optimizar consultas**: Evitar `seq scan` innecesarios, usar índices adecuados.
+- **Usar `pg_stat_statements`** para identificar consultas costosas.
+- **Monitorear con `pg_buffercache`**: Ver qué relaciones están ocupando más espacio y si hay muchas páginas sucias.
+- **Configurar `effective_cache_size`** correctamente para ayudar al planner a estimar mejor.
+
+
+
+¡Buena observación! Sí, **los archivos temporales (`temp_file`) pueden entrar en juego** cuando PostgreSQL **no puede manejar eficientemente los datos en memoria**, incluyendo el búfer (`shared_buffers`) y la caché del sistema operativo.
+
+
+
 ## 12. 📚 Bibliografía
 ```sql
 *   <https://www.postgresql.org/docs/current/pgprewarm.html>
