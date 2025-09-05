@@ -1,10 +1,47 @@
-- **pg_buffercache**: Permite monitorear en tiempo real el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia. La caché de búfer almacena datos en la memoria para acelerar las consultas. Si la caché está bien optimizada, las consultas se ejecutarán más rápido al evitar accesos frecuentes al disco.
+- **pg_buffercache**: Permite monitorear en tiempo real el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia. La caché de búfer almacena datos en la memoria para acelerar las consultas. Si la caché está bien optimizada, las consultas se ejecutarán más rápido al evitar accesos frecuentes al disco. 
 
 
 ### 🔍 ¿Qué es el buffer en PostgreSQL?
 
 El **buffer pool** es una zona de memoria compartida donde PostgreSQL almacena páginas de datos que han sido leídas desde disco. Esto permite que futuras lecturas sean más rápidas si los datos ya están en memoria.
- 
+
+
+ #  **descripción breve y clara de cada columna** 
+
+| **Columna**           | **Descripción** |
+|-----------------------|-----------------|
+| `bufferid`            | Identificador único del búfer dentro del pool de búferes. |
+| `relfilenode`         | Identificador del archivo físico que representa la relación (tabla o índice). |
+| `reltablespace`       | ID del tablespace donde se encuentra la relación. |
+| `reldatabase`         | ID de la base de datos a la que pertenece la relación. |
+| `relforknumber`       | Tipo de fork del archivo: `main`, `fsm`, `vm`, etc. (por ejemplo, datos principales, mapa de espacio libre, mapa de visibilidad). |
+| `relblocknumber`      | Número de bloque dentro del archivo de la relación. |
+| `isdirty`             | Indica si el bloque ha sido modificado en memoria pero aún no se ha escrito al disco (`true` = sucio). |
+| `usagecount`          | Contador de uso del búfer, usado por el algoritmo de reemplazo LRU para decidir qué páginas expulsar. |
+| `pinning_backends`    | Número de procesos que actualmente tienen "fijado" el búfer, lo que impide que sea reemplazado. |
+
+
+# **`isdirty`** 
+indica si una página en el búfer ha sido modificada (es decir, está "sucia") pero **aún no ha sido escrita al disco**.
+
+### ¿Qué significa esto en términos prácticos?
+
+Cuando PostgreSQL modifica datos (por ejemplo, al hacer un `UPDATE` o `INSERT`), no escribe inmediatamente esos cambios al disco. En lugar de eso:
+
+1. **Modifica la página en memoria (el búfer)**.
+2. Marca esa página como **dirty** (`isdirty = true`).
+3. Eventualmente, el proceso de **checkpoint** o el **background writer** escribe esa página al disco.
+
+### ¿Para qué sirve `isdirty`?
+
+Este campo es útil para:
+
+- **Diagnóstico de rendimiento**: Si muchas páginas están sucias, puede indicar que hay muchas escrituras pendientes, lo cual podría afectar el rendimiento o la recuperación ante fallos.
+- **Monitoreo de actividad**: Ayuda a entender qué tan activo está el sistema en términos de escritura.
+- **Optimización de configuración**: Puede guiar ajustes en parámetros como `checkpoint_timeout`, `bgwriter_delay`, etc.
+
+  
+
 
 ### 📦 ¿Qué hace `pg_buffercache`?
 
@@ -15,7 +52,8 @@ La extensión `pg_buffercache` te da acceso a una vista llamada `pg_buffercache`
 - Cuántas veces han sido usadas.
 - Si están sucias (modificadas pero no escritas a disco).
 
- 
+
+--- 
 
 ### ⏱️ ¿Es en tiempo real?
 
