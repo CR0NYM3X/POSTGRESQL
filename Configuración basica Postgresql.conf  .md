@@ -372,6 +372,10 @@ En entornos donde la aplicación no requiere una conexión persistente con la ba
 ## RESOURCE USAGE (except WAL)
 
 ```
+PostgreSQL usa memoria compartida para shared_buffers, por lo que debes asegurarte que los valores del kernel lo permitan.
+###  Tamaños maximos y minimos en    bytes
+cat /proc/sys/kernel/shmmax
+cat /proc/sys/kernel/shmall
 
 shared_buffers = 128MB  /* -- 25% a 40% de la RAM total si el servidor es dedicado a PostgreSQL. Nunca más del 50% para evitar que el sistema operativo se quede sin memoria.
 Es el parámetro que define cuánta memoria RAM PostgreSQL usará para almacenar páginas de datos en memoria antes de acceder al disco. Es uno de los más importantes para el rendimiento.
@@ -500,9 +504,7 @@ En un servidor dedicado podemos empezar con un 50% del total  e nuestra memoria.
 checkpoint_segments = 3		/*# in logfile segments, min 1, 16MB each Este parámetro es muy importante en bases de datos con numerosas operaciones de escritura (insert,update,delete). Para empezar podemos empezar con un valor de 64. En grandes bases de datos con muchos  bytes de datos escritos podemos aumentar este valor hasta 128-256. checkpoint_segments = 64*/
 
 
-
-Configuración del kernel en linux: kernel.shmmax = 1/3 de la RAM disponible en bytes
-
+ 
 wal_buffers = 16MB  --  define la cantidad de memoria dedicada a almacenar los registros de WAL antes de que sean escritos a disco. Configurar adecuadamente este parámetro puede mejorar significativamente el rendimiento de bases de datos con altas tasas de escritura al reducir la frecuencia de escritura de los registros WAL a disco. Al ajustar wal_buffers, es importante considerar la carga de trabajo, la memoria disponible y realizar pruebas para encontrar el valor óptimo para tu sistema.
 
 
