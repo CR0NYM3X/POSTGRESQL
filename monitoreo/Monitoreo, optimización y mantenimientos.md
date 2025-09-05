@@ -1435,7 +1435,7 @@ Estos archivos temporales se generan cuando PostgreSQL no puede realizar ciertas
 
 ### 6. 🧪 Casos de Uso
 
-*   Consultas con `ORDER BY` o `GROUP BY` sobre grandes volúmenes
+*   Consultas con `ORDER BY` o `GROUP BY`, Joins complejos , Consultas con DISTINCT sobre grandes volúmenes
 *   Joins complejos sin índices adecuados
 *   Subconsultas que exceden el `work_mem`
 *   Operaciones de mantenimiento como `VACUUM` o `ANALYZE`
