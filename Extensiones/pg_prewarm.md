@@ -300,8 +300,122 @@ La precarga que hiciste con `pg_prewarm('ventas')` **se pierde completamente** a
 
 --- 
 
+ 
+
+# verificar si realmente está cargando los datos en memoria
+Para verificar si la extensión `pg_prewarm` realmente está cargando los datos en memoria y si los clientes están beneficiándose de ello, puedes seguir estos pasos técnicos y prácticos:
 
 
+### ✅ 2. **Consulta el caché compartido (`pg_buffercache`)**
+Instala y usa la extensión `pg_buffercache` para ver si los bloques de tu tabla están realmente en memoria:
+
+```sql
+-- Instalar la extensión si no está activa
+CREATE EXTENSION IF NOT EXISTS pg_buffercache;
+
+
+-- Consulta para ver cuántos bloques/Paginas de 8KB de tu tabla están en caché
+SELECT
+    c.relname,
+    count(*) AS buffers
+FROM
+    pg_buffercache b
+JOIN
+    pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
+JOIN
+    pg_database d ON b.reldatabase = d.oid
+--WHERE
+--    c.relname = 'ventas'
+GROUP BY
+    c.relname;
+```
+
+Esto te dirá cuántos bloques de la tabla están actualmente en el buffer pool.
+ 
+
+### ✅ 3. **Mide el impacto en los tiempos de respuesta**
+Puedes comparar los tiempos de ejecución de una consulta antes y después de usar `pg_prewarm`:
+
+```sql
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT * FROM ventas WHERE ...;
+```
+
+Fíjate en:
+
+- `Buffers: shared hit` → indica que los datos vinieron del caché.
+- `Buffers: shared read` → indica que los datos vinieron del disco.
+
+Idealmente, después de `pg_prewarm`, deberías ver más "hits" y menos "reads".
+
+ 
+### ✅ 4. **Verifica el efecto en los clientes**
+Para saber si los clientes están beneficiándose:
+
+- **Monitorea el tiempo de respuesta** de las consultas desde la aplicación.
+- Usa herramientas como **pg_stat_statements** para ver si las consultas frecuentes están mejorando:
+
+```sql
+SELECT
+    query,
+    calls,
+    total_exec_time,
+    mean_exec_time
+FROM
+    pg_stat_statements
+WHERE
+    query LIKE '%ventas%'
+ORDER BY
+    total_exec_time DESC;
+```
+
+ 
+
+
+### 🔍 ¿Qué puedes ver con `pg_statio_user_tables`?
+
+- **`heap_blks_read`**: bloques leídos desde disco.
+- **`heap_blks_hit`**: bloques leídos desde el caché (shared buffers).
+
+ 
+
+### ✅ Consulta recomendada
+
+```sql
+SELECT
+    relname,
+    heap_blks_read,
+    heap_blks_hit,
+    ROUND(100.0 * heap_blks_hit / NULLIF(heap_blks_hit + heap_blks_read, 0), 2) AS hit_ratio
+FROM
+    pg_statio_user_tables
+WHERE
+    relname = 'ventas';
+```
+
+Esto te da:
+
+- El nombre de la tabla.
+- Cuántos bloques se leyeron desde disco vs. desde caché.
+- El **porcentaje de aciertos en caché** (`hit_ratio`), que debería aumentar si `pg_prewarm` está funcionando correctamente.
+
+ 
+
+### 🔄 ¿Cómo interpretar los resultados?
+
+- Si `heap_blks_hit` es alto y `heap_blks_read` es bajo → ✅ los datos están siendo servidos desde memoria.
+- Si `heap_blks_read` sigue alto → ❌ puede que el prewarm no esté funcionando como esperas, o que el caché se esté limpiando por presión de memoria.
+
+ 
+
+### 🧠 Tip adicional
+
+Puedes combinar esta vista con `pg_stat_user_tables` para ver también:
+
+- Número de `seq_scan` y `idx_scan`.
+- Cantidad de `n_tup_ins`, `n_tup_upd`, `n_tup_del`.
+
+Esto te ayuda a entender si la tabla está siendo accedida frecuentemente y cómo.
 
 
 ## 12. 📚 Bibliografía
