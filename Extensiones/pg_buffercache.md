@@ -309,8 +309,8 @@ El **`hit_ratio`** en PostgreSQL es una métrica que indica la **eficiencia del 
 
 ### ¿Por qué es importante?
 
-- **Alto hit ratio** → menos lecturas desde disco → mejor rendimiento.
-- **Bajo hit ratio** → más lecturas desde disco → puede indicar falta de memoria asignada al buffer o consultas mal optimizadas.
+- **Alto hit ratio** → es mejor ya que son menos lecturas desde disco → mejor rendimiento.
+- **Bajo hit ratio** → Ineficiente, más lecturas desde disco → puede indicar falta de memoria asignada al buffer o consultas mal optimizadas.
 
 ### ¿Cómo mejorar el `hit_ratio`?
 
@@ -343,7 +343,7 @@ ORDER BY buffers_usados DESC;
  
 
 #### 2. **Ver actividad reciente en el buffer (requiere pg_stat_statements)**
-Esto te da una idea de **qué queries están aprovechando el cache** y cuáles están haciendo lecturas desde disco.
+Esto te da una idea de **qué queries no están aprovechando menos el cache** validndo el hit_ratio % 
 ```sql
 SELECT
     query,
@@ -354,7 +354,7 @@ SELECT
     shared_blks_read,
     ROUND(100.0 * shared_blks_hit / NULLIF(shared_blks_hit + shared_blks_read, 0), 2) AS hit_ratio
 FROM pg_stat_statements
-ORDER BY shared_blks_hit DESC
+ORDER BY shared_blks_read DESC
 LIMIT 10;
 ```
 
