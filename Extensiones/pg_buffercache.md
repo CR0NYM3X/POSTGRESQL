@@ -95,12 +95,20 @@ pinning_backends: Número de backends que fijan este búfe
 		 
 		
 		
-		-- Ejemplo 2: Contar la cantidad de búferes usados por cada relación 
-		SELECT c.relname, count(*) AS buffers
-		FROM pg_buffercache b
-		JOIN pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
-		GROUP BY c.relname
-		ORDER BY buffers DESC;
+		-- Ejemplo 2: Esto te dirá cuántos bloques de la tabla están actualmente en el buffer pool.
+	SELECT
+		c.relname,
+		count(*) AS buffers
+	FROM
+		pg_buffercache b
+	JOIN
+		pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
+	JOIN
+		pg_database d ON b.reldatabase = d.oid
+	--WHERE
+	--    c.relname = 'ventas'
+	GROUP BY
+		c.relname;
 
 --- Ejemplo 3: Verificar si hay páginas sucias en la caché
 SELECT count(*) AS dirty_buffers
@@ -160,5 +168,6 @@ LIMIT 10;
 # Referencia 
 ```sql
 https://medium.com/@linz07m/postgresql-buffer-cache-how-it-helps-with-faster-queries-94e377c0d3cf
+https://tomasz-gintowt.medium.com/postgresql-extensions-pg-buffercache-b38b0dc08000
 https://www.postgresql.org/docs/16/pgbuffercache.html
 ```
