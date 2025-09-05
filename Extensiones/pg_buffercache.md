@@ -164,19 +164,28 @@ pinning_backends: Número de backends que fijan este búfe
 		
 		
 		-- Ejemplo 2: Esto te dirá cuántos bloques/Paginas de 8KB de la tabla están actualmente en el buffer pool.
-	SELECT
-		c.relname,
-		count(*) AS buffers
-	FROM
-		pg_buffercache b
-	JOIN
-		pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
-	JOIN
-		pg_database d ON b.reldatabase = d.oid
-	--WHERE
-	--    c.relname = 'ventas'
-	GROUP BY
-		c.relname;
+		SELECT
+			n.nspname AS esquema,
+			c.relname,
+			count(*) AS buffers
+		 
+		FROM
+			pg_buffercache b
+		JOIN
+			pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
+		JOIN
+			pg_database d ON b.reldatabase = d.oid
+		JOIN
+			pg_namespace n ON c.relnamespace = n.oid
+		WHERE
+			n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+			AND n.nspname NOT LIKE 'pg_temp_%'
+			AND n.nspname NOT LIKE 'pg_toast_temp_%'   and not isdirty
+		GROUP BY
+			n.nspname, c.relname
+		ORDER BY
+			buffers DESC;
+
 
 --- Ejemplo 3: Verificar si hay páginas sucias en la caché
 SELECT count(*) AS dirty_buffers
