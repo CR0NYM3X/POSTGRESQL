@@ -286,7 +286,15 @@ La precarga que hiciste con `pg_prewarm('ventas')` **se pierde completamente** a
   shared_preload_libraries = 'pg_prewarm'
    pg_prewarm.autoprewarm = true
    pg_prewarm.autoprewarm_interval = 300s
-   
+
+   select name,setting,context from pg_settings where name ilike '%prewarm%';
+
+  
+   ### Validar si el proceso se esta ejecutando 
+   postgres@server-test /sysx/data16/DATANEW/test $ ps -fea |grep prewarm
+   postgres 2827296 2827288  0 13:50 ?        00:00:00 postgres: autoprewarm leader
+   postgres 2828143 2798750  0 13:51 pts/10   00:00:00 grep --color=auto prewarm
+  
    autoprewarm_start_worker()
    	¿Qué hace? Inicia el proceso de fondo que se encarga de recuperar automáticamente los bloques que estaban en caché antes del reinicio.
 
