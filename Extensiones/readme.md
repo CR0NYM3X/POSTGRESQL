@@ -279,6 +279,9 @@ Slony-I: Un sistema de replicación maestro-esclavo para PostgreSQL que permite 
 
 HAProxy --> es un balanceador de carga y proxy inverso de código abierto. Se utiliza para distribuir el tráfico de red entre múltiples servidores, mejorando la disponibilidad y el rendimiento de los servicios web
 
+PgCat es un proxy especializado para PostgreSQL, diseñado para mejorar el rendimiento y la escalabilidad.
+Consul como servicio de descubrimiento y chequeo de salud de nodos PostgreSQL.
+
 ************  sistema distribuido ************ 
 Citus es una extensión de código abierto para **PostgreSQL** que convierte la base de datos en un sistema distribuido, permitiendo escalar horizontalmente y mejorar el rendimiento en cargas de trabajo intensivas. Algunas de sus principales funciones incluyen:
 
