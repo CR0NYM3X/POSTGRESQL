@@ -460,9 +460,7 @@ Además de `shared_buffers`, PostgreSQL **se apoya en la caché del sistema oper
 - **Configurar `effective_cache_size`** correctamente para ayudar al planner a estimar mejor.
 
 
-
-¡Buena observación! Sí, **los archivos temporales (`temp_file`) pueden entrar en juego** cuando PostgreSQL **no puede manejar eficientemente los datos en memoria**, incluyendo el búfer (`shared_buffers`) y la caché del sistema operativo.
-
+ 
 
 
 ## 12. 📚 Bibliografía
