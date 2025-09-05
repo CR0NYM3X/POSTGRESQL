@@ -298,6 +298,12 @@ La precarga que hiciste con `pg_prewarm('ventas')` **se pierde completamente** a
 - Puedes forzar el guardado con `SELECT autoprewarm_dump_now();`
 
 
+--- 
+
+
+
+
+
 ## 12. 📚 Bibliografía
 ```sql
 *   <https://www.postgresql.org/docs/current/pgprewarm.html>
