@@ -16,6 +16,7 @@
 
 
 
+
 ## 🌐 Parte 2: Enfoque desde la Empresa Consultora Especialista en PostgreSQL
 
 **Nombre Comercial:** *Global PostgreSQL Performance Experts (GPPE)*  
