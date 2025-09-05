@@ -1,5 +1,35 @@
-- **pg_buffercache**: Permite monitorear el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia. La caché de búfer almacena datos en la memoria para acelerar las consultas. Si la caché está bien optimizada, las consultas se ejecutarán más rápido al evitar accesos frecuentes al disco.
+- **pg_buffercache**: Permite monitorear en tiempo real el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia. La caché de búfer almacena datos en la memoria para acelerar las consultas. Si la caché está bien optimizada, las consultas se ejecutarán más rápido al evitar accesos frecuentes al disco.
 
+
+### 🔍 ¿Qué es el buffer en PostgreSQL?
+
+El **buffer pool** es una zona de memoria compartida donde PostgreSQL almacena páginas de datos que han sido leídas desde disco. Esto permite que futuras lecturas sean más rápidas si los datos ya están en memoria.
+ 
+
+### 📦 ¿Qué hace `pg_buffercache`?
+
+La extensión `pg_buffercache` te da acceso a una vista llamada `pg_buffercache`, que muestra:
+
+- Qué páginas están actualmente en el buffer.
+- A qué tabla o índice pertenecen.
+- Cuántas veces han sido usadas.
+- Si están sucias (modificadas pero no escritas a disco).
+
+ 
+
+### ⏱️ ¿Es en tiempo real?
+
+✅ **Sí.** Cada vez que consultas `pg_buffercache`, estás viendo el **estado actual del buffer en ese momento**.  
+❌ **No guarda historial.** Si quieres ver cómo cambia con el tiempo, necesitas recolectar datos periódicamente (por ejemplo, con Prometheus o scripts personalizados).
+ 
+
+### 🧠 ¿Cómo se usa en la práctica?
+
+- Diagnóstico de rendimiento: ver si las tablas más consultadas están en memoria.
+- Optimización de consultas: identificar si tus índices están siendo usados.
+- Tuning de parámetros: ajustar `shared_buffers` según el uso real.
+
+El buffer pool es una zona de memoria compartida donde PostgreSQL almacena páginas de datos que han sido leídas desde disco. Esto permite que futuras lecturas sean más rápidas si los datos ya están en memoria.
 
 ### Funciones 
 ```sql
@@ -95,7 +125,7 @@ pinning_backends: Número de backends que fijan este búfe
 		 
 		
 		
-		-- Ejemplo 2: Esto te dirá cuántos bloques de la tabla están actualmente en el buffer pool.
+		-- Ejemplo 2: Esto te dirá cuántos bloques/Paginas de 8KB de la tabla están actualmente en el buffer pool.
 	SELECT
 		c.relname,
 		count(*) AS buffers
