@@ -187,10 +187,32 @@ pinning_backends: Número de backends que fijan este búfe
 			buffers DESC;
 
 
+--- querys similares 
+SELECT
+    c.relname AS tabla,
+    COUNT(*) AS buffers_usados,
+    ROUND(COUNT(*) * 8192 / 1024 / 1024, 2) AS mb_usados
+FROM pg_buffercache b
+JOIN pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
+WHERE c.oid IN (
+    SELECT oid FROM pg_class
+    WHERE relnamespace IN (
+        SELECT oid FROM pg_namespace
+        WHERE nspname NOT IN ('pg_catalog', 'information_schema')
+    )
+)
+GROUP BY c.relname
+ORDER BY buffers_usados DESC;
+
+
+
 --- Ejemplo 3: Verificar si hay páginas sucias en la caché
 SELECT count(*) AS dirty_buffers
 FROM pg_buffercache
 WHERE isdirty;
+
+--- Ver todo lo que esta ocupando en cache
+SELECT pg_size_pretty(COUNT(*) * 8192) AS buffer_size FROM pg_buffercache;
 
 --- Ejemplo 4: Obtener el recuento de búferes según su contador de uso
 SELECT usagecount, count(*) AS buffers
@@ -241,6 +263,116 @@ LIMIT 10;
 
 
 ```
+
+# **PostgreSQL no obtiene buen rendimiento de la caché**
+
+Cuando **PostgreSQL no obtiene buen rendimiento de la caché** (es decir, del **buffer pool** gestionado por `shared_buffers`), toma varias acciones para mantener la operación, aunque esto puede afectar el rendimiento general. Aquí te explico qué hace y cómo lo maneja:
+ 
+
+### 🔄 1. **Evicción de páginas**
+Si el búfer está lleno y necesita cargar una nueva página, PostgreSQL usa un algoritmo tipo **LRU (Least Recently Used)** modificado para **reemplazar páginas menos usadas**. Si una página está sucia (`isdirty = true`), primero se escribe al disco antes de ser reemplazada.
+
+ 
+
+### 📉 2. **Aumento de lecturas desde disco**
+Cuando la caché no es suficiente, PostgreSQL **lee más frecuentemente desde el disco**, lo cual es mucho más lento que leer desde memoria. Esto puede causar:
+
+- Mayor latencia en consultas.
+- Más carga de I/O en el sistema operativo.
+- Posible saturación de discos si hay muchas operaciones concurrentes.
+ 
+
+### 🧠 3. **Uso de caché del sistema operativo**
+Además de `shared_buffers`, PostgreSQL **se apoya en la caché del sistema operativo** (page cache). Si `shared_buffers` no rinde, el SO puede ayudar, pero esto depende de la configuración de memoria total y del uso por otros procesos.
+
+ 
+
+### 🧰 4. **Recomendaciones para mejorar el rendimiento de caché**
+
+- **Aumentar `shared_buffers`**: Si tienes suficiente RAM, puedes asignar más memoria a PostgreSQL.
+- **Optimizar consultas**: Evitar `seq scan` innecesarios, usar índices adecuados.
+- **Usar `pg_stat_statements`** para identificar consultas costosas.
+- **Monitorear con `pg_buffercache`**: Ver qué relaciones están ocupando más espacio y si hay muchas páginas sucias.
+- **Configurar `effective_cache_size`** correctamente para ayudar al planner a estimar mejor.
+
+
+
+
+
+--- 
+
+
+# hit_ratio
+El **`hit_ratio`** en PostgreSQL es una métrica que indica la **eficiencia del uso de la caché de disco** (buffer cache) por parte del sistema de bases de datos. Específicamente, muestra el porcentaje de veces que PostgreSQL pudo **leer datos directamente desde la memoria** en lugar de tener que acceder al disco.
+ 
+ 
+
+### ¿Por qué es importante?
+
+- **Alto hit ratio** → menos lecturas desde disco → mejor rendimiento.
+- **Bajo hit ratio** → más lecturas desde disco → puede indicar falta de memoria asignada al buffer o consultas mal optimizadas.
+
+### ¿Cómo mejorar el `hit_ratio`?
+
+1. **Aumentar `shared_buffers`** en `postgresql.conf`.
+2. Optimizar consultas para evitar lecturas innecesarias.
+3. Usar índices adecuados.
+4. Evitar operaciones que invaliden la caché frecuentemente.
+
+
+#### 1. **Ver qué objetos están ocupando el buffer cache**
+Esto te muestra **qué tablas están ocupando más espacio en el buffer**, lo cual puede ayudarte a identificar si hay objetos que podrían optimizarse.
+```sql
+SELECT
+    c.relname AS tabla,
+    COUNT(*) AS buffers_usados,
+    ROUND(COUNT(*) * 8192 / 1024 / 1024, 2) AS mb_usados
+FROM pg_buffercache b
+JOIN pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
+WHERE c.oid IN (
+    SELECT oid FROM pg_class
+    WHERE relnamespace IN (
+        SELECT oid FROM pg_namespace
+        WHERE nspname NOT IN ('pg_catalog', 'information_schema')
+    )
+)
+GROUP BY c.relname
+ORDER BY buffers_usados DESC;
+```
+
+ 
+
+#### 2. **Ver actividad reciente en el buffer (requiere pg_stat_statements)**
+Esto te da una idea de **qué queries están aprovechando el cache** y cuáles están haciendo lecturas desde disco.
+```sql
+SELECT
+    query,
+    calls,
+    total_exec_time AS total_time,
+    rows,
+    shared_blks_hit,
+    shared_blks_read,
+    ROUND(100.0 * shared_blks_hit / NULLIF(shared_blks_hit + shared_blks_read, 0), 2) AS hit_ratio
+FROM pg_stat_statements
+ORDER BY shared_blks_hit DESC
+LIMIT 10;
+```
+
+
+ 
+
+#### 3. **Ver el ratio de hit global del buffer cache**
+Un **hit ratio alto (>99%)** indica que el cache está funcionando bien. Si es bajo, podrías considerar aumentar `shared_buffers` o revisar queries que no aprovechan el cache.
+```sql
+SELECT
+    ROUND(100.0 * blks_hit / NULLIF(blks_hit + blks_read, 0), 2) AS hit_ratio
+FROM pg_stat_database
+WHERE datname = current_database();
+```
+
+
+
+
 
 # Referencia 
 ```sql
