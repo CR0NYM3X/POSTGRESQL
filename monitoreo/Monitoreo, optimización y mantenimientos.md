@@ -1413,6 +1413,46 @@ Este comando:
   ```bash
   vacuumdb --all --analyze --jobs=6
   ```
+ ---
+
+ ### ❓ ¿Qué es `temp_files`?
+
+La columna `temp_files` en la vista `pg_stat_user_tables` indica **la cantidad de archivos temporales** que se han creado **como resultado de operaciones sobre una tabla específica**.
+
+Estos archivos temporales se generan cuando PostgreSQL no puede realizar ciertas operaciones (como ordenamientos, joins o agregaciones) completamente en memoria, y necesita usar disco.
+
  
+
+### 5. ✅ Ventajas y ❌ Desventajas
+
+| Ventajas                                        | Desventajas                                  |
+| ----------------------------------------------- | -------------------------------------------- |
+| Permite detectar cuellos de botella de memoria  | Indica uso de disco, lo cual es más lento    |
+| Ayuda a optimizar consultas y configuración     | Puede afectar el rendimiento si es frecuente |
+| Útil para tuning de `work_mem` y `temp_buffers` | Puede llenar el disco si no se controla      |
+
+***
+
+### 6. 🧪 Casos de Uso
+
+*   Consultas con `ORDER BY` o `GROUP BY` sobre grandes volúmenes
+*   Joins complejos sin índices adecuados
+*   Subconsultas que exceden el `work_mem`
+*   Operaciones de mantenimiento como `VACUUM` o `ANALYZE`
+
+***
+
+
+#### 9.4 Verificar `temp_files`
+
+```sql
+SELECT relname, temp_files
+FROM pg_stat_user_tables
+WHERE relname = 'ventas';
+```
+ 
+
+*   Si `temp_files` aumenta constantemente, es señal de que debes revisar `work_mem`, `temp_buffers` o reescribir la consulta.
+*   Puedes usar `EXPLAIN (ANALYZE, BUFFERS)` para ver si se usan archivos temporales en tiempo real.
  
 https://postgresconf.org/system/events/document/000/00/3/Troubleshoot_PG_Perf-070.pdf
