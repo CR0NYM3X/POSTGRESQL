@@ -66,6 +66,38 @@ Los bloques locales se usan cuando trabajas con:
 | **Local (locales)** | En el **buffer local** de cada sesión | Solo la sesión actual | Tablas temporales, funciones con `RETURNS TABLE`, operaciones internas de funciones PL/pgSQL. |
 
 ---
+### 📌 Recomendaciones adicionales:
+- Asegúrate de tener habilitada la extensión:
+  ```sql
+  CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+  ```
+- En `postgresql.conf`, verifica:
+  ```conf
+  shared_preload_libraries = 'pg_stat_statements'
+
+  select name,setting from pg_settings where name ilike  '%pg_stat_statements%';
+  ```
+
+### 🔧 Parámetros de configuración de `pg_stat_statements`
+
+| Parámetro | Valor | Descripción |
+|----------|-------|-------------|
+| **`pg_stat_statements.max`** | `5000` | Número máximo de sentencias únicas que se almacenarán en la vista `pg_stat_statements`. Si se excede este número, las menos utilizadas se eliminarán para hacer espacio. Un valor más alto permite monitorear más consultas, pero consume más memoria compartida. |
+| **`pg_stat_statements.save`** | `on` | Si está activado (`on`), las estadísticas se guardan al apagar el servidor y se restauran al reiniciar. Esto permite conservar el historial de consultas entre reinicios. |
+| **`pg_stat_statements.track`** | `top` | Define qué tipo de sentencias se rastrean: <br> - `top`: solo las sentencias SQL de nivel superior (no las internas de funciones). <br> - `all`: incluye también las sentencias internas dentro de funciones. <br> - `none`: no rastrea ninguna sentencia. |
+| **`pg_stat_statements.track_planning`** | `off` | Si está activado (`on`), también se rastrea el tiempo de planificación de las consultas (no solo su ejecución). Esto es útil para detectar consultas con planes costosos, pero puede aumentar la sobrecarga. |
+| **`pg_stat_statements.track_utility`** | `on` | Permite rastrear comandos utilitarios como `CREATE`, `DROP`, `VACUUM`, etc. Activarlo es útil para auditar operaciones administrativas que también pueden impactar el rendimiento. |
+
+ 
+
+### 🧠 Recomendaciones prácticas
+
+- Si estás en un entorno crítico, mantener `pg_stat_statements.save = on` es muy útil para análisis históricos.
+- Para bases de datos con muchas funciones, considera usar `track = all` si necesitas visibilidad completa.
+- Si estás investigando problemas de rendimiento en el **planificador**, activa `track_planning`.
+- Aumenta `pg_stat_statements.max` si tienes muchas consultas distintas y necesitas un monitoreo más amplio.
+
+--- 
 
 # Descripción de cada columna 
 ### 🔍 **Identificadores de contexto**
@@ -161,6 +193,9 @@ Los bloques locales se usan cuando trabajas con:
 
 
 ---- 
+# Consultas muy utilizadas 
+
+
 ### 🧩 **1. Ver las consultas más costosas**
 ```sql
 SELECT query, calls, total_time, mean_time, rows
@@ -225,14 +260,85 @@ SELECT pg_stat_statements_reset();
 
 
 
-### 🧠 **7. Consultas con mayor uso de buffers (si tienes `pg_stat_statements` con `track_io_timing`)**
+## 2️⃣ **7.  Consultas que están leyendo muchos datos desde disco (y casi no usan la caché) **
+Tambien son consultas que usan más CPU (requiere `track_io_timing = on`)**
+
 ```sql
-SELECT query, shared_blks_hit, shared_blks_read, shared_blks_dirtied, shared_blks_written
-FROM pg_stat_statements
-ORDER BY shared_blks_read DESC
+SELECT
+    userid,
+    dbid,
+    queryid,
+    query,
+    calls,
+    shared_blks_read,
+    local_blks_read,
+    shared_blks_hit,
+    (shared_blks_read + local_blks_read) AS total_disk_reads,
+    total_exec_time
+FROM
+    pg_stat_statements
+WHERE
+    shared_blks_read > 0 OR local_blks_read > 0
+ORDER BY
+    total_disk_reads DESC
 LIMIT 10;
+
 ```
 - **Objetivo**: Analizar el impacto en el sistema de I/O.
+
+
+## 1️⃣ **Consultas que están generando muchos archivos temporales (`temp_files`)**
+
+> Aunque `pg_stat_statements` **no tiene una columna directa llamada `temp_files`**, puedes inferir el uso de archivos temporales observando las columnas `temp_blks_read` y `temp_blks_written`.
+
+```sql
+SELECT
+    userid,
+    dbid,
+    queryid,
+    query,
+    calls,
+    temp_blks_read,
+    temp_blks_written,
+    temp_blks_read + temp_blks_written AS total_temp_blks,
+    total_exec_time
+FROM
+    pg_stat_statements
+WHERE
+    temp_blks_read > 0 OR temp_blks_written > 0
+ORDER BY
+    total_temp_blks DESC
+LIMIT 10;
+```
+
+
+## 1️⃣ **Consulta que tardan mucho en ser leidas desde disco**
+
+> Aunque `pg_stat_statements` **no tiene una columna directa llamada `temp_files`**, puedes inferir el uso de archivos temporales observando las columnas `temp_blks_read` y `temp_blks_written`.
+
+ requiere track_io_timing = on: Si estás preocupado por el rendimiento de las operaciones de lectura y escritura en tu base de datos, puedes activar este parámetro para que PostgreSQL registre el tiempo que tarda en realizar operaciones de entrada/salida en el disco. Esto te ayuda a identificar cuellos de botella de E/S y a optimizar el rendimiento de tu sistema de almacenamiento. esto nos permite visualizar los valores en las columnas blk_read_time y blk_write_time en la tabla pg_stat_database
+
+```sql
+SELECT
+  query,
+  blk_read_time,
+  shared_blks_read,
+  local_blks_read,
+  temp_blks_read,
+  blk_read_time,          
+  blk_write_time,         
+  temp_blk_read_time,     
+  temp_blk_write_time    
+ 
+  calls
+FROM
+  pg_stat_statements
+WHERE
+  blk_read_time > 0
+ORDER BY
+  blk_read_time DESC
+LIMIT 10;
+```
 
 
 
@@ -246,27 +352,6 @@ ORDER BY userid, calls DESC;
 
 
 
-### 🛠️ **9. Consultas que usan más CPU (requiere `track_io_timing = on`)**
-```sql
-SELECT query, total_time, calls, blk_read_time, blk_write_time
-FROM pg_stat_statements
-ORDER BY blk_read_time + blk_write_time DESC
-LIMIT 10;
-```
-- **Objetivo**: Identificar consultas que impactan el rendimiento del disco.
-
-
-
-### 📌 Recomendaciones adicionales:
-- Asegúrate de tener habilitada la extensión:
-  ```sql
-  CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-  ```
-- En `postgresql.conf`, verifica:
-  ```conf
-  shared_preload_libraries = 'pg_stat_statements'
-  track_activity_query_size = 2048
-  ```
 --- 
 
 ### Links
