@@ -308,7 +308,7 @@ Citus es una extensión de código abierto para **PostgreSQL** que convierte la 
  
 - ** pg_hint_plan:** Permite a los administradores influir directamente en el planificador de consultas sugiriendo (hinting) cómo ejecutar consultas SQL, lo cual es útil para optimizar casos específicos donde el planificador no elige el mejor plan por defecto.
 
-- ** auto_explain:** Genera automáticamente los planes de ejecución de las consultas que exceden un umbral de tiempo de ejecución, lo que facilita la identificación de consultas mal optimizadas.
+- ** auto_explain:** es una extensión de PostgreSQL que permite registrar automáticamente el plan de ejecución de las consultas que exceden un tiempo determinado en el log. Es útil para detectar cuellos de botella sin necesidad de modificar el código SQL.
 
 - ** hypopg:** Permite simular la creación de índices sin necesidad de materializarlos físicamente, ayudando a evaluar el impacto de nuevos índices en el rendimiento antes de su creación.
 
