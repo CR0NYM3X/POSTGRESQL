@@ -211,6 +211,17 @@ SELECT * FROM pg_catalog.pg_rules;
 
 # aplicando RLS Row-Level Security (RLS)
 ```sql 
+SELECT 
+  relname AS table_name,
+  relrowsecurity AS row_security_enabled,
+  relforcerowsecurity AS force_row_security 
+FROM 
+  pg_class
+WHERE 
+  relname = 'users';
+
+relrowsecurity: Indica si la seguridad a nivel de fila está habilitada para la tabla.
+relforcerowsecurity: Indica si la aplicación de RLS es obligatoria, incluso para roles con privilegios elevados (como superusuarios o propietarios de la tabla).
 
 
 -- 2. EJEMPLO DE ROW LEVEL SECURITY (RLS)
