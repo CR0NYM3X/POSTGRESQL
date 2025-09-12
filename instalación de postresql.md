@@ -70,17 +70,21 @@ Para listar todos los repositorios activos:
 --- 
 
 # Como instalar postgresql
+```bash
+sudo apt install -y postgresql-common
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+```
 
+###  Rutas si usars el systemctl por default 
 
+```plaintext
+/usr/lib/postgresql/17/bin/         → binarios del motor
+/var/lib/postgresql/17/main/        → datos del cluster
+/etc/postgresql/17/main/            → configuración del cluster
+/var/log/postgresql/                → logs del servicio
+/usr/share/postgresql/17/           → Ejemplos
 
-
-# Ruta del  data  
-/var/lib/postgresql/17/main/
-
-
-# Ruta de los binarios  
-ls -lhtr /usr/lib/postgresql/17/lib
-
+```
 --- 
 
 ### Valida si tiene paquete instalados de postgresql
