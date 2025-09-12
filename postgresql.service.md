@@ -1,3 +1,100 @@
+### ❓ 4. ¿Qué es `systemctl` en PostgreSQL?
+
+`systemctl` es el comando que gestiona servicios en sistemas basados en `systemd`. Cuando se usa para iniciar PostgreSQL, este ejecuta el servicio definido en el archivo:
+
+```bash
+vim /lib/systemd/system/postgresql.service
+systemctl edit postgresql.service
+```
+
+Este archivo apunta a un **cluster** gestionado por `pg_ctlcluster`.
+
+***
+
+### ⚖️ 5. Ventajas y Desventajas
+
+**Ventajas:**
+
+*   Integración con el sistema operativo
+*   Autoinicio al arrancar el sistema
+*   Gestión centralizada de logs y estado
+
+**Desventajas:**
+
+*   Menos flexible para rutas personalizadas
+*   Depende de `pg_ctlcluster`, no de `pg_ctl` directamente
+
+***
+
+### 🏢 6. Simulación empresarial
+
+> **Empresa:** FinanSecure S.A.\
+> **Servidor:** Ubuntu 22.04\
+> **PostgreSQL:** Instalado vía `apt`\
+> **Inicio:** `sudo systemctl start postgresql`\
+> **Pregunta:** ¿Dónde están los binarios y los datos?
+
+***
+
+### 🧠 7. Estructura Semántica
+
+```plaintext
+/usr/lib/postgresql/17/bin/         → binarios del motor
+/var/lib/postgresql/17/main/        → datos del cluster
+/etc/postgresql/17/main/            → configuración del cluster
+/var/log/postgresql/                → logs del servicio
+/usr/share/postgresql/17/           → Ejemplos
+
+```
+
+***
+
+### 📊 8. Visualización técnica
+
+```mermaid
+ graph TD
+    A[systemctl start postgresql] --> B[pg_ctlcluster]
+    B --> C[/etc/postgresql/17/main/]
+    B --> D[/var/lib/postgresql/17/main/]
+    B --> E[/usr/lib/postgresql/17/bin/]
+    B --> F[/var/log/postgresql/]
+```
+
+
+***
+
+### 🛠️ 9. Procedimiento paso a paso
+
+#### 🔹 Paso 1: Verificar estado del servicio
+
+```bash
+sudo systemctl status postgresql
+```
+
+📎 **Simulación de salida:**
+
+```plaintext
+● postgresql.service - PostgreSQL RDBMS
+     Loaded: loaded (/lib/systemd/system/postgresql.service; enabled)
+     Active: active (exited)
+```
+
+#### 🔹 Paso 2: Verificar clusters activos
+
+```bash
+pg_lsclusters
+```
+
+📎 **Simulación de salida:**
+
+```plaintext
+Ver Cluster  Port Status Owner    Data directory              Log file
+17  main     5432 online postgres /var/lib/postgresql/17/main /var/log/postgresql/postgresql-17-main.log
+```
+
+
+
+
 
 > [!IMPORTANT]
 > Una vez que integras postgresql con systemctl no se debe de usar el pg_ctl u otra herramienta para restart,start,stop y reload ya que desincroniza el estatus del systemctl 
