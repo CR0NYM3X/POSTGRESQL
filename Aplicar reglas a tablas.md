@@ -507,5 +507,5 @@ Abusing SECURITY DEFINER functions in PostgreSQL : https://www.cybertec-postgres
 security_invoker Vistas  : https://www.cybertec-postgresql.com/en/view-permissions-and-row-level-security-in-postgresql/
 Abusing PostgreSQL as an SQL beautifier : https://www.cybertec-postgresql.com/en/abusing-postgresql-as-an-sql-beautifier/
 Tag: security: https://www.cybertec-postgresql.com/en/tag/security/
-
+https://blog.stackademic.com/postgresql-row-level-security-the-first-step-to-building-saas-6e0fdd3636b7
 ```
