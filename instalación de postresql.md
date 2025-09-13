@@ -72,7 +72,7 @@ Para listar todos los repositorios activos:
 # Como instalar postgresql
 ```bash
 sudo apt install -y postgresql-common
-sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+sudo apt -y install postgresql
 ```
 
 ###  Rutas si usars el systemctl por default 
