@@ -77,6 +77,8 @@ Transmisión de datos en tiempo real con Debezium y CDC (captura de datos modifi
 Benchmarking PostgreSQL Batch Ingest -> https://medium.com/timescale/benchmarking-postgresql-batch-ingest-51fbe09174de
 Manejo de miles de millones de filas en PostgreSQL -> https://medium.com/timescale/handling-billions-of-rows-in-postgresql-80d3bd24dabb
 
+PostgreSQL Configurations Every Senior Developer Should Know ->  https://medium.com/@harshithgowdakt/postgresql-configurations-every-senior-developer-should-know-12c2ff357db3
+
 Memory Matters in PostgreSQL : Configuring max_connections and work_mem Effectively -> https://demirhuseyinn-94.medium.com/memory-matters-in-postgresql-configuring-max-connections-and-work-mem-effectively-19045fa5d548
 
 UUID vs Auto-Increment Integer for IDs. What you should choose  -> https://medium.com/databases-in-simple-words/uuid-vs-auto-increment-integer-for-ids-what-you-should-choose-20c9cc968600
@@ -127,8 +129,11 @@ Cómo guardar datos estadísticos del sistema en PostgreSQL con TimescaleDB -> h
 ```
 PostgreSQL 17: VACUUM Overhaul and More -> https://medium.com/quantrium-tech/postgresql-17-vacuum-overhaul-and-more-886aa8d0c74a
 
+Mastering Postgres partition management : https://aws.plainenglish.io/mastering-postgres-partition-management-d8b14f337fc5
+
 Benefits of pg_partman: Efficient Partition Management in PostgreSQL -> https://medium.com/@wasiualhasib/benefits-of-pg-partman-efficient-partition-management-in-postgresql-afebccbb663e
 
+Mastering Autovacuum and Vacuum in PostgreSQL: https://medium.com/@jramcloud1/mastering-autovacuum-and-vacuum-in-postgresql-the-complete-guide-for-dbas-fba18c2b2477
 
 PostgreSQL extensions — pg_visibility -> https://tomasz-gintowt.medium.com/postgresql-extensions-pg-visibility-876c57e8aa81
 
@@ -151,6 +156,10 @@ B-Tree Indexes in PostgreSQL [Part 2] -Practice  -> https://medium.com/@devli0/b
 
 How Does “CREATE INDEX CONCURRENTLY” Work Under the Hood in PostgreSQL?  -> https://medium.com/@ahmadbilalch891/how-does-create-index-concurrently-work-under-the-hood-in-postgresql-b4818ca78281
 
+https://medium.com/@saritasa/how-to-optimize-name-search-in-postgresql-with-trigram-and-btree-indexes-02c57eb27687
+
+https://medium.com/@jramcloud1/21-postgresql-17-performance-tuning-gist-generalized-search-tree-8e5cacea9fc8
+
 ```
 
  
@@ -165,6 +174,9 @@ Unlocking the Power of PostgreSQL Table Inheritance: A Hidden Gem -> https://med
 # Types 
 ```
 Techniques for Storing JSON Documents in PostgreSQL -> https://medium.tuanh.net/techniques-for-storing-json-documents-in-postgresql-055f66173f13
+
+https://medium.com/@sjksingh/a-big-step-for-json-in-postgres-json-table-in-postgresql-17-eb4ba4dd3da1
+
 ```
 
 
@@ -206,6 +218,10 @@ PostgreSQL UDF by Python -> https://medium.com/@jwang.mlai/postgresql-udf-by-pyt
 Hoja de trucos de PostgreSQL para ingenieros de backend  -> https://medium.com/@guillaume.launay/postgresql-cheat-sheet-for-backend-engineers-3466eb262621
 
 Explorando las opciones de implementación de PostgreSQL 17: Cómo elegir la opción más adecuada para su estrategia de base de datos -> https://medium.com/@jramcloud1/exploring-postgresql-17-deployment-options-choosing-the-right-fit-for-your-database-strategy-775fe57b8d22
+
+PostgreSQL vs SQL en la nube -> https://medium.com/@rabiyireh/postgresql-vs-sql-in-cloud-806e218614ad
+ 
+Window Functions : https://medium.com/@rizqimulkisrc/advanced-analytics-in-postgresql-window-functions-for-complex-reports-7c1633e76d43
 
 ```
 
