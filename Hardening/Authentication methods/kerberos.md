@@ -84,6 +84,56 @@ sequenceDiagram
    - El servidor de la aplicación verifica el ST. Si es válido y la solicitud es legítima, se concede acceso al usuario.
    - Si hay algún problema con el ST (por ejemplo, ha expirado o es inválido), se deniega el acceso.
  
+---
+
+## 🔐 ¿Qué es Kerberos?
+
+Kerberos es un protocolo de autenticación de red que utiliza **criptografía de clave simétrica** y un sistema de **tickets** para permitir que los nodos se comuniquen de forma segura en una red insegura.
+
+---
+
+## 🧠 Flujo semántico entre cliente y servidores
+
+### 1. **Inicio de sesión del cliente**
+- El usuario ingresa sus credenciales (usuario + contraseña).
+- El cliente (por ejemplo, una PC en dominio) genera una solicitud al **KDC (Key Distribution Center)**, que está en el **Controlador de Dominio (DC)**.
+
+### 2. **Autenticación con el KDC (AS Request/Response)**
+- El cliente envía un **AS-REQ (Authentication Service Request)** al KDC.
+- El KDC responde con un **AS-REP**, que incluye:
+  - Un **Ticket Granting Ticket (TGT)** cifrado con la clave del KDC.
+  - Un **session key** cifrado con la clave derivada de la contraseña del usuario.
+
+### 3. **Solicitud de acceso a un servicio (TGS Request/Response)**
+- El cliente usa el TGT para solicitar acceso a un servicio (por ejemplo, un servidor de archivos).
+- Envía un **TGS-REQ (Ticket Granting Service Request)** al KDC.
+- El KDC responde con un **TGS-REP**, que incluye:
+  - Un **ticket de servicio** cifrado con la clave del servicio.
+  - Una nueva **session key** para comunicarse con el servicio.
+
+### 4. **Acceso al servicio**
+- El cliente presenta el **ticket de servicio** al servidor destino (por ejemplo, `\\fileserver`).
+- El servidor valida el ticket y permite el acceso si es válido.
+
+---
+
+## 🧩 Semántica clave en cada paso
+
+| Paso | Semántica |
+|------|-----------|
+| AS-REQ | "Soy el usuario X, quiero autenticación" |
+| AS-REP | "Aquí está tu TGT, úsalo para pedir servicios" |
+| TGS-REQ | "Quiero acceder al servicio Y, aquí está mi TGT" |
+| TGS-REP | "Aquí está tu ticket para el servicio Y" |
+| Acceso al servicio | "Aquí está mi ticket, ¿puedo entrar?" |
+
+---
+
+## 🛡️ Seguridad semántica
+- **No se envía la contraseña** por la red.
+- Los tickets tienen **tiempo de vida limitado**.
+- Todo está cifrado con claves simétricas derivadas de contraseñas o almacenadas en el KDC.
+
 
 
 # Bibliografía
