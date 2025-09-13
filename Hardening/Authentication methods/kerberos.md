@@ -139,4 +139,6 @@ Kerberos es un protocolo de autenticación de red que utiliza **criptografía de
 # Bibliografía
 ```
 https://medium.com/@yosra.dridi270/configuration-of-postgresql-authentication-with-kerberos-16b66948a2c3
+https://documentation.ubuntu.com/server/how-to/kerberos/
+https://www.atlantic.net/dedicated-server-hosting/how-to-setup-kerberos-server-and-client-on-ubuntu/
 ```
