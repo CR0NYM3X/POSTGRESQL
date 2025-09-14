@@ -111,6 +111,10 @@ lista todos los paquetes instalados. Para filtrar solo los de PostgreSQL:
 select name,setting from pg_settings where name in('data_directory','log_filename','unix_socket_directories');
 
 grep -Ei "data_directory|hba_file|ident_file|external_pid_file|unix_socket_directories|log_directory" /etc/postgresql/17/main/postgresql.conf
+
+-- SOLO SI QUIERES INSTALAR EL PSQL 
+sudo apt update
+sudo apt install postgresql-client -y
 ```
 
 ---
