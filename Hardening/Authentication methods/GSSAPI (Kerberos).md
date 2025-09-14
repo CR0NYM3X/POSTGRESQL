@@ -275,6 +275,7 @@ sudo systemctl status krb*
 
 # Bibliogradías 
 ```
+https://www.hagander.net/talks/Deploying%20PostgreSQL%20in%20a%20Windows%20Enterprise.pdf
 
 Referencia: 
 	https://www.postgresql.org/docs/current/gssapi-enc.html
