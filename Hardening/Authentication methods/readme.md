@@ -19,7 +19,7 @@ Aqui encontraras diferentes metodos de autenticas un cliente
 
 
 ---------- <br> 
-
+https://access.crunchydata.com/documentation/postgresql93/latest/auth-methods.html#TableOfContents4
 
 PostgreSQL access control using an external authentication provider:
 https://www.initmax.cz/wp-content/uploads/2023/10/postgresql-access-control.pdf
