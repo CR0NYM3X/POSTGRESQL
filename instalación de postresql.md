@@ -73,6 +73,8 @@ Para listar todos los repositorios activos:
 ```bash
 sudo apt install -y postgresql-common
 sudo apt -y install postgresql
+
+pg_ctl start -D /tmp/datay -l /tmp/datay/logfile 
 ```
 
 ###  Rutas si usars el systemctl por default 
