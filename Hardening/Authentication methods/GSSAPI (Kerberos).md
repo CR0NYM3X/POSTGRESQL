@@ -275,6 +275,8 @@ sudo systemctl status krb*
 
 # Bibliogradías 
 ```
+https://www.highgo.ca/2020/03/26/postgresql-gssapi-authentication-with-kerberos-part-2-postgresql-configuration/
+
 https://www.hagander.net/talks/Deploying%20PostgreSQL%20in%20a%20Windows%20Enterprise.pdf
 
 Referencia: 
