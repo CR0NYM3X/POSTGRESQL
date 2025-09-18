@@ -178,7 +178,7 @@ tail -f /var/lib/postgresql/data/log/postgresql-2025-09-18.log
 Edita el archivo de configuración de PostgreSQL:
 
 ```bash
-sudo nano /etc/postgresql/<versión>/main/postgresql.conf
+sudo vim  /etc/postgresql/<versión>/main/postgresql.conf
 ```
 
 Busca y ajusta estas líneas:
@@ -189,7 +189,7 @@ log_directory = '/var/log/postgresql'
 log_filename = 'postgresql.log'
 log_connections = on
 log_disconnections = on
-log_line_prefix = '%m %u %d %r %p %a '
+log_line_prefix = '<%t %r %a %d %u %p %c %i>'
 log_statement = none
 ```
 
@@ -199,6 +199,7 @@ Guarda y reinicia PostgreSQL:
 
 ```bash
 sudo systemctl restart postgresql
+/usr/lib/postgresql/16/bin/pg_ctl restart -D /var/lib/postgresql/data
 ```
 
 ---
@@ -208,21 +209,21 @@ sudo systemctl restart postgresql
 Crea el archivo de filtro:
 
 ```bash
-sudo nano /etc/fail2ban/filter.d/postgresql-auth.conf
+sudo vim  /etc/fail2ban/filter.d/postgresql-auth.conf
 ```
 
 Agrega el siguiente contenido:
 
 ```ini
 [Definition]
-failregex = ^.* (?P<host>\d+\.\d+\.\d+\.\d+)\(\d+\).*FATAL:  password authentication failed for user .*
+failregex = ^<.* <HOST>\(\d+\) .*>FATAL:  password authentication failed for user ".*"$
 ignoreregex =
 ```
 
 Este filtro detecta líneas como:
 
 ```
-FATAL:  password authentication failed for user "usuario" host=192.168.1.100
+2025-09-18 08:06:33.249 UTC postgres postgres 172.19.0.4(56520) 32888 [unknown] FATAL:  password authentication failed for user "postgres"
 ```
 
 ---
@@ -232,7 +233,7 @@ FATAL:  password authentication failed for user "usuario" host=192.168.1.100
 Edita el archivo `jail.local`:
 
 ```bash
-sudo nano /etc/fail2ban/jail.local
+sudo vim  /etc/fail2ban/jail.local
 ```
 
 Agrega al final:
@@ -240,13 +241,22 @@ Agrega al final:
 ```ini
 [postgresql-auth]
 enabled = true
+ignoreip = 127.0.0.1/8 ::1
 port     = 5432
 filter   = postgresql-auth
-logpath  = /var/log/postgresql/postgresql.log
+logpath  = /var/lib/postgresql/data/log/postgresql-$(date +%Y-%m-%d).log
 maxretry = 3
 findtime = 600
 bantime  = 3600
+backend = auto 
+
 ```
+
+- `ignoreip`: IPs que nunca serán bloqueadas.
+- `bantime`: Tiempo en segundos que una IP estará bloqueada.
+- `findtime`: Tiempo en el que se cuentan los intentos fallidos.
+- `maxretry`: Número de intentos fallidos antes de bloquear.
+-  `backend = auto`  : Fail2Ban detecta automáticamente si debe usar systemd o polling, dependiendo de si el servicio genera logs en el journal o en archivos.
 
 ---
 
@@ -268,6 +278,18 @@ Deberías ver `postgresql-auth` en la lista. Para ver detalles:
 
 ```bash
 sudo fail2ban-client status postgresql-auth
+
+********************** Salida de la terminal **********************
+Status for the jail: postgresql-auth
+|- Filter
+|  |- Currently failed: 0
+|  |- Total failed:     9
+|  `- File list:        /var/lib/postgresql/data/log/postgresql-2025-09-18.log
+`- Actions
+   |- Currently banned: 0
+   |- Total banned:     1
+   `- Banned IP list:
+
 ```
 
 ---
@@ -286,10 +308,25 @@ Luego revisa el log:
 sudo tail -f /var/log/fail2ban.log
 ```
 
+### 🧩 Paso 5: Verifica errores en el log de Fail2Ban
+
+```bash
+sudo journalctl -xeu fail2ban
+sudo journalctl -u fail2ban
+```
+
 Y verifica si la IP fue bloqueada:
 
 ```bash
 sudo iptables -L -n
+
+*************** Salida Terminal **************
+root@kdc:/var/lib/postgresql/data# sudo iptables -L -n
+Chain f2b-postgresql-auth (1 references)
+target     prot opt source               destination
+REJECT     0    --  172.19.0.4           0.0.0.0/0            reject-with icmp-port-unreachable
+RETURN     0    --  0.0.0.0/0            0.0.0.0/0
+
 ```
 
 
@@ -299,12 +336,12 @@ sudo iptables -L -n
 
 ```bash
 sudo fail2ban-client set <nombre_del_jail> unbanip <IP>
-```
 
-### 🔧 Ejemplo para PostgreSQL:
-
-```bash
+### Desbanear 
 sudo fail2ban-client set postgresql-auth unbanip 172.19.0.4
+
+ ## Banear
+sudo fail2ban-client set postgresql-auth banip 172.19.0.4
 ```
 
 ---
@@ -340,7 +377,179 @@ sudo fail2ban-client unban --all
 Usa este comando para probarlo:
 
 ```bash
-sudo fail2ban-regex /var/log/postgresql/postgresql.log /etc/fail2ban/filter.d/postgresql-auth.conf
+sudo fail2ban-regex /var/lib/postgresql/data/log/postgresql-$(date +%Y-%m-%d).log /etc/fail2ban/filter.d/postgresql-auth.conf
+
+****************************** Salida Terminal ****************************************
+root@kdc:/var/lib/postgresql/data# sudo fail2ban-regex /var/lib/postgresql/data/log/postgresql-$(date +%Y-%m-%d).log /etc/fail2ban/filter.d/postgresql-auth.conf
+
+Running tests
+=============
+
+Use   failregex filter file : postgresql-auth, basedir: /etc/fail2ban
+Use         log file : /var/lib/postgresql/data/log/postgresql-2025-09-18.log
+Use         encoding : UTF-8
+
+
+Results
+=======
+
+Failregex: 1 total
+|-  #) [# of hits] regular expression
+|   1) [1] ^<.* <HOST>\(\d+\) .*>FATAL:  password authentication failed for user ".*"$
+`-
+
+Ignoreregex: 0 total
+
+Date template hits:
+|- [# of hits] date format
+|  [4] {^LN-BEG}ExYear(?P<_sep>[-/.])Month(?P=_sep)Day(?:T|  ?)24hour:Minute:Second(?:[.,]Microseconds)?(?:\s*Zone offset)?
+`-
+
+Lines: 4 lines, 0 ignored, 1 matched, 3 missed
+[processed in 0.00 sec]
+
+|- Missed line(s):
+|  <2025-09-18 09:22:13 UTC 172.19.0.4(48138) [unknown] [unknown] [unknown] 33755 68cbcf45.83db >LOG:  connection received: host=172.19.0.4 port=48138
+|  <2025-09-18 09:22:13 UTC 172.19.0.4(48154) [unknown] [unknown] [unknown] 33756 68cbcf45.83dc >LOG:  connection received: host=172.19.0.4 port=48154
+|  <2025-09-18 09:22:13 UTC 172.19.0.4(48154) [unknown] postgres postgres 33756 68cbcf45.83dc authentication>DETAIL:  Connection matched file "/var/lib/postgresql/data/pg_hba.conf" line 119: "host    all             all              172.19.0.4/32            md5"
+`-
 ```
 
 Esto te mostrará si la IP fue detectada correctamente.
+
+
+#### 6. **Recargar configuración sin reiniciar**
+```bash
+sudo fail2ban-client reload
+```
+Recarga todos los jails sin reiniciar el servicio.
+
+
+
+---
+
+# Extras 
+
+## ✅ Paso 1: Verificar si iptables está activo
+
+Ejecuta el siguiente comando:
+
+```bash
+sudo iptables -L -n -v
+```
+
+Este comando lista todas las reglas actuales de iptables con detalles. Si ves algo como:
+
+```
+Chain INPUT (policy ACCEPT)
+Chain FORWARD (policy ACCEPT)
+Chain OUTPUT (policy ACCEPT)
+```
+
+...significa que iptables está activo pero **no tiene reglas configuradas** (lo cual es común en servidores recién instalados).
+
+---
+
+## ✅ Paso 2: Verificar si el servicio está instalado
+
+Aunque iptables es parte del núcleo de Linux, puedes verificar si el paquete de herramientas está instalado:
+
+```bash
+dpkg -l | grep iptables
+```
+
+Si no aparece nada, instálalo con:
+
+```bash
+sudo apt install iptables -y
+```
+
+---
+
+## ✅ Paso 3: Verificar si se está usando `iptables` o `nftables`
+
+Ubuntu 20.04+ puede usar `nftables` como reemplazo moderno de `iptables`. Verifica cuál está en uso:
+
+```bash
+sudo update-alternatives --display iptables
+```
+
+Si ves que está apuntando a `iptables-legacy`, estás usando el sistema clásico. Si apunta a `nftables`, estás usando el nuevo sistema.
+
+---
+
+## ✅ Paso 4: Activar iptables si no está funcionando
+
+Si por alguna razón iptables no está funcionando, puedes reiniciar el servicio de red para que se cargue correctamente:
+
+```bash
+sudo systemctl restart networking
+```
+
+También puedes asegurarte de que el módulo esté cargado:
+
+```bash
+sudo modprobe ip_tables
+```
+
+---
+
+## ✅ Paso 5: Activar reglas básicas (opcional)
+
+Puedes agregar una regla simple para verificar que iptables está funcionando:
+
+```bash
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+```
+
+Esto permite conexiones SSH. Luego verifica que la regla se haya agregado:
+
+```bash
+sudo iptables -L
+```
+
+---
+
+## ✅ Paso 6: Guardar reglas para que persistan tras reinicio
+
+Por defecto, las reglas de iptables **no se guardan** tras reiniciar el servidor. Para hacerlo:
+
+1. Instala el paquete de persistencia:
+
+   ```bash
+   sudo apt install iptables-persistent -y
+   ```
+
+2. Guarda las reglas actuales:
+
+   ```bash
+   sudo netfilter-persistent save
+   ```
+
+
+Bibliografías:
+ ```sql
+https://gist.github.com/rc9000/fd1be13b5c8820f63d982d0bf8154db1
+ https://github.com/rc9000/postgres-fail2ban-lockout  
+ https://blog.unixpad.com/2023/05/26/bloquear-accesos-no-autorizados-en-postgres-usando-fail2ban/
+ https://warlord0blog.wordpress.com/2022/09/14/fail2ban-postgresql/
+ https://jpcarmona.github.io/web/blog/fail2ban/
+ 
+ https://docs.iredmail.org/fail2ban.sql.html
+ https://www.saas-secure.com/online-services/read-fail2ban-ip-from-database-and-lock.html
+ https://confluence.atlassian.com/conf89/using-fail2ban-to-limit-login-attempts-1387596371.html
+ https://serverfault.com/questions/627169/how-to-secure-an-open-postgresql-port
+ 
+ 
+ https://serverfault.com/questions/1032015/fail2ban-postgresql-filter-not-working
+ https://github.com/fail2ban/fail2ban/discussions/3660
+ https://www.reddit.com/r/sysadmin/comments/16dklqn/fail2ban_regex_filter_for_postgresql/?rdt=61321
+ 
+ 
+ 
+ https://talk.plesk.com/threads/howto-secure-a-standard-postgres-port-with-fail2ban.355984/
+ 
+ ```
+
+
+
