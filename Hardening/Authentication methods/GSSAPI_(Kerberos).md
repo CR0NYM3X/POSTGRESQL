@@ -1,4 +1,21 @@
 
+## **Beneficios de la autenticación Kerberos (GSSAPI) en PostgreSQL**
+
+Si tu entorno utiliza Active Directory y buscas una forma segura y eficiente de autenticar usuarios en PostgreSQL, la autenticación mediante **Kerberos (GSSAPI)** es altamente recomendable frente a LDAP. A continuación, se detallan sus principales ventajas:
+
+### 🔐 Seguridad reforzada
+Kerberos proporciona un nivel superior de seguridad, ya que **las credenciales no se transmiten en texto plano** durante el proceso de autenticación. Esto minimiza el riesgo de ataques de interceptación y exposición de contraseñas.
+
+### 🧩 Integración nativa con Active Directory
+La autenticación Kerberos se **integra de forma directa con Active Directory**, permitiendo reutilizar las cuentas de usuario existentes y aprovechar la infraestructura de seguridad ya implementada, sin necesidad de duplicar la gestión de usuarios en PostgreSQL.
+
+### ⚙️ Configuración sencilla
+Una vez que Kerberos está correctamente configurado en tu entorno, **habilitarlo en PostgreSQL es relativamente simple**. Los usuarios pueden autenticarse utilizando sus credenciales de Active Directory sin necesidad de ingresar contraseñas adicionales.
+
+### 🚀 Mayor eficiencia
+Kerberos utiliza **tickets de autenticación** para validar el acceso, lo que permite un proceso más rápido y escalable, especialmente útil en entornos con **gran volumen de usuarios y autenticaciones frecuentes**.
+
+
 # 🧾 Manual Técnico: Autenticación GSSAPI desde Ubuntu a PostgreSQL en Ubuntu con Active Directory
 
 ***
@@ -210,10 +227,24 @@ sudo chown postgres:postgres /var/lib/postgresql/data/postgres.keytab
 sudo chmod 600 /var/lib/postgresql/data/postgres.keytab
 ```
 
-#### 4. Configurar `postgresql.conf`
+ 
 
-```conf
+6. Configurar PostgreSQL (postgresql.conf):
+```ini
+listen_addresses = '*'
 krb_server_keyfile = '/var/lib/postgresql/data/postgres.keytab'
+
+
+postgres@postgres# select name,setting from pg_settings where name ~* 'krb|gss';
++-----------------------+---------------------------------------+
+|         name          |                setting                |
++-----------------------+---------------------------------------+
+| gss_accept_delegation | off                                   |
+| krb_caseins_users     | off                                   |
+| krb_server_keyfile    | FILE:/etc/sysconfig/pgsql/krb5.keytab |
++-----------------------+---------------------------------------+
+(3 rows)
+
 ```
 
 #### 5. Configurar `pg_hba.conf`
@@ -277,23 +308,36 @@ sudo apt-get install postgresql-client krb5-user libpam-krb5 libpam-ccreds libpq
 #### 3. Obtener ticket Kerberos
 Solicitara contraseña 
 ```bash
-kinit juan.perez@CRONY.COM
+kinit  -V juan.perez@CRONY.COM
+
+****** Salida Terminal  *********
+Using default cache: /tmp/krb5cc_1000_sMeWLl
+Using principal: juan.perez@CRONY.COM
+Password for juan.perez@CRONY.COM:
+Authenticated to Kerberos v5
 ```
 
 
 #### 4. Verificar ticket
 
 ```bash
-klist
-```
+klist -f
 
 **Simulación de salida:**
+Ticket cache: FILE:/tmp/krb5cc_1000_sMeWLl
+Default principal: juan.perez@CRONY.COM
 
-    Ticket cache: FILE:/tmp/krb5cc_1000
-    Default principal: juan.perez@CRONY.COM
-    Valid starting       Expires              Service principal
-    17/09/25 12:00:00  17/09/25 22:00:00  krbtgt/CRONY.COM@CRONY.COM
+Valid starting     Expires            Service principal
+09/18/25 04:19:15  09/18/25 14:19:15  krbtgt/CRONY.COM@CRONY.COM
+        renew until 09/19/25 04:19:08, Flags: FPRIA
+```
 
+
+#### En caso de ser necesario, limpiar las credenciasles de la cache
+```
+kdestroy -A
+```
+ 
 #### 5. Conectarse a PostgreSQL
 
 ```bash
@@ -430,7 +474,56 @@ Kerberos es **muy sensible al tiempo**. Cuando un cliente solicita un ticket de 
   - Fallos en la autenticación GSSAPI en PostgreSQL.
  
 
+### ✅ ¿Qué es `kvno`?
 
+**KVNO (Key Version Number)** es un número que indica la **versión actual de la clave secreta** asociada a un principal Kerberos. Cada vez que se cambia la contraseña de una cuenta de servicio (por ejemplo, `postgres_svc`), el KDC (Key Distribution Center) incrementa el `kvno`.
+
+Este número es **crítico** para que el archivo `keytab` funcione correctamente, ya que el ticket Kerberos debe coincidir con la versión de clave que el servidor PostgreSQL tiene registrada.
+
+```
+kvno postgres/dbserver.crony.com@CRONY.COM
+
+**** Salida terminal ****
+postgres/dbserver.crony.com@CRONY.COM: kvno = 8
+```
+
+## **Cifrado GSSAPI vs. Cifrado SSL en PostgreSQL**
+
+Cuando se trata de proteger las comunicaciones entre el cliente y el servidor en PostgreSQL, existen dos mecanismos principales de cifrado: **GSSAPI** (usualmente con Kerberos) y **SSL**. Ambos ofrecen seguridad, pero tienen diferencias clave en su funcionamiento e integración.
+
+### 🔐 1. Cifrado GSSAPI
+
+- **GSSAPI (Generic Security Services Application Program Interface)** es una interfaz que permite a las aplicaciones utilizar mecanismos de autenticación como **Kerberos**, proporcionando tanto autenticación como cifrado.
+- Si el cifrado GSSAPI está disponible, PostgreSQL lo utilizará automáticamente para **proteger la autenticación y la transmisión de datos**, sin requerir configuración adicional en el cliente.
+- Es ideal en entornos corporativos con Active Directory, donde Kerberos ya está implementado.
+
+### 🔒 2. Cifrado SSL
+
+- **SSL (Secure Sockets Layer)** es un protocolo estándar ampliamente utilizado para cifrar conexiones en redes.
+- PostgreSQL soporta SSL para proteger la transmisión de datos, incluso si no se utiliza Kerberos.
+- Requiere certificados y configuración explícita en el servidor y el cliente.
+
+---
+
+## **Configuración de `sslmode` y `gssencmode`**
+
+PostgreSQL permite controlar el comportamiento del cifrado mediante dos parámetros clave:
+
+- **`sslmode`**: Define cómo se maneja el cifrado SSL. Valores posibles:
+  - `disable`, `allow`, `prefer`, `require`, `verify-ca`, `verify-full`.
+
+- **`gssencmode`**: Controla el uso del cifrado GSSAPI. Valores posibles:
+  - `disable`, `allow`, `prefer`, `require`.
+
+
+## **Interacción entre `sslmode` y `gssencmode`**
+
+- **Prioridad de GSSAPI**: Si el cifrado GSSAPI está disponible y habilitado, PostgreSQL lo utilizará **por encima de SSL**, independientemente del valor de `sslmode`.
+- **Forzar el uso de SSL**: Para obligar a PostgreSQL a usar SSL en lugar de GSSAPI (por ejemplo, en entornos Kerberos donde se prefiere SSL), debes establecer:
+  ```ini
+  gssencmode=disable
+  ```
+  Esto desactiva el cifrado GSSAPI y permite que SSL se utilice según lo definido en `sslmode`.
 
 
 ## 🔄 13. Otros tipos
