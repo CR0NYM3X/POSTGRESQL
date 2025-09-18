@@ -36,6 +36,8 @@ nltest /dsgetdc:empresa.com /user:juan.perez
  
 ################# VALIDAR PAQUETES NECESARIOS  #################
 
+en ubuntu requieres ldap-utils
+
 [postgres@SERVER_TEST ~]$  rpm -qa  | grep -i ldap
 openldap-2.4.46-19.el8_10.x86_64
 openldap-clients-2.4.46-19.el8_10.x86_64
@@ -83,7 +85,8 @@ TELNET 192.168.100.10 636 # LDAP  seguro SSL/TLS.
 
 
 ################# BUSCAR CN CON LDAP  #################
-
+ -H ldap://10.1.1.100  
+ 
 --- BUSCANDO GRUPOS 
  ldapsearch -x -LLL -h  192.168.100.10 -D usuario_corp@dominio_test.com -w 'MI_CONTRAASEÑA123'  -b "dc=dominio_test,dc=com"   "objectclass=*"  | grep memberOf | grep -i dba
  ldapsearch -x -LLL -h  192.168.100.10 -D usuario_corp@dominio_test.com -w 'MI_CONTRAASEÑA123'  -b "CN=DBA,OU=Seguridad,OU=Grupos,DC=dominio_test,DC=com"  | grep -i -A 1  "tortolero"
