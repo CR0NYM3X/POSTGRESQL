@@ -600,6 +600,8 @@ Kerberos Authentication Setup With Postgres on Linux https://www.youtube.com/wat
 Beyond Trust - PostgreSQL Client Authentication   https://www.youtube.com/watch?v=RiEFy_jiU_c
 Michael Paquier: Authentication in PostgreSQL -- PGCon 2018   https://www.youtube.com/watch?v=aByfTbEs7cg
 
+pg_admin -> https://www.enterprisedb.com/blog/pgadmin-kerberos-active-directory
+
 *   <https://www.postgresql.org/docs/current/auth-gssapi.html>
 *   <https://wiki.debian.org/Kerberos>
 *   <https://github.com/larskanis/pg-ldap-sync>
