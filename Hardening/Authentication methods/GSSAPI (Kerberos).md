@@ -176,6 +176,12 @@ New-ADUser `
     -PassThru
 ```
 
+### Ver los usuarios 
+```powershell
+Get-ADUser -Identity juan.perez
+Get-ADUser -Identity postgres_svc
+```
+
 #### 3. Registrar SPN
 
 ```powershell
