@@ -59,6 +59,9 @@ https://apt.postgresql.org/pub/repos/
 https://download.postgresql.org/pub/repos/
 https://ftp.postgresql.org/pub/repos/
 
+## Codigo fuente 
+https://ftp.postgresql.org/pub/source/
+
 https://www.postgresql.org/ftp/source/
 
 ..................... Paquetes necesarios para que funcione .................
