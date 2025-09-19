@@ -1186,6 +1186,7 @@ El parámetro **Stats target** define el número de muestras que PostgreSQL toma
 
 # Monitoreo de Write and Reads 
 proporcionar información detallada sobre las operaciones de entrada/salida (E/S) que realiza la base de datos. operaciones de lectura y escritura en el disco. 
+tambien te pueden ayudar las herramientas como iostat o vmstat
 ```
  
 SELECT
