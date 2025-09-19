@@ -1,5 +1,8 @@
+
+
 # Post Medium
 Aquí encontraras los links gratis de Medium que te ayudaran adquirir más conocimientos del funcionamiento de postgresql
+ 
 
 #  Semantica 
 ```
@@ -56,6 +59,8 @@ PITR in PostgreSQL using pg_basebackup and WAL. -> https://medium.com/@dickson.g
 
 # Security
 ```
+Security in PostgreSQL -> https://tomasz-gintowt.medium.com/security-in-postgresql-ffe75ec677e7
+
 Dynamic Secrets: HashiCorp Vault, PostgreSQL and Python -> https://medium.com/@kerrache.massipssa/dynamic-secrets-hashicorp-vault-postgresql-and-python-40197b4a178e
 
 PostgreSQL — SSL Configuration to Connect Database -> https://demirhuseyinn-94.medium.com/postgresql-ssl-configuration-to-connect-database-114f867d96e0
@@ -74,6 +79,8 @@ Transmisión de datos en tiempo real con Debezium y CDC (captura de datos modifi
 
 # Performance
 ```
+https://tomasz-gintowt.medium.com/tuning-ubuntu-debian-pod-postgresql-ea1bb71633d8 -- https://tomasz-gintowt.medium.com/tuning-ubuntu-debian-pod-postgresql-ea1bb71633d8
+
 Benchmarking PostgreSQL Batch Ingest -> https://medium.com/timescale/benchmarking-postgresql-batch-ingest-51fbe09174de
 Manejo de miles de millones de filas en PostgreSQL -> https://medium.com/timescale/handling-billions-of-rows-in-postgresql-80d3bd24dabb
 
