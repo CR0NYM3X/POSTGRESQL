@@ -437,6 +437,7 @@ https://github.com/citusdata/cstore_fdw
 
 ## Blibliografía
 ```SQL
+PostgreSQL: ¡La inyección de dependencia definitiva! -> https://medium.com/@sbaitmangalkar/postgresql-the-ultimate-dependency-injection-fcad7f103bbc
 
 Software Catalogue - Product Categories  https://www.postgresql.org/download/product-categories/
 ---- https://www.postgresql.org/ftp/projects/ 
