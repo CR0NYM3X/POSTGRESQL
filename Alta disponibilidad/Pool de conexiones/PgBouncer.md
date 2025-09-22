@@ -579,6 +579,7 @@ server_reset_query = 'DISCARD ALL'
 # Bibliografías 
 
  ```
+https://medium.com/@mohllal/database-connection-pooling-with-pgbouncer-2877c55cf3df
 https://medium.com/@jramcloud1/postgresql-17-log-analysis-made-easy-complete-guide-to-setting-up-and-using-pgbadger-befb8e453433
 https://medium.com/@Mahdi_ramadhan/handling-postgresql-connection-pooling-dee3849d0299
 
