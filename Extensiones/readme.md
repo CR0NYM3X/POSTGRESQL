@@ -138,6 +138,13 @@ passwordpolicy  https://github.com/eendroroy/passwordpolicy/tree/master
 - **Pgsodium** es como pgcrypto
 - ** row_security:** Aunque no es una extensión, sino una característica incorporada en PostgreSQL, permite definir políticas de seguridad a nivel de fila, controlando el acceso a los datos basado en atributos del usuario.
 
+- pgjwt
+Un JWT (JSON Web Token) es un formato compacto y seguro para transmitir información entre partes como un objeto JSON firmado digitalmente. Se usa comúnmente para:
+
+Autenticación de usuarios.
+Autorización de acceso a recursos.
+Comunicación segura entre servicios.
+
 ************ SEGURIDAD EN AUDITORIAS  ************
 - ** pgaudit** Ofrece un sistema de auditoría detallada para registrar eventos de autenticación y otras actividades en la base de datos.
    **Uso:** Configura `pgaudit` para registrar y auditar intentos de inicio de sesión y otras acciones de usuario.
