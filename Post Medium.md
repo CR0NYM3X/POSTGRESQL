@@ -24,6 +24,10 @@ Storages in PostgreSQL (Plain.Min,Extended)  -> https://medium.com/@udbhavsinghn
 
 Durabilidad de PostgreSQL: Cómo WAL le ayuda a recuperar datos -> https://medium.com/@tranaduc9x/postgresql-durability-how-wal-helps-you-recover-data-8b9858bfa24a
 
+ACID in Action -> https://rizqimulki.com/acid-in-action-transactions-concurrency-control-in-postgresql-75942703ec15
+
+PostgreSQL Transaction IDs (XIDs) Explained -> https://medium.com/@youssefshibl000/postgresql-transaction-ids-xids-explained-ca655f0e79f9
+
 ```
 
 
@@ -115,6 +119,12 @@ PostgreSQL Performance with pg_stat_io: Real-World Use Cases -> https://tomasz-g
 
 https://tomasz-gintowt.medium.com/postgresql-extensions-pg-buffercache-b38b0dc08000
 https://tomasz-gintowt.medium.com/vacuum-in-postgresql-not-just-cleaning-up-c4dc154c6320
+
+
+
+🔒 Proactively Detecting and Killing Long-Running Locks in PostgreSQL -> https://erdmyzn.medium.com/proactively-detecting-and-killing-long-running-locks-in-postgresql-944f88e6e7f7
+
+04 - PostgreSQL 17 Performance Tuning: Checkpoints Explained -> https://medium.com/@jramcloud1/04-postgresql-17-performance-tuning-checkpoints-explained-4972e78f4e56
 
 ```
 
