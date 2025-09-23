@@ -525,7 +525,27 @@ Por defecto, las reglas de iptables **no se guardan** tras reiniciar el servidor
    ```bash
    sudo netfilter-persistent save
    ```
+---
 
+
+# Soluciones a problemas de que el log cambia de nombre 
+
+
+### Solucion #1 -  Usar un enlace simbólico al log actual y programar una tarea 
+```bash
+# Crear un enlase simbolico (-s:symolic | -f:force )
+ln -sf /var/lib/postgresql/data/log/postgresql-$(date +%Y-%m-%d).log /var/lib/postgresql/data/log/postgresql-current.log
+
+ls -lhtr /var/lib/postgresql/data/log/postgresql-current.log 
+
+ 
+# Agregar al crontab para que se ejecute en la madrugada 00:02
+crontab -e
+2 0 * * * ln -sf /var/lib/postgresql/data/log/postgresql-$(date +\%Y-\%m-\%d).log /var/lib/postgresql/data/log/postgresql-current.log
+
+# Editar   /etc/fail2ban/jail.local 
+logpath = /var/lib/postgresql/data/log/postgresql-current.log
+```
 
 Bibliografías:
  ```sql
