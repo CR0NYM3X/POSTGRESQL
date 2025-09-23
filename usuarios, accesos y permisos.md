@@ -611,7 +611,8 @@ GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
 # FUNCTIONS  :
   grant ALL PRIVILEGES  on all functions in schema public to "testuserdba";
   grant execute on all functions in schema public to "testuserdba";
-  GRANT EXECUTE ON FUNCTION public.fun_obtenercontactoscopiaweb(int, varchar) TO "testuserdba";
+  GRANT EXECUTE ON FUNCTION mi_funcion TO usuario1; --  Otorga permiso de ejecución a **todas las funciones** llamadas `mi_funcion`, sin importar sus parámetros. 
+  GRANT EXECUTE ON FUNCTION mi_funcion(integer, text) TO usuario1; --  Otorga permiso **solo** a la versión específica de `mi_funcion`
 
 # PROCEDURE:
   GRANT EXECUTE ON PROCEDURE  mi_procedure() TO usuario_empleado;
