@@ -246,12 +246,11 @@ enabled = true
 ignoreip = 127.0.0.1/8 ::1
 port     = 5432
 filter   = postgresql-auth
-logpath  = /var/lib/postgresql/data/log/postgresql-$(date +%Y-%m-%d).log
+logpath  = /var/lib/postgresql/data/log/postgresql-current.log
 maxretry = 3
 findtime = 600
 bantime  = 3600
 backend = auto 
-
 ```
 
 - `ignoreip`: IPs que nunca serán bloqueadas.
