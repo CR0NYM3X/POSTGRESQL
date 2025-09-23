@@ -216,7 +216,8 @@ Agrega el siguiente contenido:
 
 ```ini
 [Definition]
-failregex = ^<.* <HOST>\(\d+\) .*>FATAL:  password authentication failed for user ".*"$
+failregex = ^.* <HOST>\(\d+\) .*FATAL:  password authentication failed for user ".*"$
+            ^.* <HOST>\(\d+\) .*FATAL:  GSSAPI authentication failed for user ".*"$
 ignoreregex =
 ```
 
@@ -224,6 +225,7 @@ Este filtro detecta líneas como:
 
 ```
 2025-09-18 08:06:33.249 UTC postgres postgres 172.19.0.4(56520) 32888 [unknown] FATAL:  password authentication failed for user "postgres"
+<2025-09-23 18:32:10 UTC 172.19.0.4(38894) [unknown] postgres juan 138071 68d2e7aa.21b57 authentication>FATAL:  GSSAPI authentication failed for user "juan"
 ```
 
 ---
