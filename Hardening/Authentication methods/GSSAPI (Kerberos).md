@@ -131,6 +131,7 @@ sequenceDiagram
 | AD             | `172.17.0.4` | Todos                     | TCP/UDP 88, 389 | KDC y LDAP                                |
 
 
+
 ### 🔹 Configuración de `/etc/hosts`
 
 ```bash
@@ -141,6 +142,28 @@ sequenceDiagram
 ```
 
 > Esto asegura que el nombre del host coincida con el SPN registrado: `POSTGRES/dbserver.crony.com`
+
+### 🔐 Puertos necesarios para Kerberos y Active Directory
+Para implementar autenticación **GSSAPI (Kerberos)** entre tu servidor **PostgreSQL en Ubuntu Server** y tu **Active Directory en Windows Server**, necesitas asegurarte de que ciertos puertos estén abiertos para permitir la comunicación entre ambos servidores.
+
+ 
+#### 1. **Kerberos (autenticación GSSAPI)**
+- **TCP/UDP 88** → Puerto principal para el protocolo Kerberos.
+
+#### 2. **DNS (resolución de nombres)**
+- **TCP/UDP 53** → Necesario para resolver el nombre del dominio y del controlador de dominio.
+
+#### 3. **LDAP (consulta de usuarios y grupos)**
+- **TCP/UDP 389** → Para acceder al directorio activo vía LDAP.
+- **TCP 636** → LDAP sobre SSL (LDAPS), si usas conexiones seguras.
+
+#### 4. **Global Catalog (si usas múltiples dominios o bosques)**
+- **TCP 3268** → Para búsquedas en el catálogo global.
+- **TCP 3269** → Global Catalog sobre SSL.
+
+#### 5. **NetBIOS / RPC / SMB (no siempre necesarios, pero útiles para algunas funciones)**
+- **UDP 137, UDP 138, TCP 139, TCP 445** → Para compartir archivos, autenticación NTLM, etc.
+- **TCP 135** → RPC Endpoint Mapper (usado por algunas herramientas de administración).
 
 
 ## 🛠️ 9. Procedimientos
