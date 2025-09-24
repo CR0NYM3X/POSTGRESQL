@@ -8,6 +8,35 @@ https://gist.github.com/ceving/4eae4437d793ae4752b8582253872067
 
 ```
 
+# Trabajar con los  logs compresos 
+```sql
+
+comprimir
+tar -czvf archivo_comprimido.tar.gz archivo_o_directorio
+
+descomprimir
+tar -xzvf archivo_comprimido.tar.gz
+
+*** Buscar informacion sin descomprimir archivo ***
+tar --to-stdout -xf postgresql-05.tar.gz | grep -a fun_test -B20 > /tmp/logs_cp/postgresql-05.txt
+tar -O -xzf  postgresql-250101.tar.gz
+
+zcat postgresql-05.tar.gz | grep -a fun_test -B20
+
+*** Obtener log desde un rango de fechas  ***
+sed -n '/2023-07-25 11:23:56/,/2023-07-25 11:24:08/p' postgresql.log   > postgresql_new.log
+
+
+***  saltos de lines  *** 
+  -B, --before-context=NUM  print NUM lines of leading context
+  -A, --after-context=NUM   print NUM lines of trailing context
+grep filtro -A5 -B5 postgresql.log > /tmp/log_guia
+
+***  Buscar por número de lineas  *** 
+sed -n 184941,202414p postgresql-11.log
+```
+
+
 # Leer el log desde la base de datos 
 ```sql
 
