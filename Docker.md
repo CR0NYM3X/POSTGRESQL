@@ -50,7 +50,7 @@ Imagina que tienes una aplicación que funciona perfectamente en tu computadora,
 - Herramienta para definir y correr múltiples contenedores con un solo archivo `docker-compose.yml`.
 
 ### 7. **Registry**
-- Lugar donde se almacenan imágenes (como Docker Hub o Azure Container Registry).
+- Lugar donde se almacenan imágenes (como Docker Hub o Azure Container Registry). [Link](https://hub.docker.com/)
 
 ---
 
