@@ -77,6 +77,9 @@ Fortifying Your Data Fortress: PostgreSQL Security Best Practices --> https://me
 https://infosecwriteups.com/postgresql-penetration-testing-a-comprehensive-guide-33d21c4dceba
 
 Transmisión de datos en tiempo real con Debezium y CDC (captura de datos modificados) -> https://sefikcankanber.medium.com/real-time-data-streaming-with-debezium-and-cdc-change-data-capture-c1aa162585a9
+
+https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-postgresql-shared-buffers-for-performance-tuning-0a61086edee7
+
 ```
 
 
