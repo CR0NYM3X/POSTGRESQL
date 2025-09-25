@@ -1,3 +1,59 @@
+## 🐳 ¿Qué es Docker?
+
+**Docker** es una plataforma que permite crear, ejecutar y administrar aplicaciones dentro de **contenedores**. Un contenedor es una unidad ligera y portátil que incluye todo lo necesario para ejecutar una aplicación: código, librerías, dependencias, configuración, etc.
+
+ 
+### 🔍 ¿Por qué es útil Docker?
+
+Imagina que tienes una aplicación que funciona perfectamente en tu computadora, pero cuando la pasas a otro servidor, empieza a fallar. Docker resuelve este problema porque **empaqueta la aplicación con todo lo que necesita**, asegurando que se ejecute igual en cualquier entorno.
+
+ 
+## 🧱 ¿Qué hace Docker?
+
+### 1. **Empaquetar aplicaciones**
+- Puedes crear una imagen que contenga tu app y sus dependencias.
+- Ejemplo: una imagen con PostgreSQL + configuración personalizada.
+
+### 2. **Ejecutar contenedores**
+- Puedes iniciar múltiples instancias de tu app sin conflictos.
+- Cada contenedor es aislado, como si fuera una mini máquina virtual.
+
+### 3. **Gestionar entornos**
+- Ideal para desarrollo, pruebas, producción.
+- Puedes levantar entornos completos con bases de datos, APIs, frontends, etc.
+
+### 4. **Automatizar despliegues**
+- Con herramientas como Docker Compose o Kubernetes puedes automatizar el despliegue de sistemas complejos.
+
+
+## 🧠 **Conceptos clave que debes aprender sobre Docker**
+
+### 1. **Contenedor**
+- Es una unidad ligera y portátil que empaqueta una aplicación y sus dependencias.
+- Se ejecuta de forma aislada del sistema operativo anfitrión.
+
+### 2. **Imagen**
+- Es una plantilla inmutable que define lo que contiene el contenedor (sistema operativo, app, librerías).
+- Ejemplo: `postgres:15` es una imagen oficial de PostgreSQL.
+
+### 3. **Dockerfile**
+- Archivo de texto con instrucciones para construir una imagen personalizada.
+
+### 4. **Volumen**
+- Permite persistir datos fuera del contenedor (ideal para bases de datos).
+- Ejemplo: `-v pgdata:/var/lib/postgresql/data`
+
+### 5. **Redes**
+- Docker puede crear redes internas para que los contenedores se comuniquen entre sí.
+
+### 6. **Docker Compose**
+- Herramienta para definir y correr múltiples contenedores con un solo archivo `docker-compose.yml`.
+
+### 7. **Registry**
+- Lugar donde se almacenan imágenes (como Docker Hub o Azure Container Registry).
+
+---
+
 ### 🐧 **Instalación en una VM Linux (Ubuntu/Debian)**
 1. **Actualizar paquetes:**
    ```bash
