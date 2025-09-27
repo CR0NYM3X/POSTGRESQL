@@ -86,6 +86,9 @@ https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-po
 
 # Performance
 ```
+
+https://medium.com/@pranjalraj28/understanding-postgresql-from-architecture-to-query-planning-and-memory-tuning-part-1-2e71184a5e66
+
 https://tomasz-gintowt.medium.com/tuning-ubuntu-debian-pod-postgresql-ea1bb71633d8 -- https://tomasz-gintowt.medium.com/tuning-ubuntu-debian-pod-postgresql-ea1bb71633d8
 
 Benchmarking PostgreSQL Batch Ingest -> https://medium.com/timescale/benchmarking-postgresql-batch-ingest-51fbe09174de
