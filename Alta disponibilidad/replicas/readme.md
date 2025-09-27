@@ -202,7 +202,7 @@ Un Data Warehouse es un sistema de almacenamiento y gestión de datos diseñado 
 
 ### 🔑 ¿Qué es el quórum?
 
-Es **la mayoría necesaria de nodos de consenso (por ejemplo, etcd)** que deben estar **activos y en acuerdo** para que se puedan tomar decisiones críticas de manera segura.  
+Es el número mínimo de nodos que deben estar de acuerdo para tomar decisiones.  (por ejemplo, etcd)**   deben estar **activos y en acuerdo** para que se puedan tomar decisiones críticas de manera segura.  
 Ejemplo clásico: en un clúster de 3 nodos etcd, **se necesita al menos 2 funcionando** para tener quórum. Herramientas como etcd exige quorum y si no hay mayoría (quorum) de nodos disponibles no aceptará escrituras ni permitirá elecciones de líder 
 
 ### 📌 Reglas clave:
