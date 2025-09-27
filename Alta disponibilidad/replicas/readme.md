@@ -247,7 +247,7 @@ Saber cuándo aumentar el número de nodos en tu clúster de consenso (como etcd
 - Ley de Gunther
 - Fórmula de latencia en redes distribuidas
 - Fórmula de Throughput
-- Fórmula de Consistencia CAP
+- Fórmula de Consistencia Teorema CAP
 - Teorema de Brewer (PACELC)
 - Ley de Little
 - Fórmula de escalabilidad de Gustafson
@@ -376,14 +376,14 @@ Este sistema es capaz de procesar **20,000 operaciones por segundo**. Si queremo
 ### **📌 Fórmula de Consistencia CAP – Equilibrio en sistemas distribuidos**  
 
 📍 **Fórmula general**  
-El **Teorema CAP** establece que un sistema distribuido **puede garantizar solo dos de tres propiedades**:  
+El **Teorema CAP** establece que un sistema distribuido **puede garantizar solo dos de tres propiedades**,  pero nunca las tres simultáneamente.:  
 
 $$  C + A + P \neq 3 $$  
 
 Donde:  
-- **C (Consistency)** → **Variable**: Garantiza que todos los nodos ven los mismos datos al mismo tiempo.  
-- **A (Availability)** → **Variable**: Asegura que cada solicitud recibe una respuesta, incluso si algunos nodos fallan.  
-- **P (Partition Tolerance)** → **Constante**: El sistema sigue funcionando a pesar de fallos en la red.  
+- **C (Consistency/Consistencia)** → **Variable**: Garantiza que todos los nodos ven los mismos datos al mismo tiempo.  
+- **A (Availability/Disponibilidad)** → **Variable**: Asegura que cada solicitud recibe una respuesta, incluso si algunos nodos fallan.  
+- **P (Partition Tolerance/Tolerancia a Particiones)** → **Constante**: El sistema sigue funcionando a pesar de fallos en la red.  
 
 📍 **Ejemplo práctico**  
 Supongamos que tenemos una base de datos distribuida y ocurre una **falla de red**.  
