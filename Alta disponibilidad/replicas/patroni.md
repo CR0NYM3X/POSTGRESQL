@@ -798,7 +798,85 @@ Tu topología **funciona**, pero **no tiene consenso ni quorum**, lo que signifi
 
 
 --- 
+### ✅ 1. ¿Cómo validar que el archivo `patroni.yml` es correcto?
 
+Puedes hacerlo de varias formas:
+
+#### **a. Validación sintáctica del YAML**
+Usa herramientas como:
+
+- **`yamllint`** (instalable con `pip install yamllint`):
+  ```bash
+  yamllint /etc/patroni.yml
+  ```
+
+- **Validadores online** como https://www.yamllint.com
+
+Esto asegura que la estructura del archivo es válida, aunque no verifica si los valores son correctos para Patroni.
+
+#### **b. Validación funcional**
+Una vez que Patroni está instalado, puedes correr:
+
+```bash
+patroni /etc/patroni.yml
+```
+
+Si hay errores, Patroni los mostrará en consola. Si todo está bien, iniciará el servicio y comenzará a gestionar el nodo.
+
+---
+
+### ✅ 2. ¿Dónde se generan los logs de Patroni?
+
+Por defecto, Patroni **escribe los logs en la consola**. Para redirigirlos a un archivo, puedes:
+
+- Usar `systemd` y configurar el servicio para que los logs se vayan a `journalctl`:
+  ```bash
+  journalctl -u patroni -f
+  ```
+
+- O modificar el archivo `patroni.yml` para incluir una sección de logging:
+
+```yaml
+logging:
+  level: INFO
+  format: '%(asctime)s %(levelname)s: %(message)s'
+  logfile: /var/log/patroni.log
+```
+
+---
+
+### ✅ 3. ¿El archivo `patroni.yml` debe ser igual en todos los nodos?
+
+**No exactamente.** Aunque la estructura general es la misma, **cada nodo debe tener su propia configuración específica**, especialmente en estas secciones:
+
+#### 🔁 Diferencias por nodo:
+
+| Sección         | Nodo Maestro | Nodo Esclavo |
+|----------------|--------------|--------------|
+| `name:`        | `pg-node1`   | `pg-node2`, `pg-node3` |
+| `listen:` / `connect_address:` | IP del nodo actual | IP del nodo actual |
+| `data_dir:`    | Ruta local del nodo | Ruta local del nodo |
+| `clone:`       | No se usa (en maestro) | Se usa para clonar desde el maestro |
+| `pg_hba:`      | Puede ser igual | Puede ser igual |
+| `authentication:` | Igual | Igual |
+| `tags:`        | Puede variar (por ejemplo, `nofailover: true` si no quieres que un nodo participe en failover) |
+
+---
+
+### ✅ 4. ¿Cómo integrar los esclavos a Patroni si ya están replicando?
+
+Si ya tienes replicación configurada, puedes:
+
+1. **Detener PostgreSQL en los esclavos.**
+2. **Configurar `patroni.yml` en cada esclavo**, asegurándote de:
+   - Usar el mismo `scope` y `namespace`.
+   - Cambiar `name`, `listen`, `connect_address`, `data_dir`.
+   - Configurar correctamente la sección `clone:` si quieres que Patroni gestione la clonación.
+3. **Iniciar Patroni en cada esclavo.**
+4. Patroni detectará el maestro y sincronizará los esclavos automáticamente.
+
+
+## Links
 ```conf
 
 https://medium.com/@jramcloud1/set-up-high-availability-postgresql-cluster-using-patroni-1367c72fbedb
