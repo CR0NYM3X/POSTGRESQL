@@ -327,55 +327,72 @@ CREATE USER replicator REPLICATION LOGIN ENCRYPTED PASSWORD 'replicatorpass';
 **Archivo `/etc/patroni.yml` en node1 (maestro)**
 
 ```yaml
-scope: pg_cluster
-namespace: /service/
-name: pg-node1
+# Nombre del clúster y nodo
+scope: pg_cluster              # Identificador del clúster Patroni
+namespace: /service/           # Prefijo en etcd para almacenar la configuración
+name: pg-node1                 # Nombre del nodo actual
+
+# Configuración de la API REST de Patroni
 restapi:
-  listen: 10.0.0.100:8008
-  connect_address: 10.0.0.100:8008
+  listen: 10.0.0.100:8008      # Dirección IP y puerto donde escucha la API REST
+  connect_address: 10.0.0.100:8008  # Dirección IP y puerto para que otros nodos se conecten
+
+# Configuración de etcd (coordinador de alta disponibilidad)
 etcd:
-  host: 10.0.0.110:2379,10.0.0.111:2379,10.0.0.112:2379
+  host: 10.0.0.110:2379,10.0.0.111:2379,10.0.0.112:2379  # IPs de los nodos etcd
+
+# Configuración de arranque del clúster
 bootstrap:
   dcs:
-    ttl: 30
-    loop_wait: 10
-    retry_timeout: 10
-    maximum_lag_on_failover: 10485760
-    master_start_timeout: 300
+    ttl: 30                        # Tiempo de vida de la sesión en etcd
+    loop_wait: 10                 # Intervalo entre ciclos de verificación
+    retry_timeout: 10            # Tiempo de espera para reintentar operaciones
+    maximum_lag_on_failover: 10485760  # Máximo lag permitido para hacer failover
+    master_start_timeout: 300    # Tiempo máximo para que el nodo maestro arranque
     postgresql:
-      use_pg_rewind: true
-      use_slots: true
-  initdb: []
-  
-  # Esto en caso de querer iniciarlizar el postgresql
+      use_pg_rewind: true        # Permite usar pg_rewind para sincronizar nodos
+      use_slots: true            # Habilita replication slots
+
+  # Inicialización de la base de datos (descomentarlo si se desea inicializar)
   #initdb:
   #  - encoding: UTF8
   #  - locale: en_US.UTF-8
+
+  #initdb: [] # En caso de no ocupar inicializar usar este 
+
+  # Configuración de acceso (pg_hba.conf)
   pg_hba:
-    - host replication replicator 10.0.0.100/32 trust
-    - host replication replicator 10.0.0.101/32 trust
-    - host replication replicator 10.0.0.102/32 trust
-    - host all all 0.0.0.0/0 md5
+    - host replication replicator 10.0.0.100/32 trust  # Permite replicación desde nodo 1
+    - host replication replicator 10.0.0.101/32 trust  # Permite replicación desde nodo 2
+    - host replication replicator 10.0.0.102/32 trust  # Permite replicación desde nodo 3
+    - host all all 0.0.0.0/0 md5                       # Permite acceso general con contraseña
+
+  # Usuarios iniciales
   users:
     admin:
       password: admin@123
       options:
         - superuser
-	replicator:
+    replicator:
       password: rep-pass
       options:
         - replication
-	
-   clone:
-    method: basebackup
-    host: IP_DEL_MAESTRO
-    user: replicator
-    password: rep-pass	
+
+  # Configuración de clonación (para nodos esclavos)
+  clone:
+    method: basebackup         # Método de clonación
+    host: IP_DEL_MAESTRO       # IP del nodo maestro
+    user: replicator           # Usuario de replicación
+    password: rep-pass         # Contraseña del usuario de replicación
+
+# Configuración de PostgreSQL
 postgresql:
-  listen: 10.0.0.100:5432
-  connect_address: 10.0.0.100:5432
-  data_dir: /var/lib/postgresql/data
-  bin_dir: /usr/lib/postgresql/14/bin
+  listen: 10.0.0.100:5432         # IP y puerto donde escucha PostgreSQL
+  connect_address: 10.0.0.100:5432  # IP y puerto para que otros nodos se conecten
+  data_dir: /var/lib/postgresql/data  # Directorio de datos de PostgreSQL
+  bin_dir: /usr/lib/postgresql/14/bin # Ruta de los binarios de PostgreSQL
+
+  # Autenticación
   authentication:
     replication:
       username: replicator
@@ -383,17 +400,21 @@ postgresql:
     superuser:
       username: postgres
       password: admin@123
+
+  # Parámetros de configuración de PostgreSQL
   parameters:
-    wal_level: replica
-    hot_standby: 'on'
-    max_wal_senders: 10
-    max_replication_slots: 10
-    archive_mode: 'off'
-    restore_command: 'false'
+    wal_level: replica             # Nivel de WAL para replicación
+    hot_standby: 'on'              # Permite consultas en nodos esclavos
+    max_wal_senders: 10            # Máximo número de procesos de envío de WAL
+    max_replication_slots: 10      # Máximo número de replication slots
+    archive_mode: 'off'            # Desactiva archivado de WAL
+    restore_command: 'false'       # Comando de restauración (no usado aquí)
+
+# Etiquetas del nodo (usadas por Patroni para decisiones de failover y balanceo)
 tags:
-  nofailover: false
-  noloadbalance: false
-  clonefrom: false
+  nofailover: false               # Permite que este nodo participe en failover
+  noloadbalance: false            # Permite que este nodo reciba tráfico
+  clonefrom: false                # Indica si este nodo debe clonarse desde otro
 ```
 
 **En node2 y node3**: mismo archivo pero sin sección `bootstrap`, y con IPs correspondientes.
