@@ -751,6 +751,7 @@ https://www.postgresql.org/docs/current/functions-string.html
 
 
 ---  devuelve todas las coincidencias de una expresión regular en una cadena de texto
+https://medium.com/the-table-sql-and-devtalk/postgresql-regexp-match-explained-syntax-use-cases-pitfalls-56b507f1b7cc
 SELECT regexp_matches('Learning #PostgreSQL #REGEXP_MATCHES', '#([A-Za-z0-9_]+)', 'g'); --- {PostgreSQL}   {REGEXP_MATCHES} 
 
 --- solo devuelve la primera coincidencia encontrada
