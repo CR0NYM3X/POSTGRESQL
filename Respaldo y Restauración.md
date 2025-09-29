@@ -289,7 +289,7 @@ Copiar la información de una tabla cliente, pero sólo los que se llamen manuel
 **`Copiar tabla`**
 ```
 psql -d banco -p5432 
-COPY (select * from clientes where nombre = 'manuel') TO '/tmp/tabla_clientes.csv' WITH (FORMAT CSV);
+COPY (select * from clientes where nombre = 'manuel') TO '/tmp/tabla_clientes.csv' WITH (FORMAT CSV, HEADER false, QUOTE '"', ESCAPE '"', DELIMITER ',');
 ```
 
 **`Restaurar tabla`**
