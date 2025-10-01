@@ -737,8 +737,11 @@ vacuum_cost_limit
 log_autovacuum_min_duration =
 					
 -------- categoria:  CLIENT CONNECTION DEFAULTS --------
-vacuum_freeze_table_age 
-vacuum_freeze_min_age  
+| `vacuum_freeze_min_age` | Edad mínima para congelar una fila | 50,000,000 |
+| `vacuum_freeze_table_age` | Edad de la tabla para iniciar congelación | 150,000,000 |
+| `autovacuum_freeze_max_age` | Edad máxima antes de forzar autovacuum | 200,000,000 |
+
+
 vacuum_failsafe_age  
 vacuum_multixact_freeze_table_age  
 vacuum_multixact_freeze_min_age  
