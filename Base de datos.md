@@ -33,6 +33,29 @@ createdb -p 5432 mytestdba -E "UTF8" -O postgres -T template0
 
 
 /******************** TIPOS DE ENCODING ********************\
+### ❌ Desventajas de usar `SQL_ASCII`:
+
+#### 1. **Sin validación de caracteres**
+- PostgreSQL **no valida los datos de texto** que se insertan. Puedes guardar cualquier byte, incluso si no representa un carácter válido.
+- Esto puede provocar **datos corruptos** o ilegibles si se mezclan codificaciones (por ejemplo, UTF-8 y Latin1).
+
+#### 2. **Incompatibilidad con funciones de texto**
+- Funciones como `LIKE`, `ILIKE`, `REGEXP`, `to_tsvector`, `to_tsquery`, `substring`, etc., pueden comportarse de forma errática o incorrecta.
+- No se puede hacer búsqueda semántica ni ordenamiento correcto si hay caracteres especiales.
+
+#### 3. **Problemas con clientes JDBC, Python, etc.**
+- Los drivers modernos (JDBC, psycopg2, etc.) esperan codificaciones como UTF-8. Si la base está en `SQL_ASCII`, **pueden fallar al conectarse** o mostrar errores de codificación.
+
+#### 4. **No se puede cambiar la codificación**
+- PostgreSQL **no permite cambiar la codificación de una base de datos existente**. La única solución es crear una nueva base con codificación adecuada y migrar los datos.
+
+#### 5. **Riesgo de errores silenciosos**
+- Puedes insertar datos con codificación incorrecta sin que el sistema lo detecte, lo que puede causar errores al exportar, visualizar o procesar los datos.
+
+#### 6. **No apto para aplicaciones multilingües**
+- Si tu aplicación maneja nombres, descripciones o textos en varios idiomas, `SQL_ASCII` no es viable.
+
+
 1. **UTF-8**:
    - **Recomendado**: Es ampliamente utilizado y compatible con una amplia gama de caracteres.
    - Almacena caracteres Unicode y es eficiente en términos de espacio.
