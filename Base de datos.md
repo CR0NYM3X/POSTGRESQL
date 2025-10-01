@@ -15,7 +15,7 @@ Es aprender todo lo que podemos hacer solo con la base de datos
 createdb -p 5432 mytestdba -E "UTF8" -O postgres -T template0
 
 -- [NOTA] si no especificas el template, se basara en el template1 para crear la nueva Base de datos.
-    CREATE DATABASE "mytestdba" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'C' LC_CTYPE = 'en_US';
+    CREATE DATABASE "mytestdba" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US';
     
     **Parametros adicionales que le puedes agregar en el with**
        OWNER = postgesql
@@ -26,7 +26,7 @@ createdb -p 5432 mytestdba -E "UTF8" -O postgres -T template0
                     letras, números, espacios, puntuación, etc. y afecta a las operaciones de búsqueda y comparación.
 
        LC_COLLATE = 'en_US.UTF-8'  determina cómo se ordenan y comparan las cadenas de caracteres en consultas y
-                    operaciones de ordenamiento.
+                    operaciones de ordenamiento. ORDER BY , Comparaciones (<, >, =) , Funciones de texto (MIN, MAX, DISTINCT, etc.)
 
        TABLESPACE = pg_default
        CONNECTION LIMIT = -1;  --- El -1 quiere decir que son conexiones elimitadas
@@ -78,6 +78,15 @@ createdb -p 5432 mytestdba -E "UTF8" -O postgres -T template0
 5. **KOI8R**:
    - Utilizado para el ruso (cirílico).
    - No admite caracteres Unicode.
+
+
+************** COLLATE *****
+LC_COLLATE = 'C'
+Ordenamiento rápido: Usa el orden binario de los bytes, lo que es más rápido que aplicar reglas lingüísticas. Sin sensibilidad lingüística: No respeta reglas de idioma. Por ejemplo, en español, 'ñ' debería ir después de 'n', pero con 'C' no se respeta. No distingue mayúsculas/minúsculas como lo haría un collation regional. Ideal para datos técnicos o identificadores, pero no recomendado para texto en idiomas naturales.
+Cuándo usar 'C' -> Bases de datos técnicas (logs, identificadores, claves). Cuando el rendimiento es más importante que el orden lingüístico. Cuando no se necesita ordenamiento por idioma.
+
+
+
 ```
 
 ### Cambiar el nombre a una base de datos:
