@@ -21,7 +21,31 @@
 - Patroni - Pendiente
 - pglookout
 - Pacemaker y Corosync
-
+```
+                +-------------------+
+                |     Aplicación    |
+                +-------------------+
+                         │
+                         ▼
+                +-------------------+
+                   │           │
+                   ▼           ▼
+           +-------------+ +-------------+
+           | PgBouncer 1 | | PgBouncer 2 |  ← Balanceados + VIP
+           +-------------+ +-------------+
+                   │           │
+                   ▼           ▼
+           +-------------+ +-------------+ +-------------+
+           | Pgpool-II 1 | | Pgpool-II 2 | | Pgpool-II 3 | ← Watchdog + VIP
+           +-------------+ +-------------+ +-------------+
+                   │           │           │
+                   └────┬──────┴──────┬────┘
+                        ▼             ▼
+		+-----------+   +-----------+   +-----------+
+		| PostgreSQL|   | PostgreSQL|   | PostgreSQL|
+		|  Primario |   |  Réplica  |   |  Réplica  |
+		+-----------+   +-----------+   +-----------+
+```
 
 ### 🔹 **BCP – Business Continuity Plan (Plan de Continuidad del Negocio)**
 Es un conjunto de estrategias y procedimientos diseñados para asegurar que una organización pueda **continuar operando durante y después de una interrupción significativa** (como desastres naturales, ciberataques, fallas técnicas, etc.).  
