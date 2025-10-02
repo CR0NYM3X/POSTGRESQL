@@ -33,6 +33,8 @@ PostgreSQL Transaction IDs (XIDs) Explained -> https://medium.com/@youssefshibl0
 
 # High Availability  
 ```
+Resilient PostgreSQL cluster: PgBouncer, PgPool-II and repmgr -> https://tommasini-giovanni.medium.com/resilient-postgresql-cluster-pgbouncer-pgpool-ii-and-repmgr-88830de6e8ea
+
 Setting up High Availability PostgreSQL Cluster using Patroni, PGBouncer, Docker, Consul and HAProxy -> https://medium.com/@nicola.vitaly/setting-up-high-availability-postgresql-cluster-using-patroni-pgbouncer-docker-consul-and-95c70445b1b1
 
 
