@@ -178,6 +178,7 @@ Nagios -> Con plugins específicos para PostgreSQL, Nagios puede monitorear el r
 Grafana -> Aunque se utiliza principalmente para la visualización de datos, Grafana se puede integrar con Prometheus y otras herramientas para proporcionar un monitoreo completo de PostgreSQL
 pgNow -> pgNow es una herramienta gratuita para diagnóstico de rendimiento en PostgreSQL. Fue desarrollada por Redgate y permite obtener información en tiempo real sobre la salud, configuración y rendimiento de la base de datos.
 Checkmk ->  herramienta de monitoreo de código abierto que ofrece monitoreo integral para bases de datos PostgreSQ
+pgreplay ->  es una utilidad que reproduce el tráfico de consultas SQL registrado en los logs de PostgreSQL. Su propósito principal es simular una carga de trabajo real
 
 SIEM  detección de amenazas
 Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia gama de funcionalidades para la detección de amenazas, el monitoreo de integridad y la respuesta a incidente
@@ -203,7 +204,6 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 - **pg_top:** Similar al comando `top` de Linux, `pg_top` muestra el uso de recursos de PostgreSQL en tiempo real, permitiendo a los administradores identificar procesos que consumen muchos recursos.
 
-- **pganalyze:** Una herramienta externa que proporciona monitoreo avanzado, análisis de rendimiento y recomendaciones de optimización, basada en las estadísticas y configuraciones de tu instancia de PostgreSQL.
 
  pgrowlocks en PostgreSQL se utiliza para mostrar información sobre los bloqueos de filas en una tabla específica. Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pgrowlocks('mi_tabla');
 
