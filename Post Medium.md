@@ -33,6 +33,9 @@ PostgreSQL Transaction IDs (XIDs) Explained -> https://medium.com/@youssefshibl0
 
 # High Availability  
 ```
+Configuration the PostgreSQL database for metadata using PGPool on lab environment -> https://awslife.medium.com/configuration-the-postgresql-database-for-metadata-using-pgpool-on-lab-environment-f30367562916
+Beyond HA: A Battle-Tested PostgreSQL Architecture for Mission-Critical Workloads -> https://medium.com/@ukhore/beyond-ha-a-battle-tested-postgresql-architecture-for-mission-critical-workloads-1d517d15b22a
+
 Resilient PostgreSQL cluster: PgBouncer, PgPool-II and repmgr -> https://tommasini-giovanni.medium.com/resilient-postgresql-cluster-pgbouncer-pgpool-ii-and-repmgr-88830de6e8ea
 
 Setting up High Availability PostgreSQL Cluster using Patroni, PGBouncer, Docker, Consul and HAProxy -> https://medium.com/@nicola.vitaly/setting-up-high-availability-postgresql-cluster-using-patroni-pgbouncer-docker-consul-and-95c70445b1b1
