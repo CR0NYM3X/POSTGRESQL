@@ -57,6 +57,8 @@ Scaling Horizontally on PostgreSQL: Citus’s Impact on Database Architecture  -
 
 # BackUP
 ```
+Understanding pg_combinebackup in PostgreSQL -> https://tomasz-gintowt.medium.com/understanding-pg-combinebackup-in-postgresql-2264f2546810
+
 PITR in PostgreSQL using pg_basebackup and WAL. -> https://medium.com/@dickson.gathima/pitr-in-postgresql-using-pg-basebackup-and-wal-6b5c4a7273bb
 ```
 
