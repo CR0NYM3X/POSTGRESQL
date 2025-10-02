@@ -878,7 +878,7 @@ Si ya tienes replicación configurada, puedes:
 
 ## Links
 ```conf
-
+https://medium.com/@yaseminbsra.sergen/postgresql-with-patroni-high-availability-and-backup-integration-1fd97bffbac1
 https://medium.com/@jramcloud1/set-up-high-availability-postgresql-cluster-using-patroni-1367c72fbedb
 Patroni -> https://medium.com/@joaovic32/demystifying-high-availability-postgresql-with-patroni-and-pgpool-ii-on-ubuntu-428c91a55b1a
 https://ozwizard.medium.com/postgresql-with-patroni-installation-and-configuration-49d6b8105580
