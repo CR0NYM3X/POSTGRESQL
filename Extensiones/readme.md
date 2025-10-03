@@ -92,6 +92,9 @@ Prometheus es una herramienta de monitoreo y alerta de código abierto que se ut
    - **Descripción**: Conjunto de extensiones que mejoran la seguridad de PostgreSQL, incluyendo autenticación avanzada y control de acceso.
    - **Características**: Autenticación basada en certificados, control de acceso granular, integración con sistemas de gestión de identidades.
  
+######## Migraciones de diferentes gestores o  motores ##########3
+ora2pg
+pgLoader
 
 ### **5. Seguridad:**
 
