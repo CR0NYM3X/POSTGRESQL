@@ -4,6 +4,49 @@
 Aquí encontraras los links gratis de Medium que te ayudaran adquirir más conocimientos del funcionamiento de postgresql
  
 
+# Migration 
+```
+ PostgreSQL DBA Migration from Oracle to PostgreSQL -> https://www.udemy.com/course/postgresql-dba-migration-from-oracle-to-postgresql/?utm_source=adwords&utm_medium=udemyads&utm_campaign=Search_DSA_Beta_Prof_la.EN_cc.ROW-English_AI_Max_for_Search_TEST&campaigntype=Search&portfolio=ROW-English&language=EN&product=Course&test=&audience=DSA&topic=&priority=Beta&utm_content=deal4584&utm_term=_._ag_185318355538_._ad_696197165424_._kw__._de_c_._dm__._pl__._ti_dsa-2434662753489_._li_9141301_._pd__._&matchtype=&gad_source=1&gad_campaignid=22925721803&gbraid=0AAAAADROdO0X00n2nXuUTE2tJawlRslqO&gclid=CjwKCAjw6P3GBhBVEiwAJPjmLjYdfxgeMrP7HTDRBLN5HjiRatXyYnglCyw4SPL4WTY4EeOtwMcx9hoCO04QAvD_BwE&couponCode=PMNVD2525
+
+SQL migrations in PostgreSQL, part 1 -> https://medium.com/miro-engineering/sql-migrations-in-postgresql-part-1-bc38ec1cbe75
+Oracle to postgresql migrations -> https://akadar899.medium.com/oracle-to-postgres-migration-d796d68f23a8 
+Migrate from Oracle to PostgreSQL -> https://medium.com/@abdelhaak/why-migrate-from-oracle-to-postgresql-9634fb82439c
+Migración de Oracle a PostgreSQL con Ora2Pg -> https://medium.com/@jramcloud1/02-oracle-to-postgresql-migration-with-ora2pg-8a99591eb918
+Oracle to PostgreSQL Without Breaking Anything -> https://medium.com/@cleanCompile/how-we-moved-from-oracle-to-postgresql-without-breaking-anything-ff888feaae8b
+
+
+SQL Server Database To PostgreSQL Database -> https://demirhuseyinn-94.medium.com/migrate-an-sql-server-database-to-postgresql-database-ready-to-release-f7dcb17b7ab9
+
+Tools Migration -> https://medium.com/@schnaror/db-migration-from-mysql-to-postgres-d0f0de6cb66c
+
+
+
+Seamless Data Migration from MySQL to PostgreSQL with Python: Full Pipeline -> https://medium.com/@parasaroraee/seamless-data-migration-from-mysql-to-postgresql-with-python-full-pipeline-38cb84347472
+From MySQL to PostgreSQL: A Junior Developer’s Journey to Production Database Migration -> https://medium.com/@copy-paste/from-mysql-to-postgresql-a-junior-developers-journey-to-production-database-migration-7d2326d06dbc
+MariaDB a Postgres -> https://medium.com/@jestem.kamil.wozniak/how-to-migrate-your-production-database-to-postgres-f92a95dccb3a
+Migration from MySQL to PostgreSQL with Python: Full Pipeline -> https://medium.com/@parasaroraee/seamless-data-migration-from-mysql-to-postgresql-with-python-full-pipeline-38cb84347472
+
+MongoDB to PostgreSQL -> https://engineering.sliceit.com/seamlessly-migrating-from-mongodb-to-postgresql-leveraging-data-platform-for-scalable-success-404e2577a47b
+
+
+
+POSTGRESQL MULTI TENANT MIGRATION USING FLYWAY TOOL -> https://medium.com/@sentinelfoxinc/postgresql-multi-tenant-migration-using-flyway-tool-aa11608fb8b4
+
+https://medium.com/hellogetsafe/pulling-off-zero-downtime-postgresql-migrations-with-bucardo-and-terraform-1527cca5f989
+
+How I Migrated a 3 TB PostgreSQL Transactional Database -> https://medium.com/better-programming/how-i-migrated-a-3tb-postgresql-transactional-database-ee1cf85c37bf
+
+Migrating PostgreSQL 14 Data to an Attached Volume for Improved Storage Management -> https://medium.com/@maheshwar.ramkrushna/migrating-postgresql-14-data-to-an-attached-volume-for-improved-storage-management-5f7ba3407483
+SQLite Database to Postgresql -> https://ciodave.medium.com/migrating-open-webui-sqlite-database-to-postgresql-8efe7b2e4156
+
+
+
+Flyway -> https://medium.com/@david_haylock/getting-started-with-flyway-8e945a0777bd
+
+Migración de bases de datos grandes de Azure PostgreSQL -> https://medium.com/@spatialblog/my-first-article-on-medium-932892c0fc3f
+
+```
+
 #  Semantica 
 ```
 Pagination in Postgres -> https://levelup.gitconnected.com/pagination-in-postgres-4ae85b828bb9
@@ -36,10 +79,11 @@ PostgreSQL Transaction IDs (XIDs) Explained -> https://medium.com/@youssefshibl0
 Configuration the PostgreSQL database for metadata using PGPool on lab environment -> https://awslife.medium.com/configuration-the-postgresql-database-for-metadata-using-pgpool-on-lab-environment-f30367562916
 Beyond HA: A Battle-Tested PostgreSQL Architecture for Mission-Critical Workloads -> https://medium.com/@ukhore/beyond-ha-a-battle-tested-postgresql-architecture-for-mission-critical-workloads-1d517d15b22a
 
+postgres-using-pg-bouncer -> https://medium.com/@pablo.lopez.santori/connection-pooling-for-postgres-using-pg-bouncer-175bc1607db2
 Resilient PostgreSQL cluster: PgBouncer, PgPool-II and repmgr -> https://tommasini-giovanni.medium.com/resilient-postgresql-cluster-pgbouncer-pgpool-ii-and-repmgr-88830de6e8ea
 
 Setting up High Availability PostgreSQL Cluster using Patroni, PGBouncer, Docker, Consul and HAProxy -> https://medium.com/@nicola.vitaly/setting-up-high-availability-postgresql-cluster-using-patroni-pgbouncer-docker-consul-and-95c70445b1b1
-
+https://akylson.com/how-to-deploy-a-high-availability-postgresql-cluster-in-5-minutes-using-ansible-and-patroni-809a086018d8
 
 Building a Highly Available PostgreSQL Cluster with Patroni, etcd, and HAProxy ->  https://medium.com/@dickson.gathima/building-a-highly-available-postgresql-cluster-with-patroni-etcd-and-haproxy-1fd465e2c17f
 
