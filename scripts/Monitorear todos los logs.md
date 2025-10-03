@@ -12,7 +12,7 @@ RESULT="$LOG_DIR/$(hostname -I | awk '{print $1}' |  tr '.' '_').txt"
 for archivo in "$LOG_DIR"/*; do
     if [[ "$archivo" == *.log ]]; then
         grep -Ei "$EXPRESIONES" "$archivo"  >> $RESULT 
-    elif [[ "$archivo" == *.tar.gz ]]; then
+    elif [[ "$archivo" == *.gz ]]; then
         tar --to-stdout -xf "$archivo" | grep -Ei "$EXPRESIONES" >> $RESULT 
     fi
 done
