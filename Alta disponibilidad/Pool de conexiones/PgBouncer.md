@@ -1,4 +1,6 @@
 
+
+
 # Restart , start 
  ```
 grep -Ei "process up|process up" pgbouncer.log
@@ -75,7 +77,10 @@ systemd: yes
  
 
 #  pg_hba.conf
+
  ```
+
+# Es dejar esta linea ya que si dejas el trust en modo local el usuario se podra conectar y no validara la caducidad de los usaurios 
  host    all             all                     127.0.0.1/32                    trust
 
 
