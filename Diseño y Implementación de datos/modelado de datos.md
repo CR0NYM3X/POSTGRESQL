@@ -208,4 +208,7 @@ https://aws.plainenglish.io/from-models-to-pipelines-a-practical-guide-to-data-m
 https://medium.owox.com/what-is-a-data-model-5053bf8cd5ce
 https://medium.com/@datasciencefem/introducci%C3%B3n-a-las-entidades-y-relaciones-conceptos-fundamentales-en-bases-de-datos-822e1862855
 
+https://www.youtube.com/watch?v=brXdwK_w5So
+https://www.youtube.com/watch?v=aFgHVE_Y_YU
+
 ```
