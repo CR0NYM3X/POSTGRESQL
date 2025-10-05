@@ -1,3 +1,16 @@
+## 📌 2. **Estándares de Nomenclatura**
+
+| Objeto         | Convención recomendada         | Ejemplo                        |
+|----------------|-------------------------------|--------------------------------|
+| Tabla          | singular, descriptiva          | `usuario`, `producto`, `pedido` |
+| Vista          | prefijo `vw_`                  | `vw_ventas_mensuales`          |
+| Función        | prefijo `fn_`                  | `fn_calcular_total`            |
+| Trigger        | prefijo `tr_`                  | `tr_actualizar_stock`          |
+| Índice         | prefijo `idx_`                 | `idx_cliente_email`            |
+| Secuencia      | prefijo `seq_`                 | `seq_id_pedido`                |
+| Constraint     | prefijo `chk_`, `fk_`, `pk_`   | `fk_pedido_cliente`            |
+
+
 # Recomendaciones y estándares para nombrar objetos y bases de datos en PostgreSQL (también aplicables en gran medida a SQL Server):
 
 ### 1. **Nombres de Bases de Datos:**
