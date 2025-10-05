@@ -214,7 +214,14 @@ https://www.yugabyte.com/blog/postgresql-like-query-performance-variations/#c-co
 | **Cuándo Usar**              | Consultas que filtran por una sola columna | Consultas que filtran por múltiples columnas y el orden de filtrado es importante |
 | **Cuándo No Usar**           |  Consultas que solo filtran por una columna o el orden de las columnas no es relevante  |Consultas que requieren filtrar por múltiples columnas | 
 
+## ✅ Recomendaciones para limpiar índices basura
 
+1. **Usa `EXPLAIN` y `pg_stat_user_indexes`** para ver qué índices se usan.
+2. **Elimina índices duplicados o cubiertos por otros**.
+3. **Evita índices con columnas poco selectivas** como booleanos o constantes.
+4. **Revisa si los índices compuestos tienen el orden correcto de columnas** para filtros y `ORDER BY`.
+5. **Documenta antes de eliminar**: asegúrate de que no se usan en procesos externos o legacy.
+6. 
 ### Consideraciones Antes de Crear un Índice Compuesto en PostgreSQL
 
 1. **Consultas Comunes**:
