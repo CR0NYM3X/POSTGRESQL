@@ -1404,6 +1404,105 @@ END $$;
 ```
 
 
+## 📈 Tabla basada en cantidad de conexiones
+  
+
+| Nivel de carga | Conexiones simultáneas | CPU recomendada | RAM recomendada | Disco recomendado | ¿Usar pool? | Comentario |
+|----------------|------------------------|------------------|------------------|--------------------|-------------|------------|
+| Baja           | 1 - 50                 | 2 vCPU           | 4 GB             | SSD 100 GB         | No necesario | PostgreSQL puede manejarlo bien |
+| Media          | 51 - 200               | 4 vCPU           | 8 GB             | SSD 250 GB         | Recomendado  | Mejora eficiencia y estabilidad |
+| Alta           | 201 - 500              | 8 vCPU           | 16 GB            | SSD NVMe 500 GB    | Necesario    | Evita saturación y mejora rendimiento |
+| Crítica        | > 500                  | 16+ vCPU         | 32+ GB           | SSD NVMe 1 TB+     | Obligatorio  | PostgreSQL no escala bien sin pooling |
+
+> ⚠️ **Nota importante**: PostgreSQL no escala bien con miles de conexiones. Se recomienda usar **connection pooling** con herramientas como **PgBouncer** o **Odyssey** para manejar cargas altas sin saturar el servidor.
+
+
+ 
+## 📈 Tabla basada en TPS 
+ 
+
+| Nivel de carga | Transacciones por segundo (TPS) | CPU recomendada | RAM recomendada | Disco recomendado |
+|----------------|-------------------------------|------------------|------------------|--------------------|
+| Baja           | 0 - 50                        | 2 vCPU           | 4 GB             | SSD 100 GB         |
+| Media          | 51 - 500                      | 4 vCPU           | 8 GB             | SSD 250 GB         |
+| Alta           | 501 - 5000                    | 8 vCPU           | 16 GB            | SSD NVMe 500 GB    |
+| Crítica        | > 5000                        | 16+ vCPU         | 32+ GB           | SSD NVMe 1 TB+     |
+
+
+
+## 🔍 ¿Qué pasa cuando hay muchas conexiones en PostgreSQL?
+
+PostgreSQL usa un modelo de **procesos por conexión**:
+
+- Cada conexión activa crea un **proceso independiente** en el sistema operativo.
+- Estos procesos consumen **memoria**, **CPU** y **recursos de I/O**.
+- No hay un *thread pool* o *event loop* como en otros motores (por ejemplo, MySQL con `thread pooling` o servidores web como Nginx).
+
+### ⚠️ Problemas cuando hay muchas conexiones:
+
+1. **Consumo excesivo de memoria**: Cada proceso tiene buffers, estructuras internas, y puede usar `work_mem`, `temp_buffers`, etc.
+2. **Context switching**: El sistema operativo tiene que cambiar entre procesos constantemente, lo que degrada el rendimiento.
+3. **Bloqueos y contención**: Más procesos compiten por recursos compartidos (locks, buffers, disco).
+4. **Latencia elevada**: Aumenta el tiempo de respuesta por sobrecarga del sistema.
+5. **Riesgo de crash**: Si se supera el límite de procesos del sistema operativo o de PostgreSQL (`max_connections`), el servidor puede volverse inestable.
+
+
+
+## 🧠 ¿Cómo ayuda el *pooling*?
+
+| Sin Pooling | Con Pooling |
+|-------------|-------------|
+| Cada cliente crea una conexión | Las conexiones se reutilizan |
+| Alto consumo de recursos | Bajo consumo de recursos |
+| Riesgo de saturación | Control de concurrencia |
+| Latencia alta | Latencia baja |
+| Difícil escalar | Fácil escalar horizontalmente |
+ 
+## 📌 Ejemplo práctico
+
+Supón que tienes 1000 clientes web que hacen consultas ocasionales. Sin pooling, PostgreSQL tendría 1000 procesos activos. Con PgBouncer, puedes tener solo 50 conexiones activas y reutilizarlas, reduciendo el consumo de memoria y CPU drásticamente.
+ 
+ 
+ 
+## 🧠 ¿Cuándo se recomienda usar *connection pooling*?
+
+Aquí tienes los **criterios más comunes** para decidir si necesitas un pool de conexiones como **PgBouncer** o **Odyssey**:
+
+---
+
+### ✅ 1. **Cuando tienes muchas conexiones simultáneas**
+- Si tu aplicación genera **más de 100 conexiones activas** al mismo tiempo, ya es recomendable usar un pool.
+- PostgreSQL por defecto tiene `max_connections = 100`, pero aumentar este valor no siempre es eficiente.
+
+---
+
+### ✅ 2. **Cuando usas aplicaciones web o microservicios**
+- Frameworks como Django, Laravel, Node.js, etc., tienden a abrir muchas conexiones por cada petición.
+- En arquitecturas de microservicios, cada servicio puede abrir su propia conexión, lo que escala rápidamente.
+
+---
+
+### ✅ 3. **Cuando las conexiones están inactivas mucho tiempo**
+- Si tienes conexiones que se abren pero no hacen nada (esperando al usuario, por ejemplo), estás desperdiciando recursos.
+- El pool cierra o reutiliza esas conexiones automáticamente.
+
+---
+
+### ✅ 4. **Cuando el TPS (transacciones por segundo) es bajo pero hay muchas conexiones**
+- Ejemplo: 500 conexiones activas pero solo 20 TPS. Esto indica que muchas conexiones están ociosas.
+- El pool permite que esas 20 TPS se manejen con solo 10-20 conexiones reales.
+
+---
+
+### ✅ 5. **Cuando tienes problemas de rendimiento por saturación**
+- Si ves errores como `too many connections`, `out of memory`, o el sistema se vuelve lento, es momento de usar pooling.
+
+---
+
+### ✅ 6. **Cuando quieres limitar el impacto de clientes mal diseñados**
+- Algunos clientes no cierran conexiones correctamente o hacen reconexiones constantes.
+- El pool actúa como intermediario y protege al servidor.
+
 ### Bibliografias 
 ```
 https://medium.com/@jramcloud1/04-postgresql-17-performance-tuning-checkpoints-explained-4972e78f4e56
