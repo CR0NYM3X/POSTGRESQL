@@ -1402,7 +1402,28 @@ END $$;
  
   
 ```
+## 🔧 Parámetros de PostgreSQL relacionados con conexiones simultáneas
 
+| Parámetro | Fórmula / Criterio | Relación con conexiones |
+|----------|--------------------|--------------------------|
+| `max_connections` | Valor esperado de conexiones simultáneas + conexiones reservadas | Define el número máximo de conexiones que PostgreSQL puede aceptar. A mayor valor, más procesos se crean. |
+| `superuser_reserved_connections` | 3 a 5 conexiones reservadas (fijo) | Protege al superusuario en caso de saturación. Se resta de `max_connections`. |
+| `shared_buffers` | 25% a 40% de la RAM total del servidor | Cada conexión usa buffers para leer/escribir datos. Más conexiones requieren más buffers para evitar I/O excesivo. |
+| `work_mem` | RAM disponible / (max_connections × operaciones por conexión) | Se asigna por operación y por conexión. Si se subestima, puede usar disco para operaciones temporales. |
+| `maintenance_work_mem` | 2× `work_mem` o hasta 512MB | Aunque no depende directamente de conexiones, si hay muchas conexiones haciendo mantenimiento, puede impactar. |
+| `effective_cache_size` | 50% a 75% de la RAM total | Ayuda al planner a estimar si los datos estarán en cache. Más conexiones implican más uso de cache. |
+| `wal_buffers` | 3% de `shared_buffers` o hasta 16MB | Aumentar si hay muchas conexiones haciendo escrituras. Mejora rendimiento de WAL. |
+| `max_worker_processes` | Igual o mayor a `max_parallel_workers` | Más conexiones pueden beneficiarse de paralelismo si hay CPU suficiente. |
+| `max_parallel_workers` | CPU disponibles / 2 (o más si hay carga alta) | Permite que múltiples conexiones usen paralelismo en consultas. |
+| `max_parallel_workers_per_gather` | 2 a 4 (según complejidad de consultas) | Controla cuántos workers puede usar una sola consulta. Más conexiones pueden requerir más paralelismo. |
+| `temp_buffers` | 8MB a 64MB por conexión | Buffers temporales por conexión. Aumentar si hay muchas operaciones con datos temporales. |
+| `max_files_per_process` | 1000 a 2000 | Cada conexión puede abrir archivos. Aumentar si hay muchas conexiones activas. |
+| `bgwriter_delay`, `bgwriter_lru_maxpages`, `bgwriter_lru_multiplier` | Ajustar si hay muchas conexiones escribiendo | Mejora el rendimiento del background writer en entornos con alta concurrencia. |
+| `autovacuum_max_workers` | 3 a 10 según tamaño de BD y conexiones | Más conexiones generan más cambios, lo que requiere más workers para autovacuum. |
+| `autovacuum_naptime` | Reducir a 10s o menos si hay alta concurrencia | Asegura que el autovacuum se ejecute más seguido en entornos con muchas conexiones. |
+| `autovacuum_work_mem` | Igual o mayor a `maintenance_work_mem` | Mejora eficiencia del autovacuum en entornos con muchas conexiones modificando datos. |
+| `max_locks_per_transaction` | 64 por defecto, aumentar si hay muchas conexiones con múltiples objetos | Cada conexión puede bloquear objetos. Aumentar si hay muchas operaciones simultáneas. |
+| `max_pred_locks_per_transaction` | 64 por defecto, aumentar si usas `SERIALIZABLE` con muchas conexiones | Controla los locks en modo serializable. Aumentar si hay muchas conexiones concurrentes. |
 
 ## 📈 Tabla basada en cantidad de conexiones
   
