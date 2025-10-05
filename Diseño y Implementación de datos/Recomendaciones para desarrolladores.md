@@ -1,9 +1,59 @@
-No usar subconsultas ya que estás se ejecutan en cada fila , para esto mejor utiliza join o cte 
+# Subconsultas
 
-Subconsultas correlacionadas: Se recalculan por cada fila, lo que puede ser costoso en términos de rendimiento.
+## 🔍 1. Subconsulta **no correlacionada**
 
-Subconsultas no correlacionadas: Se ejecutan una sola vez, reutilizando el resultado, y son mucho más eficientes.
-En general, si puedes evitar que la subconsulta dependa de columnas de la consulta principal, deberías optar por una subconsulta no correlacionada o utilizar estrategias como JOINs o CTEs para mejorar el rendimiento.
+### 📘 Definición:
+Una subconsulta **no correlacionada** es aquella que **no depende de la fila actual** de la consulta externa. Se ejecuta **una sola vez**, y su resultado se reutiliza. 
+
+### ✅ Características:
+- Independiente de la consulta principal.
+- Se evalúa primero.
+- Puede usarse en `SELECT`, `WHERE`, `FROM`, etc.
+
+### 🧪 Ejemplo:
+
+```sql
+SELECT nombre, salario
+FROM empleados
+WHERE salario > (
+    SELECT AVG(salario)
+    FROM empleados
+);
+```
+
+ 
+
+## 🔍 2. Subconsulta **correlacionada**
+
+### 📘 Definición:
+Una subconsulta **correlacionada** depende de la **fila actual** de la consulta externa. Se ejecuta **una vez por cada fila** de la consulta principal.
+Se recalculan por cada fila, lo que puede ser costoso en términos de rendimiento.  Se recalculan por cada fila, lo que puede ser costoso en términos de rendimiento. mejor utilizar Joins o CTE
+
+
+### ✅ Características:
+- Usa columnas de la consulta externa.
+- Se evalúa múltiples veces.
+- Más costosa en rendimiento.
+
+### 🧪 Ejemplo:
+
+```sql
+SELECT e.nombre
+FROM empleados e
+WHERE salario > (
+    SELECT AVG(salario)
+    FROM empleados
+    WHERE departamento_id = e.departamento_id
+);
+```
+ 
+
+## ⚖️ Comparación rápida
+
+| Tipo de subconsulta     | ¿Usa columnas externas? | ¿Se ejecuta por fila? | Rendimiento |
+|-------------------------|-------------------------|------------------------|-------------|
+| No correlacionada       | ❌ No                   | ❌ No                  | ✅ Mejor    |
+| Correlacionada          | ✅ Sí                   | ✅ Sí                  | ⚠️ Más costosa |
  
 ---
 
