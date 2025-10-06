@@ -557,6 +557,7 @@ CAST
 
 
 BEFORE LOAD DO
+  $$ \set ON_ERROR_STOP on $$
   $$ CREATE SCHEMA IF NOT EXISTS public; $$,
   $$ SET session_replication_role = replica; $$  -- Evita triggers durante carga
 
