@@ -188,6 +188,8 @@ https://tomasz-gintowt.medium.com/vacuum-in-postgresql-not-just-cleaning-up-c4dc
 
 # Monitoreo 
 ```
+Scaling PostgreSQL Monitoring at Trendyol: Our Journey with pgwatch -> https://medium.com/trendyol-tech/scaling-postgresql-monitoring-at-trendyol-our-journey-with-pgwatch-1556faa81d24
+
 Understanding Database Locks in PostgreSQL -> https://medium.com/@aditimishra_541/understanding-database-locks-in-postgresql-0392f0ab52d1
 
 Proactively Detecting and Killing Long-Running Locks in PostgreSQL -> https://erdmyzn.medium.com/proactively-detecting-and-killing-long-running-locks-in-postgresql-944f88e6e7f7
