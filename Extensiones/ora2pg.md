@@ -263,6 +263,26 @@ ora2pg -t SHOW_REPORT -c ora2pg.conf --dump_as_html | Set-Content -Path "report.
 
 ***
 
+---
+# Extra info
+
+## 🛠 ¿Cómo usa ora2pg el CDC?
+
+Ora2pg puede usar **LogMiner** para leer los redo logs y extraer los cambios. Esto requiere:
+
+- Activar `ARCHIVELOG`.
+- Configurar `SUPPLEMENTAL LOGGING`.
+- Otorgar permisos para acceder a vistas como `V$LOGMNR_CONTENTS`.
+
+Pero **no es en tiempo real**. Ora2pg puede ejecutar un proceso que:
+
+1. Se conecta a Oracle.
+2. Lee los logs desde un punto anterior.
+3. Extrae los cambios.
+4. Genera archivos `.sql` para aplicar en PostgreSQL.
+
+Este proceso puede **automatizarse con cron o scripts**, pero no es una replicación continua como lo haría una herramienta de streaming.
+
 ## 📚 12. Bibliografía
 ```
 
@@ -303,3 +323,5 @@ Oracle to Postgres : The Database Darwinism -> https://drunkdba.medium.com/oracl
 
 
  
+
+
