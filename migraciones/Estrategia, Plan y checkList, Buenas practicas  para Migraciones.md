@@ -106,7 +106,7 @@ Estas te ayudarán a automatizar y validar el proceso:
 # 🧠 **Checklist de Evaluación Estratégica Pre-Migración**
 
 Aquí tienes una lista completa de **preguntas clave** que debes realizar antes de definir la arquitectura y configuración del nuevo entorno PostgreSQL:
- 
+
 
 ### 🗂️ **Inventario de Bases de Datos**
 - ¿Cuántas bases de datos existen en Oracle?
@@ -190,6 +190,7 @@ Antes de migrar, es fundamental entender el entorno actual.
 
 #### ✅ Definición de objetivos
 - ¿Migración completa o parcial?
+- Se tienen ventanas de tiempo de manetnimiento ? 
 - ¿Downtime permitido?
 - ¿Migración en caliente o en frío?
 - ¿Migración manual o automatizada?
