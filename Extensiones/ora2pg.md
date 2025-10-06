@@ -283,11 +283,67 @@ Pero **no es en tiempo real**. Ora2pg puede ejecutar un proceso que:
 
 Este proceso puede **automatizarse con cron o scripts**, pero no es una replicación continua como lo haría una herramienta de streaming.
 
-## 📚 12. Bibliografía
-```
+ 
+---
+# objetos que forman parte del esquema y la estructura de la base de datos Oracle
 
+
+### 🔹 **Objetos de almacenamiento**
+- **Tables**: Almacenan datos estructurados.
+- **Indexes**: Mejoran el rendimiento de las consultas.
+- **Materialized Views**: Vistas que almacenan datos físicamente.
+- **Clusters**: Agrupan tablas que comparten columnas comunes.
+- **Partitions**: Dividen tablas grandes en partes más manejables.
+
+
+### 🔹 **Objetos de programación**
+- **Procedures**: Bloques de código PL/SQL que realizan tareas específicas.
+- **Functions**: Similar a los procedimientos, pero devuelven un valor.
+- **Packages**: Agrupan procedimientos, funciones y variables relacionadas.
+- **Triggers**: Ejecutan código automáticamente ante eventos DML o DDL.
+- **Types**: Definen tipos de datos personalizados (usados en objetos y colecciones).
+- **Libraries**: Referencias a código externo (por ejemplo, C).
+
+
+### 🔹 **Objetos de seguridad**
+- **Users**: Cuentas de acceso a la base de datos.
+- **Roles**: Conjuntos de permisos que se pueden asignar a usuarios.
+- **Profiles**: Configuran límites y políticas de uso para usuarios.
+- **Synonyms**: Alias para objetos de base de datos.
+- **Grants**: Permisos otorgados sobre objetos.
+
+
+### 🔹 **Objetos de metadatos y administración**
+- **Schemas**: Colecciones de objetos propiedad de un usuario.
+- **Tablespaces**: Espacios físicos de almacenamiento.
+- **Sequences**: Generan valores numéricos únicos (usados en claves primarias).
+- **Database Links**: Conexiones a otras bases de datos Oracle.
+- **Jobs**: Tareas programadas (usando DBMS_SCHEDULER o DBMS_JOB).
+
+
+### 🔹 **Objetos de consulta y vista**
+- **Views**: Consultas guardadas como objetos reutilizables.
+- **Synonyms**: Alias para acceder a objetos sin usar el nombre completo.
+- **Cursors**: Permiten recorrer resultados de una consulta.
+
+
+### 🔹 **Objetos XML y JSON**
+- **XMLType**: Tipo de dato para almacenar XML.
+- **JSON Data**: Desde Oracle 12c, soporte nativo para JSON.
+
+
+### 🔹 **Otros objetos**
+- **Directories**: Referencias a ubicaciones del sistema de archivos.
+- **External Tables**: Tablas que leen datos desde archivos externos.
+- **Object Types**: Tipos definidos por el usuario para programación orientada a objetos.
+
+---
+# links
+```
 Ora2Pg tool introduction -> https://pankajconnect.medium.com/ora2pg-tool-introduction-48253d06d889
 
+01 - Standard Operating Procedure (SOP) Oracle to PostgreSQL Migration using Ora2Pg -> https://medium.com/@jramcloud1/01-standard-operating-procedure-sop-oracle-to-postgresql-migration-using-ora2pg-7a5d5a36dd8b
+02 - Oracle to PostgreSQL Migration with Ora2Pg -> https://medium.com/@jramcloud1/02-oracle-to-postgresql-migration-with-ora2pg-8a99591eb918
 
 Why Migrate from Oracle to PostgreSQL -> https://medium.com/@abdelhaak/why-migrate-from-oracle-to-postgresql-9634fb82439c
 Oracle to PostgreSQL Migration using Ora2Pg “Part 1” -> https://medium.com/@abdelhaak/hands-on-lab-migrating-your-oracle-database-to-postgresql-with-ora2pg-ab2c89b1d5ec
@@ -300,17 +356,13 @@ DMS | Oracle to PostgreSQL - Part 3 of 4 -> https://blog.searce.com/dms-oracle-t
 DMS | Oracle to PostgreSQL — Part 4 of 4 -> https://blog.searce.com/dms-oracle-to-postgresql-part-4-of-4-49ea8effd1c0
 
 
-01 - Standard Operating Procedure (SOP) Oracle to PostgreSQL Migration using Ora2Pg -> https://medium.com/@jramcloud1/01-standard-operating-procedure-sop-oracle-to-postgresql-migration-using-ora2pg-7a5d5a36dd8b
-02 - Oracle to PostgreSQL Migration with Ora2Pg -> https://medium.com/@jramcloud1/02-oracle-to-postgresql-migration-with-ora2pg-8a99591eb918
-
-Ora2pg -> https://technoshow91.medium.com/ora2pg-1d108fe10821
-
-01 - Standard Operating Procedure (SOP) Oracle to PostgreSQL Migration using Ora2Pg -> https://medium.com/@jramcloud1/01-standard-operating-procedure-sop-oracle-to-postgresql-migration-using-ora2pg-7a5d5a36dd8b
 Important Ora2pg config variables -> https://medium.com/@abhijitgm5/configure-your-ora2pg-config-file-b82f7f46f6c5
 Case Study: Migrating from Oracle 19c to PostgreSQL 16 using Ora2PG -> https://medium.com/@datapatrolt/case-study-migrating-from-oracle-19c-to-postgresql-16-using-ora2pg-a0ef2dde81cc
-
 Oracle to Postgres : The Database Darwinism -> https://drunkdba.medium.com/oracle-to-postgres-the-database-darwinism-194390c5833d
+Ora2pg -> https://technoshow91.medium.com/ora2pg-1d108fe10821
 
+Oracle DB migration to Azure Database for Postgres (PG) -> https://medium.com/@chbasani/oracle-db-migration-to-azure-database-for-postgres-pg-69ee8ce34e07
+Oracle to Postgres Migration Guide for Azure -> https://techcommunity.microsoft.com/blog/adforpostgresql/new-oracle-to-postgres-migration-guide-for-azure/2055303
 
 *   <https://ora2pg.darold.net/>
 *   <https://www.postgresql.org/docs/>
