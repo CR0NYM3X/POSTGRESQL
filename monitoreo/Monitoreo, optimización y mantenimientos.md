@@ -1451,7 +1451,83 @@ SELECT relname, temp_files
 FROM pg_stat_user_tables
 WHERE relname = 'ventas';
 ```
- 
+
+
+## 🔎 ¿Por qué es importante conocer lecturas y escrituras?
+
+### 📊 **1. Dimensionamiento del servidor**
+- Si hay muchas **escrituras**, necesitas buen rendimiento de disco (SSD, NVMe), configuración adecuada de `wal_buffers`, `checkpoint_timeout`, etc.
+- Si hay muchas **lecturas**, necesitas más **memoria RAM** para `shared_buffers`, `work_mem`, y posiblemente un sistema de caché externo.
+
+### ⚙️ **2. Configuración de parámetros**
+- PostgreSQL tiene parámetros que afectan el rendimiento según el tipo de carga. Ejemplo:
+  - `effective_cache_size` para lecturas.
+  - `wal_writer_delay`, `commit_delay` para escrituras.
+
+### 🔐 **3. Seguridad y auditoría**
+- Saber qué tipo de operaciones predominan ayuda a definir políticas de auditoría (ej. registrar solo DML o solo SELECTs).
+
+### 🧠 **4. Elección de arquitectura**
+- Si hay muchas escrituras, la replicación lógica puede ser más adecuada.
+- Si hay muchas lecturas, puedes usar réplicas en modo lectura (`hot standby`).
+
+
+
+
+
+## 🛠️ ¿Cómo saber la cantidad lecturas y escrituras en PostgreSQL?
+
+Puedes usar las **vistas estadísticas** que PostgreSQL mantiene automáticamente:
+
+### 📌 1. **Por tabla**
+```sql
+SELECT 
+  schemaname,
+  relname,
+  seq_scan + idx_scan AS total_reads,
+  n_tup_ins + n_tup_upd + n_tup_del AS total_writes
+FROM pg_stat_user_tables
+ORDER BY total_reads DESC;
+```
+
+- `seq_scan`: cantidad de escaneos secuenciales.
+- `idx_scan`: cantidad de escaneos por índice.
+- `n_tup_ins`, `n_tup_upd`, `n_tup_del`: cantidad de inserciones, actualizaciones y eliminaciones.
+
+---
+
+### 📌 2. **Por base de datos**
+```sql
+SELECT 
+  datname,
+  tup_returned AS total_reads,
+  tup_inserted + tup_updated + tup_deleted AS total_writes
+FROM pg_stat_database
+ORDER BY total_reads DESC;
+```
+
+- `tup_returned`: cantidad de filas devueltas (lecturas).
+- `tup_inserted`, `tup_updated`, `tup_deleted`: cantidad de filas modificadas (escrituras).
+
+---
+
+### 📌 3. **Saber la transaccionalidad  del servidor**
+```sql
+SELECT 
+  datname,
+  xact_commit,
+  xact_rollback,
+  xact_commit + xact_rollback as total_xact
+  blks_read,
+  blks_hit
+FROM pg_stat_database;
+```
+
+- `xact_commit`: transacciones exitosas.
+- `xact_rollback`: transacciones fallidas.
+- `blks_read`: bloques leídos desde disco.
+- `blks_hit`: bloques leídos desde caché (RAM).
+```
 
 *   Si `temp_files` aumenta constantemente, es señal de que debes revisar `work_mem`, `temp_buffers` o reescribir la consulta.
 *   Puedes usar `EXPLAIN (ANALYZE, BUFFERS)` para ver si se usan archivos temporales en tiempo real.
