@@ -841,7 +841,7 @@ Estas herramientas **automatizan mucho**, pero **no hacen magia**. Necesitas rev
 
 ---
 
-## ⏳ **Duración estimada del un proyecto**
+## ⏳ **Duración estimada de un proyecto de migración**
 
 La duración depende del tamaño, complejidad y criticidad de la base de datos. Aquí una guía general:
 
