@@ -127,13 +127,23 @@ sudo nano /etc/ora2pg/ora2pg.conf
 
 Configuramos:
 
-```ini
-ORACLE_DSN     dbi:Oracle:host=192.168.1.100;sid=ORCL;port=1521
-ORACLE_USER    agrotech
-ORACLE_PWD     agrotech123
-SCHEMA         agrotech
-EXPORT_TYPE    TABLE
+```ini 
+ORACLE_DSN = localhost:1521/ORCL -- ORACLE_DSN     dbi:Oracle:host=192.168.1.100;sid=ORCL;port=1521
+ORACLE_USER = oracle_user
+ORACLE_PWD = oracle_password
+
+PG_DSN = localhost:5432/postgres
+PG_USER = postgres_user
+PG_PWD = postgres_password
+
+EXPORT_SCHEMA = YES
+EXPORT_DATA = YES
+TYPE = TABLE
+
+
 ```
+
+
 
 ### 🔹 Simulación de esquema en Oracle
 
@@ -247,6 +257,8 @@ Este comando es ideal para:
 
 ```bash
 ora2pg -t SHOW_REPORT -c /etc/ora2pg/ora2pg.conf
+ora2pg -t SHOW_REPORT -c ora2pg.conf --dump_as_html | Set-Content -Path "report.html" -Encoding utf8
+
 ```
 
 ***
