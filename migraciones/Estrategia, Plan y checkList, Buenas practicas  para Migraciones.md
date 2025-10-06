@@ -19,6 +19,18 @@
 5. **Capacitar al equipo en PostgreSQL antes de la migración**  
    - Muchos errores vienen por asumir que PostgreSQL se comporta igual que Oracle.
 
+
+## 🧩 Estrategia  y Recomendación   para evitar este problema en el futuro
+
+- **Mantener Oracle en modo lectura durante la migración.**
+- **Habilitar CDC o triggers en PostgreSQL para registrar cambios.**
+- **No abrir PostgreSQL a producción hasta pasar todas las validaciones.**
+- **Tener una ventana de validación antes de las operaciones reales.**
+- **Tener un plan de sincronización inversa documentado.**
+- **Antes de abrir PostgreSQL a producción**, tener una **ventana de validación funcional y técnica**.
+- **Habilitar triggers de auditoría** en PostgreSQL para registrar todos los cambios desde el momento del corte.
+- Si decides hacer rollback, usar esos registros para **reinsertar los datos en Oracle**, con validación.
+- Para futuras migraciones, considerar **CDC o doble escritura** si el negocio no tolera downtime o pérdida de datos.
  
 
 ## ⚠️ **Errores comunes y decisiones que se corrigieron después**
@@ -601,3 +613,71 @@ No migraría a PostgreSQL si:
 - El costo y riesgo de migración supera los beneficios.
 - Mi equipo está altamente capacitado en Oracle y no en PostgreSQL.
 - Las aplicaciones críticas no están certificadas para PostgreSQL.
+
+
+
+---
+
+
+### 🕐 **1. ¿En un entorno donde realizaron una migración, cuál es el tiempo que le dan al servidor migrado para las pruebas?**
+
+**Respuesta profesional:**
+> El tiempo de pruebas en un servidor migrado depende del **nivel de criticidad del sistema**, pero en entornos reales se recomienda un periodo de **entre 1 y 4 semanas** para pruebas funcionales, de rendimiento, seguridad y validación de datos.
+
+**Factores que determinan el tiempo:**
+- Complejidad del sistema (número de objetos, funciones, integraciones).
+- Volumen de datos migrados.
+- Cantidad de usuarios y procesos concurrentes.
+- Disponibilidad de ambientes de QA y equipos de testing.
+
+**Buenas prácticas:**
+- Usar **datos reales anonimizados** para pruebas.
+- Incluir **pruebas automatizadas** y **pruebas manuales** de negocio.
+- Validar **consultas críticas, reportes, procesos batch y triggers**.
+- Hacer pruebas de **carga y estrés** si es un sistema de alto tráfico.
+ 
+
+### 🗑️ **2. Una vez que el servidor que migraron pasó el periodo de pruebas, ¿eliminan el servidor origen?**
+
+**Respuesta profesional:**
+> **No se elimina inmediatamente.** El servidor origen (Oracle) se mantiene **en modo de solo lectura** durante un periodo de gracia que puede ir de **1 a 3 meses**, dependiendo del riesgo y la criticidad del sistema.
+
+**¿Por qué se conserva?**
+- Para tener un **respaldo inmediato** en caso de rollback.
+- Para **consultas históricas** o validaciones cruzadas.
+- Para cumplir con **auditorías o regulaciones**.
+
+**Buenas prácticas:**
+- Cambiar Oracle a **modo read-only** después del corte.
+- Documentar claramente la fecha de **desmantelamiento definitivo**.
+- Asegurar que los **backups estén verificados** antes de eliminar.
+ 
+
+### 🔁 **3. En caso de un error, ¿cómo es su plan de rollback? ¿Ustedes sincronizan los datos insertados en el servidor nuevo al servidor origen?**
+
+**Respuesta profesional:**
+> El plan de rollback depende del tipo de error y del tiempo transcurrido. Si ya se insertaron datos en PostgreSQL, **no se sincronizan automáticamente a Oracle**, a menos que se haya planificado una **estrategia de doble escritura o CDC**.
+
+**Escenarios comunes:**
+
+#### ✅ **Rollback inmediato (sin datos nuevos)**
+- Se cambia la conexión de la aplicación de vuelta a Oracle.
+- PostgreSQL se descarta.
+- No se necesita sincronización.
+
+#### ⚠️ **Rollback con datos nuevos en PostgreSQL**
+- Si se insertaron datos válidos, se debe:
+  - **Exportar los datos nuevos** desde PostgreSQL (por timestamp, usuario, etc.).
+  - **Transformarlos** al formato Oracle.
+  - **Cargarlos manualmente o con scripts** en Oracle.
+- Esto **solo es posible si se implementó auditoría o CDC**.
+
+#### ❌ **Sin auditoría ni sincronización previa**
+- El rollback es **muy riesgoso**.
+- Puede requerir **restaurar Oracle desde backup** y **perder datos recientes**.
+- En este caso, muchas empresas **optan por corregir el error en PostgreSQL** en lugar de volver atrás.
+
+**Buenas prácticas:**
+- Implementar **triggers de auditoría** en PostgreSQL antes del corte.
+- Tener un **plan de sincronización inversa documentado**.
+- Definir **criterios claros para activar rollback** (ej. errores críticos, pérdida de datos, fallos funcionales).
