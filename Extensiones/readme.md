@@ -170,7 +170,7 @@ SE-PostgreSQL: Implementa políticas de seguridad obligatoria (MAC) basadas en S
 pg_proctab ---> https://github.com/markwkm/pg_proctab/tree/main
 
 temboard  -> es una herramienta de código abierto y gratuita para monitorear, Alertas y notificaciones y administrar instancias de PostgreSQL  https://github.com/dalibo/temboard/?tab=readme-ov-file
-
+pgwatch2 -> Monitoreo general 
 pgAudit: Registra operaciones sensibles como DDL y DML.
 pganalyze-> Monitoreo de Rendimiento: ,Análisis de Consultas ,Asesor de Índices: ,Asesor de VACUUM ,Alertas y Notificaciones ,Visualización de Datos 
 pgDash -> es una solución de monitoreo integral diseñada específicamente para despliegues de PostgreSQL. (Monitoreo en Profundidad,Informes y Visualización ,Alertas ,Monitoreo de Replicación ,Integraciones)
@@ -182,6 +182,7 @@ Grafana -> Aunque se utiliza principalmente para la visualización de datos, Gra
 pgNow -> pgNow es una herramienta gratuita para diagnóstico de rendimiento en PostgreSQL. Fue desarrollada por Redgate y permite obtener información en tiempo real sobre la salud, configuración y rendimiento de la base de datos.
 Checkmk ->  herramienta de monitoreo de código abierto que ofrece monitoreo integral para bases de datos PostgreSQ
 pgreplay ->  es una utilidad que reproduce el tráfico de consultas SQL registrado en los logs de PostgreSQL. Su propósito principal es simular una carga de trabajo real
+powa (PostgreSQL Workload Analyzer):**  Un sistema de monitoreo que proporciona análisis detallados y gráficos sobre el rendimiento de las consultas, el uso de índices, y otras métricas clave, ayudando a los administradores a identificar y resolver problemas de rendimiento.
 
 SIEM  detección de amenazas
 Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia gama de funcionalidades para la detección de amenazas, el monitoreo de integridad y la respuesta a incidente
@@ -335,7 +336,7 @@ rendimiento general de la base de datos.
 
 - **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
 - **pg_stat_monitor:** Extensión avanzada para monitoreo de consultas.
--  **powa (PostgreSQL Workload Analyzer):**  Un sistema de monitoreo que proporciona análisis detallados y gráficos sobre el rendimiento de las consultas, el uso de índices, y otras métricas clave, ayudando a los administradores a identificar y resolver problemas de rendimiento.
+
 
 
 
