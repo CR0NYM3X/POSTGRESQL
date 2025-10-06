@@ -1,6 +1,4 @@
-Gracias por elegir el formato **2 - Análisis estructurado**. Vamos a abordar tu necesidad de orientación sobre herramientas gratuitas para migrar motores de bases de datos a **PostgreSQL**, sus limitaciones y qué tipo de objetos se migran.
 
-***
 
 ## 🧭 Análisis estructurado: Migración a PostgreSQL con herramientas gratuitas
 
@@ -113,8 +111,5 @@ Orientar a profesionales que están migrando bases de datos hacia PostgreSQL, id
 Una empresa migró de Oracle a PostgreSQL usando **ora2pg**, pero tuvo que reescribir más de 300 funciones PL/SQL manualmente. El proceso tomó 3 meses, pero redujo costos de licencias en un 80%.
 
 
- --------------
 
  
-
-¿Te gustaría que te prepare un **laboratorio técnico paso a paso** con alguna de estas herramientas (por ejemplo, pgloader o ora2pg)? ¿O prefieres que te ayude a evaluar cuál herramienta usar según tu motor origen?
