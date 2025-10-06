@@ -220,8 +220,34 @@ SELECT * FROM cultivos;
 
 ## 💡 11. Recomendaciones
 
-*   Usa `ora2pg -t SHOW_REPORT` para ver qué objetos pueden migrarse
-*   Considera usar `pgloader` si solo necesitas migrar datos
+
+ # La opción `-t SHOW_REPORT`
+se utiliza para **generar un informe detallado del análisis de una base de datos Oracle antes de migrarla a PostgreSQL**. Este informe no realiza ninguna migración, sino que **evalúa el esfuerzo necesario** para llevar a cabo la migración.
+
+### ¿Qué incluye el reporte generado por `ora2pg -t SHOW_REPORT`?
+
+El informe muestra:
+
+- **Número de objetos** en la base de datos Oracle (tablas, vistas, funciones, procedimientos, triggers, etc.).
+- **Compatibilidad** de esos objetos con PostgreSQL.
+- **Estimación del esfuerzo** de migración (en puntos de complejidad).
+- **Problemas potenciales** como tipos de datos incompatibles, funciones PL/SQL que requieren reescritura, etc.
+- **Recomendaciones** para ajustar la configuración de ora2pg antes de iniciar la migración real.
+
+### ¿Para qué sirve?
+
+Este comando es ideal para:
+
+- **Auditoría previa** a la migración.
+- **Planificación del proyecto** de migración.
+- **Identificación de obstáculos técnicos**.
+- **Estimación de tiempos y recursos** necesarios.
+
+### Ejemplo de uso:
+
+```bash
+ora2pg -t SHOW_REPORT -c /etc/ora2pg/ora2pg.conf
+```
 
 ***
 
