@@ -363,6 +363,134 @@ Comparar resultados. También puedes usar `CHECKSUM` o `hashes` para validar int
 
 ***
 
+---
+# Ejemplos de archivos .load
+
+## 🔍 Ejemplo 1 explicado paso a paso
+
+```lisp
+LOAD DATABASE
+     FROM     mysql://user:password@localhost:3306/database
+     INTO     pgsql://postgres:postgres@localhost:5432/database
+
+ WITH CREATE NO TABLES
+
+ including only table names matching 'Employees'
+
+ALTER TABLE NAMES MATCHING 'Employees_table_view' RENAME TO 'Employees'
+
+MATERIALIZE VIEWS Employees_table_view AS $$ 
+  SELECT ID AS EmployeeID, LastName, FirstName, LastActivity AS LastLogin 
+  FROM Employees; 
+$$
+;
+```
+
+### ¿Qué hace este script?
+
+1. **`LOAD DATABASE FROM ... INTO ...`**  
+   Indica que se va a migrar una base de datos desde MySQL hacia PostgreSQL.
+
+2. **`WITH CREATE NO TABLES`**  
+   Le dice a pgloader que **no cree las tablas automáticamente**. Esto se usa cuando ya tienes las tablas creadas en PostgreSQL o quieres control total sobre su estructura.
+
+3. **`including only table names matching 'Employees'`**  
+   Solo migrará la tabla que coincida con el nombre `'Employees'`.
+
+4. **`ALTER TABLE NAMES MATCHING 'Employees_table_view' RENAME TO 'Employees'`**  
+   Renombra una tabla que se llama `Employees_table_view` a `Employees` en PostgreSQL.
+
+5. **`MATERIALIZE VIEWS ...`**  
+   Crea una **vista materializada** en PostgreSQL con una consulta personalizada. En este caso, transforma la vista `Employees_table_view` en una tabla con columnas renombradas.
+
+---
+
+## 🔍 Ejemplo 2 explicado
+
+```lisp
+LOAD DATABASE
+   FROM mysql://root:mysql@localhost/treelib 
+   INTO postgresql://localhost/treelib
+
+ALTER schema 'treelib' rename to 'public'
+
+CAST
+    type bigint to bigint drop typemod
+;
+```
+
+### ¿Qué hace este script?
+
+1. **Carga la base `treelib` desde MySQL a PostgreSQL.**
+
+2. **`ALTER schema 'treelib' rename to 'public'`**  
+   Cambia el nombre del esquema `treelib` a `public` en PostgreSQL. Esto es útil si quieres que todo quede en el esquema por defecto.
+
+3. **`CAST type bigint to bigint drop typemod`**  
+   Indica que cuando se migren columnas tipo `bigint`, se elimine el **typemod** (modificador de tipo), que puede incluir restricciones como longitud o precisión. Esto evita errores de compatibilidad.
+
+---
+
+## 🧰 Instrucciones comunes y muy usadas en pgloader
+
+Aquí tienes otras instrucciones que se usan mucho:
+
+### 1. **`WITH` opciones comunes**
+```lisp
+WITH include no drop, create tables, create indexes, reset sequences
+```
+- `include no drop`: No elimina objetos existentes.
+- `create tables`: Crea las tablas en destino.
+- `create indexes`: Crea los índices.
+- `reset sequences`: Ajusta las secuencias para que empiecen desde el valor correcto.
+
+---
+
+### 2. **`CAST` para tipos personalizados**
+```lisp
+CAST type datetime to timestamptz
+CAST type tinyint to smallint
+```
+- Convierte tipos de datos de MySQL a PostgreSQL de forma específica.
+
+---
+
+### 3. **`ALTER schema`**
+```lisp
+ALTER schema 'old_schema' rename to 'new_schema'
+```
+- Renombra esquemas durante la migración.
+
+---
+
+### 4. **`INCLUDING ONLY TABLE NAMES MATCHING`**
+```lisp
+INCLUDING ONLY TABLE NAMES MATCHING ~/^user_/, ~/^log_/
+```
+- Usa expresiones regulares para incluir solo ciertas tablas.
+
+---
+
+### 5. **`EXCLUDING TABLE NAMES MATCHING`**
+```lisp
+EXCLUDING TABLE NAMES MATCHING ~/^temp_/, ~/^backup_/
+```
+- Excluye tablas que no quieres migrar.
+
+---
+
+### 6. **`BEFORE LOAD DO` y `AFTER LOAD DO`**
+```lisp
+BEFORE LOAD DO
+$$ DROP TABLE IF EXISTS temp_data; $$
+
+AFTER LOAD DO
+$$ ANALYZE; $$
+```
+- Ejecuta comandos antes o después de la migración.
+
+
+
 ## 14. 📚 Bibliografía
 ```
 Migrate a MySQL database to PostgreSQL using pgLoader  -> https://medium.com/@acosetov/migrate-a-mysql-database-to-postgresql-using-pgloader-5d943b9fc51c
