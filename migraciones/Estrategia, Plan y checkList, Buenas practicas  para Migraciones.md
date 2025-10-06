@@ -837,3 +837,82 @@ Estas herramientas **automatizan mucho**, pero **no hacen magia**. Necesitas rev
 6. **Testing y validación**:
    - Comparar resultados entre Oracle y PostgreSQL.
    - Validar que todo funcione igual (consultas, procesos, reportes).
+
+
+---
+
+## ⏳ **Duración estimada del un proyecto**
+
+La duración depende del tamaño, complejidad y criticidad de la base de datos. Aquí una guía general:
+
+| Tipo de migración | Tiempo estimado |
+|-------------------|-----------------|
+| Pequeña (1-5 GB, pocos objetos) | 2-4 semanas |
+| Mediana (5-100 GB, lógica moderada) | 1-2 meses |
+| Crítica / grande (100+ GB, lógica compleja, alta disponibilidad) | 3-6 meses o más |
+
+> ⚠️ **Importante**: Esto incluye análisis, pruebas, migración, validación y puesta en producción.
+
+ 
+
+## 👥 **Equipo mínimo recomendado**
+
+Para una base crítica, se recomienda al menos **5 roles clave**:
+
+### 1. **Líder de proyecto / Arquitecto de migración**
+- **Responsabilidades**: Planificación, coordinación, decisiones técnicas.
+- **Conocimientos**:
+  - Arquitectura de Oracle y PostgreSQL.
+  - Migraciones empresariales.
+  - Alta disponibilidad, seguridad, rendimiento.
+
+### 2. **DBA Oracle**
+- **Responsabilidades**: Exportar datos, entender la lógica actual, colaborar en la conversión.
+- **Conocimientos**:
+  - PL/SQL, paquetes, triggers, tipos de datos.
+  - Seguridad, backups, monitoreo.
+
+### 3. **DBA PostgreSQL**
+- **Responsabilidades**: Crear estructuras, importar datos, adaptar lógica.
+- **Conocimientos**:
+  - PL/pgSQL, funciones, roles, tuning.
+  - Herramientas como `ora2pg`, `pgloader`, `oracle_fdw`.
+
+### 4. **Desarrollador backend / integrador**
+- **Responsabilidades**: Adaptar aplicaciones que consumen la base de datos.
+- **Conocimientos**:
+  - Conexión a PostgreSQL desde lenguajes como Java, Python, PHP.
+  - Validación de queries, ORM, APIs.
+
+### 5. **QA / Tester funcional**
+- **Responsabilidades**: Validar que todo funcione igual que en Oracle.
+- **Conocimientos**:
+  - Pruebas de regresión, validación de datos.
+  - Comparación de resultados entre Oracle y PostgreSQL.
+
+ 
+
+## 🧩 **Fases del proyecto**
+
+1. **Análisis y planificación**
+   - Inventario de objetos, dependencias, tamaño.
+   - Evaluación con herramientas como `ora2pg`.
+
+2. **Prueba piloto**
+   - Migrar una parte representativa.
+   - Validar rendimiento y compatibilidad.
+
+3. **Conversión de objetos**
+   - Esquemas, funciones, triggers, paquetes.
+
+4. **Migración de datos**
+   - Validación de integridad, encoding, formatos.
+
+5. **Pruebas funcionales**
+   - Comparar resultados, rendimiento, errores.
+
+6. **Puesta en producción**
+   - Ventana de mantenimiento, rollback plan.
+
+7. **Monitoreo post-migración**
+   - Logs, rendimiento, errores, ajustes.
