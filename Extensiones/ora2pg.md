@@ -115,6 +115,21 @@ Este manual tiene como objetivo guiarte paso a paso en la migración de una base
 ```bash
 sudo apt update
 sudo apt install ora2pg -y
+
+#Instalar DBI
+ apt-get install cpanminus 
+cpanm DBI 
+
+#Instalar DBD::Oracle y DBD::Pg
+ cpanm DBD::Oracle 
+cpanm DBD::Pg 
+
+#Instalar ora2pg
+ tar xjf ora2pg-xxtar.bz2 
+cd ora2pg-xx/ 
+perl Makefile.PL 
+make && make install
+
 ```
 
 ### 🔹 Configuración de conexión a Oracle
@@ -128,11 +143,11 @@ sudo nano /etc/ora2pg/ora2pg.conf
 Configuramos:
 
 ```ini 
-ORACLE_DSN = localhost:1521/ORCL -- ORACLE_DSN     dbi:Oracle:host=192.168.1.100;sid=ORCL;port=1521
+ORACLE_DSN = localhost:1521/ORCL -- - dbi:Oracle:host=10.0.1.2;sid=DB_SID;port=1522
 ORACLE_USER = oracle_user
 ORACLE_PWD = oracle_password
 
-PG_DSN = localhost:5432/postgres
+PG_DSN = localhost:5432/postgres --- dbi:Pg:dbname=ora2pg_db;host=10.23.14.50;port=5432
 PG_USER = postgres_user
 PG_PWD = postgres_password
 
@@ -356,10 +371,14 @@ DMS | Oracle to PostgreSQL - Part 3 of 4 -> https://blog.searce.com/dms-oracle-t
 DMS | Oracle to PostgreSQL — Part 4 of 4 -> https://blog.searce.com/dms-oracle-to-postgresql-part-4-of-4-49ea8effd1c0
 
 
-Important Ora2pg config variables -> https://medium.com/@abhijitgm5/configure-your-ora2pg-config-file-b82f7f46f6c5
+
+
 Case Study: Migrating from Oracle 19c to PostgreSQL 16 using Ora2PG -> https://medium.com/@datapatrolt/case-study-migrating-from-oracle-19c-to-postgresql-16-using-ora2pg-a0ef2dde81cc
 Oracle to Postgres : The Database Darwinism -> https://drunkdba.medium.com/oracle-to-postgres-the-database-darwinism-194390c5833d
-Ora2pg -> https://technoshow91.medium.com/ora2pg-1d108fe10821
+Ora2pg GCP  -> https://technoshow91.medium.com/ora2pg-1d108fe10821
+
+Important Ora2pg config variables -> https://medium.com/@abhijitgm5/configure-your-ora2pg-config-file-b82f7f46f6c5
+migrate-oracle-postgres-using-ora2pg -> https://github.com/GoogleCloudPlatform/community/blob/master/archived/migrate-oracle-postgres-using-ora2pg/index.md
 
 Oracle DB migration to Azure Database for Postgres (PG) -> https://medium.com/@chbasani/oracle-db-migration-to-azure-database-for-postgres-pg-69ee8ce34e07
 Oracle to Postgres Migration Guide for Azure -> https://techcommunity.microsoft.com/blog/adforpostgresql/new-oracle-to-postgres-migration-guide-for-azure/2055303
