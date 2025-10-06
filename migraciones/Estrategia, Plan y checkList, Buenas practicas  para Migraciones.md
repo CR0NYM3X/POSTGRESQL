@@ -263,6 +263,7 @@ Antes de migrar, es fundamental entender el entorno actual.
  
 
 ### 🛠️ **Fase 7: Optimización post-migración**
+- Plan de Rollback
 - Ajuste de parámetros de PostgreSQL (`work_mem`, `shared_buffers`, etc.).
 - Revisión de índices y estadísticas.
 - Implementación de mantenimiento automático (vacuum, analyze).
@@ -681,3 +682,111 @@ No migraría a PostgreSQL si:
 - Implementar **triggers de auditoría** en PostgreSQL antes del corte.
 - Tener un **plan de sincronización inversa documentado**.
 - Definir **criterios claros para activar rollback** (ej. errores críticos, pérdida de datos, fallos funcionales).
+
+
+---
+
+## 🎯 ¿Por qué es importante un plan de rollback en una migración?
+ 
+Un plan de rollback **no es opcional**  Porque **una migración es un punto de no retorno si no se planifica bien**. 
+Estás cambiando la base de datos que sustenta procesos críticos del negocio. Si algo falla y no puedes volver atrás, puedes:
+
+- Perder datos.
+- Interrumpir operaciones.
+- Afectar la experiencia del usuario.
+- Generar pérdidas económicas y reputacionales.
+
+ 
+
+## 🧪 Escenario técnico realista: migración sin rollback
+
+### 🏢 **Contexto**
+Una empresa de retail migra su sistema de ventas de Oracle a PostgreSQL.  
+La migración se hace durante la madrugada para minimizar el impacto.
+
+### 🔄 **Estrategia**
+- Se hace un dump de Oracle con `Data Pump`.
+- Se convierte el esquema con `Ora2Pg`.
+- Se importan los datos a PostgreSQL.
+- Se cambia la conexión de la aplicación a PostgreSQL.
+
+### ⚠️ **Problema**
+Al iniciar operaciones a las 8:00 AM:
+- Los usuarios reportan errores al guardar ventas.
+- Algunas funciones de negocio no devuelven los resultados esperados.
+- Se detecta que una función PL/SQL fue mal convertida y está calculando mal los descuentos.
+
+### 🔥 **Consecuencias**
+- Se pierden ventas durante 2 horas.
+- El equipo intenta corregir el error en caliente, pero no lo logra.
+- No hay plan de rollback, y volver a Oracle implicaría restaurar un backup de hace 12 horas, perdiendo datos.
+
+ 
+
+## ✅ ¿Cómo habría ayudado un plan de rollback?
+
+Un buen plan habría incluido:
+
+1. **Backup completo de Oracle justo antes del corte.**
+2. **Registro de cambios durante la migración (CDC o triggers).**
+3. **Pruebas de validación post-migración antes de abrir a usuarios.**
+4. **Criterios claros para activar el rollback (ej. errores críticos, pérdida de datos).**
+5. **Procedimiento documentado para volver a Oracle en minutos.**
+
+Con esto, el equipo habría podido:
+- Detectar el error en pruebas.
+- Activar el rollback antes de abrir a usuarios.
+- Restaurar Oracle y mantener la operación sin pérdida de datos.
+
+ 
+
+## 🧪 Escenario: Migración programada durante la madrugada
+
+### 🕐 **Plan original**
+- **Horario de migración**: 2:00 AM a 6:00 AM.
+- **Hora de apertura de operaciones**: 8:00 AM.
+- **Objetivo**: Tener todo listo y validado antes de que los usuarios comiencen a trabajar.
+
+---
+
+## ❗ ¿Qué pasa si algo falla entre las 6:00 AM y las 8:00 AM?
+
+Supongamos que:
+- A las 6:30 AM detectas que algunas funciones críticas no están devolviendo resultados correctos.
+- A las 7:00 AM intentas corregir el código.
+- A las 7:45 AM te das cuenta de que no llegas a tiempo para tener todo listo a las 8:00 AM.
+
+### 🔁 ¿Qué opciones tienes?
+
+#### ✅ **Si tienes un plan de rollback:**
+- A las 7:00 AM decides **activar el rollback**.
+- Cambias las conexiones de la aplicación de vuelta a Oracle.
+- Restauras el estado de Oracle con los datos sincronizados hasta el último momento (idealmente con CDC o sincronización incremental).
+- A las 8:00 AM, los usuarios siguen trabajando como si nada hubiera pasado.
+
+#### ❌ **Si no tienes plan de rollback:**
+- No puedes volver a Oracle porque los datos nuevos ya no están sincronizados.
+- Restaurar Oracle desde un backup de las 2:00 AM implicaría perder datos.
+- No puedes abrir el sistema a las 8:00 AM.
+- El negocio se detiene, los usuarios no pueden trabajar, y el equipo entra en crisis.
+
+ 
+
+## 🎯 Entonces, ¿qué implica un rollback en este contexto?
+
+1. **Cambiar conexiones de la aplicación de PostgreSQL a Oracle.**
+2. **Restaurar Oracle al estado más reciente posible.**
+3. **Asegurar que los datos que llegaron entre el backup y el corte estén sincronizados (CDC, logs, etc.).**
+4. **Reiniciar servicios y validar que todo funcione.**
+5. **Notificar a los usuarios que se sigue operando en Oracle.**
+ 
+
+## ✅ Conclusión
+
+Tu idea de que el rollback puede ser tan simple como **cambiar las conexiones de vuelta a Oracle** es **válida**, **siempre y cuando**:
+
+- Oracle siga operativo y actualizado.
+- Tengas sincronizados los datos que llegaron después del backup.
+- No hayas hecho cambios irreversibles en la aplicación o en los datos.
+
+De lo contrario, el rollback puede ser **más complejo** y requerir restauraciones, reprocesamiento de datos o incluso intervención manual.
