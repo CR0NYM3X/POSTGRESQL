@@ -790,3 +790,50 @@ Tu idea de que el rollback puede ser tan simple como **cambiar las conexiones de
 - No hayas hecho cambios irreversibles en la aplicación o en los datos.
 
 De lo contrario, el rollback puede ser **más complejo** y requerir restauraciones, reprocesamiento de datos o incluso intervención manual.
+
+
+---
+
+### 🔧 **¿Son difíciles de usar las herramientas de migración?**
+
+**No tanto**, pero requieren conocimiento técnico y planificación. Algunas herramientas como:
+
+- **Oracle_fdw**: para acceder a Oracle desde PostgreSQL.
+- **ora2pg**: para migrar esquemas, datos y funciones.
+- **SQLines**: para convertir SQL y PL/SQL a PostgreSQL.
+- **pgloader**: para migrar datos con transformaciones.
+
+Estas herramientas **automatizan mucho**, pero **no hacen magia**. Necesitas revisar y ajustar manualmente:
+
+- Tipos de datos incompatibles.
+- Funciones y procedimientos almacenados.
+- Triggers, secuencias, paquetes.
+- Seguridad, roles, privilegios.
+- Rendimiento y optimización.
+
+ 
+
+### 🧠 **Lo realmente difícil es:**
+
+1. **Adaptar la lógica de negocio**:
+   - Oracle usa **PL/SQL**, PostgreSQL usa **PL/pgSQL**.
+   - Hay diferencias en cómo se manejan cursores, excepciones, paquetes, etc.
+
+2. **Convertir tipos de datos**:
+   - Oracle tiene tipos como `NUMBER`, `VARCHAR2`, `CLOB`, `BLOB`, `DATE` que no tienen equivalentes exactos en PostgreSQL.
+
+3. **Reescribir funciones y procedimientos**:
+   - No se migran automáticamente si son complejos.
+   - Hay que entender bien la lógica y reescribirla.
+
+4. **Migrar datos grandes sin perder integridad**:
+   - Validar claves primarias, foráneas, unicidad, etc.
+   - Verificar encoding, formatos de fecha, nulos.
+
+5. **Cambios en la seguridad y roles**:
+   - PostgreSQL maneja roles y privilegios de forma distinta.
+   - Hay que rediseñar el modelo de seguridad.
+
+6. **Testing y validación**:
+   - Comparar resultados entre Oracle y PostgreSQL.
+   - Validar que todo funcione igual (consultas, procesos, reportes).
