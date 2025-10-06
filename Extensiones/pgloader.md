@@ -1,7 +1,7 @@
 
 ## 🛠️ ¿Qué es pgloader?
 
-**pgloader** es una herramienta **open source** diseñada para migrar datos desde múltiples fuentes hacia PostgreSQL. Soporta motores como:
+**pgloader** es una herramienta **open source** diseñada para migrar datos desde múltiples fuentes hacia PostgreSQL. pgloader no migra funciones ni procedimientos almacenados (como FUNCTION, PROCEDURE, TRIGGER, EVENT, etc.) desde MySQL, Oracle u otros motores hacia PostgreSQL. Soporta motores como:
 
 - **MySQL**
 - **SQLite**
@@ -10,6 +10,37 @@
 - **Otros PostgreSQL**
 
 Utiliza el protocolo `COPY` de PostgreSQL para una carga rápida y eficiente [1](https://pgloader.readthedocs.io/en/latest/index.html).
+
+---
+
+### 🔐 Recomendaciones adicionales
+
+1. **Logs detallados**:
+   Usa `--logfile` para guardar el log completo del proceso:
+   ```bash
+   pgloader --logfile=/ruta/log_pgloader.log tu_script.load
+   ```
+
+2. **Validación post-migración**:
+   - Compara conteo de registros por tabla (`SELECT COUNT(*)`)
+   - Verifica claves primarias y foráneas si las migraste
+   - Usa `CHECKSUM` o `MD5` si necesitas validar contenido
+
+3. **Control de errores**:
+   - Usa `on error stop` si quieres que se detenga ante cualquier fallo
+   - O `on error resume next` si prefieres que continúe y registre errores
+
+4. **Transformaciones adicionales**:
+   Puedes usar `transform` para modificar datos durante la carga (por ejemplo, convertir valores nulos, limpiar strings, etc.)
+
+## 🛠️ Recomendaciones para disminuir errores
+
+1. **Revisa los tipos de datos** en MySQL que no tienen equivalente directo en PostgreSQL (como `enum`, `set`, `tinyint(1)`).
+2. **Evita migrar funciones o procedimientos almacenados**, ya que pgloader no los convierte. Hazlo manualmente si los necesitas.
+3. **Haz pruebas con bases pequeñas** antes de migrar producción.
+4. **Usa logs de pgloader** para revisar errores y advertencias (`--logfile`).
+5. **Valida los datos migrados** con queries de conteo y checksums.
+
 
 ---
 
@@ -489,7 +520,62 @@ $$ ANALYZE; $$
 ```
 - Ejecuta comandos antes o después de la migración.
 
+---
 
+## ✅ Ejemplo de `LOAD` completo y robusto
+
+```lisp
+LOAD DATABASE
+  FROM mysql://usuario:clave@localhost:3306/nombre_origen
+  INTO postgresql://usuario_pg:clave_pg@localhost:5432/nombre_destino
+
+WITH 
+  include no drop,         -- Es útil cuando ya tienes tablas, esquemas o datos destino en PostgreSQL y no quieres que se borren durante la migración.
+  create tables,           -- Crea las tablas
+  create indexes,          -- Crea los índices
+  reset sequences,         -- Ajusta las secuencias
+  data only,               -- Solo migra datos - no crea objetos en la db destino asume que ya existe la estructura en postgresql destino 
+  batch rows = 50000,      -- Mejora el rendimiento en lotes
+  multiple readers per thread, -- Optimiza lectura paralela
+  concurrency = 4          -- Número de hilos concurrentes
+  refetch rows = 10000,         -- Mejora lectura anticipada
+  rows per range = 50000,        -- Divide rangos para paralelismo
+  max parallel create index = 4, -- Índices en paralelo
+
+ALTER SCHEMA 'nombre_origen' RENAME TO 'public'  -- Si quieres que todo quede en el esquema por defecto
+
+
+CAST
+  type datetime to timestamptz,
+  type date to date,
+  type tinyint to smallint,
+  type bigint to bigint drop typemod,
+  type text to text drop typemod,
+  type decimal to numeric,       -- Mejora precisión
+  type double to double precision,
+  type char(1) to text           -- Evita problemas con caracteres únicos
+
+
+BEFORE LOAD DO
+  $$ CREATE SCHEMA IF NOT EXISTS public; $$,
+  $$ SET session_replication_role = replica; $$  -- Evita triggers durante carga
+
+AFTER LOAD DO
+  $$ SET session_replication_role = DEFAULT; $$,
+  $$ ANALYZE; $$,
+  $$ VACUUM; $$  -- Limpieza post-carga para optimizar rendimiento
+```
+ 
+ 
+ 
+  
+### 🧠 Valores session_replication_role
+
+| Valor | Descripción |
+|-------|-------------|
+| `origin` | Valor por defecto. Se ejecutan todos los triggers y reglas normalmente. |
+| `replica` | Se **desactivan los triggers y reglas** marcados como `FOR EACH ROW` que no sean `ALWAYS`. Útil para replicación. |
+| `local` | Se ejecutan solo los triggers marcados como `ALWAYS`. Los demás se omiten. |
 
 ## 14. 📚 Bibliografía
 ```
@@ -503,6 +589,7 @@ Converting from MySQL to Postgres with pgloader, for Heroku -> https://medium.co
 
 
 *   <https://pgloader.io>
+*    https://pgloader.readthedocs.io/en/latest/intro.html
 *   <https://www.postgresql.org/docs/>
 *   <https://dev.mysql.com/doc/>
 *   <https://wiki.postgresql.org/wiki/Migrating_from_MySQL_to_PostgreSQL>
