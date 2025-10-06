@@ -21,52 +21,105 @@ Utiliza el protocolo `COPY` de PostgreSQL para una carga rápida y eficiente [1]
 - **Secuencias e índices**: puede recrearlos en el destino.
 - **Transformaciones**: permite modificar datos al vuelo (casting, limpieza, proyecciones).
 - **Carga paralela**: mejora el rendimiento en migraciones grandes.
-
----
-
-## ⚠️ Limitaciones y consideraciones antes de migrar
-
-### 1. **Compatibilidad de tipos de datos**
-- Algunas conversiones pueden fallar si los tipos no son compatibles.
-- Es posible definir reglas de casting personalizadas en el archivo de configuración.
-
-### 2. **Longitud de nombres**
-- PostgreSQL tiene un límite de 63 caracteres para nombres de objetos (tablas, columnas, etc.).
-- pgloader puede truncar nombres largos automáticamente, lo que puede causar conflictos [2](https://www.percona.com/blog/migrating-from-mysql-to-postgresql-using-pgloader/).
-
-### 3. **Dependencias y relaciones**
-- Las relaciones complejas entre tablas deben estar bien definidas.
-- pgloader puede tener problemas si hay claves foráneas circulares o mal estructuradas.
-
-### 4. **Migración de funciones, procedimientos y triggers**
-- **No migra funciones ni procedimientos almacenados** automáticamente.
-- Estos deben migrarse manualmente y adaptarse a PL/pgSQL si vienen de otro motor.
-
-### 5. **Vistas y materializadas**
-- Las vistas pueden migrarse como estructuras, pero no siempre se migran con lógica completa.
-- Las vistas materializadas deben refrescarse manualmente en PostgreSQL.
-
-### 6. **Extensiones y objetos especiales**
-- No migra extensiones específicas del origen (como funciones de Oracle o SQL Server).
-- Debes revisar si hay objetos no compatibles con PostgreSQL.
-
-### 7. **Errores y registros**
-- pgloader genera archivos `reject.dat` y `reject.log` para registrar errores de carga.
-- Es importante revisarlos después de la migración para validar integridad.
-
----
-
-## 🧪 Recomendaciones antes de usar pgloader
-
-1. **Audita tu base de datos origen**: identifica tipos de datos, relaciones, funciones y vistas.
-2. **Define reglas de casting** si hay tipos personalizados.
-3. **Haz pruebas con bases pequeñas** antes de migrar entornos grandes.
-4. **Revisa nombres largos** y objetos especiales.
-5. **Valida la integridad post-migración** con scripts de comparación.
-6. **Documenta todo el proceso** para futuras migraciones o auditorías.
-
----
  
+## ✅ Ventajas de pgloader (para contexto)
+
+- Migración automática de esquemas y datos
+- Conversión de tipos entre motores
+- Carga paralela optimizada
+- Transformaciones básicas en vuelo
+- Soporte para múltiples fuentes (MySQL, SQLite, CSV, etc.)
+
+ 
+
+## ❌ ¿Qué NO hace pgloader?
+
+Aquí tienes una lista detallada de las funciones que **pgloader no cubre**:
+
+### 1. **No migra procedimientos almacenados**
+- MySQL usa SQL/PSM, mientras que PostgreSQL usa PL/pgSQL.
+- Las funciones, triggers y procedimientos deben ser **reescritos manualmente**.
+
+### 2. **No migra funciones definidas por el usuario**
+- Cualquier lógica embebida en funciones debe ser exportada y adaptada.
+
+### 3. **No migra eventos programados (event scheduler)**
+- PostgreSQL no tiene un equivalente directo; se recomienda usar `pg_cron` o tareas externas.
+
+### 4. **No migra privilegios ni roles personalizados**
+- Los permisos (`GRANT`, `REVOKE`) deben ser reconstruidos en PostgreSQL.
+
+### 5. **No migra configuraciones del servidor MySQL**
+- Variables como `sql_mode`, `innodb_buffer_pool_size`, etc., no tienen equivalentes automáticos.
+
+### 6. **No migra vistas materializadas**
+- Las vistas deben ser recreadas manualmente, especialmente si dependen de funciones.
+
+### 7. **No migra claves externas con ON UPDATE CASCADE**
+- PostgreSQL requiere definición explícita y puede tener diferencias semánticas.
+
+### 8. **No migra índices FULLTEXT**
+- PostgreSQL usa `GIN` o `TSVECTOR`, que deben configurarse manualmente.
+
+### 9. **No migra tipos específicos como ENUM, SET, BLOB**
+- Aunque puede convertirlos a `TEXT` o `BYTEA`, no respeta la semántica original.
+
+### 10. **No realiza validaciones de integridad post-migración**
+- No compara checksums, ni verifica consistencia entre origen y destino.
+ 
+## 🧩 Casos de uso reales donde pgloader **no es suficiente**
+
+- Migraciones de sistemas bancarios con lógica compleja en procedimientos
+- Aplicaciones con uso intensivo de `FULLTEXT SEARCH`
+- Sistemas que dependen de eventos programados para tareas internas
+- Bases con estructuras de seguridad avanzadas (roles, permisos, auditoría)
+
+ 
+
+## 📌 Cuándo usar pgloader
+
+- Migraciones iniciales de datos estructurados
+- Proyectos donde la lógica se reescribirá desde cero
+- Entornos donde se puede validar manualmente la integridad
+ 
+
+## 🚫 Cuándo NO usar pgloader (solo)
+
+- Cuando se requiere migración completa de lógica de negocio
+- En entornos regulados donde se necesita trazabilidad completa
+- Si se necesita migrar funciones, triggers o procedimientos automáticamente
+
+ 
+
+## 🧪 Competencias o tecnologías alternativas
+
+| Herramienta       | ¿Migra lógica? | ¿GUI? | ¿Validación? |
+|-------------------|----------------|-------|--------------|
+| pgloader          | ❌             | ❌    | ❌           |
+| MySQL Workbench   | ✅ (exporta)   | ✅    | ❌           |
+| ora2pg            | ✅             | ❌    | ✅           |
+| AWS DMS           | ✅ (limitado)  | ✅    | ✅           |
+
+ 
+
+## 🧠 Consideraciones antes y después
+
+**Antes:**
+- Identificar objetos no migrables
+- Exportar procedimientos y funciones
+- Documentar dependencias
+
+**Después:**
+- Validar integridad de datos
+- Reescribir lógica en PL/pgSQL
+- Configurar roles y seguridad
+ 
+
+## 📝 Notas importantes
+
+- pgloader es excelente para migrar **datos**, pero no para migrar **comportamiento**.
+- Requiere complementarse con scripts manuales o herramientas adicionales.
+
 
 # 🏢 Manual de Migración Empresarial de MySQL a PostgreSQL con pgloader
 
