@@ -2408,3 +2408,19 @@ CREATE OPERATOR public.%+ (
 
 SELECT 15 %+ 7 AS resultado; -->   2 
 ```
+
+# Control de errores en scripts de PostgreSQL con ON_ERROR_STOP
+
+```sql
+
+--- Dentro de la base de datos 
+\set ON_ERROR_STOP on
+
+-- afuera de la base de datos 
+psql -U tu_usuario -d tu_base -f script.sql --set=ON_ERROR_STOP=on
+
+- Si ocurre **cualquier error**, `psql` **detiene la ejecución del script inmediatamente**.
+- Esto es útil para evitar que se ejecuten comandos posteriores que dependan de los anteriores.
+
+
+```
