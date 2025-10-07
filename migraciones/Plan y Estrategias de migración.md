@@ -585,3 +585,13 @@ La idea de que el rollback puede ser tan simple como **cambiar las conexiones de
 - No hayas hecho cambios irreversibles en la aplicación o en los datos.
 
 De lo contrario, el rollback puede ser **más complejo** y requerir restauraciones, reprocesamiento de datos o incluso intervención manual.
+
+
+
+```
+https://medium.com/engineering-on-the-incline/unit-testing-functions-in-postgresql-with-pgtap-in-5-simple-steps-beef933d02d3
+https://medium.com/@daily_data_prep/how-can-i-test-postgressql-database-objects-using-pgtap-9541caf5e85a
+https://medium.com/engineering-on-the-incline/unit-testing-postgres-with-pgtap-af09ec42795
+https://lebedana21.medium.com/parametric-sql-testing-with-pgtap-find-my-way-from-toy-examples-to-practical-application-a09bd8ae549a
+
+```
