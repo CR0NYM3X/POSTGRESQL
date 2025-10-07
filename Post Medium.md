@@ -3,7 +3,7 @@
 # Post Medium
 Aquí encontraras los links gratis de Medium que te ayudaran adquirir más conocimientos del funcionamiento de postgresql
 
-# Best Practice
+# best practices
 ```
 Best Practices for PostgreSQL Database -> https://medium.com/@israr.exs/best-practices-for-postgresql-database-9fea0f6eefad
 ```
