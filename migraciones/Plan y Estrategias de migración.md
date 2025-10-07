@@ -118,12 +118,16 @@ Para una base crítica, se recomienda al menos **5 roles clave**:
 ### **Herramientas para la migración**
 Estas te ayudarán a automatizar y validar el proceso:
 
-- **Oracle_fdw**: extensión para acceder a Oracle desde PostgreSQL.
-- **ora2pg**: herramienta muy usada para migrar esquemas, datos y funciones.
-- **pgloader**: útil para migraciones de datos.
-- **SQLines**: convierte SQL de Oracle a PostgreSQL.
-- **ETL**: herramienta que te puedan servir para pasar los datos.
-- **pg_bulkload**  Herramienta para cargas masivas de datos de manera eficiente.
+| **Herramienta**               | **Origen compatible**                  | **Qué migra / evalúa**                          | **Limitaciones**                                      |
+|------------------------------|----------------------------------------|--------------------------------------------------|--------------------------------------------------------|
+| **pgloader**                 | MySQL, SQLite, MS SQL                  | Esquema + datos                                  | No migra funciones/procedimientos                     |
+| **ora2pg**                   | Oracle                                 | Esquema + funciones + datos                      | Requiere configuración detallada                      |
+| **SQLines**                  | SQL Server, Oracle                     | Scripts SQL                                      | No migra datos directamente                           |
+| **DBConvert Lite**           | MySQL, MS SQL                          | Datos                                            | Limitado en objetos complejos                         |
+| **PostgreSQL Migration Toolkit** | Oracle, SQL Server                | Datos + estructura                               | Versión gratuita limitada                             |
+| **InsightWays**              | Oracle, SQL Server, otros              | Evaluación previa a migración                    | No realiza migración, solo análisis                   |
+| **Pentaho (PDI)**            | Oracle, SQL Server, MySQL, PostgreSQL | ETL completo: extracción, transformación, carga | Versión gratuita limitada; versión enterprise de paga |
+| **pg_bulkload**              | PostgreSQL                             | Carga masiva de datos                            | No migra estructura ni funciones                      |
 
 ---
 
@@ -589,9 +593,10 @@ De lo contrario, el rollback puede ser **más complejo** y requerir restauracion
 
 
 ```
-https://medium.com/engineering-on-the-incline/unit-testing-functions-in-postgresql-with-pgtap-in-5-simple-steps-beef933d02d3
-https://medium.com/@daily_data_prep/how-can-i-test-postgressql-database-objects-using-pgtap-9541caf5e85a
-https://medium.com/engineering-on-the-incline/unit-testing-postgres-with-pgtap-af09ec42795
-https://lebedana21.medium.com/parametric-sql-testing-with-pgtap-find-my-way-from-toy-examples-to-practical-application-a09bd8ae549a
+7 Best PostgreSQL Database Migration Tools in 2025 ->  https://www.ispirer.com/postgresql-database-migration-tools
+
+01 - Standard Operating Procedure (SOP) Oracle to PostgreSQL Migration using Ora2Pg -> https://medium.com/@jramcloud1/01-standard-operating-procedure-sop-oracle-to-postgresql-migration-using-ora2pg-7a5d5a36dd8b
+02 - Oracle to PostgreSQL Migration with Ora2Pg -> https://medium.com/@jramcloud1/02-oracle-to-postgresql-migration-with-ora2pg-8a99591eb918
+
 
 ```
