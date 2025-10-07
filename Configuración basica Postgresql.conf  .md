@@ -1421,7 +1421,7 @@ END $$;
 | `shared_buffers` | 25–40% de RAM | Mejora caché de escritura. |
 | `work_mem` | `4MB` o más | Mejora operaciones intermedias en escritura. |
 | `bgwriter_delay, bgwriter_lru_maxpages, bgwriter_lru_multiplier` | `Ajustar si hay muchas conexiones escribiendo` | Mejora el rendimiento del background writer en entornos con alta concurrencia. |
- 
+
 
 ## 🔍 Escenario 2: **Muchas conexiones, muchas lecturas**
 
