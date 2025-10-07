@@ -593,7 +593,30 @@ De lo contrario, el rollback puede ser **más complejo** y requerir restauracion
 
 
 ```
-7 Best PostgreSQL Database Migration Tools in 2025 ->  https://www.ispirer.com/postgresql-database-migration-tools
+How we migrated our PostgreSQL database with 11 seconds downtime -> https://gds.blog.gov.uk/2024/01/17/how-we-migrated-our-postgresql-database-with-11-seconds-downtime/
+
+Planning Your PostgreSQL Migration: Best Practices and Key Considerations -> https://www.heroku.com/blog/planning-your-postgresql-migration/
+Migrating to PostgreSQL: Best Practices and Strategies -> https://dev.to/msamitariq/migrating-to-postgresql-best-practices-and-strategies-4797
+How to Migrate Data Between PostgreSQL Servers: 3 Reliable Methods -> https://estuary.dev/blog/migrate-postgres-database-to-new-server/
+
+Migrating from Oracle to PostgreSQL -> https://blog.quest.com/product-post/migrating-from-oracle-to-postgresql-with-near-zero-downtime-using-shareplex-and-ora2pg-131524679/
+Migrating an Oracle Database to PostgreSQL -> https://docs.aws.amazon.com/es_es/dms/latest/sbs/chap-rdsoracle2postgresql.html
+Best practices for oracle to PostgreSQL migration -> https://journalijsra.com/index.php/content/best-practices-oracle-postgresql-migration
+
+Migrating from SQL Server to PostgreSQL: A Comprehensive Guide -> https://pradeepl.com/blog/migrating-from-sql-server-to-postgresql/
+SQL Server to Postgres -> https://risingwave.com/blog/sql-server-to-postgres-a-comprehensive-migration-guide/
+
+
+The PostgreSQL Migration Playbook: What to Plan, Avoid, and Expect -> https://www.percona.com/blog/best-practices-for-postgresql-migration/
+
+Accelerate PostgreSQL migrations to Google Cloud -> https://cloud.google.com/blog/products/databases/best-practices-for-migrating-postgresql-to-cloud-sql-with-dms
+
+
+15 Best Postgres Database Migration Tools in 2025 -> https://www.matillion.com/learn/blog/postgres-database-migration-platforms
+7 Best Postgres Migration Tools in 2025 for Reliable Database Transfers -> https://estuary.dev/blog/postgres-migration-tools/
+7 Best PostgreSQL Database Migration Tools in 2025 -> https://www.ispirer.com/postgresql-database-migration-tools
+Best 6 Postgres Database Migration Tools For 2025 -> https://airbyte.com/top-etl-tools-for-sources/postgres-migration-tool
+
 
 01 - Standard Operating Procedure (SOP) Oracle to PostgreSQL Migration using Ora2Pg -> https://medium.com/@jramcloud1/01-standard-operating-procedure-sop-oracle-to-postgresql-migration-using-ora2pg-7a5d5a36dd8b
 02 - Oracle to PostgreSQL Migration with Ora2Pg -> https://medium.com/@jramcloud1/02-oracle-to-postgresql-migration-with-ora2pg-8a99591eb918
