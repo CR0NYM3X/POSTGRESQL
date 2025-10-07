@@ -380,6 +380,16 @@ pg_analytics es una extensión que integra DuckDB dentro de PostgreSQL, permitie
 - **cube:** Introduce un tipo de datos multidimensional que facilita el manejo y análisis de datos en múltiples dimensiones.
 
 
+### **Migraciones **
+pgTAP ->  te ayuda a comprobar que tus funciones SQL hacen lo que deberían hacer, antes de que las pongas en producción. Es como tener un "verificador automático" que te dice si tu lógica está bien o mal.
+pg_comparator: comparar datos entre dos bases de datos o esquemas, ideal en escenarios de migración, sincronización o validación de integridad de datos. 
+
+pg_comparator \
+  --source "dbname=origen host=localhost user=postgres" \
+  --target "dbname=destino host=localhost user=postgres" \
+  --table public.clientes
+
+
 
 ### **9. Otros:**
 - **dblink:** Ejecuta consultas en bases de datos remotas desde PostgreSQL.
@@ -394,8 +404,6 @@ pg_analytics es una extensión que integra DuckDB dentro de PostgreSQL, permitie
  
  **pg_bigm**: Proporciona capacidad de búsqueda de texto completo mediante la creación de índices bigram (2-gram), lo que acelera las búsquedas de texto completo en PostgreSQL¹⁶.
  
- 
- **pg_comparator**: Compara bases de datos de servicios de prueba y producción en PostgreSQL, generando SQL para corregir diferencias⁵.
  
  
  **pg_filedump**: Utilidad para formatear archivos de heap, índice o control de PostgreSQL en una forma legible para humanos, útil para la inspección de bajo nivel de tablas e índices²³.
