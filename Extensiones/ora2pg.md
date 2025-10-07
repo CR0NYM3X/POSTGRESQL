@@ -1,3 +1,17 @@
+
+### **Conocer las diferencias clave entre Oracle y PostgreSQL**
+Antes de migrar, es fundamental entender cómo difieren:
+
+| Aspecto | Oracle | PostgreSQL |
+|--------|--------|------------|
+| Tipos de datos | Muy específicos (e.g. `NUMBER`, `VARCHAR2`) | Más estándar (e.g. `NUMERIC`, `VARCHAR`) |
+| Procedimientos | PL/SQL | PL/pgSQL |
+| Secuencias | `SEQUENCE`, `TRIGGERS` para autoincremento | `SERIAL`, `BIGSERIAL`, `IDENTITY` |
+| Funciones | Paquetes, funciones, procedimientos | Funciones (con o sin retorno) |
+| Particiones | Avanzadas, con subtipos | Mejoradas desde PG 10+ |
+| Índices | Bitmap, Function-based, etc. | B-tree, GIN, GiST, BRIN |
+| Seguridad | Roles, perfiles, auditoría | Roles, políticas, RLS, extensiones |
+
  
 ## 🧭 1. Índice
 
