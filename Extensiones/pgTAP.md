@@ -214,10 +214,19 @@ ok 3 - Rendimiento de Sorgo debe ser 750 kg/ha
 
 ***
 
+
 ## 14. 📚 Bibliografía
+``` 
+https://medium.com/engineering-on-the-incline/unit-testing-functions-in-postgresql-with-pgtap-in-5-simple-steps-beef933d02d3
+https://medium.com/@daily_data_prep/how-can-i-test-postgressql-database-objects-using-pgtap-9541caf5e85a
+https://medium.com/engineering-on-the-incline/unit-testing-postgres-with-pgtap-af09ec42795
+https://lebedana21.medium.com/parametric-sql-testing-with-pgtap-find-my-way-from-toy-examples-to-practical-application-a09bd8ae549a
 
 *   <https://github.com/theory/pgtap>
 *   <https://www.postgresql.org/docs/>
 *   <https://blog.justatheory.com/>
+
+```
+
 
 
