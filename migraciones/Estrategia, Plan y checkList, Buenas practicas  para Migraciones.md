@@ -193,9 +193,9 @@ Con base en las respuestas anteriores, podrás definir:
 Antes de migrar, es fundamental entender el entorno actual.
 
 #### ✅ Auditoría del entorno Oracle
-- Solicitar diagrams de Entidad Relación
-- Solicitar diagramas de flujo.
-- Solicitar topologia de la arquitectura.
+- solicitar Diagrama de Entidad-Relación (ERD)
+- solicitar Diagrama de Arquitectura del Sistema
+- solicitar Diagrama de Flujos de Datos (DFD)
 - Versiones de Oracle y PostgreSQL objetivo.
 - Número de bases de datos, esquemas, tablas, vistas, funciones, paquetes, triggers.
 - Uso de características específicas de Oracle: PL/SQL, paquetes, secuencias, sinónimos, tipos definidos por el usuario, etc.
