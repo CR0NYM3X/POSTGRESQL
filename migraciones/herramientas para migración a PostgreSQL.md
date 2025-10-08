@@ -155,7 +155,11 @@
 | **pg_dump / restore**  | Nativo                    | ❌             | ✅        | Migraciones pequeñas y backups                              | Requiere downtime                     |
 | **InsightWays**        | Evaluación previa         | ❌             | ✅        | Planificación de migraciones                                | No realiza migraciones                |
 | **Aiven-db-migrate**   | Replicación lógica        | ✅             | ✅        | Migraciones con Aiven                                       | Limitado a su ecosistema              |
+| **SharePlex**          | Replicación Oracle        | ✅             | ❌        | Migraciones empresariales, alta disponibilidad              | Licencia de pago, solo algunos motores |
+| **AWS SCT**            | Conversión de esquemas    | ❌             | ✅        | Migraciones heterogéneas (Oracle → PostgreSQL, etc.)        | No migra datos, solo esquemas         |
+| **DBConvert**          | Migración y sincronización| ❌             | ❌ (prueba) | Migraciones entre múltiples motores                         | Limitado en versión gratuita          |
 
+ 
 
 # Links
 ```
