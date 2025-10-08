@@ -201,6 +201,11 @@ CREATE TABLE cultivos (
 
 ```bash
 ora2pg -c /etc/ora2pg/ora2pg.conf -t TABLE -o cultivos.sql
+
+ora2pg -c ora2pg.conf -t SCHEMA > create_schema.sql
+ora2pg -c ora2pg.conf -t TABLE > create_tables.sql
+ora2pg -c ora2pg.conf -t DATA –scn xxxxx > data_migration.sql
+
 ```
 
 **Simulación de salida:**
