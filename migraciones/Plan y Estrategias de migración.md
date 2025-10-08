@@ -619,18 +619,64 @@ De lo contrario, el rollback puede ser **más complejo** y requerir restauracion
 - **Cronograma general**: Fechas clave y duración estimada.
 - **Riesgos y consideraciones**: Qué podría salir mal y cómo se mitigará.
 - **Herramientas y comunicación**: Cómo se coordinará el equipo.
+
+
+---
+
+ 
+## 🧭 **Tipos de Migración de Bases de Datos**
+
+### 1. **Migración Homogénea**
+- **Origen y destino usan el mismo motor** (por ejemplo, Oracle → Oracle, PostgreSQL → PostgreSQL).
+- Generalmente más sencilla.
+- Se puede hacer con herramientas nativas del motor.
+
+### 2. **Migración Heterogénea**
+- **Origen y destino usan motores diferentes** (por ejemplo, Oracle → PostgreSQL, SQL Server → MySQL).
+- Requiere conversión de esquemas, funciones, tipos de datos, etc.
+- Herramientas como **AWS SCT**, **Ora2Pg**, **DBConvert** son útiles aquí.
+
+
+
+### 3. **Migración en Tiempo Real (CDC - Change Data Capture)**
+- Los datos se replican **mientras el sistema origen sigue activo**.
+- Ideal para evitar downtime.
+- Herramientas: **Debezium**, **SharePlex**, **Estuary Flow**, **GoldenGate**.
+
+
+### 4. **Migración por Volumen (Bulk Load)**
+- Se exportan grandes cantidades de datos y se cargan en el destino.
+- Puede hacerse con archivos CSV, dumps, o herramientas ETL.
+- Ejemplo: `pg_dump` + `psql`, `COPY`, `DBConvert`.
+
+
+
+### 5. **Migración Manual**
+- Se realiza sin herramientas automatizadas.
+- Requiere escribir scripts SQL, crear estructuras manualmente.
+- Útil en proyectos pequeños o con estructuras simples.
+
+
+### 6. **Migración por Etapas (Faseada)**
+- Se migra por partes: primero el esquema, luego los datos, luego la lógica.
+- Reduce riesgos y permite validaciones intermedias.
+
+
+### 7. **Migración en la Nube**
+- Se migra de un entorno local a la nube (o viceversa).
+- Puede implicar cambios de arquitectura, seguridad, rendimiento.
+- Herramientas: **AWS DMS**, **Azure Database Migration Service**, **Google DMS**.
+
  
 
-```
-How we migrated our PostgreSQL database with 11 seconds downtime -> https://gds.blog.gov.uk/2024/01/17/how-we-migrated-our-postgresql-database-with-11-seconds-downtime/
 
+```
 Planning Your PostgreSQL Migration: Best Practices and Key Considerations -> https://www.heroku.com/blog/planning-your-postgresql-migration/
-Migrating to PostgreSQL: Best Practices and Strategies -> https://dev.to/msamitariq/migrating-to-postgresql-best-practices-and-strategies-4797
 How to Migrate Data Between PostgreSQL Servers: 3 Reliable Methods -> https://estuary.dev/blog/migrate-postgres-database-to-new-server/
 
 Migrating from Oracle to PostgreSQL -> https://blog.quest.com/product-post/migrating-from-oracle-to-postgresql-with-near-zero-downtime-using-shareplex-and-ora2pg-131524679/
-Migrating an Oracle Database to PostgreSQL -> https://docs.aws.amazon.com/es_es/dms/latest/sbs/chap-rdsoracle2postgresql.html
 Best practices for oracle to PostgreSQL migration -> https://journalijsra.com/index.php/content/best-practices-oracle-postgresql-migration
+Migrating an Oracle Database to PostgreSQL -> https://docs.aws.amazon.com/es_es/dms/latest/sbs/chap-rdsoracle2postgresql.html
 
 Migrating from SQL Server to PostgreSQL: A Comprehensive Guide -> https://pradeepl.com/blog/migrating-from-sql-server-to-postgresql/
 SQL Server to Postgres -> https://risingwave.com/blog/sql-server-to-postgres-a-comprehensive-migration-guide/
@@ -638,6 +684,10 @@ SQL Server to Postgres -> https://risingwave.com/blog/sql-server-to-postgres-a-c
 
 The PostgreSQL Migration Playbook: What to Plan, Avoid, and Expect -> https://www.percona.com/blog/best-practices-for-postgresql-migration/
 
+
+
+Migrating to PostgreSQL: Best Practices and Strategies -> https://dev.to/msamitariq/migrating-to-postgresql-best-practices-and-strategies-4797
+How we migrated our PostgreSQL database with 11 seconds downtime -> https://gds.blog.gov.uk/2024/01/17/how-we-migrated-our-postgresql-database-with-11-seconds-downtime/
 Accelerate PostgreSQL migrations to Google Cloud -> https://cloud.google.com/blog/products/databases/best-practices-for-migrating-postgresql-to-cloud-sql-with-dms
 
 
