@@ -398,6 +398,7 @@ Oracle DB migration to Azure Database for Postgres (PG) -> https://medium.com/@c
 Oracle to Postgres Migration Guide for Azure -> https://techcommunity.microsoft.com/blog/adforpostgresql/new-oracle-to-postgres-migration-guide-for-azure/2055303
 
 *   <https://ora2pg.darold.net/>
+*    https://github.com/darold/ora2pg
 *   <https://www.postgresql.org/docs/>
 *   <https://www.enterprisedb.com/>
 
