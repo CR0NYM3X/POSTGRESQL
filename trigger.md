@@ -135,7 +135,18 @@ ALTER TABLE nombre_tabla DISABLE TRIGGER nombre_trigger;
 
 ALTER TABLE nombre_tabla ENABLE TRIGGER ALL;
 ALTER TABLE nombre_tabla ENABLE TRIGGER nombre_trigger;
+
+ SET session_replication_role = replica;
+
 ```
+ 
+ ### 🧠 Valores session_replication_role
+
+| Valor | Descripción |
+|-------|-------------|
+| `origin` | Valor por defecto. Se ejecutan todos los triggers y reglas normalmente. |
+| `replica` | Se **desactivan los triggers y reglas** marcados como `FOR EACH ROW` que no sean `ALWAYS`. Útil para replicación. |
+| `local` | Se ejecutan solo los triggers marcados como `ALWAYS`. Los demás se omiten. |
 
 
 
