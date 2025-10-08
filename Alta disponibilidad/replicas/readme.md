@@ -540,6 +540,73 @@ Depende de tus necesidades:
 - **Desventajas**: Requiere configuración más avanzada.
 - **Ejemplo de uso**: Configurar `streaming replication` con `hot_standby = on`.
 
+---
+
+ 
+## 🧠 **Criterios para decidir si clusterizar PostgreSQL con réplicas**
+
+### 1. **Alta disponibilidad (HA)**
+- **¿Tu aplicación no puede tolerar caídas del servicio?**
+  - Si el servidor principal falla, necesitas un *failover automático* hacia un servidor réplica.
+  - Ideal en entornos críticos como bancos, e-commerce, salud, etc.
+
+**Indicadores:**
+- SLA alto (99.99% o más).
+- Usuarios conectados 24/7.
+- Pérdida de datos o tiempo de inactividad es costosa.
+
+ 
+### 2. **Escalabilidad de lectura**
+- **¿Tienes muchas consultas de solo lectura?**
+  - Las réplicas pueden distribuir la carga de lectura (reportes, dashboards, APIs).
+  - El *primary* se enfoca en escrituras, mientras las *replicas* manejan lecturas.
+
+**Indicadores:**
+- Consultas pesadas de lectura.
+- Muchos usuarios concurrentes.
+- Uso intensivo de BI o analítica.
+
+ 
+### 3. **Tolerancia a fallos y recuperación ante desastres (DR)**
+- **¿Necesitas protegerte contra pérdida total del servidor principal?**
+  - Réplicas en otra región o datacenter permiten recuperación rápida.
+  - Se puede usar *replicación asíncrona* para evitar latencia.
+
+**Indicadores:**
+- Requisitos de continuidad del negocio.
+- Políticas de recuperación ante desastres.
+- Infraestructura distribuida geográficamente.
+
+ 
+
+### 4. **Mantenimiento sin interrupciones**
+- **¿Requieres aplicar parches, actualizaciones o mantenimiento sin afectar el servicio?**
+  - Puedes hacer *switch-over* a una réplica mientras mantienes el nodo principal.
+
+**Indicadores:**
+- Ventanas de mantenimiento limitadas.
+- Requisitos de operación continua.
+
+ 
+
+### 5. **Carga de trabajo intensiva o variable**
+- **¿Tu servidor tiene picos de carga que afectan el rendimiento?**
+  - Las réplicas ayudan a absorber la carga en momentos críticos.
+
+**Indicadores:**
+- Variabilidad en el tráfico.
+ 
+
+### 6. **Requisitos de auditoría o replicación lógica**
+- **¿Necesitas replicar solo ciertas tablas o realizar transformaciones?**
+  - PostgreSQL permite replicación lógica para casos específicos.
+
+**Indicadores:**
+- Integración con otros sistemas.
+- Migración progresiva.
+- Auditoría de cambios.
+ 
+
 ## Bibliografía 
 ```
 https://www.youtube.com/watch?v=kW8xT_cgEMM
