@@ -169,7 +169,17 @@ EXPORT_SCHEMA = YES
 EXPORT_DATA = YES
 TYPE = TABLE
 
+# Export configuration
+OUTPUT_DIR /path/to/migration/output
 
+# Conversion options
+PG_SUPPORTS_JSONB 1
+PG_NUMERIC_TYPE 1
+
+TYPE TABLE
+SCHEMA source_schema
+
+ORACLE_HOME /path/to/oracle/home
 ```
 
 
