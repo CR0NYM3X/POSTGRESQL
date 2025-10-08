@@ -369,6 +369,8 @@ Este proceso puede **automatizarse con cron o scripts**, pero no es una replicac
 ---
 # links
 ```
+https://ora2pg.darold.net/report.html
+
 Ora2Pg tool introduction -> https://pankajconnect.medium.com/ora2pg-tool-introduction-48253d06d889
 
 01 - Standard Operating Procedure (SOP) Oracle to PostgreSQL Migration using Ora2Pg -> https://medium.com/@jramcloud1/01-standard-operating-procedure-sop-oracle-to-postgresql-migration-using-ora2pg-7a5d5a36dd8b
