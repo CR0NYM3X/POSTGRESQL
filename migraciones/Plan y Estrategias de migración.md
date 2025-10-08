@@ -590,7 +590,36 @@ La idea de que el rollback puede ser tan simple como **cambiar las conexiones de
 
 De lo contrario, el rollback puede ser **más complejo** y requerir restauraciones, reprocesamiento de datos o incluso intervención manual.
 
+---
 
+ 
+### 📋 **Ejemplo de Plan de Acción para Migración Oracle → PostgreSQL**
+
+| Nº | Actividad | Responsable | Fecha Inicio | Fecha Fin | Estado | Observaciones |
+|----|-----------|-------------|--------------|-----------|--------|----------------|
+| 1 | Reunión de kick-off | Líder de proyecto | 07/10/2025 | 07/10/2025 | ✅ | Alineación de objetivos |
+| 2 | Inventario de objetos Oracle | DBA Oracle | 08/10/2025 | 10/10/2025 | ⏳ | En progreso |
+| 3 | Mapeo de tipos de datos | DBA PostgreSQL | 11/10/2025 | 13/10/2025 | ⏳ | Revisar tipos complejos |
+| 4 | Diseño de esquema destino | Arquitecto BD | 14/10/2025 | 16/10/2025 | ⏳ | Validar con equipo de desarrollo |
+| 5 | Migración de prueba | DBA PostgreSQL | 17/10/2025 | 19/10/2025 | ⏳ | Usar Ora2Pg |
+| 6 | Validación de datos | QA / DBA | 20/10/2025 | 22/10/2025 | ⏳ | Comparar registros |
+| 7 | Reescritura de funciones | Dev PL/pgSQL | 20/10/2025 | 25/10/2025 | ⏳ | Revisar funciones críticas |
+| 8 | Plan de cutover | Líder de proyecto | 26/10/2025 | 27/10/2025 | ⏳ | Definir ventana de mantenimiento |
+| 9 | Migración final | DBA Oracle / PostgreSQL | 28/10/2025 | 29/10/2025 | ⏳ | Validar sincronización |
+| 10 | Validación post-migración | QA | 30/10/2025 | 31/10/2025 | ⏳ | Pruebas de regresión |
+| 11 | Documentación final | Líder de proyecto | 01/11/2025 | 02/11/2025 | ⏳ | Lecciones aprendidas |
+ 
+
+ 
+### 📌 ¿Qué incluye una reunión de kick-off?
+
+- **Presentación del proyecto**: ¿Qué se va a hacer y por qué?
+- **Roles y responsabilidades**: ¿Quién hace qué?
+- **Fases y entregables**: ¿Qué se espera en cada etapa?
+- **Cronograma general**: Fechas clave y duración estimada.
+- **Riesgos y consideraciones**: Qué podría salir mal y cómo se mitigará.
+- **Herramientas y comunicación**: Cómo se coordinará el equipo.
+ 
 
 ```
 How we migrated our PostgreSQL database with 11 seconds downtime -> https://gds.blog.gov.uk/2024/01/17/how-we-migrated-our-postgresql-database-with-11-seconds-downtime/
@@ -620,6 +649,9 @@ Best 6 Postgres Database Migration Tools For 2025 -> https://airbyte.com/top-etl
 
 01 - Standard Operating Procedure (SOP) Oracle to PostgreSQL Migration using Ora2Pg -> https://medium.com/@jramcloud1/01-standard-operating-procedure-sop-oracle-to-postgresql-migration-using-ora2pg-7a5d5a36dd8b
 02 - Oracle to PostgreSQL Migration with Ora2Pg -> https://medium.com/@jramcloud1/02-oracle-to-postgresql-migration-with-ora2pg-8a99591eb918
+
+- Plantilla de plan de migración en Miro -> https://miro.com/es/plantillas/plan-migracion-datos/) con cronograma y responsables[2](https://miro.com/es/plantillas/plan-migracion-datos/
+- Guía para crear planes de acción con ejemplos -> https://www.projectmanager.com/es/plan-de-accion)[3](https://www.projectmanager.com/es/plan-de-accion
 
 
 ```
