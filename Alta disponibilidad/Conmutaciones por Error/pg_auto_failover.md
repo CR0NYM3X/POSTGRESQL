@@ -138,6 +138,7 @@ Debe mostrar que el standby sigue sincronizado con el primario.
 
 ## Bibliografía
 ```
+https://medium.com/@mydbopsdatabasemanagement/postgresql-automatic-failover-with-pg-auto-failover-dd507b150892
 https://www.mydbops.com/blog/postgresql-automatic-failover-with-pg-auto-failover
 https://pg-auto-failover.readthedocs.io/en/main/ref/configuration.html
 https://pg-auto-failover.readthedocs.io/en/main/intro.html
