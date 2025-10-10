@@ -61,260 +61,165 @@ Existen **7 formas normales**, pero en la práctica se utilizan principalmente l
 ---
 
 ## 🔢 Explicación de 1NF, 2NF y 3NF con ejemplos en PostgreSQL
+ 
+## 🧪 EJEMPLO INICIAL (NO NORMALIZADO)
 
-
-## 🧱 Primera Forma Normal (1NF)
-
-### 🔍 Regla clara:
-
-> Una tabla está en 1NF si **cada celda contiene un solo valor** (atómico), **no listas ni conjuntos**, y **cada fila es única**.
-
-***
-
-### ❌ Tabla que **no cumple** 1NF
-
-| id\_pedido | cliente | productos             |
-| ---------- | ------- | --------------------- |
-| 1          | Ana     | manzana, plátano, uva |
-| 2          | Luis    | pera, mango           |
+### Tabla: `ventas_super`
 
 ```sql
-SELECT productos FROM pedidos WHERE cliente = 'Ana';
+CREATE TABLE ventas_super (
+  id_venta SERIAL PRIMARY KEY,
+  cliente TEXT,
+  direccion TEXT,
+  productos TEXT,         -- Ejemplo: 'Arroz,Leche,Pan'
+  cantidades TEXT,        -- Ejemplo: '2,1,3'
+  precios_unitarios TEXT, -- Ejemplo: '20,15,10'
+  total NUMERIC
+);
 ```
 
-Resultado:
+### Datos simulados:
 
-| productos             |
-| --------------------- |
-| manzana, plátano, uva |
+| id_venta | cliente | direccion       | productos         | cantidades | precios_unitarios | total |
+|----------|---------|------------------|-------------------|------------|--------------------|-------|
+| 1        | Laura   | Calle 1 #123     | Arroz,Leche,Pan   | 2,1,3      | 20,15,10           | 85    |
+| 2        | Pedro   | Calle 2 #456     | Leche             | 2          | 15                 | 30    |
 
-🔴 **Problema**: No puedes filtrar por producto fácilmente. La celda contiene una lista.
+---
 
-***
 
-### ✅ Tabla que **sí cumple** 1NF
 
-**Tabla `pedidos`:**
+¡Claro! Aquí tienes la sección corregida con el formato que pediste, explicando claramente **qué norma de normalización se incumple**, **por qué**, y **cómo se llama esa norma**:
 
-| id\_pedido | cliente |
-| ---------- | ------- |
-| 1          | Ana     |
-| 2          | Luis    |
+ 
+## ❌ INCUMPLIMIENTOS DE NORMALIZACIÓN
 
-**Tabla `productos_pedido`:**
+### 🔴 1NF – Grupos repetitivos  
+**Incumplimiento: múltiples valores en una sola celda.**  
+**Normalización: Primera Forma Normal (1NF)**  
+- Las columnas `productos`, `cantidades` y `precios_unitarios` contienen **listas separadas por comas**, lo cual **viola la 1NF**.
+- La 1NF exige que **cada celda contenga un solo valor atómico**, no listas ni estructuras internas.
+- Esto dificulta búsquedas, filtrado y operaciones SQL eficientes.
 
-| id\_producto | id\_pedido | producto |
-| ------------ | ---------- | -------- |
-| 1            | 1          | manzana  |
-| 2            | 1          | plátano  |
-| 3            | 1          | uva      |
-| 4            | 2          | pera     |
-| 5            | 2          | mango    |
+
+### 🔴 2NF – Dependencias parciales  
+**Incumplimiento: atributos que dependen solo de parte de la clave primaria.**  
+**Normalización: Segunda Forma Normal (2NF)**  
+- Si consideramos `(id_venta, producto)` como clave compuesta, los campos `cliente` y `direccion` **dependen solo de `id_venta`**, no de toda la clave.
+- La 2NF exige que Todos los atributos no clave deben depender de toda la clave primaria, no solo de una parte.
+- Esto genera redundancia y dificulta el mantenimiento de datos.
+
+### 🔴 3NF – Dependencias transitivas  
+**Incumplimiento: atributos que dependen de otro atributo no clave.**  
+**Normalización: Tercera Forma Normal (3NF)**  
+- El campo `precios_unitarios` **depende del producto**, no directamente de la clave primaria `id_venta`.
+- La 3NF exige que **no haya dependencias transitivas**, es decir, que los atributos dependan **solo de la clave primaria**, no de otros atributos no clave. Ningún atributo no clave debe depender de otro atributo no clave.
+- Esto puede causar inconsistencias si el precio de un producto cambia y no se actualiza en todas las filas.
+
+
+
+---
+
+## ✅ CORRECCIÓN: MODELO NORMALIZADO
+
+### 🔹 Tabla: `cliente`
 
 ```sql
-SELECT producto FROM productos_pedido WHERE id_pedido = 1;
+CREATE TABLE cliente (
+  id_cliente SERIAL PRIMARY KEY,
+  nombre TEXT,
+  direccion TEXT
+);
+
+-- Datos
+INSERT INTO cliente VALUES (1, 'Laura', 'Calle 1 #123');
+INSERT INTO cliente VALUES (2, 'Pedro', 'Calle 2 #456');
 ```
 
-Resultado:
+---
 
-| producto |
-| -------- |
-| manzana  |
-| plátano  |
-| uva      |
-
-***
-
-### 📊 Diagrama ER (1NF)
-```mermaid
-erDiagram
-    PEDIDOS ||--o{ PRODUCTOS_PEDIDO : contiene
-    PEDIDOS {
-        int id_pedido PK
-        string cliente
-    }
-    PRODUCTOS_PEDIDO {
-        int id_producto PK
-        int id_pedido FK
-        string producto
-    } 
-```
-
-
-***
-
-### 🧪 Ejemplo práctico
-
-> Ana hace un pedido con 3 productos. En lugar de guardar todos en una sola celda, se registran como 3 filas en otra tabla. Esto permite buscar, filtrar y analizar cada producto por separado.
-
-***
-
-## 🧱 Segunda Forma Normal (2NF)
-
-### 🔍 Regla clara:
-
-> Una tabla está en 2NF si **está en 1NF** y **todos los atributos no clave dependen completamente de la clave primaria**. Si la clave es compuesta, ningún atributo debe depender solo de una parte.
-
-***
-
-### ❌ Tabla que **no cumple** 2NF
-
-| id\_producto | fecha      | nombre\_producto | precio | cantidad |
-| ------------ | ---------- | ---------------- | ------ | -------- |
-| 1            | 2025-09-01 | Manzana          | 10     | 5        |
-| 1            | 2025-09-02 | Manzana          | 10     | 3        |
+### 🔹 Tabla: `producto`
 
 ```sql
-SELECT nombre_producto FROM ventas WHERE fecha = '2025-09-01';
+CREATE TABLE producto (
+  id_producto SERIAL PRIMARY KEY,
+  nombre TEXT,
+  precio_unitario NUMERIC
+);
+
+-- Datos
+INSERT INTO producto VALUES (1, 'Arroz', 20);
+INSERT INTO producto VALUES (2, 'Leche', 15);
+INSERT INTO producto VALUES (3, 'Pan', 10);
 ```
 
-Resultado:
+---
 
-| nombre\_producto |
-| ---------------- |
-| Manzana          |
-
-🔴 **Problema**: `nombre_producto` y `precio` dependen solo de `id_producto`, no de la combinación `id_producto + fecha`.
-
-***
-
-### ✅ Tabla que **sí cumple** 2NF
-
-**Tabla `productos`:**
-
-| id\_producto | nombre\_producto | precio |
-| ------------ | ---------------- | ------ |
-| 1            | Manzana          | 10     |
-
-**Tabla `ventas`:**
-
-| id\_venta | id\_producto | fecha      | cantidad |
-| --------- | ------------ | ---------- | -------- |
-| 1         | 1            | 2025-09-01 | 5        |
-| 2         | 1            | 2025-09-02 | 3        |
+### 🔹 Tabla: `venta`
 
 ```sql
-SELECT p.nombre_producto, v.cantidad
-FROM ventas v
-JOIN productos p ON v.id_producto = p.id_producto
-WHERE v.fecha = '2025-09-01';
+CREATE TABLE venta (
+  id_venta SERIAL PRIMARY KEY,
+  id_cliente INTEGER REFERENCES cliente(id_cliente),
+  fecha DATE DEFAULT CURRENT_DATE
+);
+
+-- Datos
+INSERT INTO venta (id_cliente) VALUES (1); -- Laura
+INSERT INTO venta (id_cliente) VALUES (2); -- Pedro
 ```
 
-Resultado:
+---
 
-| nombre\_producto | cantidad |
-| ---------------- | -------- |
-| Manzana          | 5        |
-
-***
-
-### 📊 Diagrama ER (2NF)
-```mermaid
-erDiagram
-    PRODUCTOS ||--o{ VENTAS : vendido_en
-    PRODUCTOS {
-        int id_producto PK
-        string nombre_producto
-        numeric precio
-    }
-    VENTAS {
-        int id_venta PK
-        int id_producto FK
-        date fecha
-        int cantidad
-    } 
-```
-
-
-***
-
-### 🧪 Ejemplo práctico
-
-> El producto "Manzana" tiene un precio fijo. Si se repite en varias ventas, no se debe duplicar su nombre y precio. Se guarda una sola vez en la tabla `productos`.
-
-***
-
-## 🧱 Tercera Forma Normal (3NF)
-
-### 🔍 Regla clara:
-
-> Una tabla está en 3NF si **está en 2NF** y **no hay dependencias transitivas**. Es decir, un atributo no clave no debe depender de otro atributo no clave.
-
-***
-
-### ❌ Tabla que **no cumple** 3NF
-
-| id\_empleado | nombre | id\_departamento | nombre\_departamento |
-| ------------ | ------ | ---------------- | -------------------- |
-| 1            | Ana    | 10               | Finanzas             |
-| 2            | Luis   | 20               | Ventas               |
+### 🔹 Tabla: `detalle_venta`
 
 ```sql
-SELECT nombre_departamento FROM empleados WHERE nombre = 'Ana';
+CREATE TABLE detalle_venta (
+  id_venta INTEGER REFERENCES venta(id_venta),
+  id_producto INTEGER REFERENCES producto(id_producto),
+  cantidad INTEGER,
+  PRIMARY KEY (id_venta, id_producto)
+);
+
+-- Datos
+-- Venta 1: Laura compró Arroz (2), Leche (1), Pan (3)
+INSERT INTO detalle_venta VALUES (1, 1, 2); -- Arroz
+INSERT INTO detalle_venta VALUES (1, 2, 1); -- Leche
+INSERT INTO detalle_venta VALUES (1, 3, 3); -- Pan
+
+-- Venta 2: Pedro compró Leche (2)
+INSERT INTO detalle_venta VALUES (2, 2, 2); -- Leche
 ```
 
-Resultado:
+---
 
-| nombre\_departamento |
-| -------------------- |
-| Finanzas             |
-
-🔴 **Problema**: `nombre_departamento` depende de `id_departamento`, que depende de `id_empleado`. Es una **dependencia transitiva**.
-
-***
-
-### ✅ Tabla que **sí cumple** 3NF
-
-**Tabla `empleados`:**
-
-| id\_empleado | nombre | id\_departamento |
-| ------------ | ------ | ---------------- |
-| 1            | Ana    | 10               |
-| 2            | Luis   | 20               |
-
-**Tabla `departamentos`:**
-
-| id\_departamento | nombre\_departamento |
-| ---------------- | -------------------- |
-| 10               | Finanzas             |
-| 20               | Ventas               |
+## 🧪 Consulta final para ver la venta completa
 
 ```sql
-SELECT d.nombre_departamento
-FROM empleados e
-JOIN departamentos d ON e.id_departamento = d.id_departamento
-WHERE e.nombre = 'Ana';
+SELECT 
+  v.id_venta,
+  c.nombre AS cliente,
+  c.direccion,
+  p.nombre AS producto,
+  dv.cantidad,
+  p.precio_unitario,
+  (dv.cantidad * p.precio_unitario) AS total_producto
+FROM venta v
+JOIN cliente c ON v.id_cliente = c.id_cliente
+JOIN detalle_venta dv ON v.id_venta = dv.id_venta
+JOIN producto p ON dv.id_producto = p.id_producto;
 ```
 
-Resultado:
+### 🖥️ Resultado:
 
-| nombre\_departamento |
-| -------------------- |
-| Finanzas             |
+| id_venta | cliente | direccion     | producto | cantidad | precio_unitario | total_producto |
+|----------|---------|---------------|----------|----------|------------------|----------------|
+| 1        | Laura   | Calle 1 #123  | Arroz    | 2        | 20               | 40             |
+| 1        | Laura   | Calle 1 #123  | Leche    | 1        | 15               | 15             |
+| 1        | Laura   | Calle 1 #123  | Pan      | 3        | 10               | 30             |
+| 2        | Pedro   | Calle 2 #456  | Leche    | 2        | 15               | 30             |
 
-***
 
-### 📊 Diagrama ER (3NF)
-
-```mermaid
-erDiagram
-    DEPARTAMENTOS ||--o{ EMPLEADOS : pertenece_a
-    DEPARTAMENTOS {
-        int id_departamento PK
-        string nombre_departamento
-    }
-    EMPLEADOS {
-        int id_empleado PK
-        string nombre
-        int id_departamento FK
-    } 
-```
-
-***
-
-### 🧪 Ejemplo práctico
-
-> Si el nombre del departamento cambia, solo se actualiza en una tabla. Los empleados siguen vinculados por `id_departamento`, evitando errores y duplicación.
 
 
 
