@@ -27,6 +27,109 @@ Relación: Cliente realiza Pedido
 Cardinalidad: 1:N
 ```
 
+## 🔹 1. Modelo Conceptual
+
+### ✅ ¿Qué es?
+Es una **visión general del negocio**, sin detalles técnicos. Se enfoca en **qué información se necesita** y **cómo se relaciona**.
+
+### 📌 Características:
+- Usa **entidades** (cosas importantes del negocio).
+- Define **relaciones** entre entidades.
+- No incluye tipos de datos ni claves primarias.
+
+### 🧠 Ejemplo:
+Imagina una tienda que vende productos.
+
+- **Entidades**:
+  - Cliente
+  - Producto
+  - Pedido
+
+- **Relaciones**:
+  - Un cliente puede hacer muchos pedidos.
+  - Un pedido puede incluir muchos productos.
+
+📄 Representación:
+```
+Cliente --- hace ---> Pedido --- contiene ---> Producto
+```
+
+ 
+## 🔹 2. Modelo Lógico
+
+### ✅ ¿Qué es?
+Es una **estructura detallada** del modelo conceptual, pero **sin depender del motor de base de datos** (como PostgreSQL u Oracle).
+
+### 📌 Características:
+- Incluye **atributos** (campos) de cada entidad.
+- Define **tipos de datos** (sin especificar el tipo exacto del SGBD).
+- Establece **claves primarias y foráneas**.
+- Normalización de datos.
+
+### 🧠 Ejemplo:
+Usando el ejemplo anterior:
+
+- **Cliente**:
+  - id_cliente (PK)
+  - nombre
+  - correo
+
+- **Producto**:
+  - id_producto (PK)
+  - nombre
+  - precio
+
+- **Pedido**:
+  - id_pedido (PK)
+  - fecha
+  - id_cliente (FK)
+
+- **Pedido_Producto** (tabla intermedia para la relación muchos a muchos):
+  - id_pedido (FK)
+  - id_producto (FK)
+  - cantidad
+
+ 
+
+## 🔹 3. Modelo Físico
+
+### ✅ ¿Qué es?
+Es la **implementación real** del modelo lógico en un **motor de base de datos específico**, como PostgreSQL.
+
+### 📌 Características:
+- Usa **tipos de datos específicos** del SGBD.
+- Incluye **índices**, **restricciones**, **particiones**, etc.
+- Optimizado para el rendimiento.
+
+### 🧠 Ejemplo en PostgreSQL:
+```sql
+CREATE TABLE cliente (
+  id_cliente SERIAL PRIMARY KEY,
+  nombre VARCHAR(100),
+  correo VARCHAR(100)
+);
+
+CREATE TABLE producto (
+  id_producto SERIAL PRIMARY KEY,
+  nombre VARCHAR(100),
+  precio NUMERIC(10,2)
+);
+
+CREATE TABLE pedido (
+  id_pedido SERIAL PRIMARY KEY,
+  fecha DATE,
+  id_cliente INTEGER REFERENCES cliente(id_cliente)
+);
+
+CREATE TABLE pedido_producto (
+  id_pedido INTEGER REFERENCES pedido(id_pedido),
+  id_producto INTEGER REFERENCES producto(id_producto),
+  cantidad INTEGER,
+  PRIMARY KEY (id_pedido, id_producto)
+);
+```
+
+
 ---
 
 ## 🧠 MÓDULO 2: Normalización y Calidad de Datos
