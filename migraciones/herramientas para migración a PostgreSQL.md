@@ -159,7 +159,17 @@
 | **AWS SCT**            | Conversión de esquemas    | ❌             | ✅        | Migraciones heterogéneas (Oracle → PostgreSQL, etc.)        | No migra datos, solo esquemas         |
 | **DBConvert**          | Migración y sincronización| ❌             | ❌ (prueba) | Migraciones entre múltiples motores                         | Limitado en versión gratuita          |
 
- 
+
+ ### 🏆 Herramientas ETL para ejecutar queries en múltiples motores y consolidar datos
+
+| Herramienta ETL         | Motores soportados | Programación de tareas | ¿Es de paga? | Características clave | Enlace |
+|-------------------------|--------------------|-------------------------|--------------|------------------------|--------|
+| **Talend Open Studio**  | Oracle, MySQL, PostgreSQL, SQL Server, etc. | Sí (cron, scheduler interno) | **Gratis (Open Source)** | Código abierto, gran comunidad, conectores múltiples | [Talend](https://www.datacamp.com/es/blog/a-list-of-the-16-best-etl-tools-and-why-to-choose-them) |
+| **Integrate.io**        | MongoDB, MySQL, PostgreSQL, Redshift, etc. | Sí (basado en nube) | **De paga** | Interfaz visual, seguridad avanzada, integración SaaS | [Integrate.io](https://www.unite.ai/es/best-etl-tools/) |
+| **Apache Nifi**         | Casi cualquier fuente | Sí (basado en flujo) | **Gratis (Open Source)** | Flujo visual, muy flexible, ideal para entornos mixtos | [Apache Nifi](https://clickup.com/es-ES/blog/137401/herramientas-etl) |
+| **Pentaho Data Integration (Kettle)** | Oracle, SQL Server, PostgreSQL, etc. | Sí | **Gratis con opción de pago** | Interfaz gráfica, transformaciones complejas, comunidad activa | [Pentaho](https://opensistemas.com/herramientas-etl-mas-usadas/) |
+| **Astera Centerprise**  | Bases de datos, archivos planos, API | Sí | **De paga** | Sin código, IA integrada, monitoreo, calidad de datos | [Astera](https://www.astera.com/es/knowledge-center/what-is-etl-tool/) |
+| **Hevo Data**           | PostgreSQL, MySQL, Redshift, BigQuery, etc. | Sí | **De paga con prueba gratuita** | ETL casi en tiempo real, transformaciones con Python | [Hevo](https://www.astera.com/es/knowledge-center/what-is-etl-tool/) |
 
 # Links
 ```
@@ -168,3 +178,5 @@
 7 Best PostgreSQL Database Migration Tools in 2025 -> https://www.ispirer.com/postgresql-database-migration-tools
 Best 6 Postgres Database Migration Tools For 2025 -> https://airbyte.com/top-etl-tools-for-sources/postgres-migration-tool
 ```
+
+
