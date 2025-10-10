@@ -703,5 +703,14 @@ Best 6 Postgres Database Migration Tools For 2025 -> https://airbyte.com/top-etl
 - Plantilla de plan de migración en Miro -> https://miro.com/es/plantillas/plan-migracion-datos/) con cronograma y responsables[2](https://miro.com/es/plantillas/plan-migracion-datos/
 - Guía para crear planes de acción con ejemplos -> https://www.projectmanager.com/es/plan-de-accion)[3](https://www.projectmanager.com/es/plan-de-accion
 
+--------- Migracion version pg_upgrade  ---------
+
+Upgrading PostgreSQL from Version 16 to Version 17 Using pg_upgrade on a Linux Server AWS EC2 instance -> https://medium.com/@jramcloud1/upgrading-postgresql-from-version-16-to-version-17-using-pg-upgrade-on-a-linux-server-aws-ec2-500816b823b9
+Seamless PostgreSQL Upgrade: Migrating from Version 12 to 16 in Docker  -> https://medium.com/@mpyatishev/seamless-postgresql-upgrade-migrating-from-version-12-to-16-in-docker-8141a8905899
+How to Upgrade PostgreSQL Version -> https://ozwizard.medium.com/how-to-upgrade-postgresql-version-2d0ede369c40
+PostgreSQL Major Version Upgrade Guide -> https://medium.com/@anasanjaria/postgresql-major-version-upgrade-guide-7af55e2c80a5
+How to upgrade Postgresql from version 15 to version 16 in Fedora , RHEL, CentOS, Rocky, Alma Linux -> https://sharansumitkumar.medium.com/how-to-upgrade-postgresql-from-version-15-to-version-16-in-fedora-rhel-centos-rocky-alma-linux-b1139435a940
+
+
 
 ```
