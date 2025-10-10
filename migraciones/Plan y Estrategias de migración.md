@@ -196,113 +196,156 @@ Con base en las respuestas anteriores, podrás definir:
 ---
 
 
-#  🧭 **Plan Completo de Migración de Oracle a PostgreSQL**
+## 🧭 **Plan de Migración de Oracle a PostgreSQL**
 
-### 🔍 **Fase 1: Evaluación y Planeación**
-Antes de migrar, es fundamental entender el entorno actual.
+### 📋 **1. Documentación General**
+- Registrar todo el proceso técnico y funcional.
+- Mantener trazabilidad de decisiones, errores, ajustes y resultados.
 
-#### ✅ Auditoría del entorno Oracle
-- solicitar Diagrama de Entidad-Relación (ERD) - Te permite entender la estructura lógica de la base de datos y cómo están conectadas las entidades.
-- solicitar Diagrama de Arquitectura del Sistema -  Te ayuda a identificar puntos de integración, dependencias y posibles impactos de la migración.
-- solicitar Diagrama de Flujos de Datos (DFD) - Te permite entender qué procesos leen/escriben en la base de datos y cómo se transforman los datos.
+ 
+
+### 🛠️ **2. Pre-Implementación**
+
+#### 🔍 **Recopilación de Información del Origen**
+- Identificar servidor origen, rendimiento, arquitectura de aplicaciones y comportamiento.
+- Confirmar uso de BLOBs, fechas y zonas horarias.
+- Solicitar:
+  - Diagrama ERD
+  - Diagrama de Arquitectura del Sistema
+  - Diagrama de Flujos de Datos (DFD)
 - Versiones de Oracle y PostgreSQL objetivo.
-- Número de bases de datos, esquemas, tablas, vistas, funciones, paquetes, triggers.
-- Uso de características específicas de Oracle: PL/SQL, paquetes, secuencias, sinónimos, tipos definidos por el usuario, etc.
-- Tamaño total de la base de datos.
-- Dependencias externas (APIs, ETLs, aplicaciones conectadas).
-- Requisitos de rendimiento, disponibilidad y seguridad.
+- Codificación de caracteres.
+- Dependencias externas (APIs, ETLs, apps).
+- Criticidad del sistema y ventanas de mantenimiento.
+- SLA del servicio.
+- Conocer el rendimiento actual del servidor origen.
 
-#### ✅ Definición de objetivos
-- ¿Migración completa o parcial?
-- Se tienen ventanas de tiempo de manetnimiento ? 
-- ¿Downtime permitido?
-- ¿Migración en caliente o en frío?
-- ¿Migración manual o automatizada?
+#### 📦 **Reporte de Inventario**
+- Listado completo de objetos, bases de datos y tamaños.
+- Tablas,Funciones, procedimientos, índices, restricciones, claves primarias y foráneas.
 
-#### ✅ Selección de herramientas
-- Ora2Pg
-- SQLines
-- pgloader
-- Herramientas propias o scripts personalizados.
+
+#### 🧭 **Definición de Migración**
+- Tipo de migración: manual vs automatizada (según criticidad y SLA).
+- Plan de rollback.
+- Plan DRP para servidor destino.
+- Medición de complejidad.
+- Herramientas de migración.
+- Usuarios, roles, privilegios y autenticación.
+
+
+
+#### 🔐 **Seguridad**
+- Backup completo de la base de datos origen.
+
+
+
+#### 🧪 **Preparación de Entornos de Pruebas**
+- **Origen**: Solicitud de entorno QA/Staging.
+- **Destino**:
+  - Solicitud de entorno QA/Staging.
+  - Instalación y configuración inicial de PostgreSQL.
+  - Configuración de zona horaria.
+  - Desactivación temporal de triggers/restricciones.
+  - Instalación de herramientas de migración (FDW, ETL) **solo en pruebas**.
+  - Configuración de seguridad TLS.
+  - Instalación de herramientas de monitoreo **solo en pruebas**.
+  - Implementación de usuarios, roles, privilegios y whitelist.
+
+
+
+#### 🧰 **Solicitud de Recursos**
+- Conectividad de red y flujos autorizados.
+- Accesos y permisos adecuados en ambos entornos.
+
+#### 📤 **Exportación Inicial**
+- Exportar Esquema (Tablas)
+- Exportar Fun y Proc	
+- Exportar Datos
+
+#### ✅ **Validaciones**
+- Compatibilidad de tipos de datos como tipos incompatibles (NUMBER, CLOB, BLOB, etc.)..
+- Validar que la con Conversión de funciones y procedimientos se caorrecta.
+- - Mapeo de funciones Oracle (SYSDATE, NVL, DECODE, etc.) a PostgreSQL.
+
+#### 🔄 **Ajustes de Conversión**
+- Revisión y ajuste manual de funciones PL/SQL a PL/pgSQL.
+ 
+
+#### 🧪 **Migración en QA**
+- Importación de esquemas, funciones/procedimientos y datos.
+
+#### 🧪 **Pruebas y Validación**
+- Activar trigger 
+- Optimización de configuración PostgreSQL.
+- Mantenimiento en servidor de pruebas.
+- Validar la Integridad de datos.
+- Monitoreo de rendimiento y estabilidad.
+- Adaptación de aplicaciones al entorno de pruebas.
+- Pruebas funcionales, de recuperación y rollback.
+
+#### 🔁 **Re-Definición de Migración (si aplica)**
+- Reevaluar tipo de migración, rollback y complejidad según pruebas.
+
+#### 🖥️ **Solicitud de Entorno Productivo**
+- Solicitud de servidor destino.
+- Instalación y configuración de PostgreSQL según QA.
+- Configuración de zona horaria y seguridad TLS.
+- Desactivación temporal de triggers/restricciones.
+- Instalación de agentes de monitoreo.
+
+#### 🧪 **Preparación Final de QA**
+- Validar herramientas ETL y monitoreo.
+
+#### 📅 **Plan de Implementación**
+- Asignar ventanas de tiempo.
+- Ajustar tiempos, actividades y roles.
 
  
 
-### 🧪 **Fase 2: Pruebas de conversión**
-#### ✅ Conversión de objetos
-- Convertir estructuras con Ora2Pg: tablas, índices, constraints, secuencias.
-- Convertir funciones PL/SQL a PL/pgSQL (requiere revisión manual).
-- Validar tipos de datos incompatibles (ej. `NUMBER`, `VARCHAR2`, `CLOB`, `BLOB`, `DATE`, `TIMESTAMP`).
-- Revisar funciones específicas de Oracle (`SYSDATE`, `NVL`, `DECODE`, `ROWNUM`, etc.) y mapearlas a equivalentes en PostgreSQL.
+### 🚀 **3. Implementación**
 
-#### ✅ Pruebas de compatibilidad
-- Ejecutar scripts convertidos en entorno de prueba.
-- Validar integridad de datos y lógica de negocio.
-- Comparar resultados entre Oracle y PostgreSQL.
-
- 
-### 📦 **Fase 3: Migración de datos**
-#### ✅ Estrategia de migración
-- Exportación con `Ora2Pg`, `SQL Developer`, `Data Pump`, o scripts personalizados.
-- Importación con `COPY`, `pgloader`, `psql`, o herramientas ETL.
-- Validación de datos: conteo de registros, checksums, comparaciones.
-
-#### ✅ Consideraciones especiales
-- Migración de datos binarios (BLOBs).
-- Codificación de caracteres (UTF-8 vs otros).
-- Fechas y zonas horarias.
-
- 
-
-### 🔐 **Fase 4: Seguridad y permisos**
-- Migrar usuarios, roles y privilegios.
-- Implementar políticas de seguridad en PostgreSQL.
-- Validar acceso desde aplicaciones y servicios.
-
- 
-### 🧩 **Fase 5: Integración y pruebas finales**
-- Conectar aplicaciones a PostgreSQL.
-- Validar funcionamiento completo.
-- Pruebas de rendimiento y carga.
-- Pruebas de recuperación ante fallos.
-
- 
-
-### 🚀 **Fase 6: Puesta en producción**
-- Plan de corte (downtime, sincronización final).
+#### 🔐 **Seguridad**
 - Backup completo antes del corte.
-- Monitoreo post-migración.
-- Documentación de cambios.
+
+#### 📤 **Exportación Final**
+Los Esquemas, funciones y  proc se utilizaran los del entorno de pruebas que ya estan convertidos y corregidos.
+
+- Solo exportar datos 
+
+
+#### 📥 **Migración en Producción**
+- Importar esquemas, funciones y procedimientos validados.
+- Importar datos en tiempo real o por backup.
+
  
 
-### 🛠️ **Fase 7: Optimización post-migración**
-- Plan de Rollback
-- Ajuste de parámetros de PostgreSQL (`work_mem`, `shared_buffers`, etc.).
-- Revisión de índices y estadísticas.
-- Implementación de mantenimiento automático (vacuum, analyze).
-- Auditoría y logging.
-- Configura `pg_stat_statements`, `auto_explain`, `pgBadger`.
-- Usa herramientas como Prometheus + Grafana.
-- Revisa logs, errores y métricas de rendimiento.
-- Pruebas de rendimientos 
+### 🔧 **4. Post-Implementación**
+
+#### 🧪 **Pruebas y Validación**
+- Mantenimiento en servidor de pruebas.
+- Validación de integridad de datos.
+- Monitoreo de rendimiento y estabilidad.
+- Adaptación de aplicaciones.
+- Pruebas funcionales.
+
+#### 📌 **Consideraciones Posteriores**
+- Optimización de PostgreSQL (según monitoreo).
+- Plan de respaldo y recuperación ante desastres.
+
+#### 🔁 **Rollback (si aplica)**
+- Ejecución del plan de rollback.
 
 
-### ** Fase 8: Capacitación del Equipo**
-No olvides el factor humano:
-
-- ¿El equipo sabe administrar PostgreSQL?
-- ¿Conocen las diferencias en backup, recuperación, tuning?
-- ¿Saben usar herramientas como `pgAdmin`, `psql`, `EXPLAIN`?
-
-🔧 *Acción:* Plan de capacitación y documentación interna.
+#### 📚 **Documentación Técnica y Funcional**
+- Registro de errores, ajustes y decisiones.
+- Documentación de cambios en estructuras y lógica.
+- Manuales de operación y recuperación.
+- Soporte técnico.
+- Cierre del proyecto.
 
 
 
-### ** Fase 9: Documentación Técnica y Funcional**
-Toda migración debe dejar trazabilidad:
-
-- Documentar cambios en estructuras, funciones, lógica.
-- Registrar decisiones técnicas y justificaciones.
-- Crear manuales de operación y recuperación.
 
 --- 
 # Preguntas que pueden servir
