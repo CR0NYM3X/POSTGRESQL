@@ -60,6 +60,16 @@ Existen **7 formas normales**, pero en la práctica se utilizan principalmente l
 
 ---
 
+🔹 0NF – Cero Forma Normal
+
+Definición: Es el estado en el que los datos no están normalizados. Sirve como punto de partida para aplicar las formas normales (1NF, 2NF, etc.). Pueden contener:
+
+Repeticiones de grupos de datos.
+Campos con múltiples valores (listas, arrays).
+Redundancias y dependencias mal estructuradas.
+
+
+
 ## 🔢 Explicación de 1NF, 2NF y 3NF con ejemplos en PostgreSQL
  
 ## 🧪 EJEMPLO INICIAL (NO NORMALIZADO)
