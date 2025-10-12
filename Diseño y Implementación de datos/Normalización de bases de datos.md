@@ -242,7 +242,10 @@ La normalización es una herramienta poderosa para diseñar bases de datos limpi
 
 
 ```
+
 https://ebac.mx/blog/normalizacion-de-bases-de-datos
 https://www.freecodecamp.org/espanol/news/normalizacion-de-base-de-datos-formas-normales-1nf-2nf-3nf-ejemplos-de-tablas/
 https://www.datacamp.com/es/tutorial/normalization-in-sql
+
+https://www.youtube.com/watch?v=kvt2wE-q-yY
 ```
