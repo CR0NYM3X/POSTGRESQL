@@ -141,10 +141,57 @@ Supongamos que tienes un proyecto en GitHub con una base de datos PostgreSQL. Cu
 4. Si todo está bien, los despliega en producción.
 
 
+## 🧪 Ejemplo real de pipeline para DBA
+
+Imagina que estás trabajando en un proyecto donde cada semana se agregan nuevas columnas a tablas en PostgreSQL. El pipeline podría hacer lo siguiente:
+
+1. **Detectar cambios** en el archivo `changelog.yaml` de Liquibase.
+2. **Ejecutar pruebas** para validar que el cambio no rompe nada.
+3. **Aplicar el cambio** en la base de datos de desarrollo.
+4. **Notificar** si todo salió bien.
+5. **Desplegar** el cambio en producción automáticamente si se aprueba.
+
+Esto lo puedes hacer con herramientas como:
+
+- **GitHub Actions**
+- **Jenkins**
+- **GitLab CI**
+- **Azure DevOps**
+
+
+## 🚀 ¿Qué es un *pipeline*?
+
+Un **pipeline** es una **secuencia automatizada de pasos** que se ejecutan uno tras otro para lograr un objetivo técnico, como:
+
+- Compilar código
+- Ejecutar pruebas
+- Validar cambios
+- Desplegar aplicaciones o bases de datos
+
+Es como una **línea de producción** en una fábrica, pero para software.
+
+ 
+## 🧰 ¿Para qué sirve?
+
+Sirve para:
+
+- **Automatizar tareas repetitivas**
+- **Evitar errores humanos**
+- **Asegurar calidad** antes de que algo llegue a producción
+- **Reducir tiempos** de entrega
+- **Sincronizar equipos** de desarrollo, QA y operaciones
+
 
 # Links
 ```sql
 
-https://medium.com/@lahsaini/tame-your-database-a-hands-on-liquibase-course-for-postgresql-91412d17a772
-
+Tame Your Database: A Hands-On Liquibase Course for PostgreSQL -> https://medium.com/@lahsaini/tame-your-database-a-hands-on-liquibase-course-for-postgresql-91412d17a772
+Understanding Liquibase, a devops tool for database schema change management -> https://medium.com/@dnyanesh.bandbe88/understanding-liquibase-a-devops-tool-for-database-schema-change-management-37840027c0ca
+Database Change Management Made Easy with Liquibase and PostgreSQL -> https://medium.com/@sonichigo/database-change-management-made-easy-with-liquibase-and-postgresql-87da66b0c9c7
+Introduction to Liquibase and Bootstrapping & maintaining a Postgres DB using Liquibase and Spring Boot -> https://medium.com/@youjithdeelake/introduction-to-liquibase-and-bootstrapping-maintaining-a-postgres-db-using-liquibase-and-spring-d33e1f701ca9
+jOOQ code generator with Postgres Database and Liquibase -> https://medium.com/@sahilseth/jooq-code-generator-with-postgres-database-and-liquibase-f9c27d7470e7
+Liquibase plugin with Postgres & Hibernate -> https://medium.com/@a.a.lechner/liquibase-plugin-with-postgres-hibernate-e3a33a45b1cf
+CI/CD pipeline to automate database deployments using Liquibase and GitLab -> https://jithinjayaprakash.medium.com/ci-cd-pipeline-to-automate-database-deployments-using-liquibase-and-gitlab-1242885cb138
+Liquibase — Why every DBA should use it -> https://fabriciojorge.medium.com/liquibase-why-every-dba-should-use-it-ad49b85a7231
+Mastering Database Version Control with Liquibase in Spring Boot Applications — Part II -> https://medium.com/@javedalikhan50/mastering-database-version-control-with-liquibase-in-spring-boot-applications-part-ii-aff9f011d514
 ```
