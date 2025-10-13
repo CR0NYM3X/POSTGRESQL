@@ -53,8 +53,9 @@ Migración de bases de datos grandes de Azure PostgreSQL -> https://medium.com/@
 
 #  Semantica 
 ```
-Pagination in Postgres -> https://levelup.gitconnected.com/pagination-in-postgres-4ae85b828bb9
+Understanding Database Internals -> https://medium.com/@akashsdas_dev/understanding-database-internals-55c43e06195a
 
+Pagination in Postgres -> https://levelup.gitconnected.com/pagination-in-postgres-4ae85b828bb9
 
 Understanding PostgreSQL Transaction Management, part 1 -> https://medium.com/@nikolaykudinov/understanding-postgresql-transaction-management-part-1-9420d67f5525
 
@@ -92,6 +93,8 @@ https://akylson.com/how-to-deploy-a-high-availability-postgresql-cluster-in-5-mi
 Building a Highly Available PostgreSQL Cluster with Patroni, etcd, and HAProxy ->  https://medium.com/@dickson.gathima/building-a-highly-available-postgresql-cluster-with-patroni-etcd-and-haproxy-1fd465e2c17f
 
 Patroni PostgreSQL High Availability with pgBackRest -> https://medium.com/@dickson.gathima/patroni-postgresql-high-availability-with-pgbackrest-c251b1accb0d
+
+01- Agrupación de conexiones: Administración de bases de datos PostgreSQL: Agrupación de conexiones en PostgreSQL 17 -> https://medium.com/@jramcloud1/01-connection-pooling-postgresql-database-administration-connection-pooling-in-postgresql-17-1264aff21dae
 
 ```
 
@@ -274,6 +277,7 @@ https://medium.com/@kaanberkozbek/how-i-automated-pgcat-with-consul-for-dynamic-
 
 # Otros 
 ```
+Domine su base de datos: un curso práctico de Liquibase para PostgreSQL -> https://medium.com/@lahsaini/tame-your-database-a-hands-on-liquibase-course-for-postgresql-91412d17a772
 
 Real-Time Data Streaming: Monitoring Database Changes with Postgres, Debezium, and Kafka -> https://medium.com/@jushijun/real-time-data-streaming-monitoring-database-changes-with-postgres-debezium-and-kafka-f37c85cc9975
 
