@@ -717,6 +717,7 @@ De lo contrario, el rollback puede ser **más complejo** y requerir restauracion
 Planning Your PostgreSQL Migration: Best Practices and Key Considerations -> https://www.heroku.com/blog/planning-your-postgresql-migration/
 How to Migrate Data Between PostgreSQL Servers: 3 Reliable Methods -> https://estuary.dev/blog/migrate-postgres-database-to-new-server/
 
+Oracle to PostgreSQL Migration: Utilizing Liquibase -> https://blog.octalabs.com/oracle-to-postgresql-migration-utilizing-liquibase-strategies-ce927bffa5b9
 Migrating from Oracle to PostgreSQL -> https://blog.quest.com/product-post/migrating-from-oracle-to-postgresql-with-near-zero-downtime-using-shareplex-and-ora2pg-131524679/
 Best practices for oracle to PostgreSQL migration -> https://journalijsra.com/index.php/content/best-practices-oracle-postgresql-migration
 Migrating an Oracle Database to PostgreSQL -> https://docs.aws.amazon.com/es_es/dms/latest/sbs/chap-rdsoracle2postgresql.html
