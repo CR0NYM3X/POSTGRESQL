@@ -136,12 +136,22 @@ WantedBy=multi-user.target
  ```
 \c postgres
 
-CREATE FUNCTION public.lookup (
-   INOUT p_user     name,
-   OUT   p_password text
-) RETURNS record
-   LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog AS
-$$SELECT usename, passwd FROM pg_shadow WHERE usename = p_user$$;
+CREATE OR REPLACE FUNCTION pgbouncer.get_auth(p_usename text)   
+  RETURNS TABLE(username text, password text)                    
+  LANGUAGE plpgsql                                               
+  SECURITY DEFINER                                               
+ AS $function$                                                   
+ BEGIN                                                           
+     RAISE WARNING 'PgBouncer auth request: %', p_usename;       
+                                                                 
+     RETURN QUERY                                                
+     SELECT usename::TEXT, passwd::TEXT FROM pg_catalog.pg_shadow
+      WHERE usename = p_usename;                                 
+ END;                                                            
+ $function$
+
+ revoke execute on funciton pgbouncer.get_auth( text) from PUBLIC;
+
  ```
 
 # pgbouncer --help 
@@ -173,6 +183,79 @@ PgBouncer home page: <https://www.pgbouncer.org/>
  
  ```
 
+--- 
+
+### 🔍 Fragmento de configuración:
+
+```ini
+;; any, trust, plain, md5, cert, hba, pam
+auth_type = hba
+auth_file = /etc/pgbouncer/userlist.txt
+auth_hba_file = /sysx/data/pg_hba.conf
+auth_query = SELECT * FROM pgbouncer.get_auth($1)
+```
+
+ 
+### ✅ ¿Qué tipo de autenticación se está usando?
+
+La clave está en esta línea:
+
+```ini
+auth_type = hba
+```
+
+Esto indica que **PgBouncer está usando autenticación tipo `hba`**, lo cual significa que se comportará de forma similar al archivo `pg_hba.conf` de PostgreSQL. Es decir, **la autenticación se define por reglas en un archivo externo**, en este caso:
+
+```ini
+auth_hba_file = /sysx/data/pg_hba.conf
+```
+
+Este archivo debe contener reglas como:
+
+```
+# Ejemplo de regla en pg_hba.conf estilo
+host    all     all     0.0.0.0/0       md5
+```
+
+
+
+### 📁 ¿Qué rol tiene `auth_file`?
+
+```ini
+auth_file = /etc/pgbouncer/userlist.txt
+```
+
+Este archivo se usa **solo si el tipo de autenticación lo requiere**, por ejemplo en `plain` o `md5`. En tu caso, como estás usando `hba`, **solo se usa si alguna regla del `auth_hba_file` lo indica** (por ejemplo, si una línea dice `auth_method = md5`, entonces se buscará el usuario y contraseña en `userlist.txt`).
+
+ 
+### 🧠 ¿Y qué hace `auth_query`?
+
+```ini
+auth_query = SELECT * FROM pgbouncer.get_auth($1)
+```
+
+Este se usa **solo si alguna regla en el `auth_hba_file` especifica `auth_method = trust` o `auth_method = md5` y además se quiere obtener la contraseña desde la base de datos** en lugar de `userlist.txt`.
+
+ 
+
+### 🔎 ¿Cómo saber qué método se usa realmente?
+
+Debes revisar el contenido de:
+
+```bash
+cat /sysx/data/pg_hba.conf
+```
+
+Ahí verás líneas como:
+
+```
+host    all     all     192.168.1.0/24    md5
+host    all     all     127.0.0.1/32      trust
+```
+
+Cada línea define el método de autenticación (`md5`, `trust`, `cert`, etc.) para un rango de IPs, usuarios y bases de datos.
+
+--- 
 
 # archivo pgbouncer.ini
 
