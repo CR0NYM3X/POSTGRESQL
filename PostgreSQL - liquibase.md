@@ -35,6 +35,9 @@ Liquibase es útil en:
 - **Auditoría** de cambios en producción.
 - **Rollback** de cambios si algo falla.
 
+### 📌 ¿Cuál es el objetivo de este archivo changelog?
+
+El objetivo principal es **definir los cambios que se deben aplicar a la base de datos** de forma estructurada, versionada y automatizada. Es como un "script evolutivo" que describe cómo debe transformarse la base de datos a lo largo del tiempo.
 
 ### 📦 ¿Cómo funciona?
 
