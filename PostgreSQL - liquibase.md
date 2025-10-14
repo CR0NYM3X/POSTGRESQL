@@ -181,9 +181,29 @@ Sirve para:
 - **Reducir tiempos** de entrega
 - **Sincronizar equipos** de desarrollo, QA y operaciones
 
+---
+
+Tanto **Flyway** como **Liquibase** son herramientas líderes para la **gestión de migraciones de bases de datos**, pero tienen diferencias clave que pueden hacer que una sea mejor que otra dependiendo del contexto de tu proyecto.
+
+Aquí tienes una **comparación clara y profesional**:
+
+| Característica                  | **Flyway**                                      | **Liquibase**                                   |
+|--------------------------------|--------------------------------------------------|--------------------------------------------------|
+| **Lenguaje de migración**      | Principalmente SQL (también Java opcional)       | SQL, XML, YAML, JSON                             |
+| **Facilidad de uso**           | Muy simple, ideal para empezar rápido            | Más complejo, pero más flexible                  |
+| **Control de versiones**       | Basado en nombres de archivo (`V1__init.sql`)    | Usa un `changelog` con identificadores únicos    |
+| **Integración CI/CD**          | Excelente, muy usado en DevOps                   | También muy bueno, con más opciones avanzadas    |
+| **Validación de cambios**      | Básica                                           | Avanzada (checksums, rollback, diff, etc.)       |
+| **Rollback de migraciones**    | No soportado directamente                        | Sí, permite definir rollback por cada cambio     |
+| **Soporte para múltiples DBs** | Muy bueno                                        | Excelente, con más funciones específicas por DB  |
+| **Auditoría y seguimiento**    | Tabla `flyway_schema_history`                    | Tabla `DATABASECHANGELOG` con más metadatos      |
+| **Curva de aprendizaje**       | Baja                                             | Media a alta                                     |
+| **Licencia**                   | Open Source + versión Enterprise                 | Open Source + versión Enterprise                 |
 
 # Links
 ```sql
+
+https://www.liquibase.com/download-community
 
 Tame Your Database: A Hands-On Liquibase Course for PostgreSQL -> https://medium.com/@lahsaini/tame-your-database-a-hands-on-liquibase-course-for-postgresql-91412d17a772
 Understanding Liquibase, a devops tool for database schema change management -> https://medium.com/@dnyanesh.bandbe88/understanding-liquibase-a-devops-tool-for-database-schema-change-management-37840027c0ca
@@ -194,4 +214,9 @@ Liquibase plugin with Postgres & Hibernate -> https://medium.com/@a.a.lechner/li
 CI/CD pipeline to automate database deployments using Liquibase and GitLab -> https://jithinjayaprakash.medium.com/ci-cd-pipeline-to-automate-database-deployments-using-liquibase-and-gitlab-1242885cb138
 Liquibase — Why every DBA should use it -> https://fabriciojorge.medium.com/liquibase-why-every-dba-should-use-it-ad49b85a7231
 Mastering Database Version Control with Liquibase in Spring Boot Applications — Part II -> https://medium.com/@javedalikhan50/mastering-database-version-control-with-liquibase-in-spring-boot-applications-part-ii-aff9f011d514
+ 
+ 
+ ¡Domina Liquibase en minutos! Guía práctica de comandos esenciales -> https://www.youtube.com/watch?v=-lJX_r4GrBU
+ Liquibase - Versionado de Bases de Datos | Martin Britez e Indiana Lozano -> https://www.youtube.com/watch?v=fUXdTfkT_RQ
+
 ```
