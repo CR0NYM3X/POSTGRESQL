@@ -287,8 +287,9 @@ se veran temas :
 - Distribución de carga 
  ETc 
 ```
--- Proyecto para habilitar un HADR
+-- Proyecto para habilitar un HADR para la nube
 https://github.com/vitabaks/autobase
+https://autobase.tech/docs
 
 
 Obtener información de disponibilidad -> https://uptime.is/
