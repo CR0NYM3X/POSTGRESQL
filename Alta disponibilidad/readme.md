@@ -287,6 +287,10 @@ se veran temas :
 - Distribución de carga 
  ETc 
 ```
+-- Proyecto para habilitar un HADR
+https://github.com/vitabaks/autobase
+
+
 Obtener información de disponibilidad -> https://uptime.is/
 High Available PostgreSQL Cluster Arhitecture [PostgreSQL + Patroni |  HAProxy + Keepalived |  pgBackRest ] - https://ozwizard.medium.com/high-available-postgresql-cluster-arhitecture-c405c00c8c71 <br>
 https://github.com/kashifmeo/postgreSQL/blob/main/postgreSQLPatroniCluster <br>
