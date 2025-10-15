@@ -1,5 +1,50 @@
 
+### 🔄 **Flujo de manejo de conexiones persistentes con PgBouncer y PostgreSQL**
 
+Este diagrama muestra cómo **PgBouncer**, un pool de conexiones para PostgreSQL, gestiona las conexiones entre los **clientes** y el **servidor PostgreSQL** de forma eficiente. El objetivo es **optimizar el uso de conexiones backend** sin que el cliente note la diferencia.
+
+---
+
+### 🧠 **Paso a paso del flujo**
+
+1. **🔗 Conexión persistente del cliente a PgBouncer**  
+   El cliente (una aplicación, por ejemplo) establece una conexión persistente con PgBouncer. Esta conexión no se cierra entre transacciones, lo que permite reutilizarla.
+
+2. **📥 PgBouncer solicita una conexión backend**  
+   Cuando el cliente inicia una transacción (`BEGIN`, una consulta SQL, etc.), PgBouncer necesita una conexión real a PostgreSQL. Entonces, **toma una conexión libre del pool** (por ejemplo, `ConnX`).
+
+3. **🔄 Asignación temporal de ConnX al cliente**  
+   PgBouncer **asigna temporalmente** esa conexión backend (`ConnX`) al cliente solo durante la duración de la transacción.
+
+4. **⚙️ Ejecución de la transacción**  
+   - El cliente envía la instrucción SQL.
+   - PgBouncer la reenvía a PostgreSQL usando `ConnX`.
+   - PostgreSQL procesa la instrucción y devuelve el resultado por `ConnX`.
+
+5. **📤 Reenvío del resultado al cliente**  
+   PgBouncer recibe el resultado desde PostgreSQL y lo **reenvía al cliente**.
+
+6. **✅ Finalización de la transacción**  
+   El cliente envía `COMMIT` o `ROLLBACK`. PgBouncer lo reenvía a PostgreSQL usando `ConnX`, y PostgreSQL confirma la finalización.
+
+7. **🏁 Transacción concluida**  
+   La transacción ha terminado correctamente.
+
+8. **🔁 Liberación de ConnX al pool**  
+   PgBouncer **libera la conexión backend** (`ConnX`) y la devuelve al pool para que pueda ser usada por otro cliente.
+
+9. **📬 Confirmación al cliente**  
+   El cliente recibe la confirmación del `COMMIT` o `ROLLBACK`.
+
+10. **🔄 Cliente sigue conectado a PgBouncer**  
+    Aunque la conexión backend fue liberada, **la conexión entre el cliente y PgBouncer permanece activa**, lista para futuras transacciones.
+ 
+
+### 🧩 ¿Por qué es importante este flujo?
+
+- **PgBouncer actúa como intermediario inteligente**, reutilizando conexiones backend para múltiples clientes.
+- Esto **reduce el consumo de recursos** en PostgreSQL, especialmente en sistemas con muchos clientes concurrentes.
+- PgBouncer permite **escalar mejor** las aplicaciones sin saturar el servidor de base de datos.
 
 # Restart , start 
  ```
