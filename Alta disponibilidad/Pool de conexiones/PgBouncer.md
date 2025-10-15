@@ -667,6 +667,13 @@ server_reset_query = 'DISCARD ALL'
 # Bibliografías 
 
  ```
+Desmitificando PgBouncer: Explorando la agrupación de transacciones en el código fuente -> https://medium.com/@CoyoteLeo/demystifying-pgbouncer-exploring-transaction-pooling-in-source-code-33c759686a8a
+
+
+PgBouncer -> https://medium.com/@CoyoteLeo/supercharge-your-postgresql-with-pgbouncer-a-comprehensive-guide-to-performance-and-efficiency-d2456c0ca289
+
+reinicios continuos de PgBouncer -> https://medium.com/@CoyoteLeo/the-sigterm-vs-sigint-trade-off-a-deep-dive-into-pgbouncer-rolling-restarts-4f57c5cbfcb2
+
 https://medium.com/@mohllal/database-connection-pooling-with-pgbouncer-2877c55cf3df
 https://medium.com/@jramcloud1/postgresql-17-log-analysis-made-easy-complete-guide-to-setting-up-and-using-pgbadger-befb8e453433
 https://medium.com/@Mahdi_ramadhan/handling-postgresql-connection-pooling-dee3849d0299
