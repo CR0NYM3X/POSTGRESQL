@@ -277,6 +277,15 @@ https://medium.com/@kaanberkozbek/how-i-automated-pgcat-with-consul-for-dynamic-
 
 # Otros 
 ```
+
+PostgreSQL con la compilación Just-In-Time  -> https://medium.com/@CoyoteLeo/unlocking-postgresql-performance-with-just-in-time-jit-compilation-dc271161fdf7
+
+almacenamiento físico en PostgreSQL -> https://medium.com/@CoyoteLeo/unveiling-the-mystery-of-string-in-postgresql-physical-storage-44d8cefc842a
+
+
+tipo de datos String en PostgreSQL ->  https://medium.com/%E6%BC%B8%E5%BC%B7%E5%AF%A6%E9%A9%97%E5%AE%A4-crescendo-lab-engineering-blog/unveiling-the-mystery-of-string-in-postgresql-string-data-type-e68f3ba8c601
+
+
 Domine su base de datos: un curso práctico de Liquibase para PostgreSQL -> https://medium.com/@lahsaini/tame-your-database-a-hands-on-liquibase-course-for-postgresql-91412d17a772
 
 Real-Time Data Streaming: Monitoring Database Changes with Postgres, Debezium, and Kafka -> https://medium.com/@jushijun/real-time-data-streaming-monitoring-database-changes-with-postgres-debezium-and-kafka-f37c85cc9975
