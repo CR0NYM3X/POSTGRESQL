@@ -1417,7 +1417,24 @@ En vez de guardar solo el saldo actual de una cuenta bancaria, guardas eventos c
 Y si quieres saber el saldo, simplemente **reproduces los eventos**.
 
 
-
 ## 🧠 ¿Y si los combinas?
-
 ¡Boom! 💥 Puedes usar **Event Sourcing para las escrituras** (commands) y **una base optimizada para lecturas** (queries). Así tienes lo mejor de ambos mundos: historial completo + rendimiento en consultas.
+
+
+
+-----
+
+## 🔧 ¿Qué procesos en segundo plano (background) usa PostgreSQL?
+
+
+| Proceso | Función principal |
+|--------|-------------------|
+| **Background Writer** | Escribe buffers sucios desde `shared_buffers` al disco de forma gradual. |
+| **Checkpointer** | Realiza checkpoints: sincroniza todos los buffers sucios y archivos WAL al disco. |
+| **WAL Writer** | Escribe los registros WAL desde `wal_buffers` al archivo WAL en disco. |
+| **Autovacuum Launcher** | Inicia procesos de autovacuum para limpiar y analizar tablas. |
+| **Autovacuum Worker** | Ejecuta el autovacuum en tablas específicas. |
+| **Stats Collector** *(hasta PG 14)* | Recopilaba estadísticas de uso (ahora integrado en otros procesos). |
+| **Logical Replication Launcher** | Maneja la replicación lógica. |
+| **Archiver** | Copia los archivos WAL a un destino externo si `archive_mode` está activado. |
+| **Background Worker** | Procesos personalizados que puedes definir (por ejemplo, extensiones como `pg_cron`). |
