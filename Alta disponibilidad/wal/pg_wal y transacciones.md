@@ -2759,3 +2759,68 @@ Los WAL se vuelven innecesarios cuando se completa un checkpoint, las réplicas 
 
 
 Aspectos internos de MVCC en Postgres -> https://medium.com/@rohanjnr44/internals-of-mvcc-in-postgres-hidden-costs-of-updates-vs-inserts-381eadd35844
+---
+
+## 🔄 Flujo de vida del `wal_buffers` en PostgreSQL
+
+### 🧩 1. **Inicio de una transacción**
+- Un cliente realiza una operación que modifica datos (INSERT, UPDATE, DELETE).
+- PostgreSQL **no escribe directamente en disco**, sino que:
+  - Modifica la página en `shared_buffers`.
+  - Genera un **registro WAL** que describe el cambio.
+
+ 
+
+### 🧠 2. **Generación del registro WAL**
+- El registro WAL se crea en memoria.
+- Este registro se **almacena temporalmente en `wal_buffers`**, que es una zona de memoria compartida.
+
+> 🔸 `wal_buffers` es como una “sala de espera” para los registros WAL antes de que se escriban en disco.
+
+ 
+### 📤 3. **Escritura del WAL al disco**
+- El proceso **WAL Writer** se ejecuta periódicamente (cada `wal_writer_delay`) y:
+  - Toma los registros de `wal_buffers`.
+  - Los escribe en los archivos WAL en disco (`pg_wal/`).
+- También se escribe el WAL si:
+  - Se hace `COMMIT`.
+  - Se alcanza el tamaño máximo de `wal_buffers`.
+  - Se genera un checkpoint.
+
+ 
+
+### 🔐 4. **Sincronización y durabilidad**
+- Antes de confirmar una transacción (`COMMIT`), PostgreSQL **sincroniza el WAL** al disco (fsync).
+- Esto garantiza que el cambio esté registrado de forma duradera, incluso si el sistema falla.
+
+ 
+### 🧹 5. **Vaciamiento de `wal_buffers`**
+- Una vez que los registros se escriben en disco, `wal_buffers` se vacía.
+- Se reutiliza para nuevos registros WAL.
+
+ 
+## 📌 ¿Por qué es importante `wal_buffers`?
+
+- **Evita escrituras frecuentes al disco** → mejora el rendimiento.
+- **Permite agrupar registros WAL** → reduce I/O.
+- **Es crítico para la durabilidad** → asegura que los cambios no se pierdan.
+
+ 
+## ⚙️ Parámetros relacionados
+
+| Parámetro | Descripción |
+|----------|-------------|
+| `wal_buffers` | Tamaño del buffer en memoria para registros WAL. |
+| `wal_writer_delay` | Tiempo entre ejecuciones del WAL Writer. |
+| `wal_level` | Nivel de detalle del WAL (`minimal`, `replica`, `logical`). |
+| `commit_delay` | Tiempo que espera PostgreSQL antes de escribir el WAL en disco tras un COMMIT. |
+
+
+## 🧠 Comparación con `shared_buffers`
+
+| Concepto | `shared_buffers` | `wal_buffers` |
+|---------|------------------|---------------|
+| Contenido | Páginas de datos (bloques de 8KB) | Registros WAL (cambios en datos) |
+| Uso | Lectura y escritura de datos | Registro de cambios para durabilidad |
+| Escritura | Por background writer o checkpoints | Por WAL writer |
+| Objetivo | Rendimiento de acceso a datos | Seguridad y recuperación ante fallos |
