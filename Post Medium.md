@@ -279,6 +279,8 @@ https://medium.com/@kaanberkozbek/how-i-automated-pgcat-with-consul-for-dynamic-
 
 # Otros 
 ```
+Lo que 10 millones de filas me enseñaron sobre el ajuste de PostgreSQL -> https://medium.com/@vbahadircan/what-10-million-rows-taught-me-about-tuning-postgresql-58ad03f63cf2
+
 Errores que probablemente estás cometiendo en PostgreSQL (y cómo solucionarlos) -> https://levelup.gitconnected.com/postgresql-mistakes-youre-probably-making-and-how-to-fix-them-544ade3ed69c
 
 PostgreSQL con la compilación Just-In-Time  -> https://medium.com/@CoyoteLeo/unlocking-postgresql-performance-with-just-in-time-jit-compilation-dc271161fdf7
