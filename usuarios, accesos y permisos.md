@@ -563,6 +563,10 @@ https://www.postgresql.org/docs/current/ddl-priv.html#PRIVILEGE-ABBREVS-TABLE
 tu puedes decidir que permiso se otrogará mofidicando el grant  */
 ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuario;
 
+-- Este comando establece privilegios predeterminados para futuras tablas que se creen en el esquema public,
+-- específicamente cuando el rol user_jose las cree. El privilegio otorgado es SELECT sobre esas tablas, y se concede al rol user_desarrollo.
+ALTER DEFAULT PRIVILEGES FOR ROLE user_jose IN SCHEMA public GRANT SELECT ON TABLES TO user_desarrollo;
+
 # VER LOS DEFAULT 
 	SELECT
 	    nsp.nspname AS schema,
