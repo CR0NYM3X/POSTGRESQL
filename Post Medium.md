@@ -53,6 +53,8 @@ Migración de bases de datos grandes de Azure PostgreSQL -> https://medium.com/@
 
 #  Semantica 
 ```
+https://medium.com/@mohitsoni_/the-unseen-symphony-what-really-happens-when-you-connect-to-postgresql-053cd7c27ba9
+
 Understanding Database Internals -> https://medium.com/@akashsdas_dev/understanding-database-internals-55c43e06195a
 
 Pagination in Postgres -> https://levelup.gitconnected.com/pagination-in-postgres-4ae85b828bb9
