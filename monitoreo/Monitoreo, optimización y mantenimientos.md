@@ -159,16 +159,18 @@ order by pg_stat_statements.shared_blks_r
 
 
 
-
-
-
+ 
 -- ********* OTROSSSSSSS *********
+Esto te da el tiempo promedio de sincronización por checkpoint.
+Si el resultado es mayor a 5000 ms (5 segundos), puede indicar que el disco está tardando mucho en sincronizar los datos.
+| Tiempo promedio por checkpoint | Interpretación |
+|-------------------------------|----------------|
+| < 1000 ms                     | Excelente rendimiento |
+| 1000 – 5000 ms                | Aceptable, pero monitorear |
+| > 5000 ms                     | Posible cuello de botella en disco o configuración |
 
- SELECT 
-    checkpoints_timed,   -- Checkpoints iniciados por tiempo
-    checkpoints_req,     -- Checkpoints forzados por operaciones
-    buffers_checkpoint,  -- Buffers escritos durante checkpoints
-    buffers_clean       -- Buffers escritos por el Background Writer
+SELECT
+  checkpoint_sync_time / NULLIF(checkpoints_timed + checkpoints_req, 0) AS avg_sync_time_per_checkpoint
 FROM pg_stat_bgwriter;
 
 
@@ -1521,7 +1523,7 @@ SELECT
   blks_read,
   blks_hit
 FROM pg_stat_database;
-```
+
 
 - `xact_commit`: transacciones exitosas.
 - `xact_rollback`: transacciones fallidas.
@@ -1533,3 +1535,89 @@ FROM pg_stat_database;
 *   Puedes usar `EXPLAIN (ANALYZE, BUFFERS)` para ver si se usan archivos temporales en tiempo real.
  
 https://postgresconf.org/system/events/document/000/00/3/Troubleshoot_PG_Perf-070.pdf
+
+----
+
+
+### 🧠 `pg_stat_bgwriter`
+
+### 🛠 Recomendaciones si es alto
+
+1. **Revisa el rendimiento del disco**: Usa herramientas como `iostat`, `vmstat`, o `pg_stat_io` (en PostgreSQL 16+) para ver si hay lentitud.
+2. **Ajusta `checkpoint_completion_target`**: Aumentarlo (por ejemplo, a `0.9`) permite que el checkpoint se distribuya más suavemente en el tiempo.
+3. **Evita checkpoints forzados**: Aumenta `max_wal_size` para que no se generen por actividad.
+4. **Usa discos SSD o NVMe**: Si estás en HDD, el tiempo de sincronización será mucho mayor.
+
+#### 1. **`checkpoints_timed`**
+- **¿Qué mide?** Número de checkpoints ejecutados por tiempo (`checkpoint_timeout`).
+- **¿Cómo usarlo?** Si este valor es alto, PostgreSQL está haciendo checkpoints automáticamente. Verifica si el tiempo entre ellos es adecuado para tu carga.
+- **Recomendación:** Ajusta `checkpoint_timeout` si los checkpoints son muy frecuentes y afectan el rendimiento.
+
+
+
+#### 2. **`checkpoints_req`**
+- **¿Qué mide?** Checkpoints solicitados por actividad (por ejemplo, por llenar el WAL).
+- **¿Cómo usarlo?** Si este valor es alto comparado con `checkpoints_timed`, hay mucha presión por escritura.
+- **Recomendación:** Aumenta `max_wal_size` o revisa si hay procesos que generan muchos cambios.
+
+
+
+#### 3. **`checkpoint_write_time`**
+- **¿Qué mide?** Tiempo total (ms) escribiendo datos durante checkpoints.
+- **¿Cómo usarlo?** Si es alto, los checkpoints están tardando mucho en escribir.
+- **Recomendación:** Revisa el rendimiento del disco y considera ajustar `checkpoint_completion_target`.
+
+
+
+#### 4. **`checkpoint_sync_time`**
+- **¿Qué mide?** Tiempo total (ms) sincronizando datos al disco durante checkpoints.
+- **¿Cómo usarlo?** Si es alto, puede haber problemas de I/O.
+- **Recomendación:** Evalúa el rendimiento del almacenamiento y considera usar discos más rápidos o tuning de parámetros.
+
+
+
+#### 5. **`buffers_checkpoint`**
+- **¿Qué mide?** Buffers escritos durante checkpoints.
+- **¿Cómo usarlo?** Te indica cuánta carga de escritura ocurre en los checkpoints.
+- **Recomendación:** Si es muy alto, los checkpoints están escribiendo mucho. Revisa si puedes distribuir mejor la carga.
+
+
+
+#### 6. **`buffers_clean`**
+- **¿Qué mide?** Buffers escritos por el background writer fuera de los checkpoints.
+- **¿Cómo usarlo?** Si es bajo, el background writer no está ayudando mucho.
+- **Recomendación:** Ajusta `bgwriter_lru_maxpages` y `bgwriter_delay` para que limpie más buffers.
+
+
+
+#### 7. **`maxwritten_clean`**
+- **¿Qué mide?** Veces que el background writer se detuvo por alcanzar su límite de escritura.
+- **¿Cómo usarlo?** Si es alto, el background writer está limitado.
+- **Recomendación:** Aumenta `bgwriter_lru_maxpages` para permitirle escribir más buffers.
+
+
+
+#### 8. **`buffers_backend`**
+- **¿Qué mide?** Buffers escritos directamente por procesos de usuario.
+- **¿Cómo usarlo?** Si es alto, los procesos están haciendo trabajo que debería hacer el background writer.
+- **Recomendación:** Optimiza el background writer para reducir esta carga .
+
+
+
+#### 9. **`buffers_backend_fsync`**
+- **¿Qué mide?** Veces que procesos de usuario tuvieron que sincronizar datos al disco.
+- **¿Cómo usarlo?** Idealmente debe ser 0. Si no, puede indicar problemas de sincronización.
+- **Recomendación:** Revisa configuración de `wal_writer_delay` y rendimiento del disco.
+
+
+
+#### 10. **`buffers_alloc`**
+- **¿Qué mide?** Total de buffers asignados.
+- **¿Cómo usarlo?** Te da una idea del uso de memoria compartida.
+- **Recomendación:** Si es muy alto, revisa si `shared_buffers` está bien dimensionado.
+ 
+
+#### 11. **`stats_reset`**
+- **¿Qué mide?** Fecha de último reinicio de estadísticas.
+- **¿Cómo usarlo?** Útil para saber desde cuándo se acumulan los datos.
+- **Recomendación:** Usa `pg_stat_reset()` si quieres reiniciar estadísticas para una nueva medición.
