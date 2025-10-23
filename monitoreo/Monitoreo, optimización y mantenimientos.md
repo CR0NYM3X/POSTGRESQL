@@ -1621,3 +1621,9 @@ https://postgresconf.org/system/events/document/000/00/3/Troubleshoot_PG_Perf-07
 - **¿Qué mide?** Fecha de último reinicio de estadísticas.
 - **¿Cómo usarlo?** Útil para saber desde cuándo se acumulan los datos.
 - **Recomendación:** Usa `pg_stat_reset()` si quieres reiniciar estadísticas para una nueva medición.
+
+### links
+```
+https://www.postgresql.org/docs/current/performance-tips.html
+ https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server
+```
