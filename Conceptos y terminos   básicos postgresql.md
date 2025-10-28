@@ -1438,3 +1438,10 @@ Y si quieres saber el saldo, simplemente **reproduces los eventos**.
 | **Logical Replication Launcher** | Maneja la replicación lógica. |
 | **Archiver** | Copia los archivos WAL a un destino externo si `archive_mode` está activado. |
 | **Background Worker** | Procesos personalizados que puedes definir (por ejemplo, extensiones como `pg_cron`). |
+
+
+# lift-and-shift
+Es una estrategia que consiste en mover una base de datos o aplicación desde su entorno actual (on-premise o local) a la nube sin realizar cambios significativos en su arquitectura o código.
+
+
+
