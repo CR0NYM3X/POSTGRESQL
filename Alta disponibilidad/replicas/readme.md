@@ -19,6 +19,7 @@ Reestructuración esta carpeta
 
  
 ## 🎯 ¿Para qué sirve hacer réplicas en PostgreSQL?
+Las réplicas pueden ser sincrónicas (alta disponibilidad) o asincrónicas (recuperación ante desastres).
 
 ### ✅ 1. **Alta disponibilidad (High Availability)**
 - La replicación permite que una base de datos esté disponible incluso si el servidor principal falla. Los datos se copian a uno o más servidores de réplica, que pueden asumir el rol del servidor principal en caso de fallo.
