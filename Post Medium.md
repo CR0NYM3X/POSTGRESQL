@@ -123,6 +123,8 @@ PITR in PostgreSQL using pg_basebackup and WAL. -> https://medium.com/@dickson.g
 
 # Security
 ```
+How to Install and Configure PGAudit on PostgreSQL 17: Complete Guide to Database Auditing and Security -> https://medium.com/@valentim.dba/how-to-install-and-configure-pgaudit-on-postgresql-17-complete-guide-to-database-auditing-and-81ffe0ecd78
+
 Security in PostgreSQL -> https://tomasz-gintowt.medium.com/security-in-postgresql-ffe75ec677e7
 
 Dynamic Secrets: HashiCorp Vault, PostgreSQL and Python -> https://medium.com/@kerrache.massipssa/dynamic-secrets-hashicorp-vault-postgresql-and-python-40197b4a178e
