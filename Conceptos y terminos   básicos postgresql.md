@@ -1444,4 +1444,38 @@ Y si quieres saber el saldo, simplemente **reproduces los eventos**.
 Es una estrategia que consiste en mover una base de datos o aplicación desde su entorno actual (on-premise o local) a la nube sin realizar cambios significativos en su arquitectura o código.
 
 
+--- 
+# **`fillfactor`** 
+Es una configuración que controla **qué porcentaje de espacio se llena en cada página de datos cuando se insertan filas**.
 
+### **¿Cómo funciona?**
+- Las tablas y los índices en PostgreSQL se almacenan en páginas de 8 KB.
+- Por defecto, el **fillfactor** es **100**, lo que significa que la página se llena completamente.
+- Si reduces el fillfactor (por ejemplo, a 70), PostgreSQL **deja un 30% de espacio libre** en cada página para futuras actualizaciones.
+
+### **¿Por qué es útil?**
+- Cuando actualizas una fila y esta crece (por ejemplo, por un `UPDATE` que aumenta el tamaño de la fila), si no hay espacio libre en la página, PostgreSQL debe **mover la fila a otra página**, lo que genera **fragmentación y más I/O**.
+- Con un fillfactor menor, hay espacio reservado para que las filas crezcan sin moverse.
+
+### **Valores típicos**:
+- **100**: máximo aprovechamiento del espacio (bueno para tablas que casi no se actualizan).
+- **70-90**: recomendado para tablas con muchas actualizaciones.
+
+### **Cómo se configura**:
+```sql
+-- Al crear la tabla
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT
+) WITH (fillfactor = 80);
+
+-- O modificar una existente
+ALTER TABLE clientes SET (fillfactor = 80);
+```
+
+### **Importante**:
+- Cambiar el fillfactor **no afecta inmediatamente**; debes hacer un `VACUUM FULL` o `CLUSTER` para reorganizar las páginas.
+- También se aplica a **índices**:
+```sql
+CREATE INDEX idx_clientes_nombre ON clientes(nombre) WITH (fillfactor = 90);
+```
