@@ -1479,3 +1479,26 @@ ALTER TABLE clientes SET (fillfactor = 80);
 ```sql
 CREATE INDEX idx_clientes_nombre ON clientes(nombre) WITH (fillfactor = 90);
 ```
+
+
+
+---
+
+
+ 
+
+### 🧠 Conceptos de arquitectura y rendimiento relacionados con NUMA/UMA
+
+| Concepto | Descripción |
+|---------|-------------|
+| **NUMA (Non-Uniform Memory Access)** | Arquitectura donde cada CPU tiene su propia memoria local. SQL Server puede optimizar el uso de recursos si está bien configurado. |
+| **UMA (Uniform Memory Access)** | Arquitectura donde todos los CPUs acceden a la misma memoria con igual latencia. Menos eficiente en sistemas grandes. |
+| **Soft-NUMA** | Técnica de SQL Server para simular NUMA en sistemas que no lo tienen, dividiendo CPUs lógicamente para mejorar el rendimiento. |
+| **Affinity Mask / CPU Affinity** | Configuración que permite asignar CPUs específicos a SQL Server para controlar el uso de núcleos y mejorar el rendimiento. |
+| **Memory Nodes** | En NUMA, cada nodo tiene su propia memoria. SQL Server puede asignar memoria por nodo para optimizar el acceso. |
+| **Scheduler** | SQL Server usa planificadores por CPU y por nodo NUMA. Entender cómo se distribuyen las tareas es clave para evitar cuellos de botella. |
+| **Parallelism (MAXDOP)** | Controla cuántos núcleos se usan para ejecutar una consulta en paralelo. Mal configurado puede causar problemas en entornos NUMA. |
+| **Resource Governor** | Permite controlar el uso de CPU y memoria por grupo de trabajo, útil en servidores con múltiples aplicaciones o instancias. |
+| **Buffer Pool Extension** | Usa SSD como extensión de memoria para el buffer pool, útil cuando hay limitaciones de RAM física. |
+| **Lock Pages in Memory** | Permite que SQL Server mantenga páginas en memoria sin que el sistema operativo las intercambie, mejorando estabilidad en entornos críticos. |
+ 
