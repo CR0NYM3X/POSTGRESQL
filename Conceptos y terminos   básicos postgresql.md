@@ -336,8 +336,8 @@ ALTER TABLE clientes ALTER COLUMN nombre SET COMPRESSION pglz;
 
 
 
-#### Aumentar el tamaño de las páginas 
-en una base de datos puede tener varias ventajas y desventajas.
+# Aumentar el tamaño de las páginas 
+Las páginas gigantes son una técnica de administración de memoria utilizada por el sistema operativo (principalmente en Linux) para trabajar con bloques de memoria más grandes que el tamaño de página predeterminado (que suele ser de 4 KB). afectan principalmente a la memoria RAM (memoria física). 💾
 
 
 ### **Consideraciones:**
