@@ -429,7 +429,7 @@ select name,setting, context  from  pg_settings where name ~* 'page|cost|tuple' 
 
 
 
-huge_page_size = '2MB'
+huge_page_size = '2MB' -- https://tomasz-gintowt.medium.com/postgresql-and-huge-pages-boosting-database-performance-the-right-way-32a27b25a819
 
 
 ```
