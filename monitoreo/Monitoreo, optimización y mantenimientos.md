@@ -229,6 +229,9 @@ bloat
 
 En **PostgreSQL**, el término **"bloat"** se refiere al crecimiento innecesario del tamaño de las tablas y los índices. Esto puede afectar el rendimiento de las consultas y aumentar el uso de espacio en disco. Permíteme explicarte más detalladamente:
 
+¿Qué es un Page Split? 
+Cuando una página de índice está llena y SQL Server necesita insertar o actualizar una fila en esa página (por ejemplo, al insertar una nueva clave), no tiene más remedio que dividir la página por la mitad. La mitad de los datos se mueven a una página nueva, y ambas páginas se reescriben.
+
 - **¿Por qué se genera bloat?**
  En PostgreSQL, el término “bloat” se refiere a la condición donde el tamaño de las tablas y/o índices crece más de lo necesario, lo que resulta en un rendimiento más lento de las consultas y un uso incrementado del espacio en disco. Esto ocurre debido a cómo PostgreSQL maneja las operaciones de actualización y eliminación bajo su sistema de control de concurrencia multiversión (MVCC).
 
@@ -285,6 +288,7 @@ Estas filas muertas se acumulan y **no se eliminan automáticamente**, lo que ge
 3. **Database Cache Hit (Acertado en la caché de la base de datos):**
    - En bases de datos, se almacenan en caché resultados de consultas, índices y otros datos para acelerar las operaciones.
    - Un **database cache hit** ocurre cuando una consulta busca datos que ya están en la caché de la base de datos, evitando la necesidad de acceder a los datos en el almacenamiento físico.
+
 
 ```
 
