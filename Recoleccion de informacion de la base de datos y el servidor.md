@@ -406,7 +406,7 @@ psql --version
 nginx -V
 ```
 
-## Conexiones en linux
+## Conexiones en linux y sus puertos
 ```
 
 -- "network statistics" Monitorear el estado de la red y las conexiones activas, estadísticas de red,  tablas de enrutamiento, interfaces de red
