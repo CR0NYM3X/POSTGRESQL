@@ -80,10 +80,13 @@ pg_ctl start -D /tmp/datay -l /tmp/datay/logfile
 ###  Rutas si usars el systemctl por default 
 
 ```plaintext
-/usr/lib/postgresql/17/bin/         → binarios del motor
-/var/lib/postgresql/17/main/        → datos del cluster
-/etc/postgresql/17/main/            → configuración del cluster
-/var/log/postgresql/                → logs del servicio
+-- Solo en algunos Red Hat
+-- /usr/pgsql-16/bin
+
+/usr/lib/postgresql/17/bin/         → binarios del motor (Ejecutables como psql, vaccum etc)
+/var/lib/postgresql/17/main/        → datos del cluster (DATA)
+/etc/postgresql/17/main/            → configuración del cluster (postgresql.conf, pg_hba.conf , etc)
+/var/log/postgresql/                → logs del servicio  (postgresql-16-main.log)
 /usr/share/postgresql/17/           → Ejemplos
 
 ```
