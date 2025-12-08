@@ -149,6 +149,8 @@ https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-po
 # Performance
 ```
 
+Porque postgresql es mejor -> https://medium.com/@vinodbokare0588/why-postgres-is-best-b034108f1ef7
+
 https://medium.com/@pranjalraj28/understanding-postgresql-from-architecture-to-query-planning-and-memory-tuning-part-1-2e71184a5e66
 
 https://tomasz-gintowt.medium.com/tuning-ubuntu-debian-pod-postgresql-ea1bb71633d8 -- https://tomasz-gintowt.medium.com/tuning-ubuntu-debian-pod-postgresql-ea1bb71633d8
