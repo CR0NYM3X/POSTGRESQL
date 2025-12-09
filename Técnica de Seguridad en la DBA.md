@@ -1084,4 +1084,7 @@ https://momjian.us/main/writings/pgsql/securing.pdf
 https://github.com/geocompass/disable_copy/tree/master
 
 https://github.com/sendtoshailesh/postgresql-security-toolkit
+
+trucos de pentesting en postgresql -> https://hackviser.com/tactics/pentesting/services/postgresql#pg_read_file-exploitation
+
 ```
