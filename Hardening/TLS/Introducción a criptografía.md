@@ -160,3 +160,55 @@ Algunos de los estándares PKCS más conocidos incluyen:
  
 
 
+---
+# **Modos de operación de cifrado simétrico**
+Son técnicas que indican **cómo aplicar un algoritmo de cifrado de bloque (como AES o DES) sobre datos más grandes que el tamaño del bloque**. Un algoritmo como AES cifra bloques de 128 bits, pero los datos reales suelen ser mucho más grandes, por lo que se necesita un modo de operación para manejar esto.
+
+ principales modos y sus características:
+
+	* GCM (Galois/Counter Mode)
+	* CCM (Counter with CBC-MAC)
+	* CBC (Cipher Block Chaining)
+	* ECB (Electronic Codebook)
+	* CFB (Cipher Feedback)
+	* OFB (Output Feedback)
+	* CTR (Counter Mode)
+
+
+#### **¿Por qué te piden esto?**
+
+Porque quieren saber **qué modo se usa en la conexión SSL/TLS hacia la base de datos**, ya que afecta la seguridad:
+
+*   **GCM o CCM → Muy seguro (TLS 1.2/1.3)**
+*   **CBC → Seguro pero menos recomendado (TLS antiguo)**
+ 
+
+###  **1. GCM (Galois/Counter Mode)**
+
+*   **Cómo funciona:** Basado en CTR, pero añade autenticación (integridad) mediante un código Galois.
+*   **Ventajas:** Cifrado + autenticación, muy seguro, rápido.
+*   **Uso:** TLS moderno, HTTPS, bases de datos seguras.
+
+
+###  **2. CCM (Counter with CBC-MAC)**
+
+*   **Cómo funciona:** Combina CTR para cifrado y CBC-MAC para autenticación.
+*   **Ventajas:** Seguridad completa (confidencialidad + integridad).
+*   **Desventajas:** Más lento que GCM.
+*   **Uso:** IoT, protocolos seguros.
+
+
+###  **3. CBC (Cipher Block Chaining)**
+
+*   **Cómo funciona:** Cada bloque se combina (XOR) con el bloque cifrado anterior antes de cifrarlo.
+*   **Ventajas:** Oculta patrones, más seguro que ECB.
+*   **Desventajas:** No permite paralelismo en cifrado, vulnerable a ataques si el IV no es aleatorio.
+*   **Uso:** Común en TLS antiguas y cifrado de discos.
+
+
+
+
+ 
+ 
+
+
