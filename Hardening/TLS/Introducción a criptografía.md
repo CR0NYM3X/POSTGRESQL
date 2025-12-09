@@ -207,7 +207,40 @@ Porque quieren saber **qué modo se usa en la conexión SSL/TLS hacia la base de
 
 
 
+---
 
+ 
+### **1. Cifrado Asimétrico (RSA, ECDSA, etc.)**
+
+*   **¿Dónde se usa?**  
+    Durante el **handshake TLS**, para:
+    *   Autenticar el servidor (y opcionalmente el cliente) mediante certificados.
+    *   Intercambiar la clave de sesión de forma segura.
+*   **Algoritmos típicos:**
+    *   RSA (común en certificados antiguos).
+    *   ECDSA (más moderno, basado en curvas elípticas).
+    *   DH/ECDH (Diffie-Hellman) para intercambio de claves.
+
+Este cifrado asimétrico **no se usa para cifrar todo el tráfico**, solo para establecer la clave simétrica.
+ 
+
+### **2. Cifrado Simétrico (AES, ChaCha20, etc.)**
+
+*   **¿Dónde se usa?**  
+    Una vez que el handshake termina, se genera una **clave de sesión** y todo el tráfico entre cliente y servidor se cifra con un algoritmo simétrico.
+*   **Algoritmos típicos en PostgreSQL (TLS 1.2/1.3):**
+    *   AES en modos **GCM** o **CBC**.
+    *   ChaCha20-Poly1305 (en TLS 1.3, muy usado en dispositivos sin aceleración AES).
+
+El modo (GCM, CBC, CCM) depende del **cipher suite negociado**.
+
+ 
+### **Flujo resumido:**
+
+1.  **Handshake TLS** → Usa cifrado asimétrico para autenticación e intercambio de claves.
+2.  **Sesión TLS** → Usa cifrado simétrico (AES-GCM, AES-CBC, ChaCha20) para proteger los datos.
+
+ 
  
  
 
