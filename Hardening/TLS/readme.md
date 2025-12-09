@@ -2,7 +2,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 
  
  
-# 📘 #1: [Introducción a TLS](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/TLS/Introducci%C3%B3n%20a%20TLS.md)
+# 📘 #1: [Introducción a TLS](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/Introducci%C3%B3n%20a%20TLS.md)
 ```markdown
 	- **🔍 ¿Qué es TLS (Transport Layer Security)?**
 	- Características y Propósitos Principales de TLS
@@ -19,7 +19,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **⚠️ Desventajas de Implementar TLS**
  ```
 
-# 📘 #2: [Introducción a Certificados](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/TLS/Introducci%C3%B3n%20a%20Certificados.md)
+# 📘 #2: [Introducción a Certificados](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/Introducci%C3%B3n%20a%20Certificados.md)
 ```markdown
 	- **🔍 ¿Qué son los certificados?**
 	- **🔧 Componentes de un certificado**
@@ -32,7 +32,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
  	- **Mejores proveedores de certificados SSL**
 ```
 
-# 📘 #3: [Introducción a Criptografía](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/TLS/Introducci%C3%B3n%20a%20criptograf%C3%ADa.md)
+# 📘 #3: [Introducción a Criptografía](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/Introducci%C3%B3n%20a%20criptograf%C3%ADa.md)
 ```markdown
 	- **🔐 ¿Qué es un Protocolo Criptográfico?**
 	- **📜 ¿Qué es un protocolo?**
@@ -43,7 +43,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	- **🔒 Tipos de cifrados más utilizados en criptografía**
  ```
 
-# 📘 #4 [Introducción a la Gestión de Certificados](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/TLS/Introduccion%20a%20la%20gesti%C3%B3n%20de%20Certificados.md)
+# 📘 #4 [Introducción a la Gestión de Certificados](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/Introduccion%20a%20la%20gesti%C3%B3n%20de%20Certificados.md)
 ```markdown
 	- 📜 **¿Qué es la gestión de certificados?**
 	- 🎯 **¿Para qué sirve la gestión de certificados?**
@@ -81,7 +81,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 	  - ❌ **Desventajas de OCSP**
  ```
  
-# 📘 #5  [Creación de Certificados TLS](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/TLS/Creaci%C3%B3n%20de%20Certificados%20TLS.md)
+# 📘 #5  [Creación de Certificados TLS](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/Creaci%C3%B3n%20de%20Certificados%20TLS.md)
  
 ```markdown
 	📜 **Estructura de PKI**
@@ -112,7 +112,7 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 ```
  
 
-# 📘 #6  [Implementacion de TLS en postgresql](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/TLS/Implementaci%C3%B3n%20de%20TLS%20en%20PostgreSQL.md)
+# 📘 #6  [Implementacion de TLS en postgresql](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/Implementaci%C3%B3n%20de%20TLS%20en%20PostgreSQL.md)
 ```markdown
 	Fase #1 Pre-Implementación
 	Requisitos
@@ -153,9 +153,10 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
 		Configuración extra en postgresql
 ```
 
-# 📘 #7  [Medidas de seguridad y recomendaciones](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/TLS/Medidas%20de%20seguridad%20y%20recomendaciones.md)
-# 📘 #8  [Preguntas comunes](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/TLS/Preguntas%20comunes)
-# 📘 #9  [Aprendiendo usar TCPDump (Extra)](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/TLS/tcpdump.md)
+# 📘 #7  [Medidas de seguridad y recomendaciones](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/Medidas%20de%20seguridad%20y%20recomendaciones.md)
+# 📘 #8  [Preguntas comunes](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/Preguntas%20comunes)
+# 📘 #9  [Aprendiendo usar TCPDump (Extra)](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/tcpdump.md)
+# 📘 #10  [Pentesting TLS (Extra)](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Hardening/TLS/Pentesting%20TLS.md)
 
  
 # Referencias extras.
