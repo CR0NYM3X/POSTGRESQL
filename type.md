@@ -682,6 +682,33 @@ SELECT * FROM empleados;
 GRANT USAGE ON DOMAIN phone_number TO app_user;
 
 
+---------------------  Validar correo corportativo ---------------------
+CREATE DOMAIN email_corporativo AS text
+  CHECK (VALUE LIKE '%@miempresa.com');
+
+CREATE TABLE clientes (
+  correo email_corporativo
+);
+
+CREATE TABLE empleados (
+  correo email_corporativo
+);
+
+
+--------------------- valida RFC ---------------------
+
+-- Función que valida RFC
+CREATE OR REPLACE FUNCTION fn_valida_rfc(valor text)
+RETURNS boolean AS $$
+BEGIN
+  RETURN valor ~ '^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$';
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Dominio que usa la función
+CREATE DOMAIN rfc_mx AS text
+  CHECK (fn_valida_rfc(VALUE));
+
 
 ```
 
