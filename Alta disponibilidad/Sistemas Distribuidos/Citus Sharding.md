@@ -500,6 +500,92 @@ WHERE parent_table = 'public.events'::regclass;
 -- );
 ```
 
+
+ 
+### ✅ ¿Qué significa *multi‑tenant*?
+
+*   **Tenant** = “inquilino” o “cliente” en un sistema compartido.
+*   **Multi‑tenant** = una sola aplicación/base de datos sirve a **muchos clientes** (tenants), pero cada uno ve **solo sus datos**.
+
+# **Consideraciones, recomendaciones y buenas prácticas con Citus**:
+
+
+## ✅ **1. Elección de la columna de distribución**
+
+*   **Distribuye por la columna que más usas en filtros y JOINs** (p. ej., `tenant_id` en multi‑tenant o `device_id` en IoT).
+*   Evita distribuir por columnas que cambian frecuentemente (updates costosos).
+*   Si no hay una clave natural, considera una **clave sintética**.
+
+
+
+## ✅ **2. Co‑location para JOINs**
+
+*   Si varias tablas se consultan juntas, distribúyelas por la **misma columna** para que los JOINs ocurran en el mismo nodo.
+*   Usa **reference tables** para catálogos pequeños (replicadas en todos los nodos).
+
+
+
+## ✅ **3. Particionamiento por tiempo**
+
+*   Combina **Hash distribution** con **particiones por tiempo** para:
+    *   **Pruning** (consultas más rápidas).
+    *   **Drops instantáneos** para retención.
+*   Usa `create_time_partitions()` y automatiza con **pg\_cron**.
+
+
+
+## ✅ **4. Índices y mantenimiento**
+
+*   Crea índices en columnas de filtro (por shard/partición).
+*   Ajusta parámetros como `work_mem`, `maintenance_work_mem` para consultas distribuidas.
+*   Usa **ANALYZE** regularmente para estadísticas correctas.
+
+
+
+## ✅ **5. Evita scatter‑gather innecesario**
+
+*   Si no filtras por la columna de distribución, la consulta será **global** (scatter‑gather).
+*   Para analítica pesada, considera **vistas materializadas** o **tablas agregadas**.
+
+
+
+## ✅ **6. Escalabilidad y rebalanceo**
+
+*   Empieza con **1 coordinator + 3 workers** mínimo.
+*   Usa `rebalance_table_shards()` cuando agregues nodos.
+*   Planifica shards suficientes desde el inicio (ej. 32‑64 shards por tabla).
+
+
+
+## ✅ **7. Alta disponibilidad**
+
+*   Configura **replicación streaming** en cada worker.
+*   Usa **Patroni** o similar para failover automático.
+
+
+
+## ✅ **8. Monitoreo y alertas**
+
+*   Monitorea:
+    *   Latencia de consultas distribuidas.
+    *   Estado de shards (`pg_dist_shard`).
+    *   Espacio por nodo.
+*   Herramientas: **pg\_stat\_statements**, Prometheus + Grafana.
+
+
+
+## ✅ **9. Seguridad**
+
+*   Roles y permisos centralizados en el **coordinator**.
+*   Cifrado en tránsito (SSL) y en reposo si aplica.
+*   Limita acceso directo a workers (solo coordinator expuesto).
+ 
+
+## ✅ **10. Actualizaciones y compatibilidad**
+
+*   Usa versiones recientes de PostgreSQL y Citus (>= 12).
+ 
+
  
 
 ## Info extra 
