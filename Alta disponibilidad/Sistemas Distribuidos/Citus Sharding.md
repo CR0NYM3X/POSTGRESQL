@@ -31,8 +31,62 @@ los datos que estaban en ese nodo pueden volverse inaccesibles**, afectando las 
 2. **El coordinador seguirá funcionando**, pero no podrá recuperar datos almacenados en el nodo caído.  
 3. **Si la tabla distribuida es replicada, otro nodo puede asumir la carga y evitar pérdida de datos.**  
 
+#  Que puedes hacer con Citus
+
+## ✅ **1. Distribución de Tablas**
+
+*   **create\_distributed\_table()**: Convierte una tabla en distribuida, dividiéndola en *shards* que se reparten entre nodos.
+*   Métodos de distribución:
+    *   **Hash**: Ideal para multi-tenant (por `tenant_id`).
+    *   **Append**: Para datos que crecen en el tiempo (eventos, logs).
+
+## ✅ **2. Tablas de Referencia**
+
+*   **create\_reference\_table()**: Replica tablas pequeñas en todos los nodos para joins rápidos (ej. catálogos, países).
+
+## ✅ **3. Particionamiento Temporal**
+
+*   **create\_time\_partitions()**: Crea particiones por rango de tiempo sobre tablas distribuidas.
+*   Permite **retención automática** (drop partitions) y optimización de consultas por fecha.
+
+## ✅ **4. Consultas Distribuidas**
+
+*   Ejecuta **consultas paralelas** en todos los nodos.
+*   Compatible con:
+    *   **JOINs** entre tablas distribuidas y de referencia.
+    *   **Aggregates** (SUM, COUNT, AVG) distribuidos.
+    *   **Subconsultas** y **CTEs** (con ciertas limitaciones).
+
+## ✅ **5. Escalabilidad Horizontal**
+
+*   Añadir nodos para aumentar capacidad.
+*   Redistribuir shards con **rebalanceo automático**.
+
+## ✅ **6. Alta Disponibilidad**
+
+*   Integración con **replicación** (streaming replication).
+*   Failover y resiliencia ante caídas.
+
+## ✅ **7. Integración con PostgreSQL**
+
+*   Compatible con **índices**, **constraints**, **triggers** (con restricciones).
+*   Soporte para **Postgres 16+** y características modernas.
+
+## ✅ **8. Herramientas Avanzadas**
+
+*   **pg\_cron** + Citus: Automatización de tareas (crear/dropear particiones).
+*   **Citus MX**: Para cargas mixtas OLTP + OLAP.
+*   **Columnar Storage**: Para analítica (almacenamiento por columnas).
+
+## ✅ **9. Casos de Uso**
+
+*   **SaaS multi-tenant**: Distribuir por `tenant_id`.
+*   **Analítica en tiempo real**: Distribuir por tiempo y agregar datos masivos.
+*   **IoT / Logs**: Particiones por fecha + distribución por dispositivo.
+
 
  
+---
 
 ### **🖥️ Escenario del laboratorio**
 Se crearon **cuatro servidores** en una red privada que formarán el clúster, Este esquema permitirá repartir la carga de trabajo y escalar el sistema de manera eficiente.
@@ -226,7 +280,7 @@ CREATE TABLE puestos (
     nombre TEXT NOT NULL
 );
 
-
+-- Replica tablas pequeñas en todos los nodos para joins rápidos (ej. catálogos, países).
 SELECT create_reference_table('puestos');
 ```
 
@@ -405,8 +459,46 @@ Si `paises` no es una tabla de referencia:
 
  
  
+---
 
 
+## 4) Ejemplo de **`create_time_partitions`** (partición por tiempo sobre una tabla distribuida)
+
+Este patrón (Hash + time range partitioning) es **el recomendado** para logs/eventos/IoT/analítica con retención: te permite **indices pequeños**, **pruning** efectivo y **drops** de particiones antiguas. [\[citusdata.com\]](https://www.citusdata.com/blog/2023/08/04/understanding-partitioning-and-sharding-in-postgres-and-citus/), [\[github.com\]](https://github.com/mwendwa5/postgres-citus)
+
+```sql
+-- 1. Partimos de la tabla distribuida por HASH (por entidad) 
+--    que definimos antes: public.events (distributed on tenant_id)
+
+-- 2. Creamos particiones mensuales para los próximos 12 meses
+SELECT create_time_partitions(
+  table_name         := 'public.events',
+  partition_interval := '1 month',
+  end_at             := now() + interval '12 months'
+);
+
+-- 3. (Opcional) Ver las particiones generadas por Citus
+SELECT partition
+FROM time_partitions
+WHERE parent_table = 'public.events'::regclass;
+
+-- 4. (Operativa) Con pg_cron puedes:
+--    - Asegurar que siempre existan N particiones futuras
+--    - Dropear particiones antiguas para retención
+-- Ejemplo conceptual:
+-- SELECT run_command_on_schedule(
+--   job_name := 'events_partitions_maintenance',
+--   schedule := '0 2 * * *',  -- diario a las 02:00
+--   command  := $$ 
+--     SELECT ensure_time_partitions(
+--       'public.events', '1 month', now(), now() + interval '12 months'
+--     );
+--     SELECT drop_old_time_partitions(
+--       'public.events', older_than := now() - interval '18 months'
+--     );
+--   $$ 
+-- );
+```
 
  
 
@@ -434,6 +526,7 @@ postgres@postgres# select proname from pg_proc where proname ilike '%balan%';
 
 ## Bibliografía
 ```
+https://docs.citusdata.com/en/v13.0/
 https://docs.citusdata.com/en/v10.2/cloud/availability.html
 https://www.citusdata.com/blog/2018/02/21/three-approaches-to-postgresql-replication/
 https://github.com/citusdata/citus
