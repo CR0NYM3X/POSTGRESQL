@@ -34,7 +34,7 @@ https://www.dalibo.com/actus
 https://labs.dalibo.com/
 
 https://lists.postgresql.org/
-
+https://www.scalingpostgres.com
 https://www.postgresql.org/about/contact/
 https://www.postgresql.org/account/submitbug/
 
