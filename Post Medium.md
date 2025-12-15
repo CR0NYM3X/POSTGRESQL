@@ -283,6 +283,8 @@ https://medium.com/@kaanberkozbek/how-i-automated-pgcat-with-consul-for-dynamic-
 
 # Otros 
 ```
+Understanding WAL and WAL Archiving in PostgreSQL - Practical Guide for Large Databases -> https://shridharkhanal.medium.com/understanding-wal-and-wal-archiving-in-postgresql-practical-guide-for-large-databases-f075bb64de0a
+
 Lo que 10 millones de filas me enseñaron sobre el ajuste de PostgreSQL -> https://medium.com/@vbahadircan/what-10-million-rows-taught-me-about-tuning-postgresql-58ad03f63cf2
 
 Errores que probablemente estás cometiendo en PostgreSQL (y cómo solucionarlos) -> https://levelup.gitconnected.com/postgresql-mistakes-youre-probably-making-and-how-to-fix-them-544ade3ed69c
