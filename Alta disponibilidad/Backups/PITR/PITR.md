@@ -137,7 +137,7 @@ SELECT CLOCK_TIMESTAMP(),pg_walfile_name(pg_current_wal_lsn()),pg_current_wal_ls
 #### 3.   Crear backup base
 
 ```bash
- /usr/pgsql-16/bin/pg_basebackup -D /sysx/data16/DATANEW/backup_base -F p -U postgres -Xs -P -v -h 127.0.0.1 -p 5599
+ /usr/pgsql-16/bin/pg_basebackup -D /sysx/data16/DATANEW/backup_base -F p -U postgres -Xs -P -v -h 127.0.0.1 -p 5599 -c fast
 ```
 
 Asegúrate de tener la variable de entorno `PGPASSWORD` o `.pgpass` configurada para la autenticación.
