@@ -62,8 +62,22 @@ PITR se basa en **dos componentes esenciales**:
   - El servidor **sale del modo recuperación**.
   - Se **promueve** y comienza a aceptar conexiones normales (lectura y escritura).
   - Se elimina el archivo `recovery.signal` automáticamente.
- 
 
+---
+###  **Conclusión del problema**
+El error se generó "FATAL: recovery ended before configured recovery target was reached y mensajes de `cannot stat` para WAL faltantes."
+
+1.  **`recovery_target_time` inalcanzable**
+    *   El tiempo solicitado (`12:51:29`) era **anterior al checkpoint del backup** (12:51:36) y al LSN inicial del `pg_basebackup`.
+    *   En PITR, solo puedes avanzar **hacia adelante** desde el punto donde inicia la recuperación (redo LSN). Nunca retroceder.
+
+2.  **Falta de segmentos WAL posteriores al backup**
+    *   Después del backup, realizaste operaciones (`INSERT 'Ultimo_Registro'` y `DELETE`) pero **no se archivó el WAL actual** porque no se llenó el segmento.
+	*    siempre procura finalizar con un pg_switch_wal() lo cual finaliza el wal actual sin importar si se lleno los 16MB y usa otro 
+    *   Sin el archivo `00000003`, el servidor no puede reproducir esos cambios ni alcanzar el tiempo deseado.
+
+
+---
 
 # Laboratorio 
 
