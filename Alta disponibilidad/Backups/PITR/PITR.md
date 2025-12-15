@@ -792,6 +792,8 @@ pg_wal_replay_resume()
 
 ## Bibliografias
 ```
+https://www.scalingpostgres.com/tutorials/postgresql-backup-point-in-time-recovery/
+
 https://www.highgo.ca/2021/10/01/postgresql-14-continuous-archiving-and-point-in-time-recovery/
 https://www.highgo.ca/2023/05/09/various-restoration-techniques-using-postgresql-point-in-time-recovery/
 https://www.highgo.ca/2020/10/01/postgresql-wal-archiving-and-point-in-time-recovery/
