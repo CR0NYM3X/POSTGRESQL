@@ -1,19 +1,22 @@
 ### Estructura del WAL
 
 - **Segmentos WAL**:  
-  Cada archivo WAL tiene un tamaño fijo (por defecto **16 MB**) y se almacena en el directorio `pg_wal/`.
+  Cada archivo WAL tiene un tamaño fijo (por defecto **16 MB**) y se almacena en el directorio `pg_wal/` o  (anteriormente pg_xlog en versiones previas a la 10) 
 
 - **Nombre del archivo**:  
   Los archivos tienen nombres como `00000001000000000000000A`, que representan:
-  - Número de línea de tiempo
-  - Número de archivo lógico
-  - Número de segmento
+    - 1 - TimeLineID (8 caracteres): Identifica la historia del clúster. Cada recuperación PITR que implica una divergencia en la historia (abrir la base de datos en un punto pasado) incrementa este ID, protegiendo contra la sobreescritura de la         historia original.
+
+    - 2 - Número de Archivo Lógico (8 caracteres): Parte alta de la dirección.
+
+    - 3 - Desplazamiento del Segmento (8 caracteres): Parte baja de la dirección.
 
 - **Registros WAL**:  
   Dentro de cada segmento hay múltiples registros WAL que describen operaciones como `INSERT`, `UPDATE`, `DELETE`, `COMMIT`, etc.
 
 - **Log Sequence Number (LSN)**:  
-  Cada registro tiene un identificador único llamado **LSN**, que indica su posición en el WAL. Ejemplo: `0/3000020`.
+  Cada registro tiene un identificador único llamado **LSN**, que indica su posición dentro del WAL. Ejemplo: `0/3000020`.
+   Mientras que los humanos pensamos en términos de tiempo ("recuperar hasta las 14:30"), PostgreSQL piensa en LSN ("recuperar hasta el byte 0/3000060").
 
 ---
 
