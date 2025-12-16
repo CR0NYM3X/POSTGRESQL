@@ -792,6 +792,7 @@ pg_wal_replay_resume()
 
 ## Bibliografias
 ```
+https://mkyong.com/database/postgresql-point-in-time-recovery-incremental-backup/?source=post_page-----b5a8e06571a6---------------------------------------
 https://www.scalingpostgres.com/tutorials/postgresql-backup-point-in-time-recovery/
 
 https://www.highgo.ca/2021/10/01/postgresql-14-continuous-archiving-and-point-in-time-recovery/
