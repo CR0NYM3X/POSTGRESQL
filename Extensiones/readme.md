@@ -233,6 +233,8 @@ pageinspect  -> es una extensión de PostgreSQL que permite examinar el contenid
 
 
 ************ BACKUP ************
+Postgresus 2.0 --> Es una herramienta de copia de seguridad de PostgreSQL de código abierto con interfaz de usuario. Ejecuta copias de seguridad programadas de múltiples bases de datos, las guarda localmente o en almacenamientos externos, y notifica cuando las copias de seguridad se completan o fallan.
+
 - **pg_dirtyread** Recuperar datos eliminados: Puedes acceder a las tuplas que han sido marcadas como eliminadas pero aún no han sido físicamente removidas. Auditoría y análisis: Permite realizar auditorías y análisis forenses de datos  https://github.com/df7cb/pg_dirtyread 
 
 - **barman:** Herramienta de gestión de backups y recuperación para PostgreSQL Soporta la replicación en caliente y la recuperación ante desastres, ofreciendo una solución completa para la protección de datos.
