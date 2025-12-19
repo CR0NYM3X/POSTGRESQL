@@ -1485,3 +1485,27 @@ CREATE INDEX idx_clientes_nombre ON clientes(nombre) WITH (fillfactor = 90);
 
 
  
+---
+# cardinalidad
+En bases de datos, **cardinalidad** se refiere al **número de elementos (filas) que existen en un conjunto o relación**. Es un concepto que se utiliza en varios contextos:
+
+### **1. Cardinalidad en una tabla**
+
+*   Es la cantidad total de registros que contiene una tabla.
+*   Ejemplo: Si la tabla `clientes` tiene 10,000 filas, su cardinalidad es **10,000**.
+
+### **2. Cardinalidad en relaciones (Modelo Entidad-Relación)**
+
+*   Describe **cuántas instancias de una entidad pueden asociarse con instancias de otra entidad**.
+*   Tipos comunes:
+    *   **Uno a uno (1:1)**: Un registro de la tabla A se relaciona con un solo registro de la tabla B.
+    *   **Uno a muchos (1:N)**: Un registro de la tabla A se relaciona con varios registros de la tabla B.
+    *   **Muchos a muchos (M:N)**: Varios registros de la tabla A se relacionan con varios registros de la tabla B.
+
+### **3. Cardinalidad en índices**
+
+*   Indica **cuántos valores distintos hay en una columna**.
+*   Ejemplo: Si en la columna `estado` solo hay 5 valores distintos (Activo, Inactivo, Pendiente, etc.), su cardinalidad es baja.
+*   **Alta cardinalidad**: Muchos valores únicos (ej. columna `id_cliente`).
+*   **Baja cardinalidad**: Pocos valores únicos (ej. columna `sexo`).
+ 
