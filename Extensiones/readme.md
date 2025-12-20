@@ -296,7 +296,8 @@ PgCat es un proxy especializado para PostgreSQL, diseñado para mejorar el rendi
 Consul como servicio de descubrimiento y chequeo de salud de nodos PostgreSQL.
 
 ************  sistema distribuido ************ 
-Citus es una extensión de código abierto para **PostgreSQL** que convierte la base de datos en un sistema distribuido, permitiendo escalar horizontalmente y mejorar el rendimiento en cargas de trabajo intensivas. Algunas de sus principales funciones incluyen:
+Citus es una extensión de código abierto para **PostgreSQL** que convierte la base de datos en un sistema distribuido mediante sharding y replicación, permitiendo escalar horizontalmente y mejorar el rendimiento en cargas de trabajo intensivas. Algunas de sus principales funciones incluyen:
+ 
 
 - **Sharding automático**: Distribuye datos en múltiples nodos para mejorar la escalabilidad.
 - **Consultas paralelas**: Ejecuta consultas en varios servidores simultáneamente, acelerando el procesamiento.
@@ -304,7 +305,12 @@ Citus es una extensión de código abierto para **PostgreSQL** que convierte la 
 - **Almacenamiento columnar**: Optimiza el rendimiento en análisis de datos y consultas agregadas.
 
  
+PgDog : actúa como middleware (capa intermedia) entre la aplicación y PostgreSQL. No necesitas cambiar el esquema ni el código de la aplicación: intercepta las consultas, decide a qué shard enviarlas, balancea carga y gestiona conexiones. Además, incluye pooling, failover y health checks, cosas que Citus no hace por sí mismo.
 
+Escalar PostgreSQL horizontalmente vía sharding.
+Mejorar rendimiento con balanceo de carga y pooling de conexiones.
+Asegurar alta disponibilidad mediante health checks y failover automático.
+Gestionar replicación lógica para mantener consistencia y facilitar reconfiguraciones.
 
 
  
