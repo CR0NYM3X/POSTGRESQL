@@ -878,6 +878,7 @@ Si ya tienes replicación configurada, puedes:
 
 ## Links
 ```conf
+Setting up High Availability PostgreSQL Cluster using Patroni, PGBouncer, Docker, Consul and HAProxy -> https://medium.com/@nicola.vitaly/setting-up-high-availability-postgresql-cluster-using-patroni-pgbouncer-docker-consul-and-95c70445b1b1
 PostgreSQL High Availability in Action -> https://medium.com/@mehmanjafarov1905/postgresql-high-availability-in-action-49aadf181549
 PostgreSQL High Availability in Production (Patroni + etcd + HAProxy + Keepalived — A DBA Best Practices Guide) -> https://brkylmzco.medium.com/postgresql-high-availability-in-production-patroni-etcd-haproxy-keepalived-a-dba-best-eb0a973930d0
 Building a Highly Available PostgreSQL Cluster with Patroni, etcd, and HAProxy -> https://medium.com/@dickson.gathima/building-a-highly-available-postgresql-cluster-with-patroni-etcd-and-haproxy-1fd465e2c17f
