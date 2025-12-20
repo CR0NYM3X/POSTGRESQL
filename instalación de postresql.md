@@ -71,8 +71,26 @@ Para listar todos los repositorios activos:
 
 # Como instalar postgresql
 ```bash
+
+---------------- Manual ------------------
+# Import the repository signing key:
+sudo apt install curl ca-certificates
+sudo install -d /usr/share/postgresql-common/pgdg
+sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+# Create the repository configuration file:
+. /etc/os-release
+sudo sh -c "echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $VERSION_CODENAME-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
+
+# Update the package lists:
+sudo apt update
+
+sudo apt install postgresql-18
+
+---------------- Automatico ------------------
 sudo apt install -y postgresql-common
-sudo apt -y install postgresql
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+
 
 pg_ctl start -D /tmp/datay -l /tmp/datay/logfile 
 ```
