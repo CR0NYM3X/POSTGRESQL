@@ -487,7 +487,8 @@ Simular salida:
 #### 🔹 Validación del clúster
 
 ```bash
-patronictl -c /etc/patroni.yml list
+patronictl -c /etc/patroni/config.yml list
+# patronictl -c /etc/patroni.yml list
 ```
 
 **Simulación de salida:**
@@ -917,4 +918,5 @@ https://ozwizard.medium.com/postgresql-with-patroni-installation-and-configurati
 *   <https://etcd.io/docs/>
 *   <https://www.postgresql.org/docs/current/warm-standby.html>
 
+https://www.youtube.com/watch?v=SE9eEc9_jwk
 ```
