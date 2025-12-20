@@ -92,6 +92,11 @@ sudo apt install -y postgresql-common
 sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
 
 
+
+---------------- Instalar tool de red ------------------
+# Herramientas ifconfig, netstat , route, arp
+sudo apt install -y  net-tools 
+
 pg_ctl start -D /tmp/datay -l /tmp/datay/logfile 
 ```
 
