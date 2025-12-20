@@ -242,13 +242,35 @@ sudo apt install -y etcd
 **etcd-node1**
 
 ```bash
+
+# Puerto 2379 (Client Port): Es la "ventanilla de atención al público". Por aquí entran las peticiones de herramientas externas (como kubectl o tus propias apps) para leer o escribir datos.
+# Puerto 2380 (Peer Port): Es la línea privada interna. Se usa exclusivamente para que los servidores etcd hablen entre sí (repliquen datos, elijan líder, manden "latidos" de vida).
+
+# El nombre humano de este nodo específico
 ETCD_NAME="etcd-node1"
+
+# Es la lista de asistencia inicial. Le dice al nodo quiénes forman el equipo al arrancar.
 ETCD_INITIAL_CLUSTER="etcd-node1=http://10.0.0.110:2380,etcd-node2=http://10.0.0.111:2380,etcd-node3=http://10.0.0.112:2380"
+
+# Indica que estamos fundando un clúster nuevo. Si quisieras agregar este nodo a un grupo que ya existe (unirte a la fiesta)
 ETCD_INITIAL_CLUSTER_STATE="new"
+
+# Es la tarjeta de presentación que este nodo le manda a los otros miembros del clúster: "¡Hola, soy el nodo X, si quieren replicar datos conmigo, llámenme a esta URL!".
 ETCD_INITIAL_ADVERTISE_PEER_URLS="http://10.0.0.110:2380"
+
+# Lo mismo, pero para los clientes. Es la dirección que se publica para que los servicios sepan dónde conectarse.
 ETCD_ADVERTISE_CLIENT_URLS="http://10.0.0.110:2379"
+
+# Escucha interna (2380). Le dice al servidor: "Acepta tráfico de otros nodos etcd en esta IP y puerto".
 ETCD_LISTEN_PEER_URLS="http://10.0.0.110:2380"
-ETCD_LISTEN_CLIENT_URLS="http://10.0.0.110:2379"
+
+# Escucha externa (2379). Le dice: "Acepta órdenes de clientes en esta IP".
+ETCD_LISTEN_CLIENT_URLS="http://10.0.0.110:2379,http://127.0.0.1:2379"
+
+# Activa la versión antigua de la API (v2). Hoy día todo usa v3, pero a veces se deja activado por compatibilidad con herramientas viejas.
+ETCD_ENABLE_V2="true"
+
+ETCD_INITIAL_CLUSTER_TOKEN= "etcd-clustered" Es como una contraseña de grupo o ID único. Sirve para evitar que, si tienes dos clústeres distintos en la misma red, se mezclen o interfieran entre sí por error.
 ```
 
 **Repetir en etcd-node2 y etcd-node3 cambiando IP y nombre**
@@ -256,6 +278,9 @@ ETCD_LISTEN_CLIENT_URLS="http://10.0.0.110:2379"
 ```bash
 sudo systemctl restart etcd
 sudo systemctl status etcd
+
+
+curl http://10.0.0.110:2380/members
 ```
 
 ***
@@ -285,6 +310,7 @@ sudo apt -y install python3 python3-pip python3-yaml
 sudo apt install python3-testresources
 sudo pip3 install --upgrade setuptools
 sudo pip3 install psycopg2 patroni python-etcd
+sudo apt -y install etcd-client
 sudo systemctl stop postgresql
 
 sudo rm -rf /var/lib/postgresql/14/main
