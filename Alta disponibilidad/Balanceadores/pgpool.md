@@ -63,14 +63,24 @@
       **2. Administración PgPool vía SQL** Si quieres ejecutar comandos PCP desde SQL  puedes instalar pgpool_adm, te permite administrar Pgpool-II desde una sesión SQL, sin tener que usar comandos externos como pcp_node_info o pcp_attach_node.
 
 ### **`watchdog` en Pgpool-II**
-El **watchdog** es un **subproceso de Pgpool-II** que agrega **Alta Disponibilidad (HA)**. Su función principal es **monitorear el estado de Pgpool-II** y **manejar el failover automático** en caso de fallos.
+El **watchdog** es un **subproceso de Pgpool-II** que agrega **Alta Disponibilidad (HA)**. Su función principal es **monitorear el estado de Pgpool-II** y **manejar el failover automático cuando se tienen mas de un Pgpool-II ** en caso de fallos.
+
+En resumen: El **Watchdog** en Pgpool-II es un componente clave para lograr **alta disponibilidad del balanceador**.   gestionando la IP flotante y la coordinación entre balanceadores.
+
 
 **¿Qué hace el watchdog?**
-- **Monitorea la salud de Pgpool-II**, enviando consultas a PostgreSQL.
-- **Detecta fallos** en el servicio y **promueve otro nodo** como activo.
-- **Gestiona direcciones IP virtuales (VIP)** para que el servicio siga disponible.
-- **Evita el problema de "split-brain"**, asegurando que solo un Pgpool-II sea el activo.
+1.  **Monitoreo entre nodos Pgpool**
+    *   Supervisa el estado de los otros nodos Pgpool en el clúster.
+    *   Detecta si un nodo Pgpool está caído o no responde.
 
+2.  **Gestión de la IP Virtual (VIP)**
+    *   Publica la **IP flotante** en el nodo Pgpool que está activo.
+    *   Si el nodo activo falla, transfiere la VIP a otro nodo Pgpool disponible.
+    *   Esto permite que las aplicaciones siempre se conecten a la misma IP, sin importar qué Pgpool esté activo.
+
+3.  **Quorum y prevención de split-brain**
+    *   Usa un mecanismo de **quorum** para decidir cuál Pgpool debe ser el líder.
+    *   Evita que dos nodos Pgpool intenten asumir la VIP al mismo tiempo (split-brain).
 
 
 
