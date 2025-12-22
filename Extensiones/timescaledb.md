@@ -531,6 +531,24 @@ SELECT * FROM timescaledb_information.jobs;
 
 1.  Insertas datos → Trigger de hypertable → Verifica rango → Si no existe chunk → **Crea chunk automáticamente**.
 2.  Jobs internos → Background workers → Ejecutan políticas (retención, compresión).
+
+
+---
+
+# Tamaño de los chunks
+```
+-- https://www.tigerdata.com/docs/api/latest/hypertable/chunks_detailed_size
+SELECT hypertable_schema, hypertable_name, compression_enabled
+FROM timescaledb_information.hypertables;
+
+
+SELECT  * FROM chunks_detailed_size('history_log'::regclass);
+SELECT * FROM chunk_compression_stats('history_log'::regclass);
+
+
+SELECT pg_size_pretty(SUM(total_bytes)) AS tamaño_total 
+FROM chunks_detailed_size('history_log'::regclass);
+```
  
 
 # Bibliografias 
