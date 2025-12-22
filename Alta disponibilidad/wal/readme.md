@@ -6,6 +6,7 @@ En pocas palabras:
     1.  **Recuperación ante fallos:** Si el servidor se cae, PostgreSQL puede reconstruir el estado consistente leyendo el WAL.
     2.  **Replicación:** Se usa para enviar cambios a réplicas (streaming replication).
     3.  **Integridad:** Garantiza que las transacciones sean atómicas y duraderas (ACID).
+    4. **Punto de recuperación en el tiempo (PITR)**: Se puede restaurar la base de datos a un momento específico en el pasado.
 
 Piensa en el WAL como un “diario o Bitácora” donde PostgreSQL apunta todo antes de hacerlo, para poder rehacer o deshacer cambios si algo sale mal.
 
