@@ -5,44 +5,97 @@ El archivado continuo de WAL es útil para:
 - **Replicación**: Se pueden enviar los archivos WAL a servidores de réplica para mantener una copia actualizada de la base de datos.
 - **Punto de recuperación en el tiempo (PITR)**: Se puede restaurar la base de datos a un momento específico en el pasado.
 
+
+
+##  Flujo completo cuando PostgreSQL procesa una modificación (INSERT, UPDATE, DELETE)
+
+ flujo con:
+
+*   Cliente → Parser → Planner → shared\_buffers (hit/miss) → WAL → Disco → Réplica  
+    y los procesos **Background Writer, WAL Writer, Checkpoint**?
+
  
-# pasos que sigue PostgreSQL cuando se realiza una modificación de datos, como un `INSERT`, `UPDATE` o `DELETE`:
 
-### 1. Recepción de la Consulta
-El cliente envía la consulta SQL al servidor PostgreSQL.
+### **1. Recepción de la consulta**
 
-### 2. Análisis y Planificación
-1. **Parser**: La consulta se analiza sintácticamente para convertirla en una estructura de árbol de análisis.
-2. **Rewriter**: Si hay reglas definidas, se aplican en esta etapa para modificar la consulta.
-3. **Planner/Optimizer**: El planificador genera un plan de ejecución óptimo para la consulta, considerando estadísticas y costos.
+*   El cliente envía la consulta SQL al servidor PostgreSQL.
 
-### 3. Ejecución del Plan
-1. **Inicio de la Transacción**: Si la consulta es parte de una transacción, se asegura que la transacción esté iniciada.
-2. **Ejecución del Plan**: El plan de ejecución se lleva a cabo. Para un `INSERT`, se añaden nuevas filas; para un `UPDATE`, se modifican las filas existentes; y para un `DELETE`, se eliminan las filas correspondientes.
 
-### 4. Registro en el WAL (Write-Ahead Log)
-1. **Generación de Entradas WAL**: Se generan entradas en el WAL para cada modificación. Estas entradas registran los cambios antes de que se escriban en las tablas.
-2. **Flujo de WAL**: Las entradas WAL se envían al disco y, si está configurado, a los servidores de réplica.
 
-### 5. Modificación de Datos en Memoria
-1. **Buffers de Memoria**: Los cambios se aplican primero en los buffers de memoria compartida.
-2. **Dirty Buffers**: Los buffers modificados se marcan como "sucios" (dirty) y se programan para ser escritos en disco más tarde.
+### **2. Análisis y planificación**
 
-### 6. Checkpoints
-1. **Checkpoints Periódicos**: PostgreSQL realiza checkpoints periódicos para asegurar que los datos en memoria se escriban en disco.
-2. **Sincronización de WAL y Datos**: Durante un checkpoint, se asegura que todas las entradas WAL hasta ese punto se hayan aplicado a las tablas en disco.
+*   **Parser:** Analiza la sintaxis y genera un árbol de análisis.
+*   **Rewriter:** Aplica reglas definidas (RULES) para modificar la consulta si corresponde.
+*   **Planner/Optimizer:** Crea el plan de ejecución óptimo usando estadísticas y costos.
 
-### 7. Confirmación de la Transacción
-1. **Commit**: Si la consulta es parte de una transacción, se realiza un commit, asegurando que todos los cambios sean permanentes.
-2. **Liberación de Recursos**: Se liberan los recursos utilizados por la transacción.
 
-### 8. Replicación y Archivado
-1. **Replicación**: Si hay servidores de réplica configurados, las entradas WAL se envían a estos servidores para mantener la consistencia.
-2. **Archivado**: Las entradas WAL se archivan según la configuración de archivado continuo.
 
-### 9. Mantenimiento y Vacío
-1. **Vacuum**: PostgreSQL realiza operaciones de mantenimiento como `VACUUM` para recuperar espacio y actualizar estadísticas.
-2. **Autovacuum**: El proceso `autovacuum` se ejecuta automáticamente para mantener la base de datos en buen estado.
+### **3. Ejecución del plan**
+
+*   **Inicio de la transacción:** Se asegura que la transacción esté activa.
+*   **Ejecución:** Se comienza a procesar la operación (INSERT, UPDATE, DELETE).
+
+
+
+### **4. Localización de la página**
+
+*   **Busca primero en shared\_buffers:**
+    *   Si la página está en memoria → se usa directamente.
+    *   Si **no está en memoria** → se lee desde disco y se carga en shared\_buffers.
+
+
+
+### **5. Modificación en memoria**
+
+*   Se modifica la página en **shared\_buffers** (no en disco).
+*   La página se marca como **dirty** (pendiente de escritura).
+
+
+
+### **6. Generación y escritura en WAL**
+
+*   **Generación de registros WAL:** Cada cambio genera un registro WAL (Write-Ahead Log).
+*   **Almacenamiento temporal:** Los registros WAL se guardan en `wal_buffers`.
+*   **WAL Writer:** Los escribe periódicamente en disco (`pg_wal`).
+*   **Durabilidad:** El COMMIT no se confirma hasta que el WAL esté fsync en disco (según `synchronous_commit`).
+
+
+
+### **7. Procesos en segundo plano**
+
+*   **Background Writer:** Va escribiendo páginas sucias en disco para reducir carga en checkpoints.
+*   **WAL Writer:** Sigue vaciando `wal_buffers` hacia `pg_wal`.
+
+
+
+### **8. Checkpoint**
+
+*   **Evento periódico:** Garantiza que todas las páginas modificadas y WAL estén sincronizados en disco.
+*   **Reduce riesgo:** Permite recuperación consistente en caso de fallo.
+
+
+
+### **9. Confirmación de la transacción**
+
+*   **COMMIT:** Marca la transacción como exitosa.
+*   **Liberación de recursos:** Se liberan locks y memoria usada.
+
+
+
+### **10. Replicación y archivado**
+
+*   **Streaming Replication:** Las réplicas leen los WAL ya escritos en disco.
+*   **Archivado:** Si está habilitado, los WAL se archivan para PITR (Point-In-Time Recovery).
+
+
+
+### **11. Mantenimiento posterior**
+
+*   **VACUUM / Autovacuum:** Recupera espacio y actualiza estadísticas.
+*   **ANALYZE:** Optimiza el rendimiento de futuras consultas.
+
+ 
+
 
 ---
 
