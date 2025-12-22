@@ -79,7 +79,7 @@ Implementar y dominar funcionalidades avanzadas de TimescaleDB para optimizar el
 
 ***
 
-## ✅ 4. Ventajas y ❌ Desventajas
+##  4. Ventajas y ❌ Desventajas
 
 **Ventajas:**
 
@@ -276,7 +276,7 @@ Requiere configuración de nodos "access node" y "data nodes".
 
 ## 🔚 9. Sección Final
 
-### ✅ Consideraciones
+###  Consideraciones
 
 *   `shared_preload_libraries` es obligatorio para que TimescaleDB funcione correctamente
 *   Las políticas se ejecutan por background workers
@@ -306,11 +306,11 @@ Requiere configuración de nodos "access node" y "data nodes".
 
 | Función                  | PostgreSQL | TimescaleDB |
 | ------------------------ | ---------- | ----------- |
-| Compresión automática    | ❌          | ✅           |
-| Agregados continuos      | ❌          | ✅           |
-| Retención programada     | ❌          | ✅           |
-| Monitoreo interno        | ❌          | ✅           |
-| Reordenamiento de chunks | ❌          | ✅           |
+| Compresión automática    | ❌          |            |
+| Agregados continuos      | ❌          |            |
+| Retención programada     | ❌          |            |
+| Monitoreo interno        | ❌          |            |
+| Reordenamiento de chunks | ❌          |            |
 
 ***
 
@@ -319,7 +319,164 @@ Requiere configuración de nodos "access node" y "data nodes".
 *   <https://docs.timescale.com/>
 *   <https://www.postgresql.org/docs/>
 *   <https://github.com/timescale>
+---
 
+
+
+## 2) Ver si existen **hypertables** (tablas TimescaleDB “configuradas”)
+
+TimescaleDB convierte una tabla normal en **hypertable** (particionada por tiempo y opcionalmente espacio). Para saber si ya tienes alguna:
+
+```sql
+-- Vista amigable:
+SELECT * FROM timescaledb_information.hypertables;
+ SELECT * FROM timescaledb_information.chunks;
+ 
+-- Catálogo interno:
+SELECT id, schema_name, table_name, associated_schema_name, associated_table_prefix
+FROM _timescaledb_catalog.hypertable
+ORDER BY schema_name, table_name;
+```
+
+**Si estos queries devuelven filas**, entonces **sí hay hypertables configuradas**.
+ 
+
+## 3) Ver los **chunks** (las particiones físicas que TimescaleDB crea)
+
+Cada hypertable se compone de **chunks** organizados por intervalos de tiempo (y/o espacio). Para verlos:
+
+```sql
+-- Vista pública:
+SELECT hypertable_schema, hypertable_name, chunk_schema, chunk_name, range_start, range_end
+FROM timescaledb_information.chunks
+ORDER BY hypertable_schema, hypertable_name, range_start;
+
+-- Catálogo interno:
+SELECT c.id, h.schema_name, h.table_name, c.schema_name AS chunk_schema, c.table_name AS chunk_name
+FROM _timescaledb_catalog.chunk c
+JOIN _timescaledb_catalog.hypertable h ON h.id = c.hypertable_id
+ORDER BY h.schema_name, h.table_name, c.id;
+```
+
+**Si ves chunks**, significa que ya hubo inserciones de datos dentro del rango de tiempo y TimescaleDB particionó la tabla.
+ 
+## 4) Listar los esquemas y tablas internas de TimescaleDB
+
+TimescaleDB usa varios esquemas internos. Verlos te confirma que el “motor” está operativo:
+
+```sql
+-- ¿Existen los esquemas internos?
+SELECT nspname FROM pg_namespace
+WHERE nspname LIKE '_timescaledb_%' OR nspname = 'timescaledb_experimental'
+ORDER BY 1;
+
+-- Listar tablas internas (solo para inspección; no modificar):
+\dt _timescaledb_internal.*
+\dt _timescaledb_catalog.*
+```
+
+> `_timescaledb_catalog` guarda metadatos (hypertables, chunks, políticas).  
+> `_timescaledb_internal` tiene estructuras auxiliares y objetos runtime.
+ 
+## 5) Ver políticas y objetos adicionales (si se usan)
+
+Si configuraste **retention**, **compresión**, **continuous aggregates**, etc., puedes comprobarlos:
+
+```sql
+-- Políticas de retención:
+SELECT * FROM timescaledb_information.jobs WHERE proc_name LIKE '%policy_retention%';
+
+-- Políticas de compresión:
+SELECT * FROM timescaledb_information.jobs WHERE proc_name LIKE '%policy_compression%';
+
+-- Continuous aggregates (cagg):
+SELECT * FROM timescaledb_information.continuous_aggregates;
+
+-- Estado de compresión por hypertable:
+SELECT hypertable_schema, hypertable_name, compression_enabled
+FROM timescaledb_information.hypertables;
+```
+ 
+## 6) Comprobación rápida “sí/no”
+
+Si quieres un **test directo** que te diga si hay hypertables ya configuradas:
+
+```sql
+SELECT CASE WHEN EXISTS (
+  SELECT 1 FROM _timescaledb_catalog.hypertable
+) THEN 'TimescaleDB: hay hypertables configuradas'
+ELSE 'TimescaleDB: no hay hypertables (aún)'
+END AS estado;
+```
+---
+
+# chunks
+
+En **TimescaleDB**, cuando se habla de **chunks**, se refiere a las **particiones físicas** en las que se divide una **hypertable**.
+
+###  ¿Qué es un chunk?
+
+*   Una **hypertable** es la tabla lógica que creas con `create_hypertable()`.
+*   Internamente, TimescaleDB **divide esa hypertable en múltiples tablas más pequeñas** llamadas **chunks**.
+*   Cada chunk corresponde a un **intervalo de tiempo** (y opcionalmente espacio) definido por la política de partición.
+*   Esto permite que TimescaleDB maneje grandes volúmenes de datos de manera eficiente, optimizando:
+    *   **Inserciones** (solo afecta el chunk correspondiente al rango de tiempo).
+    *   **Consultas** (usa solo los chunks relevantes).
+    *   **Compresión y retención** (puedes borrar o comprimir chunks antiguos sin tocar los nuevos).
+
+ 
+
+###  ¿Por qué existen los chunks?
+
+*   PostgreSQL por sí solo no tiene particionamiento automático.
+*   TimescaleDB implementa **particionamiento por tiempo** (y opcionalmente por espacio) para escalar.
+*   Cada chunk es una tabla normal en PostgreSQL, pero TimescaleDB las gestiona automáticamente.
+
+ 
+
+###  Ejemplo real
+
+Supongamos que creas una hypertable para métricas:
+
+```sql
+CREATE TABLE metrics (
+    time TIMESTAMPTZ NOT NULL,
+    value DOUBLE PRECISION
+);
+SELECT create_hypertable('metrics', 'time', chunk_time_interval => interval '1 day');
+```
+
+*   TimescaleDB creará chunks como:
+    *   `_timescaledb_internal._hyper_1_1_chunk` → datos del 2025-12-21
+    *   `_timescaledb_internal._hyper_1_2_chunk` → datos del 2025-12-22
+    *   y así sucesivamente…
+
+Cada chunk almacena los datos de **un día** (porque definimos `chunk_time_interval => '1 day'`).
+
+ 
+
+###  Cómo ver los chunks existentes
+
+```sql
+SELECT hypertable_schema, hypertable_name, chunk_schema, chunk_name, range_start, range_end
+FROM timescaledb_information.chunks
+ORDER BY range_start;
+```
+
+Esto te mostrará:
+
+*   Nombre del chunk
+*   Intervalo de tiempo que cubre (`range_start` y `range_end`)
+
+ 
+
+###  Beneficios de los chunks
+
+*   **Consultas más rápidas**: TimescaleDB usa “constraint exclusion” para leer solo los chunks relevantes.
+*   **Mantenimiento sencillo**: Puedes borrar chunks antiguos con `drop_chunks()`.
+*   **Compresión**: Puedes comprimir chunks históricos sin afectar los recientes.
+*   **Escalabilidad**: Evita que una sola tabla crezca demasiado y degrade el rendimiento.
+ 
 
 # Bibliografias 
 ```
