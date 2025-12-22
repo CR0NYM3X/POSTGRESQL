@@ -22,8 +22,8 @@
 
 ###  ¿Cómo se almacena?
 
-- Los registros WAL se escriben primero en **buffers en memoria**.
-- Al hacer `COMMIT`, se **flushean** (escriben) al disco en el archivo WAL.
+- Los registros WAL se escriben primero en **Wal buffers en memoria**.
+- Al hacer `COMMIT`, se **flushean** (escriben) al disco en el archivo WAL dendro de pg_wal.
 - Luego, PostgreSQL aplica los cambios a los archivos de datos reales.
 
 Esto permite que, en caso de caída del sistema, se puedan **reproducir los cambios** desde el WAL y recuperar el estado exacto.
