@@ -1,3 +1,19 @@
+# **WAL** significa **Write-Ahead Logging**.  
+En pocas palabras:
+
+*   **Qué es:** Es un mecanismo que registra en un archivo especial todas las operaciones que modifican datos **antes** de aplicarlas a la base de datos.
+*   **Para qué sirve:**
+    1.  **Recuperación ante fallos:** Si el servidor se cae, PostgreSQL puede reconstruir el estado consistente leyendo el WAL.
+    2.  **Replicación:** Se usa para enviar cambios a réplicas (streaming replication).
+    3.  **Integridad:** Garantiza que las transacciones sean atómicas y duraderas (ACID).
+
+Piensa en el WAL como un “diario o Bitácora” donde PostgreSQL apunta todo antes de hacerlo, para poder rehacer o deshacer cambios si algo sale mal.
+
+ 
+
+---
+
+
 ### Estructura del WAL
 
 - **Segmentos WAL**:  
