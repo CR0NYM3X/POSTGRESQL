@@ -476,6 +476,57 @@ Esto te mostrará:
 *   **Mantenimiento sencillo**: Puedes borrar chunks antiguos con `drop_chunks()`.
 *   **Compresión**: Puedes comprimir chunks históricos sin afectar los recientes.
 *   **Escalabilidad**: Evita que una sola tabla crezca demasiado y degrade el rendimiento.
+
+
+---
+
+# Como automatiza su tareas 
+
+TimescaleDB utiliza procesos internos para gestionar automáticamente la creación de particiones (chunks)**, pero no es un “demonio” separado como un servicio independiente del sistema operativo. Te explico cómo funciona:
+
+
+
+###  ¿Cómo TimescaleDB crea los chunks automáticamente?
+
+*   Cuando conviertes una tabla en **hypertable** con `create_hypertable()`, defines un **intervalo de tiempo** (por ejemplo, 1 día, 1 hora).
+*   Cada vez que insertas datos que caen fuera del rango del chunk actual, **TimescaleDB crea un nuevo chunk automáticamente**.
+*   Esto ocurre **dentro del motor PostgreSQL**, gracias a:
+    *   **Triggers internos** en la hypertable.
+    *   **Funciones de enrutamiento** que determinan a qué chunk enviar los datos.
+    *   **Catálogo interno** (`_timescaledb_catalog`) que guarda metadatos de hypertables y chunks.
+
+
+
+###  ¿Hay un demonio externo?
+
+*   **No**, no hay un proceso separado como `timescaledb.service`.
+*   Todo corre dentro del **backend de PostgreSQL** como parte de la extensión TimescaleDB.
+*   Sin embargo, TimescaleDB sí tiene **background workers** (procesos internos) para:
+    *   **Jobs programados** (retención, compresión, continuous aggregates).
+    *   Estos workers se registran en el catálogo y se ejecutan mediante el sistema de jobs de TimescaleDB.
+
+Puedes verlos con:
+
+```sql
+SELECT * FROM timescaledb_information.jobs;
+```
+
+
+
+###  ¿Qué hace el background worker?
+
+*   Ejecuta tareas periódicas como:
+    *   **drop\_chunks()** (retención).
+    *   **compresión** de chunks antiguos.
+    *   **refresh** de continuous aggregates.
+*   Se activa porque TimescaleDB se carga en `shared_preload_libraries` y registra workers al iniciar PostgreSQL.
+
+
+
+###  Flujo resumido
+
+1.  Insertas datos → Trigger de hypertable → Verifica rango → Si no existe chunk → **Crea chunk automáticamente**.
+2.  Jobs internos → Background workers → Ejecutan políticas (retención, compresión).
  
 
 # Bibliografias 
