@@ -37,6 +37,10 @@ El verdadero secreto de TimescaleDB radica en su capacidad para combinar la robu
 - **Índices optimizados**: Utiliza índices almacenados en RAM para acelerar la inserción y consulta de datos.
 - **Escalabilidad**: Puede manejar grandes volúmenes de datos de manera eficiente, ideal para aplicaciones como monitoreo de sistemas, plataformas de negociación y recopilación de métricas de sensores.
 
+### Parámetros 
+```
+select name,setting,unit,context from pg_settings where name ilike '%timescaledb%' order by name ;
+```
 --- 
 
 ## 📘 1. Índice
