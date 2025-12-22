@@ -100,7 +100,7 @@ sudo apt install -y  net-tools
 pg_ctl start -D /tmp/datay -l /tmp/datay/logfile 
 ```
 
-###  Rutas si usars el systemctl por default 
+###  Rutas 
 
 ```plaintext
 -- Solo en algunos Red Hat
@@ -111,6 +111,15 @@ pg_ctl start -D /tmp/datay -l /tmp/datay/logfile
 /etc/postgresql/17/main/            → configuración del cluster (postgresql.conf, pg_hba.conf , etc)
 /var/log/postgresql/                → logs del servicio  (postgresql-16-main.log)
 /usr/share/postgresql/17/           → Ejemplos
+
+
+-- Ver el service 
+ls /usr/lib/systemd/system/ | grep postgres
+
+-- Reiniciar Postgresql
+systemctl restart postgresql.service
+
+
 
 ```
 --- 
