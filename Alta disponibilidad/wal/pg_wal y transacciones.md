@@ -2824,3 +2824,210 @@ Aspectos internos de MVCC en Postgres -> https://medium.com/@rohanjnr44/internal
 | Uso | Lectura y escritura de datos | Registro de cambios para durabilidad |
 | Escritura | Por background writer o checkpoints | Por WAL writer |
 | Objetivo | Rendimiento de acceso a datos | Seguridad y recuperación ante fallos |
+
+
+---
+
+
+
+
+ 
+
+## **wal\_buffers**
+
+Servir como un área de memoria intermedia (buffer) para los registros WAL antes de que se escriban físicamente en disco.
+
+**Dicho simple:**  
+ acelera las escrituras y reduce I/O al evitar que cada cambio tenga que ir directo al disco.
+
+
+### **¿Qué es exactamente wal\_buffers?**
+
+`wal_buffers` define cuánta memoria RAM usa PostgreSQL para almacenar temporalmente los WAL records generados por:
+
+*   INSERT
+*   UPDATE
+*   DELETE
+*   DDL (CREATE, ALTER, etc.)
+*   Transacciones en general
+
+***
+
+### **Flujo simplificado**
+
+    Cambios en datos
+       ↓
+    WAL record
+       ↓
+    wal_buffers (RAM)
+       ↓
+    pg_wal (disco)
+       ↓
+    Replica / Crash recovery
+
+***
+
+### **¿Por qué existe?**
+
+**Sin wal\_buffers:**
+
+*   Cada cambio tendría que escribir WAL directo a disco
+*   Mucho I/O pequeño y lento
+*   Menor throughput
+
+**Con wal\_buffers:**
+
+*   Se agrupan múltiples WAL records en memoria
+*   Se escriben en bloques más grandes
+*   Mejor rendimiento, especialmente en cargas intensivas de escritura
+
+***
+
+### **¿Cuándo se vacía el wal\_buffers?**
+
+El contenido de `wal_buffers` se escribe a disco cuando ocurre alguno de estos eventos:
+
+1.  COMMIT
+2.  Se llenan los wal\_buffers
+3.  Checkpoint
+4.  Background writer / WAL writer
+5.  fsync forzado (seguridad)
+
+⚠️ **Ojo:**  
+El COMMIT no se considera exitoso hasta que el WAL esté fsync en disco (según `synchronous_commit`).
+
+***
+
+### **Tamaño y valor por defecto**
+
+Por defecto:
+
+    wal_buffers = -1
+
+PostgreSQL lo ajusta automáticamente (≈ 3% de `shared_buffers`, con límites).
+
+**Valores comunes manuales:**
+
+*   wal\_buffers = 16MB
+*   wal\_buffers = 32MB
+*   wal\_buffers = 64MB
+
+***
+
+### **¿Cuándo conviene aumentar wal\_buffers?**
+
+Aumentarlo ayuda cuando hay alta tasa de INSERT/UPDATE, cargas tipo:
+
+*   OLTP intenso
+*   Ingesta masiva
+*   TimescaleDB
+*   Zabbix / monitoreo
+
+**Ves waits como:**
+
+*   WALWrite
+*   WALSync
+
+Ejemplo recomendado en servidores medianos/grandes:
+
+    wal_buffers = 32MB
+
+***
+
+### **Relación con replicación streaming (importante para ti)**
+
+*   El WAL sale primero de wal\_buffers → pg\_wal
+*   La réplica nunca lee de wal\_buffers, solo de los WAL ya escritos
+*   Un wal\_buffers muy pequeño puede:
+    *   Retrasar escrituras
+    *   Aumentar latencia de replicación indirectamente
+
+***
+
+### **Comparación rápida (SQL Server)**
+
+| SQL Server              | PostgreSQL          |
+| ----------------------- | ------------------- |
+| Log Buffer              | wal\_buffers        |
+| LDF                     | pg\_wal             |
+| Commit espera log flush | synchronous\_commit |
+
+***
+
+### **Conclusión corta**
+
+> wal\_buffers existe para mejorar el rendimiento de escritura agrupando registros WAL en memoria antes de escribirlos a disco, reduciendo I/O y latencia de commit.
+
+ 
+
+
+
+ 
+---
+### **1️⃣ ¿Qué es un buffer en PostgreSQL?**
+
+Un **buffer** es memoria controlada directamente por PostgreSQL para una función específica.
+
+**Características:**
+
+*   Está dentro del proceso de PostgreSQL
+*   Tiene un propósito concreto
+*   PostgreSQL decide qué entra, cuándo sale y cómo se sincroniza
+
+**Ejemplos importantes:**
+
+| Buffer                 | Para qué sirve                    |
+| ---------------------- | --------------------------------- |
+| shared\_buffers        | Páginas de datos e índices        |
+| wal\_buffers           | Registros WAL antes de ir a disco |
+| temp\_buffers          | Tablas temporales                 |
+| work\_mem              | Sort, hash, joins                 |
+| maintenance\_work\_mem | VACUUM, CREATE INDEX              |
+
+📌 Un buffer **no es “memoria libre”**, es memoria reservada y gestionada por PostgreSQL.
+
+
+---
+
+
+###  **Background Writer** y **WAL Writer** 
+son dos procesos internos que trabajan para optimizar la escritura en disco y mantener la consistencia.  
+Así, cuando llega el checkpoint, hay menos trabajo pendiente → evita picos de I/O.
+
+
+###  **Background Writer**
+
+*   **Qué es:**  
+    Es un proceso que se encarga de escribir periódicamente las páginas modificadas (dirty pages) que están en **shared\_buffers** hacia el disco.
+
+*   **Para qué sirve:**
+    *   Reduce la carga de escritura durante los checkpoints.
+    *   Evita que las consultas tengan que esperar a que se escriban páginas en disco.
+    *   Mejora la estabilidad del rendimiento en cargas intensivas.
+
+**Flujo simplificado:**
+
+    Datos modificados → shared_buffers → Background Writer → Disco
+
+ 
+###  **WAL Writer**
+
+*   **Qué es:**  
+    Es el proceso que escribe los registros WAL que están en **wal\_buffers** hacia los archivos WAL en disco (**pg\_wal**).
+
+*   **Para qué sirve:**
+    *   Garantiza la durabilidad (ACID) de las transacciones.
+    *   Reduce la latencia de commit al vaciar wal\_buffers en segundo plano.
+    *   Es clave para replicación y recuperación ante fallos.
+
+**Flujo simplificado:**
+
+    Cambios → WAL record → wal_buffers → WAL Writer → pg_wal (disco)
+
+###  **¿Cuándo se activan?**
+
+*   **Background Writer:**  
+    Corre en intervalos definidos por `bgwriter_delay` (por defecto 200ms) y según la cantidad de páginas sucias.
+
+*   **WAL Writer:**  
+    Corre en intervalos definidos por `wal_writer_delay` (por defecto 200ms) o cuando `wal_buffers` está lleno.
