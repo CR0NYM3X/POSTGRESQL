@@ -550,6 +550,94 @@ SELECT pg_size_pretty(SUM(total_bytes)) AS tamaño_total
 FROM chunks_detailed_size('history_log'::regclass);
 ```
  
+---
+ 
+
+##  **Arquitectura de TimescaleDB**
+
+TimescaleDB está construido como una **extensión sobre PostgreSQL**, lo que significa que hereda toda la robustez y características de PostgreSQL, pero añade capacidades para manejar **series temporales** de manera eficiente.
+
+### **Componentes principales:**
+
+1.  **PostgreSQL Core**
+    *   Motor relacional tradicional.
+    *   Manejo de transacciones ACID, índices, seguridad, etc.
+
+2.  **Extensión TimescaleDB**
+    *   Añade objetos y funciones para series temporales.
+    *   Introduce el concepto de **Hypertable** y **Chunks**.
+
+3.  **Hypertable**
+    *   Es la tabla lógica que el usuario ve.
+    *   Internamente se divide en **chunks** (particiones) basadas en tiempo y opcionalmente en espacio.
+    *   Cada chunk es una tabla normal de PostgreSQL.
+
+4.  **Chunks**
+    *   Particiones físicas que almacenan los datos.
+    *   Se crean automáticamente según la política de particionamiento.
+    *   Permiten escalabilidad horizontal y optimización de consultas.
+
+5.  **Compresión**
+    *   TimescaleDB soporta compresión nativa para chunks antiguos.
+    *   Reduce almacenamiento y mejora rendimiento en lecturas históricas.
+
+6.  **Funciones y APIs**
+    *   Para manejo de hypertables, chunks, compresión, políticas de retención, etc.
+
+7.  **Background Workers**
+    *   Procesos internos que ejecutan tareas automáticas:
+        *   Compresión
+        *   Retención
+        *   Reorganización de chunks
+
+
+
+##  **Flujo de funcionamiento**
+
+**1. Inserción de datos**
+
+*   El cliente inserta datos en la **hypertable**.
+*   TimescaleDB determina el chunk correspondiente según la columna de tiempo.
+
+**2. Particionamiento automático**
+
+*   Si el chunk no existe, se crea.
+*   Los datos se almacenan en el chunk adecuado.
+
+**3. Consultas**
+
+*   El optimizador de TimescaleDB reescribe la consulta para acceder solo a los chunks relevantes.
+*   Usa índices y metadatos para acelerar la búsqueda.
+
+**4. Mantenimiento**
+
+*   Políticas automáticas:
+    *   **Compresión** de chunks antiguos.
+    *   **Retención** (borrado de datos viejos).
+    *   **Reindexación** si es necesario.
+
+**5. Integración**
+
+*   Compatible con todas las herramientas PostgreSQL.
+*   Puede usar replicación nativa, backups, etc.
+
+
+
+### 🔍 **Diagrama simplificado del flujo**
+
+    [Cliente] → [Hypertable lógica] → [Chunks físicos]
+        |             |                     |
+        |             |                     |
+     Insert → Particionamiento → Almacenamiento
+        |
+     Consultas → Optimización → Lectura eficiente
+        |
+     Mantenimiento → Compresión / Retención
+
+
+
+
+---
 
 # Bibliografias 
 ```
