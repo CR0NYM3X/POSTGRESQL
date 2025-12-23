@@ -71,4 +71,91 @@ Estas funciones son especialmente útiles para:
 - **Identificar tablas e índices fragmentados**: Puedes determinar si es necesario realizar un `VACUUM` o `REINDEX`.
 - **Optimizar el rendimiento**: Al entender cómo se utilizan las páginas y las tuplas, puedes tomar decisiones informadas sobre la optimización de tu base de datos.
 - **Monitorear el uso del espacio**: Mantener un control sobre el espacio libre y las tuplas muertas puede ayudarte a gestionar mejor los recursos de almacenamiento.
- 
+
+
+---
+
+
+
+##   Interpretación rápida y acciones
+
+*   **Tablas:**
+    *   `pct_bloat` alto → considera `VACUUM` (o `VACUUM FULL` si el espacio es crítico; ojo bloqueo).
+    *   Bloat recurrente por muchos `UPDATE` → reduce `FILLFACTOR` (p.ej. 90–95) para dar espacio en página.
+
+*   **Índices BTREE:**
+    *   `pct_paginas_borradas` alto → **REINDEX \[CONCURRENTLY]**.
+    *   `avg_leaf_density` bajo → **CLUSTER** sobre el índice o reconsiderar el patrón de inserción/ordenamiento.
+
+*   **TOAST:** alto `pct_bloat_toast` → revisar columnas `TEXT/BYTEA` grandes, estrategias de actualización y VACUUM.
+
+*   **Operativa:**
+    *   Ejecuta las versiones **approx** en horas hábiles; usa las **exactas** para confirmar en ventanas de baja carga.
+    *   Excluye `pg_catalog`, `information_schema` y (si gustas) `pg_toast` en barridos generales.
+
+---
+
+# Bloat de todas las tablas (exacto)
+```sql
+WITH t AS (
+  SELECT c.oid, n.nspname AS schema_name, c.relname AS table_name
+  FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE c.relkind = 'r'
+    AND n.nspname NOT IN ('pg_catalog','information_schema')
+),
+s AS (
+  SELECT t.schema_name, t.table_name, (pgstattuple(t.oid)).*
+  FROM t
+)
+SELECT schema_name, table_name,
+       table_len, tuple_len, dead_tuple_len, free_space,
+       ROUND(100.0 * (dead_tuple_len + free_space) / NULLIF(table_len,0), 2) AS pct_bloat
+FROM s
+ORDER BY pct_bloat DESC;
+```
+
+
+# Top-N tablas para VACUUM (por tuplas muertas)
+```sql
+WITH s AS (
+  SELECT n.nspname AS schema_name, c.relname AS table_name,
+         (pgstattuple_approx(c.oid)).*
+  FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE c.relkind = 'r'
+    AND n.nspname NOT IN ('pg_catalog','information_schema')
+)
+SELECT schema_name, table_name,
+       dead_tuple_count, dead_tuple_len,
+       ROUND(100.0 * dead_tuple_len / NULLIF(table_len,0), 2) AS pct_muertas
+FROM s
+WHERE dead_tuple_count > 0
+ORDER BY pct_muertas DESC
+LIMIT 20;
+```
+
+
+# Bloat en TOAST (datos grandes)
+```sql
+WITH toast_map AS (
+  SELECT nsp.nspname AS schema_name,
+         rel.relname  AS table_name,
+         rel.reltoastrelid AS toast_oid
+  FROM pg_class rel
+  JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
+  WHERE rel.relkind = 'r' AND rel.reltoastrelid <> 0
+),
+stats AS (
+  SELECT schema_name, table_name, (pgstattuple(toast_oid)).*
+  FROM toast_map
+)
+SELECT schema_name, table_name,
+       ROUND(100.0 * (dead_tuple_len + free_space) / NULLIF(table_len,0), 2) AS pct_bloat_toast,
+       table_len, free_space, dead_tuple_len
+FROM stats
+ORDER BY pct_bloat_toast DESC;
+```
+
+
+
