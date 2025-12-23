@@ -323,6 +323,200 @@ La **suma** te da el **entero**. En máquinas x86\_64 (como la tuya), los tipos 
 >  | get_byte(attrs[2],3) << 24)::int AS numero
 > ```
 
+---
+
+
+
+# Bloques , Archivos y Mapas
+
+SQL Server tiene **allocation maps** (GAM, SGAM, IAM) y organiza el almacenamiento en **extents** (8 páginas de 8 KB cada una). PostgreSQL maneja algo similar en concepto, pero con diferencias importantes:
+
+##  ¿Existe algo equivalente en PostgreSQL?
+
+### 1. **Bloques (Pages)**
+
+*   Igual que SQL Server, PostgreSQL usa **páginas de 8 KB** como unidad básica de almacenamiento.
+*   Cada tabla y cada índice se divide en páginas.
+
+### 2. **Segmentos y Archivos**
+
+*   PostgreSQL agrupa páginas en **segmentos** de 1 GB (por defecto).
+*   Cada segmento es un archivo físico en el sistema operativo.
+*   No hay “extents” de 8 páginas como en SQL Server; PostgreSQL maneja páginas directamente.
+
+### 3. **Mapas de visibilidad y congelación**
+
+*   PostgreSQL no tiene GAM/SGAM, pero sí tiene **mapas especiales**:
+    *   **Visibility Map (VM):** Indica qué páginas tienen todas sus filas visibles (para optimizar VACUUM y index-only scans). Filas visibles son aquellos datos visibles  que cualquier SELECT puede leer sin restricciones, La fila no está borrada, Cumple las reglas de visibilidad MVCC (Multi-Version Concurrency Control).
+    *   **Free Space Map (FSM):** Indica cuánto espacio libre hay en cada página (para decidir dónde insertar nuevas filas).
+*   Estos mapas son **archivos separados** asociados a cada tabla.
+
+### 4. **Relación con tu pregunta**
+
+*   En SQL Server, el IAM/GAM controla asignación de extents.
+*   En PostgreSQL, la asignación es más simple: páginas se asignan secuencialmente en el archivo de la tabla, y el FSM ayuda a reutilizar espacio libre.
+
+
+##  Diferencias clave con SQL Server
+
+| Concepto            | SQL Server                      | PostgreSQL                                |
+| ------------------- | ------------------------------- | ----------------------------------------- |
+| Unidad básica       | Página (8 KB)                   | Página (8 KB)                             |
+| Agrupación          | Extent (8 páginas = 64 KB)      | Segmento (1 GB ≈ 131,072 páginas)         |
+| Mapas de asignación | GAM, SGAM, IAM                  | FSM (Free Space Map), VM (Visibility Map) |
+| Archivos            | Uno por tabla + allocation maps | Uno por tabla + FSM + VM                  |
+
+ 
+
+
+
+---
+
+
+
+
+
+
+#  ¿Para qué sirve el header de la página?
+ **header de la página** en PostgreSQL es la primera parte de cada página física (8 KB por defecto) y contiene **metadatos esenciales** para que el motor sepa cómo manejar esa página. No guarda datos de filas, sino información sobre la estructura y el estado de la página.
+
+
+*   **Identificar la página**: versión, tamaño, flags.
+*   **Controlar espacio libre**: offsets `lower` y `upper` para saber dónde están los line pointers y dónde empieza el espacio libre.
+*   **Integridad y recuperación**: LSN, checksum, prune\_xid.
+*   **Gestión interna**: saber si necesita VACUUM, si hay tuples muertos, etc.
+
+
+
+##  Campos del header (con tu ejemplo)
+
+    lsn      | 2/A068120
+    checksum | 0
+    flags    | 0
+    lower    | 44
+    upper    | 8032
+    special  | 8192
+    pagesize | 8192
+    version  | 4
+    prune_xid| 2723
+
+### 1. **lsn (Log Sequence Number)**
+
+*   Última posición en el WAL que modificó esta página.
+*   **Ejemplo:** `2/A068120` → indica que la última operación registrada en WAL está en ese punto.
+
+### 2. **checksum**
+
+*   Verificación de integridad (si está habilitada).
+*   **Ejemplo:** `0` → no se usa checksum en tu configuración.
+
+### 3. **flags**
+
+*   Estado especial de la página (normal, all-visible, etc.).
+*   **Ejemplo:** `0` → página normal.
+
+### 4. **lower**
+
+*   Offset donde termina el array de line pointers.
+*   **Ejemplo:** `44` → header + 5 line pointers (cada uno 8 bytes) ocupan 44 bytes al inicio.
+
+### 5. **upper**
+
+*   Offset donde empieza el espacio libre.
+*   **Ejemplo:** `8032` → después del último tuple, queda espacio libre desde 8032 hasta 8192.
+
+### 6. **special**
+
+*   Offset del área especial (para índices).
+*   **Ejemplo:** `8192` → en heap no se usa, apunta al final.
+
+### 7. **pagesize**
+
+*   Tamaño total de la página.
+*   **Ejemplo:** `8192` → tamaño estándar.
+
+### 8. **version**
+
+*   Versión del formato de página.
+*   **Ejemplo:** `4` → formato actual.
+
+### 9. **prune\_xid**
+
+*   XID más antiguo que necesita pruning (limpieza).
+*   **Ejemplo:** `2723` → hay tuples que podrían ser limpiados por VACUUM.
+ 
+
+##  Visualización rápida
+
+    [Header (metadatos)] [Line Pointers] [Free Space] [Tuples]
+    Byte 0 ───────────────────────────────────────────── Byte 8192
+    lower=44          upper=8032          special=8192
+
+El header **no guarda datos de filas**, solo información para que PostgreSQL sepa:
+
+*   Dónde están los line pointers.
+*   Dónde empieza el espacio libre.
+*   Dónde están los tuples.
+*   Si la página necesita mantenimiento.
+ 
+ 
+--- 
+
+# ¿Qué son los line pointers?
+
+En PostgreSQL, **cada página (8 KB)** tiene dos áreas principales:
+
+1.  **Header + Array de line pointers** (al inicio de la página).
+2.  **Tuples (datos)** (al final de la página, creciendo hacia el inicio).
+
+Los **line pointers** son **entradas en el array que apuntan a cada tuple dentro de la página**.  
+Cada line pointer ocupa **8 bytes** y contiene:
+
+*   **lp\_off** → Offset donde empieza el tuple.
+*   **lp\_len** → Longitud del tuple.
+*   **lp\_flags** → Estado (normal, borrado, redirección).
+
+
+###  ¿Por qué existen?
+
+*   Para **localizar rápidamente** cada tuple sin recorrer toda la página.
+*   PostgreSQL usa el **lp** (número de line pointer) como parte del **CTID** (ej. `(0,3)` → página 0, line pointer 3).
+*   Si un tuple se mueve dentro de la página (por compactación), **solo se actualiza el offset en el line pointer**, no el CTID.
+
+
+###  Visualización con tu ejemplo
+
+Página de 8192 bytes:
+
+    [Header][Line Pointer Array][Free Space][Tuples]
+    Byte 0 ───────────────────────────────────────────── Byte 8192
+
+*   **lower = 44** → indica que el array de line pointers ocupa 44 bytes (5 line pointers × 8 bytes + header).
+*   Tus line pointers:
+        lp=1 → offset 8160 → apunta al tuple 1
+        lp=2 → offset 8128 → apunta al tuple 2
+        lp=3 → offset 8096 → apunta al tuple 3
+        lp=4 → offset 8064 → apunta al tuple 4
+        lp=5 → offset 8032 → apunta al tuple 5
+*   Cada line pointer es como un **índice interno** que dice:  
+    “El tuple #3 está en el byte 8096 y mide 28 bytes”.
+
+
+###  ¿Cómo se usan?
+
+*   Cuando haces `SELECT * FROM test WHERE ctid = '(0,3)'`, PostgreSQL:
+    *   Va a la página 0.
+    *   Busca el **line pointer 3**.
+    *   Lee el tuple en el offset indicado.
+ 
+--- 
+
+
+
+
+
+
+
 
 
 # Referencias 
