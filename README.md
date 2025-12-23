@@ -19,6 +19,9 @@ https://www.todopostgresql.com/carreras/
 
 # Páginas para adquirir conocimientos
 ```
+-- Aprende toda la arquitectura de PostgreSQL 100% recomendado
+https://www.interdb.jp/pg/index.html
+
 https://gitlab.com/xavki/presentations-postgresql
 
 Postgres Administration Esentials - https://pgadminedb.readthedocs.io/en/latest/
@@ -40,7 +43,6 @@ https://www.postgresql.org/account/submitbug/
 
 https://scalegrid.io/blog/
 https://www.heatware.net/postgresql/partitioning-vs-sharding/
-https://www.interdb.jp/pg/index.html
 https://www.metisdata.io/blog
 https://www.datasunrise.com/es/informacion-profesional/
 medium.com
