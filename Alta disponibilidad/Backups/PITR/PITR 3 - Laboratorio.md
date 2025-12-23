@@ -154,25 +154,5 @@ psql -p 5599 -d test -c "SELECT pg_xact_commit_timestamp(xmin),* FROM inventario
 ```
 
 ----
-# Fromas de  descubrir a que punto en el tiempo restaurar
-### 
-```sql
-recovery_target_lsn
-recovery_target_name
-recovery_target_time
-recovery_target_xid
-recovery_target_timeline
-```
 
-### Instalar extension pg_dirtyread
-```sql
-psql -p 5598 -c "CREATE EXTENSION IF NOT EXISTS pageinspect;"
-psql -p 5598 -c "CREATE EXTENSION pg_dirtyread;"
-SELECT  pg_xact_commit_timestamp(xmin),* FROM pg_dirtyread('inventarios')  AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, id int,producto TEXT , stock INT,  fecha_hora TIMESTAMP );
-```
-
-
-### 
-```sql
-```
 
