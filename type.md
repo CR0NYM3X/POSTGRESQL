@@ -245,7 +245,7 @@ ALTER TABLE nombre_de_la_tabla ALTER COLUMN columna_de_tipo_contacto TYPE tipo_c
     - `text`: Ilimitado caracteres 1GB.
   - **Espacio en memoria**:
     - `char(n)`: n bytes
-    - ` character varying(n)`: Longitud de la cadena + 1 o 4 bytes de sobrecarga
+    - ` character varying(n)`: generalmente 1 byte para la longitud + 4 bytes de header por fila
     - `text`: Longitud de la cadena + 1 o 4 bytes de sobrecarga
   - **Desventajas**: `char` puede desperdiciar espacio debido a su longitud fija.
 
