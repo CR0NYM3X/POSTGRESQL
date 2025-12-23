@@ -792,7 +792,96 @@ DROP DOMAIN positive_integer;
 
 rollback ; 
 ```
+---
 
+ 
+# Tipos de datos de tamaño fijo en PostgreSQL
+En PostgreSQL sí existen tipos de datos **de tamaño fijo**, lo que significa que **ocupan el mismo espacio en disco sin importar la longitud del valor que insertes** (dentro de sus límites). Aquí están los principales:
+
+1.  **INTEGER / SMALLINT / BIGINT**
+    *   **Tamaño fijo:**
+        *   `SMALLINT` → 2 bytes
+        *   `INTEGER` → 4 bytes
+        *   `BIGINT` → 8 bytes
+    *   **Ejemplo:**
+        ```sql
+        CREATE TABLE ejemplo (id INTEGER);
+        ```
+
+
+
+2.  **NUMERIC con precisión fija**
+    *   Si defines `NUMERIC(10,2)`, PostgreSQL reserva espacio para esa precisión, aunque el valor sea pequeño.
+    *   **Nota:** Internamente puede variar un poco, pero es prácticamente fijo para la precisión definida.
+
+
+
+3.  **CHAR(n)** (carácter fijo)
+    *   **Tamaño fijo:** `n` bytes (más 1 byte de padding).
+    *   Si defines `CHAR(10)`:
+        *   `'A'` ocupa **10 bytes** (rellena con espacios).
+        *   `'ABCDEFGHIJ'` también ocupa **10 bytes**.
+    *   **Ejemplo:**
+        ```sql
+        CREATE TABLE ejemplo (codigo CHAR(10));
+        ```
+
+
+
+4.  **DATE, TIME, TIMESTAMP**
+    *   **DATE:** 4 bytes
+    *   **TIME:** 8 bytes
+    *   **TIMESTAMP:** 8 bytes
+    *   No importa si la fecha es `2025-01-01` o `1900-01-01`, siempre ocupa lo mismo.
+
+
+
+5.  **BOOLEAN**
+    *   **Tamaño fijo:** 1 byte (`TRUE` o `FALSE`).
+
+
+
+6.  **Tipos internos como OID**
+    *   **OID:** 4 bytes (identificadores internos).
+
+ 
+8. **UUID en PostgreSQL**
+
+*   **Tamaño fijo:** **16 bytes** (128 bits).
+*   **Qué es:** Un identificador universal único (RFC 4122).
+*   **Comportamiento:**
+    *   No importa si el valor es `00000000-0000-0000-0000-000000000000` o `550e8400-e29b-41d4-a716-446655440000`, **siempre ocupa 16 bytes**.
+*   **Ejemplo:**
+    ```sql
+    CREATE TABLE ejemplo_uuid (id UUID DEFAULT gen_random_uuid());
+    SELECT pg_column_size(id) FROM ejemplo_uuid;
+    ```
+    Resultado: `16`.
+
+
+
+### ❌ Tipos que **NO** son de tamaño fijo
+
+*   `VARCHAR(n)` y `TEXT`: ocupan espacio proporcional a la longitud del texto (más overhead).
+*   `BYTEA`: depende del tamaño del binario.
+
+ 
+### ✅ Resumen actualizado de tipos fijos
+
+| Tipo      | Tamaño fijo |
+| --------- | ----------- |
+| SMALLINT  | 2 bytes     |
+| INTEGER   | 4 bytes     |
+| BIGINT    | 8 bytes     |
+| BOOLEAN   | 1 byte      |
+| DATE      | 4 bytes     |
+| TIME      | 8 bytes     |
+| TIMESTAMP | 8 bytes     |
+| CHAR(n)   | n bytes     |
+| UUID      | 16 bytes    |
+
+
+ 
 
 ```
 JSON: https://medium.com/team-resilience/odc-supercharge-your-advanced-sql-with-postgresql-json-functions-6ca3e9520a56
