@@ -327,6 +327,9 @@ La **suma** te da el **entero**. En máquinas x86\_64 (como la tuya), los tipos 
 
 # Referencias 
 ```sql
+-- Arquitectura de paginas
+https://www.interdb.jp/pg/pgsql01/03.html
+
 -- pageinspect
  https://www.postgresql.org/docs/current/pageinspect.html
 
