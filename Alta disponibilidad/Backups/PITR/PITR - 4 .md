@@ -30,13 +30,15 @@ archive_mode = on
 archive_command = 'test ! -f /sysx/data16/DATANEW/backup_wal/%f && cp %p /sysx/data16/DATANEW/backup_wal/%f'
 port = 5598
 track_commit_timestamp = on
-log_line_prefix = '<%t %x %r %a %d %u %p %c %i>'
+log_line_prefix = '<%t [%x-%v] %r %a %d %u %p %c %i>'
 logging_collector = on
-log_directory = 'log'
+log_min_messages  = 'warning'
+log_min_error_statement = 'warning'
+log_statement = 'all'
 " >> /sysx/data16/DATANEW/db_productiva/postgresql.auto.conf
 
 # Iniciar
-pg_ctl -D /sysx/data16/DATANEW/db_productiva start
+pg_ctl -D /sysx/data16/DATANEW/db_productiva start -o "-p 5598" start
 
 ```
 
