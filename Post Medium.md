@@ -125,6 +125,10 @@ PITR in PostgreSQL using pg_basebackup and WAL. -> https://medium.com/@dickson.g
 
 # Security
 ```
+pg_audit -> https://stormatics.medium.com/guide-to-auditing-and-monitoring-access-in-postgresql-8c759aa3ee25
+Extension Security in PostgreSQL -> https://tomasz-gintowt.medium.com/security-in-postgresql-ffe75ec677e7
+
+
 How to Install and Configure PGAudit on PostgreSQL 17: Complete Guide to Database Auditing and Security -> https://medium.com/@valentim.dba/how-to-install-and-configure-pgaudit-on-postgresql-17-complete-guide-to-database-auditing-and-81ffe0ecd78
 
 Security in PostgreSQL -> https://tomasz-gintowt.medium.com/security-in-postgresql-ffe75ec677e7
