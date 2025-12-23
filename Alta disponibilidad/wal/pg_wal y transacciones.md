@@ -48,7 +48,7 @@ El archivado continuo de WAL es útil para:
 ### **5. Modificación en memoria**
 
 *   Se modifica la página en **shared\_buffers** (no en disco).
-*   La página se marca como **dirty** (pendiente de escritura).
+*   La página se marca como **dirty Pages** (pendiente de escritura a disco) y significa que la versión de esa página en memoria es más reciente que la copia en disco..
 
 
 
