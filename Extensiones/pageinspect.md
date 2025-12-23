@@ -334,6 +334,7 @@ La **suma** te da el **entero**. En máquinas x86\_64 (como la tuya), los tipos 
    https://medium.com/@nikolaykudinov/understanding-postgresql-block-page-layout-part-1-cd1ad0b8d503
    https://medium.com/@nikolaykudinov/understanding-postgresql-block-page-layout-part-2-6e61b7af6667
    https://medium.com/@nikolaykudinov/understanding-postgresql-block-page-layout-part-3-517e567079ee
+   https://medium.com/@nikolaykudinov/understanding-postgresql-block-page-layout-part-4-07260d1bbc87
 
 -- Internals of MVCC in Postgres: Hidden costs of Updates vs Inserts
    https://medium.com/@rohanjnr44/internals-of-mvcc-in-postgres-hidden-costs-of-updates-vs-inserts-381eadd35844
