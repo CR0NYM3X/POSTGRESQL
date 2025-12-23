@@ -4,6 +4,8 @@
 Limpia y prepara las rutas necesarias.
 
 ```bash
+clear
+clear
 # Detener servicios si existen
 pg_ctl stop -D /sysx/data16/DATANEW/db_productiva
 pg_ctl stop -D /sysx/data16/DATANEW/db_pruebas
@@ -65,6 +67,9 @@ psql -p 5598 -d test -c "INSERT INTO inventarios(producto, stock) VALUES ('Ultim
 psql -p 5598  -c "SELECT clock_timestamp();"
 # Supongamos que el tiempo devuelto es: '2025-12-22 16:52:01.031-07'
 
+# Ver los registros
+psql -p 5598 -d test -c "select * from inventarios;"
+
 # 2. IMPORTANTE: Forzar el archivado del WAL actual para que llegue a /backup_wal/
 psql -p 5598 -d test -c "SELECT pg_switch_wal();"
 
@@ -74,6 +79,9 @@ psql -p 5598 -d test -c "DELETE FROM inventarios; SELECT clock_timestamp();"
 
 # 4. Forzar archivado del WAL del borrado (para que el motor vea el fin de la historia)
 psql -p 5598 -d test -c "SELECT pg_switch_wal();"
+
+# Ver los registros
+psql -p 5598 -d test -c "select * from inventarios;"
 
 ```
 
@@ -86,8 +94,8 @@ Configuramos la instancia `db_pruebas` para que se detenga justo después del in
 echo "
 port = 5599
 restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
-recovery_target_time = '2025-12-22 17:55:42.979165-07'
-recovery_target_action = 'promote'
+recovery_target_time = '2025-12-22 16:52:01.031-07' # Aqui va la fecha del ultimo insert
+#recovery_target_action = 'promote'
 hot_standby = on
 " >> /sysx/data16/DATANEW/db_pruebas/postgresql.auto.conf
 
@@ -104,7 +112,7 @@ pg_ctl -D /sysx/data16/DATANEW/db_pruebas start
 Si el laboratorio es exitoso, al consultar la base de datos en el puerto **5599**, el registro "Ultimo_Registro" debe existir y los demás datos deben estar presentes, ignorando el `DELETE`.
 
 ```bash
-psql -p 5599 -d test -c "SELECT count(*) FROM inventarios WHERE producto = 'Ultimo_Registro';"
+psql -p 5599 -d test -c "SELECT * FROM inventarios WHERE producto = 'Ultimo_Registro';"
 
 ```
 
