@@ -21,7 +21,7 @@ mkdir -p /sysx/data16/DATANEW/{db_productiva,db_pruebas,backup_wal}
 Inicializa la base de datos y configura el archivado de logs.
 
 ```bash
-initdb -D /sysx/data16/DATANEW/db_productiva
+initdb -D /sysx/data16/DATANEW/db_productiva --data-checksums
 
 # Configurar parámetros críticos de PITR
 echo "
@@ -64,6 +64,9 @@ pg_basebackup -h localhost -p 5598 -U postgres -D /sysx/data16/DATANEW/db_prueba
 Aquí es donde registramos el tiempo exacto antes de la "catástrofe".
 
 ```bash
+# ver la transacción actual 
+SELECT txid_current();
+
 # 1. Insertar registro que queremos salvar (Ultimo_Registro)
 psql -p 5598 -d test -c "INSERT INTO inventarios(producto, stock) VALUES ('Ultimo_Registro', 999);"
 psql -p 5598  -c "SELECT clock_timestamp();"
@@ -71,6 +74,9 @@ psql -p 5598  -c "SELECT clock_timestamp();"
 
 # Ver los registros
 psql -p 5598 -d test -c "select * from inventarios;"
+
+# Crear un punto de restauración 
+SELECT pg_create_restore_point('test_pirt');
 
 # 2. IMPORTANTE: Forzar el archivado del WAL actual para que llegue a /backup_wal/
 psql -p 5598 -d test -c "SELECT pg_switch_wal();"
@@ -87,9 +93,29 @@ psql -p 5598 -d test -c "select * from inventarios;"
 
 ```
 
+### Monitorear Log
+```
+cd /sysx/data16/DATANEW/db_pruebas/log
+tail -f postgresql-Mon.log
+```
+
+## Fromas de descubrir a que punto en el tiempo restaurar
+Existen varias formas de restaurar las cuales pueden ser: Por tiempo, nombre de backup ,  TimeLine, Por LSN o XID
+```sql
+psql -p 5599 -d test -c "SELECT pg_xact_commit_timestamp(xmin) as fecha_mov,xmin as XID, * FROM inventarios WHERE producto='Ultimo_Registro';"
+
+pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000004 | grep 'desc: COMMIT'
+
+psql -p 5598 -c "CREATE EXTENSION IF NOT EXISTS pageinspect;"
+psql -p 5598 -c "CREATE EXTENSION pg_dirtyread;"
+SELECT  pg_xact_commit_timestamp(xmin),* FROM pg_dirtyread('inventarios')  AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, id int,producto TEXT , stock INT,  fecha_hora TIMESTAMP );
+
+```
+
 ### 5. Restauración en la Instancia de Pruebas
 
 Configuramos la instancia `db_pruebas` para que se detenga justo después del insert, pero antes del delete.
+
 
 ```bash
 # Configurar la recuperación en db_pruebas
@@ -97,7 +123,13 @@ echo "
 port = 5599
 restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
 recovery_target_time = '2025-12-22 16:52:01.031-07' # Aqui va la fecha del ultimo insert
-#recovery_target_action = 'promote'
+# recovery_target_name = 'test_pirt' # Se puede usar si quieres restaurar con algun nombre y usaste la fun pg_create_restore_point
+# recovery_target_lsn = 'BBE/697CACC0' # Esto si quiere restaurar un lsn en especifico
+# recovery_target_xid = ''
+# recovery_target_timeline = '1'
+# recovery_target_action = 'promote'
+
+
 hot_standby = on
 " >> /sysx/data16/DATANEW/db_pruebas/postgresql.auto.conf
 
@@ -114,16 +146,25 @@ pg_ctl -D /sysx/data16/DATANEW/db_pruebas start
 Si el laboratorio es exitoso, al consultar la base de datos en el puerto **5599**, el registro "Ultimo_Registro" debe existir y los demás datos deben estar presentes, ignorando el `DELETE`.
 
 ```bash
+# Revisar registros
 psql -p 5599 -d test -c "SELECT * FROM inventarios WHERE producto = 'Ultimo_Registro';"
 
+# Revisar si esta en modo recuperación [ t = modo recuperación. | f = la recuperación ya terminó y el servidor fue promovido ]
+psql -p 5599 -d test -c "SELECT pg_is_in_recovery();" 
+
+
+ls -lhtr /sysx/data16/DATANEW/db_productiva/pg_wal
+ls -lhtr /sysx/data16/DATANEW/db_pruebas/pg_wal
+ls -lhtr /sysx/data16/DATANEW/backup_wal/
 ```
 
-**¿Por qué este sí funciona?**
 
-1. 
-**Archivado Manual:** Al usar `pg_switch_wal()` después del borrado, aseguras que el archivo que contiene el tiempo objetivo realmente exista en `/backup_wal/`.
+---
 
 
-2. **Target Action:** Al usar `recovery_target_action = 'promote'`, la base de datos se abre automáticamente para lectura/escritura una vez que alcanza el tiempo deseado.
 
-3. Al usar recovery_target_action = 'promote', le ordenas explícitamente: "En cuanto llegues al tiempo que te pedí, deja de ser una base de datos en recuperación y conviértete en una base de datos normal (lectura/escritura)".
+
+# ....
+### 
+```sql
+```
