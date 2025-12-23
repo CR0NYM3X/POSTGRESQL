@@ -378,7 +378,7 @@ cat /proc/sys/kernel/shmmax
 cat /proc/sys/kernel/shmall
 
 shared_buffers = 128MB  /* -- 25% a 40% de la RAM total si el servidor es dedicado a PostgreSQL. Nunca más del 50% para evitar que el sistema operativo se quede sin memoria.
-Es el parámetro que define cuánta memoria RAM PostgreSQL usará para almacenar páginas de datos en memoria antes de acceder al disco. Es uno de los más importantes para el rendimiento.
+determina la cantidad de RAM que PostgreSQL utiliza para almacenar datos en caché y páginas sucias. Es uno de los más importantes para el rendimiento.
 https://www.postgresql.org/docs/9.1/runtime-config-resource.html
 En versiones de PostgreSQL anteriores a 8.4, el valor máximo debe ser 2,5 GB,
 
