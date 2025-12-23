@@ -1,4 +1,18 @@
+##   Horarios y días más frecuentes (Buenas prácticas)
 
+*   **Respaldo completo:**
+    *   **Frecuencia:** 1 vez por semana (comúnmente domingo madrugada).
+    *   **Horario:** Ventana de menor carga (00:00 – 04:00 AM).
+*   **Respaldo diferencial:**
+    *   **Frecuencia:** Diario (entre respaldos completos).
+    *   **Horario:** Madrugada (02:00 – 04:00 AM).
+*   **Respaldo incremental:**
+    *   **Frecuencia:** Varias veces al día (cada 1–4 horas) o continuo.
+    *   **Horario:** Programado en intervalos cortos para minimizar pérdida de datos.
+
+> En entornos críticos, se combina: **Full semanal + diferencial diario + incremental cada hora**.
+
+ 
 ## 🧱 TIPOS DE RESPALDOS EN POSTGRESQL
 
 # 1. 🧠 **Backup lógico**
