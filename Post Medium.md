@@ -53,6 +53,8 @@ Migración de bases de datos grandes de Azure PostgreSQL -> https://medium.com/@
 
 #  Semantica 
 ```
+Comprensión de la gestión de transacciones de PostgreSQL, parte 1  -> https://medium.com/@nikolaykudinov/understanding-postgresql-transaction-management-part-1-9420d67f5525
+
 Dirty Pages -> https://stormatics.medium.com/what-are-dirty-pages-in-postgresql-f292fd9817f5
 
 https://medium.com/@mohitsoni_/the-unseen-symphony-what-really-happens-when-you-connect-to-postgresql-053cd7c27ba9
