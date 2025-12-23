@@ -33,7 +33,7 @@ log_min_messages  = 'warning'
 log_min_error_statement = 'warning'
 log_statement = 'all'
 track_commit_timestamp=on
-log_line_prefix = '<%t %x %r %a %d %u %p %c %i>'
+log_line_prefix = '<%t [%x-%v] %r %a %d %u %p %c %i>'
 " >>  /sysx/data16/DATANEW/db_productiva/postgresql.auto.conf
 
 ls -lhtr /sysx/data16/DATANEW/db_productiva/pg_wal
@@ -79,6 +79,9 @@ SELECT pg_switch_wal();
 select pg_walfile_name(pg_current_wal_lsn());
 SELECT clock_timestamp();
 "
+
+ls -lh /sysx/data16/DATANEW/backup_wal/
+
 ```
 
 ### Hacer Backup Fisico de la DB Productiva en db pruebas
@@ -102,7 +105,7 @@ select pg_walfile_name(pg_current_wal_lsn());
 "
 psql -p 5598 -d test -c " SELECT clock_timestamp(); "
 
-psql -p 5599 -d test -c "SELECT pg_xact_commit_timestamp(xmin),* FROM inventarios WHERE producto = 'Ultimo_Registro';"
+psql -p 5598 -d test -c "SELECT pg_xact_commit_timestamp(xmin),* FROM inventarios WHERE producto = 'Ultimo_Registro';"
 
 ```
 
@@ -164,7 +167,8 @@ recovery_target_timeline
 ### Instalar extension pg_dirtyread
 ```sql
 psql -p 5598 -c "CREATE EXTENSION IF NOT EXISTS pageinspect;"
-SELECT * FROM pg_dirtyread('inventarios')  AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, id int,producto TEXT , stock INT,  fecha_hora TIMESTAMP );
+psql -p 5598 -c "CREATE EXTENSION pg_dirtyread;"
+SELECT  pg_xact_commit_timestamp(xmin),* FROM pg_dirtyread('inventarios')  AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, id int,producto TEXT , stock INT,  fecha_hora TIMESTAMP );
 ```
 
 
