@@ -28,6 +28,10 @@ SELECT * FROM page_header(get_raw_page('mi_tabla', 0));
 
 -- Obtener los elementos de la página
 SELECT * FROM heap_page_items(get_raw_page('mi_tabla', 0));
+
+## Convertir el texto 
+SELECT t_data, convert_from(('\x' ||substring(t_data::text , 5))::bytea, 'UTF8') AS texto_legible FROM heap_page_items(get_raw_page('test', 0));
+
 ```
 
 
