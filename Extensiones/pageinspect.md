@@ -527,6 +527,9 @@ https://www.interdb.jp/pg/pgsql01/03.html
 -- pageinspect
  https://www.postgresql.org/docs/current/pageinspect.html
 
+-- Comprensión de la gestión de transacciones de PostgreSQL, parte 1
+https://medium.com/@nikolaykudinov/understanding-postgresql-transaction-management-part-1-9420d67f5525
+
 -- Understanding PostgreSQL Block Page Layout, Part 2
    https://medium.com/@nikolaykudinov/understanding-postgresql-block-page-layout-part-1-cd1ad0b8d503
    https://medium.com/@nikolaykudinov/understanding-postgresql-block-page-layout-part-2-6e61b7af6667
