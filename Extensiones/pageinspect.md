@@ -512,10 +512,123 @@ Página de 8192 bytes:
 --- 
 
 
+---
+# Herramientas que tienen algo de relación
+```sql
+select * from pg_available_extensions where name in( 'pg_freespacemap' ,'pg_visibility','pgstattuple');
+
+pg_visibility    --- examine the visibility map (VM) and page-level visibility info
+pgstattuple	     --- show tuple-level statistics
+pg_freespacemap	 --- examine the free space map (FSM)
+
+Problemas de wraparound - https://github.com/CR0NYM3X/POSTGRESQL/blob/main/monitoreo/Vacuum/Fail%20wraparound%20XID.md
+```
+
+
+---
+
+
+###   ¿Por qué se compara el XID?
+El **XID (Transaction ID)** se compara en cada fila por una razón fundamental: **MVCC (Multi-Version Concurrency Control)**.
+
+Cada fila (tuple) en PostgreSQL tiene dos campos importantes:
+
+*   **t\_xmin** → XID de la transacción que **insertó** la fila.
+*   **t\_xmax** → XID de la transacción que **borró** (o actualizó) la fila.
+
+Cuando una consulta se ejecuta:
+
+*   PostgreSQL compara el **XID actual** (de la transacción que hace el SELECT) con **t\_xmin** y **t\_xmax** para decidir si la fila es **visible**.
+*   Esto se hace según las reglas MVCC:
+    *   Si `t_xmin` está **confirmado** y es menor que el XID actual → la fila puede ser visible.
+    *   Si `t_xmax` es 0 → la fila no está borrada.
+    *   Si `t_xmax` tiene un valor y esa transacción está confirmada → la fila está borrada para ti.
 
 
 
+###  ¿Por qué es importante?
 
+*   Permite **lecturas consistentes** sin bloquear escrituras.
+*   Cada transacción ve un “snapshot” del estado de la base.
+*   PostgreSQL no sobrescribe filas; crea nuevas versiones y usa XIDs para decidir cuál versión mostrar.
+
+
+--- 
+
+
+##  Contexto: MVCC y XIDs
+
+PostgreSQL usa **MVCC (Multi-Version Concurrency Control)** para permitir lecturas consistentes sin bloquear escrituras.  
+Cada fila tiene:
+
+*   **t\_xmin** → XID de la transacción que la insertó.
+*   **t\_xmax** → XID de la transacción que la borró (o actualizó).
+
+Cuando una transacción lee datos, PostgreSQL **compara el XID actual con t\_xmin y t\_xmax** para decidir si la fila es **visible**.
+
+
+
+##  Ejemplo real paso a paso
+
+### **Escenario**
+
+*   Página con una fila:
+        id | nombre
+        1  | 'Jorge'
+*   Fila tiene:
+        t_xmin = 100   (insertada por transacción 100)
+        t_xmax = 0     (no borrada)
+
+### **Flujo**
+
+1.  **Transacción A (XID = 150) hace SELECT**
+    *   PostgreSQL toma el **snapshot** de la transacción A.
+    *   Compara:
+        *   `t_xmin (100)` < `XID actual (150)` → OK, la fila fue creada antes.
+        *   `t_xmax = 0` → No está borrada.
+    *   **Resultado:** La fila es visible para A.
+
+
+
+2.  **Transacción B (XID = 151) hace DELETE**
+    *   Marca la fila con `t_xmax = 151` (no la borra físicamente, solo la marca).
+    *   Ahora la fila tiene:
+            t_xmin = 100
+            t_xmax = 151
+
+
+
+3.  **Transacción A vuelve a leer**
+    *   Compara:
+        *   `t_xmin (100)` < `150` → OK.
+        *   `t_xmax (151)` > `150` → La transacción que borró es posterior a A.
+    *   **Resultado:** Para A, la fila sigue siendo visible (MVCC mantiene consistencia).
+
+
+
+4.  **Transacción C (XID = 200) lee después del commit de B**
+    *   Compara:
+        *   `t_xmin (100)` < `200` → OK.
+        *   `t_xmax (151)` < `200` y la transacción 151 está confirmada → La fila está borrada.
+    *   **Resultado:** Para C, la fila **ya no es visible**.
+
+
+
+##  ¿Por qué se compara?
+
+Porque PostgreSQL necesita saber:
+
+*   ¿La fila existía en el momento del snapshot?
+*   ¿Fue borrada antes o después de mi transacción?
+*   ¿Debo mostrar esta versión o ignorarla?
+
+Esto permite:
+
+*   **Lecturas consistentes** sin bloquear escrituras.
+*   **Evitar lecturas sucias**.
+*   **Soportar concurrencia alta**.
+
+ 
 
 
 
