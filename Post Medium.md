@@ -10,6 +10,8 @@ Best Practices for PostgreSQL Database -> https://medium.com/@israr.exs/best-pra
 
 # Migration 
 ```
+De Oracle a Postgres: Edición "Felices para siempre" -> https://drunkdba.medium.com/oracle-to-postgres-happily-ever-after-edition-11a3c27c011f
+
  PostgreSQL DBA Migration from Oracle to PostgreSQL -> https://www.udemy.com/course/postgresql-dba-migration-from-oracle-to-postgresql/?utm_source=adwords&utm_medium=udemyads&utm_campaign=Search_DSA_Beta_Prof_la.EN_cc.ROW-English_AI_Max_for_Search_TEST&campaigntype=Search&portfolio=ROW-English&language=EN&product=Course&test=&audience=DSA&topic=&priority=Beta&utm_content=deal4584&utm_term=_._ag_185318355538_._ad_696197165424_._kw__._de_c_._dm__._pl__._ti_dsa-2434662753489_._li_9141301_._pd__._&matchtype=&gad_source=1&gad_campaignid=22925721803&gbraid=0AAAAADROdO0X00n2nXuUTE2tJawlRslqO&gclid=CjwKCAjw6P3GBhBVEiwAJPjmLjYdfxgeMrP7HTDRBLN5HjiRatXyYnglCyw4SPL4WTY4EeOtwMcx9hoCO04QAvD_BwE&couponCode=PMNVD2525
 
 SQL migrations in PostgreSQL, part 1 -> https://medium.com/miro-engineering/sql-migrations-in-postgresql-part-1-bc38ec1cbe75
@@ -156,6 +158,7 @@ https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-po
 
 # Performance
 ```
+Lista de consultas traviesas de Papá Noel en PostgreSQL: ¿cómo ganarse un lugar en la lista de consultas buenas? ->  https://drunkdba.medium.com/postgresql-santas-naughty-query-list-how-to-earn-a-spot-on-the-nice-query-list-ebc59b800e2f
 
 Porque postgresql es mejor -> https://medium.com/@vinodbokare0588/why-postgres-is-best-b034108f1ef7
 
