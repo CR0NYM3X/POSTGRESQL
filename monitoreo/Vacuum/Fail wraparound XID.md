@@ -254,3 +254,9 @@ Cuando una fila es **congelada** (`xmin = FrozenTransactionId`), PostgreSQL **ya
 | `xmin < XID actual` | ✅ Sí |
 | `xmin > XID actual` | ❌ No |
 | `xmin = FrozenTransactionId` | ✅ Siempre |
+
+
+### Links 
+```
+https://medium.com/@pawanpg0963/what-is-transaction-wraparound-in-postgresql-91c972266780
+```
