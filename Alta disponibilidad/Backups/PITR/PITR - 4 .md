@@ -72,6 +72,15 @@ psql -p 5598 -d test -c "INSERT INTO inventarios(producto, stock) VALUES ('Ultim
 
 # Supongamos que el tiempo devuelto es: '2025-12-22 16:52:01.031-07'
 
+# Ver la hora y wal actuales 
+psql -p 5598 -c "SELECT 
+    CLOCK_TIMESTAMP(), -- Hora
+    pg_walfile_name(pg_current_wal_lsn()), -- nombre de wal actual
+    pg_current_wal_lsn(), -- LSN del wal actual - Hasta dónde hemos generado WAL (puede estar en memoria ).
+    pg_current_wal_flush_lsn() , -- es el ultimo LSN que ha sido flushed (escrito físicamente en disco pg_wal). - Hasta dónde hemos asegurado WAL en disco
+    pg_current_wal_insert_lsn(); --  Marca el LSN que se ha insertado en el buffer WAL (aún no garantizado en disco)."
+
+ 
 # Ver los registros
 psql -p 5598 -d test -c "select pg_xact_commit_timestamp(xmin) as fecha_mov,ctid,xmin,xmax,* from inventarios;"
 
@@ -124,23 +133,25 @@ psql -p 5598 -d test -c "CREATE EXTENSION IF NOT EXISTS pageinspect;"
 psql -p 5598 -d test -c "CREATE EXTENSION pg_dirtyread;"
 
 -- Obtener el XID con la columna xmin o tener la fecha en la que se modifico en este caso se inserto 
-psql -p 5598 -d test -c "SELECT  pg_xact_commit_timestamp(xmin) as fecha_modifico,* FROM pg_dirtyread('inventarios')  AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, id int,producto TEXT , stock INT,  fecha_hora TIMESTAMP );"
+psql -p 5598 -d test -c "SELECT  pg_xact_commit_timestamp(xmin) as fecha_modifico, pg_xact_commit_timestamp(xmax) as fecha_elimino,* FROM pg_dirtyread('inventarios')  AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, id int,producto TEXT , stock INT );"
 
-+-------------------------------+----------+--------+------+------+------+------+------+----+-----------------+-------+----------------------------+
-|   pg_xact_commit_timestamp    | tableoid |  ctid  | xmin | xmax | cmin | cmax | dead | id |    producto     | stock |         fecha_hora         |
-+-------------------------------+----------+--------+------+------+------+------+------+----+-----------------+-------+----------------------------+
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,1)  |  750 |  752 |    0 |    0 | t    |  1 | Producto_1      |    39 | 2025-12-23 18:47:07.03874  |
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,2)  |  750 |  752 |    0 |    0 | t    |  2 | Producto_2      |    87 | 2025-12-23 18:47:07.038905 |
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,3)  |  750 |  752 |    0 |    0 | t    |  3 | Producto_3      |    98 | 2025-12-23 18:47:07.038914 |
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,4)  |  750 |  752 |    0 |    0 | t    |  4 | Producto_4      |    84 | 2025-12-23 18:47:07.038916 |
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,5)  |  750 |  752 |    0 |    0 | t    |  5 | Producto_5      |    66 | 2025-12-23 18:47:07.038918 |
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,6)  |  750 |  752 |    0 |    0 | t    |  6 | Producto_6      |    54 | 2025-12-23 18:47:07.03892  |
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,7)  |  750 |  752 |    0 |    0 | t    |  7 | Producto_7      |    85 | 2025-12-23 18:47:07.038922 |
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,8)  |  750 |  752 |    0 |    0 | t    |  8 | Producto_8      |    99 | 2025-12-23 18:47:07.038924 |
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,9)  |  750 |  752 |    0 |    0 | t    |  9 | Producto_9      |    13 | 2025-12-23 18:47:07.038926 |
-| 2025-12-23 18:47:07.03894-07  |    16390 | (0,10) |  750 |  752 |    0 |    0 | t    | 10 | Producto_10     |    76 | 2025-12-23 18:47:07.038929 |
-| 2025-12-23 18:48:36.639435-07 |    16390 | (0,11) |  751 |  752 |    0 |    0 | t    | 11 | Ultimo_Registro |   999 | 2025-12-23 18:48:36.639283 |
-+-------------------------------+----------+--------+------+------+------+------+------+----+-----------------+-------+----------------------------+
++-------------------------------+-------------------------------+----------+--------+------+------+------+------+------+----+-----------------+-------+
+|        fecha_modifico         |         fecha_elimino         | tableoid |  ctid  | xmin | xmax | cmin | cmax | dead | id |    producto     | stock |
++-------------------------------+-------------------------------+----------+--------+------+------+------+------+------+----+-----------------+-------+
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,1)  |  739 |  752 |    0 |    0 | t    |  1 | Producto_1      |    16 |
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,2)  |  739 |  752 |    0 |    0 | t    |  2 | Producto_2      |    72 |
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,3)  |  739 |  752 |    0 |    0 | t    |  3 | Producto_3      |    89 |
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,4)  |  739 |  752 |    0 |    0 | t    |  4 | Producto_4      |     9 |
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,5)  |  739 |  752 |    0 |    0 | t    |  5 | Producto_5      |    80 |
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,6)  |  739 |  752 |    0 |    0 | t    |  6 | Producto_6      |    17 |
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,7)  |  739 |  752 |    0 |    0 | t    |  7 | Producto_7      |    74 |
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,8)  |  739 |  752 |    0 |    0 | t    |  8 | Producto_8      |    50 |
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,9)  |  739 |  752 |    0 |    0 | t    |  9 | Producto_9      |    66 |
+| 2025-12-24 17:37:24.311426-07 | 2025-12-24 17:53:45.880038-07 |    16386 | (0,10) |  739 |  752 |    0 |    0 | t    | 10 | Producto_10     |    16 |
+| 2025-12-24 17:37:40.15701-07  | 2025-12-24 17:53:45.880038-07 |    16386 | (0,11) |  740 |  752 |    0 |    0 | t    | 11 | Ultimo_Registro |   999 |
++-------------------------------+-------------------------------+----------+--------+------+------+------+------+------+----+-----------------+-------+
+(11 rows)
+
 
 
 
@@ -153,11 +164,57 @@ psql -p 5598 -d test -c "SELECT  pg_xact_commit_timestamp(xmin) as fecha_modific
 ls -lhtr /sysx/data16/DATANEW/db_productiva/pg_wal
 ls -lhtr  /sysx/data16/DATANEW/backup_wal
 
-$PGBIN17/pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000004 | grep 'desc: COMMIT'
-rmgr: Transaction len (rec/tot):     34/    34, tx:        752, lsn: 0/040002C8, prev 0/04000290, desc: COMMIT 2025-12-23 18:50:36.001208 MST
+-- Buscamos el OID de la tabla en este caso es =  16386 
+psql -p 5598 -d test -c "SELECT oid, relname  FROM pg_class WHERE relname = 'inventarios';"
+
+--- Aqui buscamos el LSN  que genero el ultimo insert = 0/03007100 
+$PGBIN17/pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000003  |  grep 16386 | grep -Ei "INSERT"
+rmgr: Heap        len (rec/tot):     54/   738, tx:        740, lsn: 0/03007100, prev 0/030050F0, desc: INSERT off: 11, flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0 FPW
 
 
-$PGBIN17/pg_waldump /sysx/data16/DATANEW/db_productiva/pg_wal/000000010000000000000005 | grep 'desc: COMMIT'
+-- aqui le decimos que nos muestre unicamente cuatro lineas despues de lsn 0/03007100 y encontramos la hora que se hizo el insert 2025-12-24 17:37:40.157010
+-- Nota si nos damos cuenta la secuencia es en la primera linea lsn: 0/03007100 y en la segunda linea esta como  prev 0/03007100 y luego el lsn: 0/030073E8 el cual se encuentra en la tercera linea como  prev 0/030073E8 asi sucesivamente
+$PGBIN17/pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000003 --limit=4 --start=0/03007100
+rmgr: Heap        len (rec/tot):     54/   738, tx:        740, lsn: 0/03007100, prev 0/030050F0, desc: INSERT off: 11, flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0 FPW
+rmgr: Btree       len (rec/tot):     53/   313, tx:        740, lsn: 0/030073E8, prev 0/03007100, desc: INSERT_LEAF off: 11, blkref #0: rel 1663/16384/16393 blk 1 FPW
+rmgr: Transaction len (rec/tot):     34/    34, tx:        740, lsn: 0/03007528, prev 0/030073E8, desc: COMMIT 2025-12-24 17:37:40.157010 MST
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/03007550, prev 0/03007528, desc: RUNNING_XACTS nextXid 741 latestCompletedXid 740 oldestRunningXid 741
+
+
+--- Tambien podemos buscar los delete en este caso ya se habia rotado el wal por lo que debe estar en el 000000010000000000000004 los delete 
+ $PGBIN17/pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000004   |  grep 16386  |   grep -Ei "DELETE"
+rmgr: Heap        len (rec/tot):     59/   743, tx:        752, lsn: 0/04000168, prev 0/04000130, desc: DELETE xmax: 752, off: 1, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0 FPW
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000450, prev 0/04000168, desc: DELETE xmax: 752, off: 2, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000488, prev 0/04000450, desc: DELETE xmax: 752, off: 3, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/040004C0, prev 0/04000488, desc: DELETE xmax: 752, off: 4, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/040004F8, prev 0/040004C0, desc: DELETE xmax: 752, off: 5, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000530, prev 0/040004F8, desc: DELETE xmax: 752, off: 6, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000568, prev 0/04000530, desc: DELETE xmax: 752, off: 7, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/040005A0, prev 0/04000568, desc: DELETE xmax: 752, off: 8, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/040005D8, prev 0/040005A0, desc: DELETE xmax: 752, off: 9, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000610, prev 0/040005D8, desc: DELETE xmax: 752, off: 10, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000648, prev 0/04000610, desc: DELETE xmax: 752, off: 11, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+
+
+-- con esto podemos saber que el delete se confirmo en el wal a las 2025-12-24 17:53:45.880038 esto en la segunda linea despues de "desc: COMMIT"
+$PGBIN17/pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000004 --limit=4 --start=0/04000648
+rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000648, prev 0/04000610, desc: DELETE xmax: 752, off: 11, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
+rmgr: Transaction len (rec/tot):     34/    34, tx:        752, lsn: 0/04000680, prev 0/04000648, desc: COMMIT 2025-12-24 17:53:45.880038 MST
+rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/040006A8, prev 0/04000680, desc: RUNNING_XACTS nextXid 753 latestCompletedXid 752 oldestRunningXid 753
+rmgr: XLOG        len (rec/tot):     24/    24, tx:          0, lsn: 0/040006E0, prev 0/040006A8, desc: SWITCH
+
+
+
+------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------ EXTRA [ REVISAR CUANDO SE HIZO EL ULTIMO CHECKPOINT  ] ---------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
+
+psql -X -p 5598 -d test -c "SELECT pg_walfile_name(checkpoint_lsn),checkpoint_lsn,pg_walfile_name(redo_lsn),redo_lsn, checkpoint_time FROM pg_control_checkpoint();"
+     pg_walfile_name      | checkpoint_lsn |     pg_walfile_name      | redo_lsn  |    checkpoint_time
+--------------------------+----------------+--------------------------+-----------+------------------------
+ 000000010000000000000005 | 0/500DCC8      | 000000010000000000000005 | 0/500DC38 | 2025-12-24 17:57:25-07
+(1 row)
+
 
 ---
 
@@ -174,9 +231,9 @@ Configuramos la instancia `db_pruebas` para que se detenga justo después del in
 echo "
 port = 5599
 restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
-recovery_target_time = '2025-12-22 16:52:01.031-07' # Aqui va la fecha del ultimo insert
+recovery_target_time = '2025-12-24 17:50:00' # Aqui podemos poner la fecha del ultimo insert o unos minutos antes de que se ejecutara el delete que fue a las 2025-12-24 17:53:45
 # recovery_target_name = 'test_pirt' # Se puede usar si quieres restaurar con algun nombre y usaste la fun pg_create_restore_point
-# recovery_target_lsn = 'BBE/697CACC0' # Esto si quiere restaurar un lsn en especifico
+# recovery_target_lsn = '0/03007528' # se coloca el lsn donde se inserto o uno antes del delete 
 # recovery_target_xid = ''
 # recovery_target_timeline = '1'
 # recovery_target_action = 'promote'
@@ -190,7 +247,6 @@ touch /sysx/data16/DATANEW/db_pruebas/recovery.signal
 
 # Iniciar la instancia de pruebas
 pg_ctl -D /sysx/data16/DATANEW/db_pruebas start
-
 ```
 
 6. Verificación de Resultados 
