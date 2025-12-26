@@ -17,6 +17,11 @@ PITR se basa en **dos componentes esenciales**:
 | **Backup base**    | Una copia completa del directorio de datos (`data_directory`) en un momento determinado. Se hace **una sola vez** como punto de partida. |
 | **Archivos WAL**   | Archivos de registro de transacciones (**Write-Ahead Logs**) que PostgreSQL genera constantemente. Se deben **archivar de forma continua** para poder reproducir los cambios posteriores al backup base. |
 
+
+### Tipos de archivados?
+* **archive_command:** Es un proceso "pasivo". Solo archiva cuando el WAL está completo. Si el servidor explota a mitad de un WAL, pierdes esos últimos minutos de transacciones.
+* **pg_receivewal:** Es un proceso "activo". Se comporta como una réplica; va escribiendo el WAL en tu repositorio de backups al mismo tiempo que el servidor principal.
+
  
 ## 🔁 **Flujo de PITR (Recuperación a un Punto en el Tiempo)**
 
