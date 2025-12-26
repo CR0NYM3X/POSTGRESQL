@@ -104,7 +104,7 @@ Inicializa la base de datos y configura el archivado de logs.
 echo "
 wal_level = replica
 archive_mode = on
-archive_command = 'test ! -f /sysx/data16/DATANEW/backup_wal/%f && cp %p /sysx/data16/DATANEW/backup_wal/%f'
+archive_command = 'test ! -f /sysx/data16/DATANEW/backup_wal/%f.gz && gzip < %p > /sysx/data16/DATANEW/backup_wal/%f.gz' #  al archivarlo lo guarda compreso para ahorrar espacio
 port = 5598
 track_commit_timestamp = on
 log_line_prefix = '<%t [%x-%v] %r %a %d %u %p %c %i>'
@@ -132,7 +132,8 @@ INSERT INTO inventarios(producto, stock) SELECT 'Producto_' || i, (random()*100)
 "
 
 # Generar el Backup Base (Semilla)
-pg_basebackup -h localhost -p 5598 -U postgres -D /sysx/data16/DATANEW/backup_db -Ft -Xs -P -c fast -v
+pg_basebackup -h localhost -p 5598 -U postgres -D /sysx/data16/DATANEW/backup_db -Ft -Xs -P -c fast -v -Z server-gzip:9
+
 
 
 ```
@@ -143,7 +144,7 @@ Aquí es donde registramos el tiempo exacto antes de la "catástrofe".
 
 ```bash
 # ver la transacción actual 
-SELECT txid_current();
+psql -p 5598 -d test -c "SELECT txid_current();"
 
 # 1. Insertar registro que queremos salvar (Ultimo_Registro)
 psql -p 5598 -d test -c "INSERT INTO inventarios(producto, stock) VALUES ('Ultimo_Registro', 999);"
@@ -245,22 +246,28 @@ ls -lhtr  /sysx/data16/DATANEW/backup_wal
 -- Buscamos el OID de la tabla en este caso es =  16386 
 psql -p 5598 -d test -c "SELECT oid, relname  FROM pg_class WHERE relname = 'inventarios';"
 
+-- Descomprimir   
+gunzip -c /sysx/data16/DATANEW/backup_wal/000000010000000000000003.gz > /tmp/000000010000000000000003
+
 --- Aqui buscamos el LSN  que genero el ultimo insert = 0/03007100 
-$PGBIN17/pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000003  |  grep 16386 | grep -Ei "INSERT"
+$PGBIN17/pg_waldump /tmp/000000010000000000000003  |  grep 16386 | grep -Ei "INSERT"
 rmgr: Heap        len (rec/tot):     54/   738, tx:        740, lsn: 0/03007100, prev 0/030050F0, desc: INSERT off: 11, flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0 FPW
 
 
 -- aqui le decimos que nos muestre unicamente cuatro lineas despues de lsn 0/03007100 y encontramos la hora que se hizo el insert 2025-12-24 17:37:40.157010
 -- Nota si nos damos cuenta la secuencia es en la primera linea lsn: 0/03007100 y en la segunda linea esta como  prev 0/03007100 y luego el lsn: 0/030073E8 el cual se encuentra en la tercera linea como  prev 0/030073E8 asi sucesivamente
-$PGBIN17/pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000003 --limit=4 --start=0/03007100
+$PGBIN17/pg_waldump /tmp/000000010000000000000003 --limit=4 --start=0/03007100
 rmgr: Heap        len (rec/tot):     54/   738, tx:        740, lsn: 0/03007100, prev 0/030050F0, desc: INSERT off: 11, flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0 FPW
 rmgr: Btree       len (rec/tot):     53/   313, tx:        740, lsn: 0/030073E8, prev 0/03007100, desc: INSERT_LEAF off: 11, blkref #0: rel 1663/16384/16393 blk 1 FPW
 rmgr: Transaction len (rec/tot):     34/    34, tx:        740, lsn: 0/03007528, prev 0/030073E8, desc: COMMIT 2025-12-24 17:37:40.157010 MST
 rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/03007550, prev 0/03007528, desc: RUNNING_XACTS nextXid 741 latestCompletedXid 740 oldestRunningXid 741
 
 
+-- Descomprimir   
+gunzip -c /sysx/data16/DATANEW/backup_wal/000000010000000000000004.gz > /tmp/000000010000000000000004
+
 --- Tambien podemos buscar los delete en este caso ya se habia rotado el wal por lo que debe estar en el 000000010000000000000004 los delete 
- $PGBIN17/pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000004   |  grep 16386  |   grep -Ei "DELETE"
+ $PGBIN17/pg_waldump /tmp/000000010000000000000004   |  grep 16386  |   grep -Ei "DELETE"
 rmgr: Heap        len (rec/tot):     59/   743, tx:        752, lsn: 0/04000168, prev 0/04000130, desc: DELETE xmax: 752, off: 1, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0 FPW
 rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000450, prev 0/04000168, desc: DELETE xmax: 752, off: 2, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
 rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000488, prev 0/04000450, desc: DELETE xmax: 752, off: 3, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
@@ -275,7 +282,7 @@ rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000648,
 
 
 -- con esto podemos saber que el delete se confirmo en el wal a las 2025-12-24 17:53:45.880038 esto en la segunda linea despues de "desc: COMMIT"
-$PGBIN17/pg_waldump /sysx/data16/DATANEW/backup_wal/000000010000000000000004 --limit=4 --start=0/04000648
+$PGBIN17/pg_waldump /tmp/000000010000000000000004 --limit=4 --start=0/04000648
 rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000648, prev 0/04000610, desc: DELETE xmax: 752, off: 11, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
 rmgr: Transaction len (rec/tot):     34/    34, tx:        752, lsn: 0/04000680, prev 0/04000648, desc: COMMIT 2025-12-24 17:53:45.880038 MST
 rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/040006A8, prev 0/04000680, desc: RUNNING_XACTS nextXid 753 latestCompletedXid 752 oldestRunningXid 753
@@ -294,6 +301,13 @@ psql -X -p 5598 -d test -c "SELECT pg_walfile_name(checkpoint_lsn),checkpoint_ls
 (1 row)
 
 
+------------------ Borrar los wal de la temporales 
+
+rm /tmp/000000010000000000000001
+rm /tmp/000000010000000000000002
+rm /tmp/000000010000000000000003
+rm /tmp/000000010000000000000004
+
 ---
 
 
@@ -305,17 +319,20 @@ Configuramos la instancia `db_pruebas` para que se detenga justo después del in
 
 
 ```bash
+tar -xzvf /sysx/data16/DATANEW/backup_db/base.tar -C /sysx/data16/DATANEW/db_pruebas
+tar -xzvf /sysx/data16/DATANEW/backup_db/pg_wal.tar -C /sysx/data16/DATANEW/db_pruebas/pg_wal
+
+
 # Configurar la recuperación en db_pruebas
 echo "
 port = 5599
-restore_command = 'cp /sysx/data16/DATANEW/backup_wal/%f %p'
-recovery_target_time = '2025-12-24 17:50:00' # Aqui podemos poner la fecha del ultimo insert o unos minutos antes de que se ejecutara el delete que fue a las 2025-12-24 17:53:45
+restore_command = 'gunzip < /sysx/data16/DATANEW/backup_wal/%f.gz > %p' # Descomprime cada wal con gunzip y lo usa para la restauración
+recovery_target_time = '2025-12-26 14:36:42' # Aqui podemos poner la fecha del ultimo insert o unos minutos antes de que se ejecutara el delete que fue a las 2025-12-24 17:53:45
 # recovery_target_name = 'test_pirt' # Se puede usar si quieres restaurar con algun nombre y usaste la fun pg_create_restore_point
 # recovery_target_lsn = '0/03007528' # se coloca el lsn donde se inserto o uno antes del delete 
 # recovery_target_xid = ''
 # recovery_target_timeline = '1'
 # recovery_target_action = 'promote'
-
 
 hot_standby = on
 " >> /sysx/data16/DATANEW/db_pruebas/postgresql.auto.conf
@@ -337,7 +354,6 @@ psql -p 5599 -d test -c "select pg_xact_commit_timestamp(xmin) as fecha_mov,ctid
 
 # Revisar si esta en modo recuperación [ t = modo recuperación. | f = la recuperación ya terminó y el servidor fue promovido ]
 psql -p 5599 -d test -c "SELECT pg_is_in_recovery();" 
-
 
 ls -lhtr /sysx/data16/DATANEW/db_productiva/pg_wal
 ls -lhtr /sysx/data16/DATANEW/db_pruebas/pg_wal
@@ -880,6 +896,28 @@ pg_wal_replay_resume()
 
 
 
+ 
+## **¿Qué es `backup_manifest`?**
+Introducido en la versión 13 y cumple una función muy importante para la verificación de integridad de los backups.
+
+Es un archivo **JSON** que se genera automáticamente cuando realizas un **base backup** con `pg_basebackup` (o usando el protocolo de backup nativo).  
+Este archivo describe **todo el contenido del backup**,  Se guarda **dentro del directorio del backup** que creaste con `pg_basebackup`, incluyendo:
+
+*   Lista de archivos y directorios.
+*   Tamaño de cada archivo.
+*   Checksums (SHA256 por defecto) para verificar integridad.
+*   Información del timeline y LSN del backup.
+ 
+
+### **¿Por qué es importante?**
+
+*   Permite **verificar que el backup está completo y sin corrupción** antes de usarlo para restauración.
+*   Puedes usar el comando:
+
+```bash
+pg_verifybackup /ruta/del/backup
+```
+
 
 ## Bibliografias
 ```
@@ -900,3 +938,4 @@ https://www.youtube.com/watch?v=4az6P3ePQ8E
 https://www.youtube.com/watch?v=qRvlJUUPpKU
 
 ```
+
