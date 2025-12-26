@@ -83,11 +83,12 @@ pg_ctl stop -D /sysx/data16/DATANEW/db_pruebas
 
 # Limpiar y crear directorios
 rm -r /sysx/data16/DATANEW/*
-mkdir -p /sysx/data16/DATANEW/{db_productiva,db_pruebas,backup_wal}
+mkdir -p /sysx/data16/DATANEW/{db_productiva,db_pruebas,backup_wal,backup_db}
 
 chown postgres:postgres /sysx/data16/DATANEW/db_productiva 
 chown postgres:postgres /sysx/data16/DATANEW/db_pruebas 
 chown postgres:postgres /sysx/data16/DATANEW/backup_wal
+chown postgres:postgres /sysx/data16/DATANEW/backup_db
 
 ```
 
@@ -96,7 +97,8 @@ chown postgres:postgres /sysx/data16/DATANEW/backup_wal
 Inicializa la base de datos y configura el archivado de logs.
 
 ```bash
-initdb -D /sysx/data16/DATANEW/db_productiva --data-checksums
+# Inicializar el DATA 
+/usr/pgsql-17/bin/initdb -E UTF-8 -D /sysx/data16/DATANEW/db_productiva --data-checksums 
 
 # Configurar parámetros críticos de PITR
 echo "
@@ -113,7 +115,7 @@ log_statement = 'all'
 " >> /sysx/data16/DATANEW/db_productiva/postgresql.auto.conf
 
 # Iniciar
-/usr/pgsql-17/bin/initdb -E UTF-8 -D /sysx/data16/DATANEW/db_productiva --data-checksums -o "-p 5598"
+/usr/pgsql-17/bin/pg_ctl start -D /sysx/data16/DATANEW/db_productiva -o "-p 5598"
 
 ```
 
@@ -130,7 +132,8 @@ INSERT INTO inventarios(producto, stock) SELECT 'Producto_' || i, (random()*100)
 "
 
 # Generar el Backup Base (Semilla)
-pg_basebackup -h localhost -p 5598 -U postgres -D /sysx/data16/DATANEW/db_pruebas -Fp -Xs -P -c fast -v
+pg_basebackup -h localhost -p 5598 -U postgres -D /sysx/data16/DATANEW/backup_db -Ft -Xs -P -c fast -v
+
 
 ```
 
