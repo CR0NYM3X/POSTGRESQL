@@ -3084,3 +3084,32 @@ Así, cuando llega el checkpoint, hay menos trabajo pendiente → evita picos de
 
 *   **WAL Writer:**  
     Corre en intervalos definidos por `wal_writer_delay` (por defecto 200ms) o cuando `wal_buffers` está lleno.
+
+
+
+----
+
+
+### **Flujo real de archivado**
+
+1.  **Segmento se llena → rotación → archivado inmediato** (si `archive_command` funciona).
+2.  **Archivo sigue en pg\_wal** hasta que:
+    *   Se confirma archivado.
+    *   No lo necesita ninguna réplica ni recuperación.
+3.  **PostgreSQL lo recicla o elimina** cuando cumple las condiciones anteriores.
+
+
+### **Eventos que disparan archivado archive_command **
+
+1.  **Rotación natural del WAL**:
+    *   Cada vez que se llena un segmento (16 MB por defecto).
+2.  **CHECKPOINT**:
+    *   Puede forzar la rotación si el segmento actual está parcialmente lleno.
+3.  **pg\_switch\_wal()**:
+    *   Comando manual que fuerza la creación de un nuevo segmento y archiva el anterior.
+4.  **pg\_start\_backup() / pg\_stop\_backup()**:
+    *   Durante un backup base, se asegura que los WAL necesarios se archiven para consistencia.
+5.  **Promoción o recuperación**:
+    *   Al finalizar una recuperación, se archivan los segmentos pendientes.
+
+ 
