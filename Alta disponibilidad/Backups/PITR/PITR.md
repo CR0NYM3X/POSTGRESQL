@@ -115,7 +115,7 @@ log_statement = 'all'
 " >> /sysx/data16/DATANEW/db_productiva/postgresql.auto.conf
 
 # Iniciar
-/usr/pgsql-17/bin/pg_ctl start -D /sysx/data16/DATANEW/db_productiva -o "-p 5598"
+/usr/pgsql-17/bin/pg_ctl start -D /sysx/data16/DATANEW/db_productiva  # -o "-p 5598"
 
 ```
 
@@ -319,9 +319,8 @@ Configuramos la instancia `db_pruebas` para que se detenga justo después del in
 
 
 ```bash
-tar -xzvf /sysx/data16/DATANEW/backup_db/base.tar -C /sysx/data16/DATANEW/db_pruebas
-tar -xzvf /sysx/data16/DATANEW/backup_db/pg_wal.tar -C /sysx/data16/DATANEW/db_pruebas/pg_wal
-
+tar -xzf /sysx/data16/DATANEW/backup_db/base.tar.gz -C /sysx/data16/DATANEW/db_pruebas && echo "Extracción de base.tar finalizada con éxito"
+tar -xf /sysx/data16/DATANEW/backup_db/pg_wal.tar -C /sysx/data16/DATANEW/db_pruebas/pg_wal
 
 # Configurar la recuperación en db_pruebas
 echo "
@@ -934,6 +933,8 @@ https://blog.devgenius.io/setup-continuous-archiving-and-point-in-time-recovery-
 https://www.pivert.org/point-in-time-recovery-pitr-of-postgresql-database/
 https://github.com/MBmousavi/PostgreSQL-Point-In-Time-Recovery
 https://habr.com/ru/companies/otus/articles/786216/
+
+https://www.youtube.com/watch?v=eea96aYrtOQ
 https://www.youtube.com/watch?v=4az6P3ePQ8E
 https://www.youtube.com/watch?v=qRvlJUUPpKU
 
