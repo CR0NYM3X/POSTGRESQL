@@ -400,19 +400,189 @@ cd postgresql-18.1
 #  Configurar compilación - Aquí es donde decides dónde van los BINARIOS
 ./configure --prefix=/opt/postgresql --with-openssl
 
-make
-sudo make install
+make # Crea los binarios y los deja dentro de la carpeta donde descargaste el código 
+sudo make install # Es el paso que toma esos archivos recién creados y los copia a la ruta que definiste en el prefix (/opt/postgresql).
 
 ls -l /opt/postgresql/bin
 ```
 
-### 3. Inicialización manual
 
-Ahora todos tus binarios (`psql`, `postgres`, `initdb`) están exclusivamente en `/opt/postgres18/bin`. El sistema no sabe que existen, así que nada se ejecutará solo. Tú tendrías que inicializar así:
+
+
+
+###   Recomendación profesional:
+Nunca permitas login remoto para postgres en producción.
+
+
+*   **Crear usuario `postgres` con shell**, pero **sin contraseña**.
+*   Usar `sudo -u postgres` para ejecutar comandos.
+*   Bloquear login SSH para `postgres` (en `/etc/ssh/sshd_config`):
+        DenyUsers postgres
+*   Mantener permisos correctos en `/opt/postgresql`:
+  
+--- 
+
+
+
+Una medida de seguridad fundamental de PostgreSQL. **Nunca** se permite inicializar o ejecutar la base de datos como el usuario `root`, ya que si alguien lograra hackear la base de datos, tendría acceso total a todo tu servidor.
+ el sistema no creó automáticamente el usuario `postgres`. Vamos a hacerlo manualmente y a dejar todo listo con tus rutas personalizadas.
+
+
+
+###  1. Crear el usuario del sistema `postgres`
+
+Este usuario será el propietario del binario y del directorio de datos:
 
 ```bash
+
+------------------ [Opcion #1 ]  ------------------
+
+# Crear usuario sin acceso a login gráfico
+sudo adduser --system --home /opt/postgresql --shell /bin/bash --group postgres
+
+
+  --system: crea un usuario del sistema.
+  --home /opt/postgresql: define el home (puedes usar `/var/lib/postgresql` si prefieres).
+  --group postgres: crea el grupo con el mismo nombre.
+
+------------------ [Opcion #2 ] -  Tambien se puede asi ------------------
+
+# Crear el grupo y el usuario postgres
+groupadd postgres
+useradd -r -g postgres -d /opt/postgresql -s /bin/bash postgres
+
+
+-r (system account) : dica que el usuario será del sistema, no un usuario normal. Se usa para cuentas de servicio (como postgres).
+-g postgres : Asigna el grupo primario del usuario. esto permite que el usuario comparta permisos con otros miembros del grupo si es necesario.
+
+-d /opt/postgresql : Define el directorio home del usuario. este será el directorio donde el usuario tendrá sus archivos personales
+-s /bin/bash :  Define la shell por defecto para el usuario. Aquí le das acceso a Bash, útil si necesitas entrar como postgres para ejecutar comandos. Si no quieres que tenga shell interactiva, podrías usar /usr/sbin/nologin.
+
+
+------------- Opcional pero no recomendado ------------
+
+# Asignarle contraseña 
+passwd postgres
+
+
+```
+
+
+
+###   **Método seguridad : bloquear solo SSH (más granular**
+
+1.  Abre el archivo de configuración:
+   ```bash
+    sudo vim /etc/ssh/sshd_config
+   ```
+
+2.  Agrega esta línea:
+   ```
+        DenyUsers postgres
+   ```
+Esto prohíbe que `postgres` se conecte por SSH.
+
+4.  Reinicia el servicio SSH:
+    ```bash
+    sudo systemctl restart ssh
+    ```
+ 
+
+###  2. Asignar permisos al directorio de instalación
+
+```bash
+
+# Asegurarnos de que las carpetas existan
+mkdir -p /opt/postgresql/data /opt/postgresql/log
+
+# Cambiar el dueño de toda la carpeta a 'postgres'
+sudo chown -R postgres:postgres /opt/postgresql
+
+# Dar permisos estrictos a la carpeta de datos (Postgres lo exige)
+chmod 700 /opt/postgresql/data
+```
+
+Esto asegura que el usuario `postgres` tenga control sobre los binarios y el directorio de datos.
+
+
+
+###  3. Cambiar al usuario `postgres` para inicializar (cuando decidas)
+
+Cuando quieras inicializar el cluster (más adelante), haz:
+
+```bash
+sudo -i -u postgres
 /opt/postgresql/bin/initdb -D /opt/postgresql/data
 ```
+
+> Si tu objetivo es **no inicializar todavía**, simplemente no ejecutes `initdb`.
+
+ 
+
+###  4. Verificar
+
+```bash
+id postgres
+```
+
+Debe mostrar el UID y GID del usuario y grupo `postgres`.
+ 
+
+
+
+### 5. Configurar el Log (Donde tú querías)
+
+Como mencionaste que querías controlar dónde se guardan los logs, vamos a configurar el archivo que se acaba de crear:
+
+```bash
+# (Aún como usuario postgres)
+nano /opt/postgresql/data/postgresql.conf
+
+```
+
+Busca y cambia estas líneas (están comentadas por defecto):
+
+```text
+logging_collector = on
+log_directory = '/opt/postgresql/log'
+log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+log_statement = 'all'  # Opcional: para ver todas las consultas en el log
+
+```
+
+---
+
+### 6. Arrancar el servidor manualmente
+
+Para probar que todo funciona bien, levanta el servidor con este comando:
+
+```bash
+/opt/postgresql/bin/pg_ctl -D /opt/postgresql/data  start
+
+--  Si no defines el log en postgresql.conf lo puedes hacer con pg_ctl con :
+-l /opt/postgresql/log/startup.log
+
+```
+
+### 7. ¿Cómo saber si funcionó?
+
+Ejecuta:
+
+```bash
+/opt/postgresql/bin/psql -d postgres
+
+```
+
+ 
+
+
+
+
+
+
+
+
+
 
  
 ###  **. Verificar instalación**
