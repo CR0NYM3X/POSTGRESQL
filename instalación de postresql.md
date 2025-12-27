@@ -290,7 +290,7 @@ Reinicia PostgreSQL para aplicar.
 
 ---
 
-# Instalación manual
+# Tipo de instalaciones 
 
 Para tener el control total y evitar que PostgreSQL haga cosas "a tus espaldas", tienes dos caminos. El primero es **configurar `apt` para que no automatice nada**, y el segundo es **instalar desde el código fuente** (la opción definitiva si quieres mover los binarios de sitio).
 
