@@ -110,6 +110,7 @@ echo "
 wal_level = replica
 archive_mode = on
 archive_command = 'test ! -f /sysx/data16/DATANEW/backup_wal/%f.gz && gzip < %p > /sysx/data16/DATANEW/backup_wal/%f.gz' #  al archivarlo lo guarda compreso para ahorrar espacio
+archive_timeout = '1 h' 
 port = 5598
 track_commit_timestamp = on
 log_line_prefix = '<%t [%x-%v] %r %a %d %u %p %c %i>'
