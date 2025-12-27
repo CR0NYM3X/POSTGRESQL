@@ -403,6 +403,7 @@ cd postgresql-18.1
 make
 sudo make install
 
+ls -l /opt/postgresql/bin
 ```
 
 ### 3. Inicialización manual
