@@ -1,3 +1,12 @@
+Falta
+
+- pg_rewind.md
+- pg_receivewal.md
+- WAL-G.md
+- pgBackRest.md
+
+----
+
 ##   Horarios y días más frecuentes (Buenas prácticas)
 
 *   **Respaldo completo:**
