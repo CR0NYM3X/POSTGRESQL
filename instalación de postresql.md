@@ -26,6 +26,13 @@ Los **repositorios** son ubicaciones (generalmente servidores en Internet) que c
 
 Aquí van buenas prácticas que deberías seguir:
 
+### Definir tus rutas personalizadas
+```bash
+sudo mkdir -p /mi_disco/pg_data /mi_disco/pg_logs
+sudo chown -R postgres:postgres /mi_disco/
+sudo chmod 700 /mi_disco/pg_data
+```
+
 ### ✅ 1. **Usa solo repositorios oficiales o confiables**
 Evita agregar repositorios de terceros sin verificar su autenticidad. Prefiere:
 
@@ -281,6 +288,120 @@ huge_pages = on
 
 Reinicia PostgreSQL para aplicar.
 
+---
+
+# Instalación manual
+
+Para tener el control total y evitar que PostgreSQL haga cosas "a tus espaldas", tienes dos caminos. El primero es **configurar `apt` para que no automatice nada**, y el segundo es **instalar desde el código fuente** (la opción definitiva si quieres mover los binarios de sitio).
+
+Aquí tienes cómo hacerlo de ambas formas:
+ 
+
+## Opción A: Usar `apt` pero bloqueando la automatización
+
+Esta es la mejor opción si quieres recibir actualizaciones de seguridad pero tú quieres decidir cuándo y dónde crear la base de datos.
+
+### 1. Preparar el sistema (Antes de instalar Postgres)
+
+Instala primero las herramientas comunes. Esto creará la carpeta de configuración donde le diremos a Linux que "se detenga".
+
+```bash
+sudo apt update
+sudo apt install postgresql-common -y
+
+```
+
+### 2. Desactivar la creación automática de clusters
+
+Edita el archivo de configuración global de PostgreSQL en Debian/Ubuntu:
+
+```bash
+sudo nano /etc/postgresql-common/createcluster.conf
+
+```
+
+Busca la línea que dice `create_main_cluster` y cámbiala a **false**:
+
+```text
+# create_main_cluster = true
+create_main_cluster = false
+
+```
+
+*Esto evita que al instalar `postgresql-18`, el sistema cree y levante el servicio automáticamente.*
+
+### 3. Instalar PostgreSQL 18
+
+Ahora sí, instala el paquete. Verás que termina la instalación, pero **no habrá ningún proceso corriendo ni carpetas de datos creadas**.
+
+```bash
+sudo apt install postgresql-18 -y
+
+```
+
+### 4. Inicialización Manual (Tú tienes el control)
+
+Ahora tú decides las rutas. Supongamos que quieres tus datos en `/custom/data` y logs en `/custom/logs`:
+
+```bash
+# Crear carpetas y dar permisos al usuario postgres
+sudo mkdir -p /custom/data /custom/logs
+sudo chown -R postgres:postgres /custom
+sudo chmod 700 /custom/data
+
+# Inicializar manualmente el cluster con initdb
+sudo -u postgres /usr/lib/postgresql/18/bin/initdb -D /custom/data
+
+```
+
+---
+
+## Opción B: Instalar desde el Código Fuente (Control Total de Binarios)
+
+Si no quieres que los binarios estén en `/usr/lib/postgresql/...` y prefieres que todo esté, por ejemplo, en `/opt/postgres18`, esta es la única forma.
+
+### 1. Instalar dependencias de compilación
+
+```bash
+sudo apt install build-essential libreadline-dev zlib1g-dev flex bison libxml2-dev libxslt-dev libssl-dev -y
+
+```
+
+### 2. Descargar y Compilar
+
+```bash
+wget https://ftp.postgresql.org/pub/source/v18.0/postgresql-18.0.tar.gz # Verifica la versión exacta
+tar -xvf postgresql-18.0.tar.gz
+cd postgresql-18.0
+
+# Aquí es donde decides dónde van los BINARIOS
+./configure --prefix=/opt/postgres18 --with-openssl
+
+make
+sudo make install
+
+```
+
+### 3. Resultado
+
+Ahora todos tus binarios (`psql`, `postgres`, `initdb`) están exclusivamente en `/opt/postgres18/bin`. El sistema no sabe que existen, así que nada se ejecutará solo. Tú tendrías que inicializar así:
+
+```bash
+/opt/postgres18/bin/initdb -D /tu/ruta/de/datos
+
+```
+ 
+
+## Resumen de diferencias
+
+| Característica | Con APT (Configurado) | Desde Fuente (Compilado) |
+| --- | --- | --- |
+| **Binarios** | En `/usr/lib/postgresql/18/bin` | **Donde tú quieras** (ej. `/opt/pg18`) |
+| **Actualizaciones** | `sudo apt upgrade` (Automático) | Manual (Re-compilar) |
+| **Facilidad** | Alta | Media |
+| **Control** | Total sobre Datos y Logs | **Total sobre TODO** |
+
+ 
 ---
 
 ### Links de referenicias 
