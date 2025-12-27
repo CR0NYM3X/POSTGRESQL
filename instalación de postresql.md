@@ -637,14 +637,16 @@ Si escribes `psql` en la terminal, ¿cómo sabe el sistema si debe abrir la vers
 
 Este paquete te regala comandos exclusivos que no existen en otras distros y que simplifican tareas complejas:
 
-| Comando | Para qué sirve |
-|  |  |
-| **`pg_lsclusters`** | Muestra todos los clusters instalados, su estado, puerto y rutas. |
-| **`pg_createcluster`** | Configura automáticamente las carpetas de datos, logs y sockets. |
-| **`pg_dropcluster`** | Borra un cluster y limpia todos sus archivos de configuración. |
-| **`pg_ctlcluster`** | Es el comando que usa Systemd para arrancar/parar versiones específicas. |
-| **`pg_upgradecluster`** | Automatiza la migración de datos de una versión vieja a una nueva. |
 
+| **Comando**         | **Para qué sirve**                                                       |
+| ------------------- | ------------------------------------------------------------------------ |
+| `pg_lsclusters`     | Muestra todos los clusters instalados, su estado, puerto y rutas.        |
+| `pg_createcluster`  | Configura automáticamente las carpetas de datos, logs y sockets.         |
+| `pg_dropcluster`    | Borra un cluster y limpia todos sus archivos de configuración.           |
+| `pg_ctlcluster`     | Es el comando que usa Systemd para arrancar/parar versiones específicas. |
+| `pg_upgradecluster` | Automatiza la migración de datos de una versión vieja a una nueva.       |
+
+ 
 
 
 ### 4. Estandarización de Rutas
