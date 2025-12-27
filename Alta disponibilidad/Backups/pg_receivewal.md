@@ -182,10 +182,10 @@ Si estás en un laboratorio, `pg_receivewal` es genial para aprender. En **produ
  
 
 ## Links
-```
+```bash
 https://www.scalingpostgres.com/tutorials/postgresql-wal-archiving-pg-receivewal/
 https://www.cybertec-postgresql.com/en/never-lose-a-postgresql-transaction-with-pg_receivewal/
 https://www.opsdash.com/blog/postgresql-replication-slots.html
  documentación oficial -> https://www.postgresql.org/docs/current/app-pgreceivewal.html
 
-```bash
+```
