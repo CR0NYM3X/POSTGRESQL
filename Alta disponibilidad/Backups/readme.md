@@ -2,8 +2,8 @@ Falta
 
 - pg_rewind.md
 - pg_receivewal.md
-- WAL-G.md
 - pgBackRest.md
+- WAL-G.md
 
 ----
 
