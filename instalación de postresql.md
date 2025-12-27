@@ -512,7 +512,7 @@ Cuando quieras inicializar el cluster (más adelante), haz:
 
 ```bash
 sudo -i -u postgres
-/opt/postgresql/bin/initdb -D /opt/postgresql/data
+/opt/postgresql/bin/initdb -E UTF-8 -D /opt/postgresql/data --data-checksums 
 ```
 
 > Si tu objetivo es **no inicializar todavía**, simplemente no ejecutes `initdb`.
