@@ -65,6 +65,7 @@ https://www.ashnik.com/whitepaper/postgresql/step-by-step-guide-to-pgbackrest-se
 https://www.linkedin.com/pulse/install-configure-pgbackrest-postgresql-17-ubuntu-2404-mahto-7ofgf
 https://www.postgresql.fastware.com/pzone/2025-01-standby-re-synchronization-using-pgbackrest
 
+https://www.youtube.com/watch?v=IXwDQRZuQiA
 https://www.youtube.com/watch?v=RkESdFnXo8I&list=PLKShApAWCKLQyScHBaQWV_q9_8LQVo_kc
 https://www.youtube.com/watch?v=S5NPR0H_kv4
 https://www.youtube.com/watch?v=_f7C1ebxc9o
