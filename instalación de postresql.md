@@ -360,6 +360,7 @@ sudo -u postgres /usr/lib/postgresql/18/bin/initdb -D /custom/data
 mkdir -p /opt/postgresql/bin
 mkdir -p /opt/postgresql/log
 mkdir -p /opt/postgresql/data
+mkdir -p /home/postgres
 ```
 
 ### 1. Instalar dependencias de compilación
@@ -438,7 +439,7 @@ Este usuario será el propietario del binario y del directorio de datos:
 ------------------ [Opcion #1 ]  ------------------
 
 # Crear usuario sin acceso a login gráfico
-sudo adduser --system --home /opt/postgresql --shell /bin/bash --group postgres
+sudo adduser --system --home /home/postgres --shell /bin/bash --group postgres
 
 
   --system: crea un usuario del sistema.
@@ -449,7 +450,7 @@ sudo adduser --system --home /opt/postgresql --shell /bin/bash --group postgres
 
 # Crear el grupo y el usuario postgres
 groupadd postgres
-useradd -r -g postgres -d /opt/postgresql -s /bin/bash postgres
+useradd -r -g postgres -d /home/postgres -s /bin/bash postgres
 
 
 -r (system account) : dica que el usuario será del sistema, no un usuario normal. Se usa para cuentas de servicio (como postgres).
