@@ -1,7 +1,6 @@
 Falta
 
 - pg_rewind.md
-- pg_receivewal.md
 - pgBackRest.md
 - WAL-G.md
 
