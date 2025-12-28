@@ -543,10 +543,20 @@ nano /opt/postgresql/data/postgresql.conf
 Busca y cambia estas líneas (están comentadas por defecto):
 
 ```text
+sudo mkdir -p /var/run/postgresql
+sudo chown -R postgres:postgres /var/run/postgresql
+
+---------------
+
 logging_collector = on
 log_directory = '/opt/postgresql/log'
 log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
 log_statement = 'all'  # Opcional: para ver todas las consultas en el log
+
+unix_socket_directories = '/tmp,/var/run/postgresql' # /var/run/postgresql es más “limpio” en sistemas con systemd
+
+
+
 
 ```
 
