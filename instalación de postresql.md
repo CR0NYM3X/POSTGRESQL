@@ -676,6 +676,34 @@ Es por esto que se inicializó solo. Como vimos antes, esto se desactiva cambian
 ---
 
 
+###  **Instalación manual (compilación desde código fuente)**
+
+*   **Ventajas:**
+    *   Control total sobre la versión exacta y las opciones de compilación (`--with-openssl`, `--prefix`, etc.).
+    *   Puedes instalar en cualquier ruta (ej. `/opt/postgresql`) sin depender de la estructura del sistema.
+    *   Ideal para entornos donde necesitas personalización extrema o versiones no disponibles en repositorios.
+*   **Desventajas:**
+    *   Más trabajo: descargar, compilar, resolver dependencias.
+    *   No se actualiza automáticamente con `apt update && apt upgrade`.
+    *   Debes gestionar manualmente el servicio (systemd), usuario, permisos, variables de entorno.
+
+ 
+
+###  **Instalación desde repositorio PGDG (APT)**
+
+*   **Ventajas:**
+    *   Rápida y sencilla: `apt install postgresql-18`.
+    *   Incluye scripts para crear el usuario `postgres`, inicializar el cluster y configurar el servicio.
+    *   Se actualiza automáticamente con el sistema.
+    *   Integración con systemd (servicio `postgresql` listo).
+*   **Desventajas:**
+    *   Menos control sobre opciones de compilación.
+    *   Instala en rutas estándar (`/usr/lib/postgresql/`, `/var/lib/postgresql/`).
+    *   Inicializa automáticamente un cluster (aunque puedes evitarlo si sabes cómo).
+ 
+
+---
+
 ### Links de referenicias 
 ```bash
 https://tomasz-gintowt.medium.com/tuning-ubuntu-debian-pod-postgresql-ea1bb71633d8
