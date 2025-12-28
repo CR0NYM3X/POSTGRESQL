@@ -19,8 +19,8 @@ PITR se basa en **dos componentes esenciales**:
 
 
 ### Tipos de archivados?
-* **archive_command:** Es un proceso "pasivo". Solo archiva cuando el WAL está completo. Si el servidor explota a mitad de un WAL, pierdes esos últimos minutos de transacciones.
-* **pg_receivewal:** Es un proceso "activo". Se comporta como una réplica; va escribiendo el WAL en tu repositorio de backups al mismo tiempo que el servidor principal.
+* **Parámetro archive_command:** Es un proceso "pasivo". Solo archiva cuando el WAL está completo. Si el servidor explota a mitad de un WAL, pierdes esos últimos minutos de transacciones.
+* **Herramienta pg_receivewal:** Es un proceso "activo". Se comporta como una réplica; va escribiendo el WAL en tu repositorio de backups al mismo tiempo que el servidor principal.
 
  
 ## 🔁 **Flujo de PITR (Recuperación a un Punto en el Tiempo)**
