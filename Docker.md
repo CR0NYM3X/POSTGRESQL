@@ -139,10 +139,10 @@ docker run --name postgres-db \
   -p 5432:5432 \
   -v pgdata:/var/lib/postgresql/data \
   -d postgres:15
-
-----------------------------------------------------------------------------------------
-
-# Ejecutar un nuevo contenedor de PostgreSQL para tareas de mantenimiento
+```
+ 
+# Crear contenedor de PostgreSQL temporal  
+```
 docker run --rm -it \
   # --rm: Borra automáticamente el contenedor al salir para no dejar basura.
   # -it: Abre una terminal interactiva (permite escribir comandos dentro).
@@ -159,8 +159,6 @@ docker run --rm -it \
   \
   bash
   # bash: Indica que NO inicie la base de datos, sino que te dé una terminal.
-
-
 ```
 
 #### 🔍 Explicación de parámetros:
@@ -249,7 +247,124 @@ Aunque funcione, instalar cosas manualmente con `exec` se considera una **mala p
 
 Si ya probaste que `pgmetrics` te sirve y lo quieres para siempre (incluso si borras el contenedor), lo ideal es ponerlo en el archivo de configuración.
 
+---
+ 
+# 🗄️ Persistencia de Datos en PostgreSQL con Docker
 
+Por defecto, los contenedores de Docker son **efímeros**. Si detienes un contenedor, tus datos permanecen; sin embargo, si **eliminas** el contenedor, corres el riesgo de perder toda la información de tu base de datos.
+
+Para solucionar esto, es fundamental utilizar **Volúmenes** para asegurar la persistencia. Existen dos métodos principales para manejar esto:
+
+
+## 1. Guardar datos en un Volumen de Docker (Recomendado)
+
+Docker administra el área de almacenamiento dentro del sistema de archivos del host, protegiéndola de interferencias externas.
+
+###  Implementación
+
+Primero, asegúrate de que no haya contenedores en conflicto:
+
+```bash
+# Detener y eliminar el contenedor actual
+docker stop postgres
+docker rm postgres
+
+```
+
+Crea un volumen dedicado y ejecuta el contenedor:
+
+```bash
+# Crear un nuevo Volumen de Docker
+docker volume create pgdata
+
+# Ejecutar el contenedor con el volumen conectado
+docker run -d \
+  -p 5432:5432 \
+  --name postgres \
+  -e POSTGRES_PASSWORD=$USER_PASSWORD \
+  -v pgdata:/var/lib/postgresql/data \
+  postgres 
+
+```
+
+
+## 2. Guardar datos en tu Máquina Local (Bind Mount)
+
+Este método mapea los datos de la base de datos directamente a una carpeta específica en tu máquina host. Es ideal para desarrollo cuando necesitas inspeccionar archivos manualmente.
+
+###  Implementación
+
+Crea un directorio local y vincúlalo al contenedor:
+
+```bash
+# Crear un directorio en el Host
+mkdir pgdata
+
+# Ejecutar el contenedor vinculado al directorio local
+docker run -d \
+  -p 5432:5432 \
+  --name postgres \
+  -e POSTGRES_PASSWORD=$USER_PASSWORD \
+  -v ~/pgdata:/var/lib/postgresql/data \
+  postgres
+
+```
+
+
+## La duda más común: ¿Dónde están los datos?
+
+La respuesta corta es: **los datos están FUERA del contenedor**, pero en un área que Docker "esconde" para protegerla.
+
+### 1. ¿Dentro o fuera del contenedor?
+
+Están **FUERA**. Incluso en el **Método 1 (Volúmenes)**, los datos viven en el disco duro de tu computadora real. La diferencia es que, mientras en el **Método 2** tú eliges la carpeta, en el **Método 1** Docker la elige por ti en un lugar reservado.
+
+### 2. Ubicación física según el Sistema Operativo:
+
+* **En Linux Nativo:** Los datos están en `/var/lib/docker/volumes/nombre_del_volumen/_data`. Necesitas permisos de administrador (`sudo`) para entrar.
+* **En Windows o Mac (Docker Desktop):** Docker corre dentro de una pequeña máquina virtual ligera. Los datos están **dentro de esa máquina virtual**, por lo que no los verás directamente en tu explorador de archivos normal.
+
+### 3. ¿Cómo revisar los datos? (3 Formas)
+
+Como no siempre puedes abrir una carpeta y ya, usa estas formas oficiales:
+
+#### A. La forma técnica (Inspeccionar)
+
+Para saber la ruta y detalles técnicos:
+
+```bash
+docker volume inspect pgdata
+
+```
+
+#### B. La forma práctica (Contenedor Explorador)
+
+Lanza un contenedor ligero para ver el contenido sin afectar nada:
+
+```bash
+docker run --rm -it -v pgdata:/mirar alpine ls -l /mirar
+
+```
+
+#### C. Entrar al contenedor de PostgreSQL
+
+Si el contenedor está corriendo, navega directamente a la ruta interna:
+
+```bash
+docker exec -it postgres ls -l /var/lib/postgresql/data
+
+```
+ 
+##  Comparativa: ¿Cuál usar?
+
+| Característica | Método 1: Volumen de Docker | Método 2: Carpeta Local |
+| --- | --- | --- |
+| **Gestión** | Administrado por Docker | Administrado por el Usuario |
+| **Ubicación** | Oculta (Ruta interna de Docker) | Visible (Ruta elegida por ti) |
+| **Rendimiento** | Optimizado para BD | Depende del sistema de archivos |
+| **Ideal para...** | Servidores reales y producción | Programación y respaldos rápidos |
+
+ 
 
 ---
 
@@ -297,7 +412,6 @@ Si ya probaste que `pgmetrics` te sirve y lo quieres para siempre (incluso si bo
    docker volume ls 		→ Lista volúmenes.
    docker network ls 		→ Lista redes.
    docker network create <nombre> 		→ Crea una red personalizada.
-
 
 
 ### 🔹 Otros útiles
