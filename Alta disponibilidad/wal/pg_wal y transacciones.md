@@ -806,7 +806,7 @@ postgres@postgres# select *from  pg_control_checkpoint();
 
 
 ```
-
+---
 
 ### 3. `pg_archivecleanup`
 
@@ -848,6 +848,154 @@ Esto asegurará que los archivos WAL antiguos se limpien automáticamente durant
 
 
 
+# Restartpoint
+
+En el mundo de PostgreSQL, un **restartpoint** es el equivalente a un **checkpoint** (punto de control), pero ocurre específicamente en un servidor que está en modo **Standby** (esclavo).
+
+Para entenderlo bien, debemos compararlo con lo que sucede en el servidor principal:
+
+### 1. Checkpoint vs. Restartpoint
+
+* **Checkpoint (Servidor Principal):** Es el proceso donde el servidor escribe todos los datos que están en la memoria RAM (sucios) hacia los archivos en el disco duro. Esto garantiza que, si la luz se va, la base de datos no tenga que procesar demasiados archivos WAL para recuperarse.
+* **Restartpoint (Servidor Standby):** Dado que un esclavo está en modo de "solo lectura" y solo aplica los cambios que le llegan del principal, no puede generar sus propios checkpoints de la misma manera. En su lugar, realiza un **restartpoint**, que consiste en vaciar a su disco local toda la información que ya ha procesado desde los archivos WAL que recibió.
+
+### 2. ¿Para qué sirve realmente?
+
+El objetivo principal de un restartpoint es establecer una **"línea de seguridad"**.
+
+* Una vez que el restartpoint termina con éxito, el servidor Standby sabe que, si llegara a reiniciarse, ya no necesita ningún archivo WAL anterior a ese punto, porque esos cambios ya están grabados físicamente en sus archivos de datos principales.
+* Es en este momento exacto cuando el servidor le avisa a `pg_archivecleanup` que puede borrar todo lo que esté "detrás" de esa línea de seguridad.
+
+### 3. ¿Por qué se llama así?
+
+Se llama "punto de reinicio" porque define desde qué punto del log de transacciones (WAL) el servidor tendría que empezar a leer si tuviera que **reiniciarse** en ese instante. Entre más frecuentes sean los restartpoints, más rápido arrancará el servidor si falla, pero consumirá más recursos de disco (I/O) al estar grabando datos constantemente.
+
+### 4. ¿Cómo se configura?
+
+Al igual que los checkpoints, los restartpoints se ven afectados por estos parámetros en tu `postgresql.conf`:
+
+* **`checkpoint_timeout`**: El tiempo máximo entre un restartpoint y otro (por defecto 5 minutos).
+* **`max_wal_size`**: Si el esclavo procesa mucha información y genera muchos logs, disparará un restartpoint antes de alcanzar este límite de tamaño para no llenar el disco.
+
+**En resumen:** El restartpoint es el "seguro de vida" del esclavo que le permite decir: *"Hasta aquí ya guardé todo en el disco, ya no necesito los manuales (WALs) de las instrucciones anteriores"*.
+
+ 
+
+
+# Porque borrar algo que estoy archivando ? 
+Parece contradictorio borrar los archivos que precisamente sirven para salvarte en caso de desastre. Sin embargo, el secreto está en entender que el `archive_cleanup_command` no se usa para borrar tu **respaldo histórico**, sino para limpiar la **"zona de transferencia"** entre tus servidores.
+
+Aquí te explico los escenarios reales donde esto tiene sentido y por qué no es un riesgo si se configura bien:
+
+
+
+### El concepto de la "Zona de Transferencia"
+
+Imagina que el servidor Principal (Master) envía sus WALs a una carpeta compartida (como un NFS o un volumen en la nube). El servidor Esclavo (Standby) entra a esa carpeta, lee los archivos y aplica los cambios a su propia base de datos.
+
+Si no usas `pg_archivecleanup`, esa carpeta compartida crecerá **infinitamente** hasta llenar el disco. El Esclavo ya procesó los archivos antiguos y ya tiene esos datos en su disco duro; no necesita volver a leerlos del archivo compartido.
+
+
+
+### Escenario 1: El Standby con poco espacio en disco
+
+Este es el uso más común. Tienes un servidor esclavo que lee de una carpeta de archivos WAL.
+
+* **El problema:** Tu base de datos genera 100GB de logs al día. En una semana, tendrías 700GB solo en logs.
+* **La solución:** Configuras `archive_cleanup_command` en el esclavo.
+* **Qué sucede:** Cada vez que el esclavo termina de procesar un archivo y llega a un punto seguro (llamado *restartpoint*), le dice a la herramienta: "Ya procesé hasta el archivo X, puedes borrar todo lo anterior en la carpeta compartida".
+* **Resultado:** La carpeta se mantiene siempre en un tamaño manejable (por ejemplo, solo guarda los últimos 5 o 10 archivos que aún no se han procesado).
+
+
+
+### Escenario 2: Diferencia entre "Archivo de Tránsito" y "Respaldo Permanente"
+
+En empresas grandes, se manejan dos tipos de archivos:
+
+1. **El Respaldo (Backup):** Se envía a un almacenamiento de larga duración (como Amazon S3 o una cinta). **Este NUNCA se borra con pg_archivecleanup**.
+2. **El Archivo de Réplica:** Una carpeta rápida y local donde el Master deja los archivos para que el Esclavo los tome de inmediato.
+
+Aquí, el objetivo de `archive_cleanup_command` es limpiar únicamente la **carpeta de réplica**. Si el Esclavo ya leyó el archivo, ese archivo ya cumplió su función de comunicación y solo está ocupando espacio estorbando.
+
+
+
+### Escenario 3: Recuperación de un desastre (PITR) fallida
+
+Si estás haciendo una recuperación a un punto en el tiempo (PITR), PostgreSQL leerá todos los WALs necesarios desde tu respaldo para reconstruir la base de datos.
+
+* **Cuándo usarlo:** Una vez que la recuperación ha terminado con éxito y tu servidor ya está funcionando normalmente, puedes ejecutar `pg_archivecleanup` manualmente sobre la carpeta temporal de restauración para liberar gigabytes de espacio de logs que ya fueron inyectados en la base de datos.
+
+
+
+### ¿Cuándo NO usarlo? (Escenario de Riesgo)
+
+Si tienes **dos o más esclavos** leyendo de la misma carpeta de archivos compartida:
+
+* **Peligro:** El Esclavo A es muy rápido y termina de procesar el archivo 10, por lo que ordena borrar todo lo anterior. Pero el Esclavo B es lento y todavía va por el archivo 8.
+* **Resultado:** El Esclavo B fallará porque el archivo que necesitaba fue borrado por el comando que disparó el Esclavo A.
+
+### Ejemplo de configuración segura
+
+En tu `postgresql.conf` del servidor **Standby**:
+
+```ini
+# %r es el archivo de corte que PostgreSQL calcula automáticamente.
+# Todo lo anterior a %r se considera "basura" procesada.
+archive_cleanup_command = 'pg_archivecleanup /var/lib/postgresql/wal_archive %r'
+
+```
+
+**En resumen:** No borras para "eliminar tu seguro", borras para que el buzón de mensajes entre tus servidores no se desborde, asumiendo que ya tienes un respaldo real en otro lugar seguro.
+
+ 
+
+# Como sabe archive_cleanup_command desde dónde empezar a borrar?
+
+El comando `archive_cleanup_command` no decide por sí solo desde dónde empezar a borrar; es el propio servidor **PostgreSQL (el Standby)** quien le indica exactamente cuál es el punto de corte mediante un parámetro especial llamado `%r`.
+
+Aquí te explico el mecanismo técnico de cómo funciona este proceso:
+
+### 1. El uso del macro `%r`
+
+Cuando configuras el comando en tu `postgresql.conf`, lo escribes así:
+`archive_cleanup_command = 'pg_archivecleanup /ruta/al/archivo %r'`
+
+En este contexto, `%r` es un "comodín" o macro que PostgreSQL sustituye automáticamente por el **nombre del archivo WAL más antiguo que el servidor todavía necesita** para poder reiniciarse sin problemas.
+
+### 2. El momento clave: El *Restartpoint*
+
+El servidor Standby no está borrando archivos todo el tiempo. El proceso sigue estos pasos:
+
+1. El Standby procesa los archivos WAL que llegan al archivo.
+2. Periódicamente, el Standby realiza un **restartpoint** (un punto de control para esclavos).
+3. Una vez que el restartpoint termina con éxito, PostgreSQL sabe que ya no necesitará ningún archivo anterior a ese momento para una futura recuperación local.
+4. En ese instante, PostgreSQL calcula el nombre del archivo WAL más antiguo necesario y **dispara el comando**, reemplazando `%r` por ese nombre.
+
+### 3. La lógica de `pg_archivecleanup`
+
+Cuando la herramienta recibe ese nombre de archivo (el valor de `%r`), realiza lo siguiente:
+
+* **Escanea el directorio:** Mira todos los archivos presentes en la carpeta de archivado.
+* **Compara nombres:** Los archivos WAL tienen nombres cronológicos (basados en números hexadecimales). La herramienta identifica todos los archivos cuyos nombres sean **menores** (anteriores) al nombre que recibió en `%r`.
+* **Eliminación:** Borra únicamente esos archivos anteriores, manteniendo el archivo `%r` y todos los posteriores.
+
+### Ejemplo visual del flujo:
+
+Si en tu carpeta tienes los archivos:
+
+* `000000010000000000000001`
+* `000000010000000000000002`
+* `000000010000000000000003`
+
+Si el servidor determina que para reiniciar solo necesita del `000000010000000000000003` en adelante, ejecutará:
+`pg_archivecleanup /ruta/ 000000010000000000000003`
+
+La herramienta verá que el `...001` y `...002` son menores al `...003` y los eliminará de inmediato.
+
+**En resumen:** PostgreSQL es el cerebro que sabe qué necesita para sobrevivir, y `pg_archivecleanup` es simplemente el brazo ejecutor que limpia lo que el cerebro ya marcó como "basura procesada".
+
+
+---
 
 ### 4. `pg_waldump`
 
