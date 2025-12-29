@@ -105,7 +105,15 @@ Imagina que tienes una aplicación que funciona perfectamente en tu computadora,
     docker: Es el nombre del grupo al que te quieres unir.
     $USER: Es una variable de entorno que se traduce automáticamente al nombre de tu usuario actual (por ejemplo, "juan" o "admin").
 
+   ```
+
+
+8. **Conectarse al contenedor**
+   ```bash
+   docker exec -it nombre-contenedor bash
    ```   
+
+
  ⚠️ Nota importante de seguridad 
  Debes saber que estar en el grupo docker es técnicamente equivalente a tener privilegios de root (administrador total). Esto se debe a que un usuario en este grupo puede crear contenedores que tengan acceso a archivos sensibles de tu sistema operativo. Solo dale este permiso a usuarios en los que confíes plenamente.
  
@@ -163,9 +171,70 @@ psql -h localhost -U admin -d mi_basedatos
 ### 🔐 **Recomendaciones de seguridad**
 - Cambia las credenciales por valores seguros.
 
+---
+
+ 
+### 1. ¿Qué puedes hacer dentro  de Docker?
+
+Como entras generalmente como usuario **root** (superusuario), tienes el control total del sistema de archivos del contenedor:
+
+* **Instalar herramientas:** Puedes usar el gestor de paquetes del contenedor (ej. `apt update && apt install vim` en Ubuntu/Debian o `apk add` en Alpine).
+* **Modificar archivos:** Puedes editar archivos de configuración de la base de datos o del servidor web que esté corriendo.
+* **Revisar procesos:** Puedes usar comandos como `top` o `ps` para ver qué está pasando internamente.
+
+### 2. El gran "Pero": La Efimeridad
+
+Esta es la regla de oro de Docker: **Los contenedores son desechables.**
+
+* **Los cambios se pierden:** Si borras el contenedor (`docker rm`) y lo vuelves a crear con `docker run`, **todo lo que instalaste o configuraste mediante `exec` desaparecerá**. El contenedor volverá a estar exactamente como dicta su imagen original.
+* **Uso correcto:** Usar `exec` para instalar cosas es excelente para **pruebas rápidas o depuración** (ej. "quiero ver si este comando funciona antes de ponerlo en mi script"). No es la forma correcta de configurar un servidor definitivo.
+
+ 
+
+### 3. Diferencias con un Linux "Normal"
+
+| Característica | Linux Normal (PC o VM) | Contenedor (vía `exec`) |
+| --- | --- | --- |
+| **Persistencia** | Los cambios son permanentes. | Los cambios son temporales (se borran con el contenedor). |
+| **Herramientas** | Trae casi todo (vi, curl, ping, etc.). | Es **minimalista**. A veces no trae ni `nano` ni `ping` para ahorrar espacio. |
+| **Kernel** | Tiene su propio núcleo. | **Comparte el núcleo** de tu computadora (Host). |
+| **Propósito** | Multipropósito. | Generalmente corre **un solo proceso** (ej. solo la base de datos). |
+
+ 
+
+### 4. ¿Cómo hacerlo "bien" (Permanente)?
+
+Si descubres que necesitas instalar algo (por ejemplo, `pgmetrics` o `vim`) de forma permanente, no lo hagas con `exec`. Debes modificar el archivo llamado **Dockerfile** de tu proyecto:
+
+> **Ejemplo de un Dockerfile:**
+> ```dockerfile
+> FROM postgres:15
+> # Aquí es donde "instalas" para siempre
+> RUN apt-get update && apt-get install -y vim pgmetrics
+> 
+> ```
+
+
+
+### Mala práctica
+
+Aunque funcione, instalar cosas manualmente con `exec` se considera una **mala práctica** en el mundo profesional por dos razones:
+
+1. **No es reproducible:** Si tu compañero quiere el mismo entorno, tú no puedes "pasarle" ese contenedor fácilmente. Él tendría que entrar y volver a instalar todo a mano.
+2. **Mantenimiento:** Si mañana quieres actualizar la versión de PostgreSQL, al bajar la nueva imagen y crear el contenedor, tendrás que volver a instalar `pgmetrics`.
+
+### La solución definitiva: El Dockerfile
+
+Si ya probaste que `pgmetrics` te sirve y lo quieres para siempre (incluso si borras el contenedor), lo ideal es ponerlo en el archivo de configuración.
+
+
+
+---
+
+
+
 # Links 
 ```sql
-
 -- Instalar Docker 
 https://medium.com/@piyushkashyap045/comprehensive-guide-installing-docker-and-docker-compose-on-windows-linux-and-macos-a022cf82ac0b
 https://medium.com/@manuel.vega.ulloa/c%C3%B3mo-instalar-y-usar-docker-en-ubuntu-22-04-5-lts-60b773efbd10
