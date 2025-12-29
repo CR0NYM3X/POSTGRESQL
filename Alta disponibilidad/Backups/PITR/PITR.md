@@ -272,7 +272,8 @@ rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/03007550,
 -- Descomprimir   
 gunzip -c /sysx/data16/DATANEW/backup_wal/000000010000000000000004.gz > /tmp/000000010000000000000004
 
---- Tambien podemos buscar los delete en este caso ya se habia rotado el wal por lo que debe estar en el 000000010000000000000004 los delete 
+--- Tambien podemos buscar los delete en este caso ya se habia rotado el wal por lo que debe estar en el 000000010000000000000004 los delete
+--- con esto podemos saber que el XID es el 752 y el ultimo delete su lsn es 0/04000648
  $PGBIN17/pg_waldump /tmp/000000010000000000000004   |  grep 16386  |   grep -Ei "DELETE"
 rmgr: Heap        len (rec/tot):     59/   743, tx:        752, lsn: 0/04000168, prev 0/04000130, desc: DELETE xmax: 752, off: 1, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0 FPW
 rmgr: Heap        len (rec/tot):     54/    54, tx:        752, lsn: 0/04000450, prev 0/04000168, desc: DELETE xmax: 752, off: 2, infobits: [KEYS_UPDATED], flags: 0x00, blkref #0: rel 1663/16384/16386 blk 0
@@ -295,6 +296,9 @@ rmgr: Standby     len (rec/tot):     50/    50, tx:          0, lsn: 0/040006A8,
 rmgr: XLOG        len (rec/tot):     24/    24, tx:          0, lsn: 0/040006E0, prev 0/040006A8, desc: SWITCH
 
 
+-- Sabiendo el XID podemos ver todo lo que hizo esa transacción
+$PGBIN17/pg_waldump /tmp/000000010000000000000004  --xid=752
+
 
 ------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------ EXTRA [ REVISAR CUANDO SE HIZO EL ULTIMO CHECKPOINT  ] ---------------------------------------------------
@@ -305,6 +309,29 @@ psql -X -p 5598 -d test -c "SELECT pg_walfile_name(checkpoint_lsn),checkpoint_ls
 --------------------------+----------------+--------------------------+-----------+------------------------
  000000010000000000000005 | 0/500DCC8      | 000000010000000000000005 | 0/500DC38 | 2025-12-24 17:57:25-07
 (1 row)
+
+
+
+------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------ EXTRA [ OPCION #4 EXTENSION pg_walinspect  ] -------------------------------------- 
+-----------------------------------------------------------------------------------------------------------------------------
+-- disponible desde PostgreSQL 15 y mejorada en la 17, nos permite inspeccionar los wal sin usar pg_waldump
+-- Conéctate como superusuario (o un rol con permisos adecuados).
+CREATE EXTENSION IF NOT EXISTS pg_walinspect;
+
+-- Verifica que esté cargada:
+SELECT name, installed_version FROM pg_available_extensions WHERE name = 'pg_walinspect';
+
+-- Buscar información 
+SELECT 
+    start_lsn, 
+    xid, 
+    resource_manager AS rmgr, 
+    description
+FROM pg_get_wal_records_info('0/04000000', '0/05000000') -- ('inicio', 'fin')
+WHERE xid = 752 
+  AND description LIKE '%16386%'
+  AND description LIKE '%DELETE%';
 
 
 ------------------ Borrar los wal de la temporales 
