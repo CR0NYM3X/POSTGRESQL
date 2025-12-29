@@ -62,3 +62,7 @@ Reducir el riesgo de:
 - Configuración de parámetros.
 - Buenas practicas.
 - Tecnicas de seguridad.
+
+```bash
+https://ozwizard.medium.com/20-postgresql-security-tips-9da03310dd74
+```
