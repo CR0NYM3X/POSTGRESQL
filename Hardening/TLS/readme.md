@@ -185,7 +185,7 @@ https://gist.github.com/achesco/b893fb55b90651cf5f4cc803b78e19fd
 GRANT https://www.postgresql.org/docs/current/sql-grant.html
 
 
-
+https://www.highgo.ca/2023/03/10/tls-setup-on-postgres-15-common-practice/
 https://www.highgo.ca/2024/01/06/how-to-setup-tls-connection-for-postgresql/
 https://access.redhat.com/documentation/fr-fr/red_hat_enterprise_linux/9/html/configuring_and_using_database_servers/proc_configuring-tls-encryption-on-a-postgresql-server_using-postgresql
 https://www.cherryservers.com/blog/how-to-configure-ssl-on-postgresql
