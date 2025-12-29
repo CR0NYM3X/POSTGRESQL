@@ -375,6 +375,105 @@ docker exec -it postgres ls -l /var/lib/postgresql/data
 
 ---
 
+
+
+
+# Asignación de recursos
+
+### 1. ¿Cómo se asignan los recursos?
+
+Esta es una de las preguntas más importantes para llevar Docker a producción. Por defecto, **un contenedor no tiene límites de recursos**: puede consumir toda la memoria RAM y todo el CPU que el sistema operativo le permita, lo cual es peligroso porque un error en la base de datos podría "congelar" todo tu servidor.
+
+Los recursos se asignan en la **capa de ejecución** (Docker Run o Docker Compose), no dentro del Dockerfile.
+ 
+
+Tienes dos formas principales de hacerlo, dependiendo de cómo estés levantando tu contenedor.
+
+#### A. Usando `docker run` (Línea de comandos)
+
+Si lanzas el contenedor manualmente, usas banderas específicas:
+
+* **Memoria:** `--memory="2g"` (Límite máximo de 2GB).
+* **CPU:** `--cpus="1.5"` (Le permite usar el equivalente a un núcleo y medio de tu procesador).
+
+#### B. Usando `docker-compose.yml` (Recomendado)
+
+Es mucho más ordenado porque queda documentado en el archivo. Se utiliza la sección `deploy`.
+
+
+
+### 2. Ejemplo Completo: Configuración de Recursos
+
+Aquí tienes cómo se vería tu archivo de servicios con límites de hardware. Es vital que el límite de Docker sea **siempre mayor** a lo que configuraste en tu `shared_buffers`.
+
+```yaml
+services:
+  db-personalizada:
+    image: mi-postgres-optimizada:v1
+    container_name: postgres-prod
+    environment:
+      POSTGRES_PASSWORD: password123
+    
+    #  ASIGNACIÓN DE RECURSOS 
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'        # Máximo 2 núcleos de CPU
+          memory: 2048M      # Máximo 2GB de RAM (Hard Limit)
+        reservations:
+          cpus: '0.5'        # Reserva mínima de medio núcleo
+          memory: 1024M      # Reserva mínima de 1GB de RAM (Soft Limit)
+    
+    ports:
+      - "6432:5432"
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+
+volumes:
+  pgdata_prod:
+
+```
+
+
+
+### 3. Conceptos Clave: Limits vs. Reservations
+
+Para entender bien qué estás configurando, debes diferenciar estos dos términos:
+
+| Término | Significado | ¿Qué pasa si se supera? |
+| --- | --- | --- |
+| **Limits (Límites)** | Es el techo máximo. El contenedor no puede pasar de ahí. | Si Postgres intenta usar más RAM de la permitida, Docker lo "mata" (Error OOM Killer). |
+| **Reservations (Reservas)** | Es lo que Docker garantiza que el contenedor tendrá siempre disponible. | Si el sistema tiene poca RAM, Docker priorizará darle este mínimo a tu base de datos. |
+
+
+
+### 4. La relación CRÍTICA con `postgresql.conf`
+
+Aquí es donde muchos cometen errores. Hay una jerarquía que debes respetar:
+
+1. **RAM Total del Servidor:** (Ejemplo: 8GB)
+2. **Límite de Docker (`limits.memory`):** Debe ser menor a la RAM del servidor (Ejemplo: 4GB).
+3. **Configuración de Postgres (`shared_buffers`):** Debe ser menor al límite de Docker (Ejemplo: 1GB).
+
+> **Peligro:** Si en tu `custom-postgres.conf` pusiste `shared_buffers = 2GB`, pero en tu Docker Compose pusiste un límite de `memory: 1GB`, el contenedor **nunca va a arrancar** o se cerrará inmediatamente porque Postgres intentará pedir memoria que Docker le tiene prohibida.
+
+
+
+### 5. ¿Cómo verificar si se están respetando los límites?
+
+Una vez que tu contenedor esté corriendo, puedes ver en tiempo real cuánto CPU y RAM está consumiendo con este comando:
+
+```bash
+docker stats
+
+```
+
+Este comando te mostrará una tabla con el porcentaje de uso de CPU, la memoria usada vs el límite asignado y el uso de red.
+
+**¿Quieres que te ayude a calcular los valores ideales de CPU y RAM para tu servidor actual basándonos en cuánta memoria total tienes disponible?** Solo dime cuánta RAM tiene tu máquina.
+
+---
+
 # Comandos mas usados 
 ```bash
 ### 🔹 Gestión de imágenes
