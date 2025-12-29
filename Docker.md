@@ -128,6 +128,11 @@ Imagina que tienes una aplicación que funciona perfectamente en tu computadora,
 
 ### 🐘 **Levantar PostgreSQL en Docker**
 
+# Descargar la imagen de PostgreSQL
+```bash
+docker pull postgres
+```
+
 #### 1. **Crear un contenedor con PostgreSQL**
 Puedes usar el siguiente comando para levantar PostgreSQL rápidamente:
 
@@ -139,6 +144,8 @@ docker run --name postgres-db \
   -p 5432:5432 \
   -v pgdata:/var/lib/postgresql/data \
   -d postgres:15
+
+5432:5432 -> (Derecha): Es la "puerta" interna del contenedor. | (Izquierda): Es la "ventana" que tú abres en tu computadora real para poder entrar
 ```
  
 # Crear contenedor de PostgreSQL temporal  
