@@ -231,6 +231,62 @@ Si ya probaste que `pgmetrics` te sirve y lo quieres para siempre (incluso si bo
 
 ---
 
+# Comandos mas usados 
+```bash
+### 🔹 Gestión de imágenes
+
+   docker pull <imagen> 		→ Descarga una imagen desde Docker Hub.
+   docker build -t <nombre>:<tag>  		→ Construye una imagen desde un Dockerfile.
+   docker images 		→ Lista todas las imágenes locales.
+   docker rmi <imagen> 		→ Elimina una imagen.
+	
+
+
+### 🔹 Gestión de contenedores
+
+   docker run -d --name <nombre> <imagen> 		→ Crea y ejecuta un contenedor en segundo plano.
+   docker ps 		→ Lista contenedores en ejecución.
+   docker ps -a 		→ Lista todos los contenedores (incluyendo detenidos).
+   docker stop <contenedor> 		→ Detiene un contenedor.
+   docker start <contenedor> 		→ Inicia un contenedor detenido.
+   docker restart <contenedor> 		→ Reinicia un contenedor.
+   docker rm <contenedor> 		→ Elimina un contenedor.
+
+
+
+### 🔹 Acceso y ejecución dentro del contenedor
+
+   docker exec -it <contenedor> bash 		→ Accede a la terminal del contenedor.
+   docker exec <contenedor> <comando> 		→ Ejecuta un comando dentro del contenedor.
+   docker attach <contenedor> 		→ Se conecta a la sesión principal del contenedor.
+
+
+
+### 🔹 Logs y monitoreo
+
+   docker logs <contenedor> 		→ Muestra los logs del contenedor.
+   docker stats 		→ Muestra estadísticas de uso (CPU, memoria, etc.).
+   docker inspect <contenedor> 		→ Información detallada del contenedor.
+
+
+
+### 🔹 Volúmenes y redes
+
+   docker volume ls 		→ Lista volúmenes.
+   docker network ls 		→ Lista redes.
+   docker network create <nombre> 		→ Crea una red personalizada.
+
+
+
+### 🔹 Otros útiles
+
+   docker cp <origen> <contenedor>:<ruta> 		→ Copia archivos al contenedor.
+   docker commit <contenedor> <imagen> 		→ Crea una imagen desde un contenedor modificado.
+   docker system prune 		→ Limpia recursos no usados (contenedores, imágenes, redes).
+
+ 
+
+```
 
 
 # Links 
