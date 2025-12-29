@@ -1078,6 +1078,14 @@ netstat -tulnp | grep -E '1514|5601|9200'
 
  ```
 
+---
+
+## recover your postgres role
+```
+-- https://fluca1978.github.io/2019/06/27/PostgreSQLSingleMode.html
+/usr/pgsql-15/bin/postgres  --single  -D $PGDATA15 -F -c exit_on_error=true
+```
+
 ## referencias
 ```
 https://momjian.us/main/writings/pgsql/securing.pdf
