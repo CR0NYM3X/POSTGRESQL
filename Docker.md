@@ -434,9 +434,9 @@ docker exec -it postgres ls -l /var/lib/postgresql/data
 
 # Links 
 ```sql
-https://medium.com/@basit26374/how-to-run-postgresql-in-docker-container-with-volume-bound-c141f94e4c5a
-https://medium.com/@asuarezaceves/initializing-a-postgresql-database-with-a-dataset-using-docker-compose-a-step-by-step-guide-3feebd5b1545
-https://sadeesha.medium.com/building-a-postgresql-replication-cluster-with-docker-compose-45406078de72
+Running PostgreSQL in Docker Container with Volume -> https://medium.com/@basit26374/how-to-run-postgresql-in-docker-container-with-volume-bound-c141f94e4c5a
+Initializing a PostgreSQL Database with a Dataset using Docker Compose: A Step-by-step Guide -> https://medium.com/@asuarezaceves/initializing-a-postgresql-database-with-a-dataset-using-docker-compose-a-step-by-step-guide-3feebd5b1545
+Building a PostgreSQL Replication Cluster with Docker Compose -> https://sadeesha.medium.com/building-a-postgresql-replication-cluster-with-docker-compose-45406078de72
 
 https://medium.com/@okpo65/mastering-postgresql-with-docker-a-step-by-step-tutorial-caef03ab6ae9
 https://medium.com/@jp_79222/postgresql-y-docker-en-un-ambiente-de-desarrollo-local-d04ff1ab7271
