@@ -65,4 +65,8 @@ Reducir el riesgo de:
 
 ```bash
 https://ozwizard.medium.com/20-postgresql-security-tips-9da03310dd74
+
+PostgreSQL Deep Dive: PostgreSQL Defaults and Impact on Security - Part 1 -> https://www.crunchydata.com/blog/postgresql-defaults-and-impact-on-security-part-1
+PostgreSQL Deep Dive: PostgreSQL Defaults and Impact on Security - Part 2 -> https://www.crunchydata.com/blog/postgresql-defaults-and-impact-on-security-part-2
+
 ```
