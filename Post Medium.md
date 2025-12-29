@@ -55,6 +55,11 @@ Migración de bases de datos grandes de Azure PostgreSQL -> https://medium.com/@
 
 #  Semantica 
 ```
+PostgreSQL Deep Dive: Key Components and Query Flow (Part 1) -> https://medium.com/@salmanhoque/postgresql-deep-dive-key-components-and-query-flow-part-1-6e92c33eb08b
+PostgreSQL Deep Dive: The Anatomy of Disk, File and Page Layout (Part 2)  -> https://levelup.gitconnected.com/postgresql-deep-dive-the-anatomy-of-disk-file-and-page-layout-part-2-9b6fb7ede383
+PostgreSQL Deep Dive: Index Internals, B+ Tree, and Query Speed (Part 3) -> https://levelup.gitconnected.com/postgresql-deep-dive-index-internals-b-tree-and-query-speed-part-3-b086ac425b87
+PostgreSQL Deep Dive: Six Stages That Transform SQL Text into Query Results (Part 4) -> https://levelup.gitconnected.com/postgresql-deep-dive-six-stages-that-transform-sql-text-into-query-results-part-4-7b6b4e28987a
+
 Comprensión de la gestión de transacciones de PostgreSQL, parte 1  -> https://medium.com/@nikolaykudinov/understanding-postgresql-transaction-management-part-1-9420d67f5525
 
 Dirty Pages -> https://stormatics.medium.com/what-are-dirty-pages-in-postgresql-f292fd9817f5
