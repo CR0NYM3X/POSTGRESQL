@@ -434,6 +434,9 @@ docker exec -it postgres ls -l /var/lib/postgresql/data
 
 # Links 
 ```sql
+https://medium.com/@basit26374/how-to-run-postgresql-in-docker-container-with-volume-bound-c141f94e4c5a
+https://medium.com/@asuarezaceves/initializing-a-postgresql-database-with-a-dataset-using-docker-compose-a-step-by-step-guide-3feebd5b1545
+https://sadeesha.medium.com/building-a-postgresql-replication-cluster-with-docker-compose-45406078de72
 
 https://medium.com/@okpo65/mastering-postgresql-with-docker-a-step-by-step-tutorial-caef03ab6ae9
 https://medium.com/@jp_79222/postgresql-y-docker-en-un-ambiente-de-desarrollo-local-d04ff1ab7271
@@ -448,12 +451,9 @@ https://medium.com/@jesusgilberdugo/docker-postgresql-dbeaver-cb77e1f3167c
 https://medium.com/@agusmahari/docker-how-to-install-postgresql-using-docker-compose-d646c793f216
 https://medium.com/@analyticscodeexplained/why-run-postgresql-in-docker-containers-4dd0c2186d08
 https://medium.com/@mateus2050/setting-up-postgresql-and-pgadmin-using-docker-on-macos-66cd7d275328
-https://medium.com/@basit26374/how-to-run-postgresql-in-docker-container-with-volume-bound-c141f94e4c5a
 https://medium.com/@yahyaali.se/setting-up-postgres-with-docker-desktop-9e4c2e77cd7c
 https://dextrop.medium.com/setting-up-postgresql-on-docker-43905c8a4d13
-https://medium.com/@asuarezaceves/initializing-a-postgresql-database-with-a-dataset-using-docker-compose-a-step-by-step-guide-3feebd5b1545
 https://medium.com/@maxhoustonramirezmartel/c%C3%B3mo-usar-postgres-con-docker-3dae8042ee45
-https://sadeesha.medium.com/building-a-postgresql-replication-cluster-with-docker-compose-45406078de72
 https://brokenrice.medium.com/how-to-run-postgres-in-docker-a9ec0192a44c
 
 
