@@ -78,14 +78,36 @@ Imagina que tienes una aplicación que funciona perfectamente en tu computadora,
 5. **Instalar Docker:**
    ```bash
    sudo apt update
-   sudo apt install docker-ce docker-ce-cli containerd.io -y
+   sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
    ```
 
 6. **Verificar instalación:**
    ```bash
+   sudo systemctl enable docket
+   sudo systemctl start docket
+   
    sudo docker --version
+   sudo compose version
    ```
 
+7. **permiso a tu usuario actual de ejecutar comandos de Docker sin sudo**
+   ```bash
+   sudo usermod -aG docker $USER
+
+   ############ Desglose del comando:  ############ 
+    sudo: Ejecuta el comando con privilegios de administrador.
+    usermod: Es la herramienta para modificar usoarios.
+    -aG:
+    -a (append): Significa "añadir". Es vital porque si lo olvidas, podrías borrar a tu usuario de otros grupos importantes.
+    -G (groups): Indica que vas a trabajar con grupos.
+   
+   
+    docker: Es el nombre del grupo al que te quieres unir.
+    $USER: Es una variable de entorno que se traduce automáticamente al nombre de tu usuario actual (por ejemplo, "juan" o "admin").
+
+   ```   
+ ⚠️ Nota importante de seguridad 
+ Debes saber que estar en el grupo docker es técnicamente equivalente a tener privilegios de root (administrador total). Esto se debe a que un usuario en este grupo puede crear contenedores que tengan acceso a archivos sensibles de tu sistema operativo. Solo dale este permiso a usuarios en los que confíes plenamente.
  
 ### 🔐 **Recomendaciones de seguridad**
 - Usa **Azure Defender for Cloud** para monitorear contenedores.
