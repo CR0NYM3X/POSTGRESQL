@@ -785,5 +785,5 @@ https://medium.com/@nikolaykudinov/understanding-postgresql-transaction-manageme
   https://tomasz-gintowt.medium.com/postgresql-extensions-pg-visibility-876c57e8aa81
   https://www.postgresql.org/docs/current/pgvisibility.html
 
-```sql
+```
  
