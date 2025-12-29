@@ -434,10 +434,28 @@ docker exec -it postgres ls -l /var/lib/postgresql/data
 
 # Links 
 ```sql
+-------------------- POSTGRESQL HA DOCKER --------------------
 Running PostgreSQL in Docker Container with Volume -> https://medium.com/@basit26374/how-to-run-postgresql-in-docker-container-with-volume-bound-c141f94e4c5a
 Initializing a PostgreSQL Database with a Dataset using Docker Compose: A Step-by-step Guide -> https://medium.com/@asuarezaceves/initializing-a-postgresql-database-with-a-dataset-using-docker-compose-a-step-by-step-guide-3feebd5b1545
 Building a PostgreSQL Replication Cluster with Docker Compose -> https://sadeesha.medium.com/building-a-postgresql-replication-cluster-with-docker-compose-45406078de72
 
+-------------------- REPMGR DOCKER --------------------
+PostgreSQL High Availability and automatic failover using repmgr -> https://medium.com/@joao_o/postgresql-high-availability-and-automatic-failover-using-repmgr-5f505dc6913a
+
+-------------------- PATRONI DOCKER --------------------
+https://medium.com/@exclusivetech.ch/setting-up-an-etcd-patroni-postgresql-and-haproxy-cluster-0ed2d55160ec
+https://medium.com/@nicola.vitaly/setting-up-high-availability-postgresql-cluster-using-patroni-pgbouncer-docker-consul-and-95c70445b1b1
+
+-------------------- PGBOUNCER DOCKER --------------------
+Setup Docker Compose for Postgres and PgBouncer -> https://muhammadtriwibowo.medium.com/install-docker-compose-postgres-and-pgbouncer-8fa2c337a0e3
+Connection Pooling for Postgres using PG Bouncer -> https://medium.com/@pablo.lopez.santori/connection-pooling-for-postgres-using-pg-bouncer-175bc1607db2
+PgBouncer in 15 Minutes: Kill Idle Connections, Boost Throughput -> https://medium.com/@rohansodha10/pgbouncer-in-15-minutes-kill-idle-connections-boost-throughput-a6220218648f
+
+-------------------- PGPOOL 2 DOCKER --------------------
+https://medium.com/@tirthraj2004/introduction-to-database-clustering-using-postgresql-docker-and-pgpool-ii-ac2a7bf96a5f
+
+
+-------------------- EXAMPLES DOCKER --------------------
 https://medium.com/@okpo65/mastering-postgresql-with-docker-a-step-by-step-tutorial-caef03ab6ae9
 https://medium.com/@jp_79222/postgresql-y-docker-en-un-ambiente-de-desarrollo-local-d04ff1ab7271
 https://medium.com/@tantrum5535/c%C3%B3mo-crear-un-backup-en-postgresql-dentro-de-un-contenedor-docker-13031f1767dd
