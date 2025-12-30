@@ -946,6 +946,34 @@ FROM pg_inherits i
 	INNER JOIN pg_namespace nrel ON crel.relnamespace = nrel.oid 
 ORDER BY npar.nspname   ;
 
+--------
+
+
+-- Lista tablas particionadas y sus particiones (PostgreSQL 10+)
+SELECT
+  parent_ns.nspname      AS esquema_padre,
+  parent_cls.relname     AS tabla_padre,
+  ptype.partstrat        AS estrategia_particion,  -- 'r' = RANGE, 'l' = LIST, 'h' = HASH
+  child_ns.nspname       AS esquema_hijo,
+  child_cls.relname      AS particion_hija,
+  pg_get_expr(child_cls.relpartbound, child_cls.oid, true) AS limites_particion -- ej. FOR VALUES FROM (...) TO (...)
+FROM pg_inherits inh
+JOIN pg_class parent_cls
+  ON parent_cls.oid = inh.inhparent
+JOIN pg_class child_cls
+  ON child_cls.oid = inh.inhrelid
+JOIN pg_namespace parent_ns
+  ON parent_ns.oid = parent_cls.relnamespace
+JOIN pg_namespace child_ns
+  ON child_ns.oid = child_cls.relnamespace
+JOIN pg_partitioned_table ptype
+  ON ptype.partrelid = parent_cls.oid
+WHERE parent_cls.relkind = 'p'  -- 'p' = tabla particionada (particioned table)
+  AND child_cls.relkind  = 'r'  -- 'r' = tabla normal (cada partición física)
+ORDER BY
+  parent_ns.nspname, parent_cls.relname, child_ns.nspname, child_cls.relname;
+
+
 ```
 
 ### Explicación
