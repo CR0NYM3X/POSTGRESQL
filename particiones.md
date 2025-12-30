@@ -909,38 +909,20 @@ postgres@postgres# explain analyze select * from users;
 ```
 
 
-### Saber el rango de fechas de cada particion
-```sql
-SELECT
-	b.nspname as parent_schema ,
-    p.relname AS parent_table,
-    pg_get_expr(c.relpartbound, c.oid) AS partition_range 
-FROM
-    pg_class c
-inner JOIN
-    pg_inherits i ON c.oid = i.inhrelid
-JOIN
-    pg_class p ON i.inhparent = p.oid
-INNER JOIN 
-	pg_namespace as b ON c.relnamespace = b.oid
-
-WHERE
-    c.relpartbound is not null;
-
-```
-
 
 ### Saber el rango de fechas de cada particion
 ```sql
 
 SELECT 
+	case when cpar.relkind = 'p' then 'partition' else 'inherits' end as type_table,
 	current_database() as db_name,
 	npar.nspname AS parent_schema,
 	cpar.relname AS parent_table,
 	nrel.nspname AS child_schema,
-	crel.relname AS child_table  
+	crel.relname AS child_table  ,
+	pg_get_expr(crel.relpartbound, crel.oid) AS partition_range 
 FROM pg_inherits i
-	INNER JOIN pg_class cpar ON i.inhparent = cpar.oid    and cpar.relkind = 'p'
+	INNER JOIN pg_class cpar ON i.inhparent = cpar.oid    and cpar.relkind in( 'p' ,'r' )
 	INNER JOIN pg_namespace npar ON cpar.relnamespace = npar.oid
 	INNER JOIN pg_class crel ON i.inhrelid = crel.oid   and  crel.relkind = 'r'
 	INNER JOIN pg_namespace nrel ON crel.relnamespace = nrel.oid 
