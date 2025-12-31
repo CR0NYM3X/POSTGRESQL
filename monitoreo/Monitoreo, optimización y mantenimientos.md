@@ -1628,6 +1628,7 @@ https://postgresconf.org/system/events/document/000/00/3/Troubleshoot_PG_Perf-07
 
 ### links
 ```
+https://dev.to/mateus-rauli/how-fsync-and-synchronouscommit-affect-postgresql-performance-22di
 https://www.postgresql.org/docs/current/performance-tips.html
  https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server
 ```
