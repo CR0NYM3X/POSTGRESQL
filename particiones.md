@@ -969,10 +969,298 @@ ORDER BY
 
 
 
+---
+
+# Herencia Ejemplo 1
+Ejemplo **completo y funcional** usando **herencia clásica** en PostgreSQL, donde:
+
+*   Creamos la **tabla padre** (`ventas`)
+*   Creamos **tablas hijas** por **mes** que **heredan** de la padre
+*   Agregamos **CHECK constraints** en cada hija para delimitar rangos
+*   Mostramos cómo **consultar desde la tabla padre** y que incluya las hijas
+*   (Opcional pero recomendado) Creamos un **trigger** en la padre para **enrutar INSERT** a la hija correcta
+
+> **Compatibilidad**: Este enfoque funciona en PostgreSQL 9.x–16.  
+> **Nota**: En herencia clásica, el enrutamiento de INSERTs **no es automático**, por eso incluimos el trigger. En particionamiento declarativo (PG10+), el enrutamiento es nativo.
 
 
 
+## 1) Preparar esquema y tabla padre
 
+```sql
+-- Opcional: crear un esquema para el ejemplo
+CREATE SCHEMA IF NOT EXISTS demo;
+
+-- Tabla padre: ventas
+CREATE TABLE IF NOT EXISTS demo.ventas (
+  id          bigserial PRIMARY KEY,
+  fecha       date       NOT NULL,
+  cliente_id  int        NOT NULL,
+  producto_id int        NOT NULL,
+  cantidad    int        NOT NULL,
+  total       numeric(12,2) NOT NULL
+);
+```
+
+
+
+## 2) Crear tablas hijas que **heredan** de la padre (por mes)
+
+Crearemos tres particiones por **RANGE** de fechas (enero, febrero y marzo 2025). Cada hija hereda columnas e índices de la padre, y tiene un **CHECK** que define su rango.
+
+```sql
+-- Enero 2025
+CREATE TABLE IF NOT EXISTS demo.ventas_202501 (
+  CONSTRAINT ventas_202501_fecha_chk
+  CHECK (fecha >= DATE '2025-01-01' AND fecha < DATE '2025-02-01')
+) INHERITS (demo.ventas);
+
+-- Febrero 2025
+CREATE TABLE IF NOT EXISTS demo.ventas_202502 (
+  CONSTRAINT ventas_202502_fecha_chk
+  CHECK (fecha >= DATE '2025-02-01' AND fecha < DATE '2025-03-01')
+) INHERITS (demo.ventas);
+
+-- Marzo 2025
+CREATE TABLE IF NOT EXISTS demo.ventas_202503 (
+  CONSTRAINT ventas_202503_fecha_chk
+  CHECK (fecha >= DATE '2025-03-01' AND fecha < DATE '2025-04-01')
+) INHERITS (demo.ventas);
+```
+
+> **Sugerencia**: Crea índices adecuados en las hijas (por ejemplo, índice sobre `fecha`) para acelerar búsquedas:
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_ventas_202501_fecha ON demo.ventas_202501 (fecha);
+CREATE INDEX IF NOT EXISTS idx_ventas_202502_fecha ON demo.ventas_202502 (fecha);
+CREATE INDEX IF NOT EXISTS idx_ventas_202503_fecha ON demo.ventas_202503 (fecha);
+```
+
+
+
+## 3) (Opcional recomendado) Trigger de **enrutamiento de INSERT** en la tabla padre
+
+Como la herencia **no enruta** insert automáticamente, creamos un trigger que detecta el mes de `NEW.fecha` y reenvía el insert a la hija correcta. Si no hay hija para ese rango, lanzamos error.
+
+```sql
+-- Función del trigger
+CREATE OR REPLACE FUNCTION demo.ruta_ventas_por_fecha()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.fecha >= DATE '2025-01-01' AND NEW.fecha < DATE '2025-02-01' THEN
+    INSERT INTO demo.ventas_202501 VALUES (NEW.*);
+  ELSIF NEW.fecha >= DATE '2025-02-01' AND NEW.fecha < DATE '2025-03-01' THEN
+    INSERT INTO demo.ventas_202502 VALUES (NEW.*);
+  ELSIF NEW.fecha >= DATE '2025-03-01' AND NEW.fecha < DATE '2025-04-01' THEN
+    INSERT INTO demo.ventas_202503 VALUES (NEW.*);
+  ELSE
+    RAISE EXCEPTION 'No existe partición hija para la fecha: %', NEW.fecha
+      USING ERRCODE = 'invalid_datetime_format';
+  END IF;
+
+  -- Retorna NULL para evitar insertar en la tabla padre
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger BEFORE INSERT en la tabla padre
+CREATE TRIGGER trg_ruta_ventas_por_fecha
+BEFORE INSERT ON demo.ventas
+FOR EACH ROW EXECUTE FUNCTION demo.ruta_ventas_por_fecha();
+```
+
+> Si prefieres no usar trigger, puedes **insertar directamente** en la hija correspondiente. Pero con el trigger puedes insertar en la **padre** y queda más transparente para las apps.
+
+
+
+## 4) Insertar datos de prueba
+
+```sql
+-- Estos INSERTs se hacen en la tabla padre,
+-- pero el trigger los enrutará a la hija correcta
+INSERT INTO demo.ventas (fecha, cliente_id, producto_id, cantidad, total)
+VALUES
+  (DATE '2025-01-15', 101, 9001, 2, 199.98),
+  (DATE '2025-02-02', 102, 9002, 1, 120.00),
+  (DATE '2025-03-20', 103, 9003, 5, 499.95);
+```
+
+
+
+## 5) Consultas desde la **tabla padre** e **inclusión de hijas**
+
+```sql
+-- 5.1. Consultar todo desde el padre (INCLUYE hijas)
+SELECT * FROM demo.ventas ORDER BY fecha;
+
+-- 5.2. Consultar solo la tabla padre (EXCLUYE hijas)
+SELECT * FROM ONLY demo.ventas ORDER BY fecha;
+
+-- 5.3. Filtrar un rango (el planner debería “prunear” hijas fuera de rango)
+EXPLAIN SELECT * FROM demo.ventas
+WHERE fecha >= DATE '2025-02-01' AND fecha < DATE '2025-03-01';
+```
+
+> **Optimización importante (herencia)**: habilita el pruning por `CHECK` con:
+
+```sql
+SHOW constraint_exclusion;         -- ideal: 'partition' (o 'on')
+-- Si está 'off', considera:
+SET constraint_exclusion = 'partition';  -- por sesión
+-- o en postgresql.conf:
+-- constraint_exclusion = partition
+```
+
+
+
+## 6) Validación rápida de la estructura
+
+### Ver las relaciones padre ↔ hijas (herencia)
+
+```sql
+SELECT
+  parent_ns.nspname AS esquema_padre,
+  parent.relname    AS tabla_padre,
+  child_ns.nspname  AS esquema_hija,
+  child.relname     AS tabla_hija
+FROM pg_inherits inh
+JOIN pg_class parent ON parent.oid = inh.inhparent
+JOIN pg_class child  ON child.oid  = inh.inhrelid
+JOIN pg_namespace parent_ns ON parent_ns.oid = parent.relnamespace
+JOIN pg_namespace child_ns  ON child_ns.oid  = child.relnamespace
+WHERE parent_ns.nspname = 'demo' AND parent.relname = 'ventas'
+ORDER BY child.relname;
+```
+
+### Ver los CHECKs de las hijas (delimitan rangos)
+
+```sql
+SELECT
+  child.relname AS particion_hija,
+  con.conname   AS nombre_constraint,
+  pg_get_constraintdef(con.oid) AS definicion
+FROM pg_inherits inh
+JOIN pg_class child ON child.oid = inh.inhrelid
+JOIN pg_constraint con ON con.conrelid = child.oid AND con.contype = 'c'
+WHERE inh.inhparent = (SELECT oid FROM pg_class WHERE relname = 'ventas'
+                       AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'demo'))
+ORDER BY child.relname;
+```
+
+
+
+## 7) Notas y buenas prácticas
+
+*   En herencia, **los índices no son “globales”**; debes crear índices en **cada hija**.
+*   Si planeas **muchos meses/años**, automatiza la creación de hijas y del trigger (o usa **particionamiento declarativo**).
+*   Considera **vacío/autovacuum** y **mantenimiento** por tabla hija para controlar el bloat.
+*   Si en el futuro migras a **particionamiento declarativo**, podrás:
+    *   Crear `demo.ventas` con `PARTITION BY RANGE (fecha)`.
+    *   `ATTACH PARTITION` a tablas existentes si sus `CHECK` coinciden exactamente con los bounds.
+    *   Conseguir **enrutamiento automático** y **pruning** más eficiente.
+
+
+
+## 8) Limpieza (si quieres repetir la demo)
+
+```sql
+DROP SCHEMA IF EXISTS demo CASCADE;
+```
+
+---
+
+# Herencia Ejemplo 2 
+
+La herencia de tablas en PostgreSQL permite que una tabla (hija) herede todas las columnas de otra tabla (padre). Es una herramienta útil para modelar datos que comparten atributos comunes pero tienen especializaciones únicas.
+
+Aquí tienes un ejemplo práctico basado en un sistema de gestión escolar:
+
+ 
+
+## 1. Crear la tabla padre
+
+Primero, definimos la tabla base que contiene los campos comunes a todas las personas en la escuela.
+
+```sql
+CREATE TABLE personas (
+    id serial PRIMARY KEY,
+    nombre text NOT NULL,
+    apellido text NOT NULL,
+    email text UNIQUE
+);
+
+```
+
+## 2. Crear las tablas hijas
+
+Utilizamos la cláusula **`INHERITS`** para indicar de qué tabla deben heredar los atributos.
+
+```sql
+-- Tabla para estudiantes (hereda de personas)
+CREATE TABLE estudiantes (
+    matricula text,
+    carrera text
+) INHERITS (personas);
+
+-- Tabla para profesores (hereda de personas)
+CREATE TABLE profesores (
+    especialidad text,
+    salario numeric(10, 2)
+) INHERITS (personas);
+
+```
+
+## 3. Insertar datos
+
+Podemos insertar datos directamente en las tablas hijas. Estos datos aparecerán automáticamente cuando consultemos la tabla padre.
+
+```sql
+-- Insertar un profesor
+INSERT INTO profesores (nombre, apellido, email, especialidad, salario)
+VALUES ('Elena', 'García', 'elena.g@escuela.com', 'Matemáticas', 3500.00);
+
+-- Insertar un estudiante
+INSERT INTO estudiantes (nombre, apellido, email, matricula, carrera)
+VALUES ('Julián', 'Pérez', 'j.perez@escuela.com', '2023-001', 'Ingeniería');
+
+```
+
+## 4. Consultar la jerarquía
+
+Aquí es donde se ve el poder de la herencia:
+
+### Consultar todo (Padre e Hijos)
+
+Si haces un `SELECT` a la tabla padre, verás los registros de todas las tablas que heredan de ella.
+
+```sql
+SELECT * FROM personas;
+
+```
+
+*Resultado: Verás tanto a Elena como a Julián, pero solo las columnas que pertenecen a `personas`.*
+
+### Consultar solo la tabla padre
+
+Si quieres ver solo los registros que están físicamente en la tabla padre (y excluir a los hijos), usas la palabra clave **`ONLY`**.
+
+```sql
+SELECT * FROM ONLY personas;
+
+```
+
+*Resultado: Tabla vacía (a menos que hayas insertado a alguien directamente en `personas`).*
+
+
+
+### Consideraciones importantes
+
+* **IDs Únicos:** Las restricciones de integridad (como `PRIMARY KEY` o `UNIQUE`) de la tabla padre **no se aplican automáticamente** a las tablas hijas. Por ejemplo, podrías tener un ID `1` en `estudiantes` y un ID `1` en `profesores`.
+* **Indices:** Los índices creados en la tabla padre no se propagan a las hijas. Debes crearlos manualmente en cada tabla.
+* **Uso Moderno:** Hoy en día, para grandes volúmenes de datos, se prefiere el **Particionamiento Declarativo** sobre la herencia simple, aunque la herencia sigue siendo útil para modelos orientados a objetos.
+
+
+---
 
 # Ensuring Unique IDs in Partitioned PostgreSQL Tables 
 ```
