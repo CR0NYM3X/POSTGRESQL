@@ -796,3 +796,72 @@ END;
  
 ```
 
+----
+# Duplicar tabla 
+Aquí tienes un ejemplo completo en PostgreSQL donde:
+
+1.  **Creamos una tabla original con datos**.
+2.  **Duplicamos la tabla con toda su estructura (índices, restricciones, defaults)**.
+3.  **Copiamos los datos a la nueva tabla**.
+
+***
+
+###  Paso 1: Crear la tabla original con datos
+
+```sql
+-- Crear tabla original
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    correo VARCHAR(150) UNIQUE,
+    fecha_registro DATE DEFAULT CURRENT_DATE
+);
+
+-- Insertar datos de ejemplo
+INSERT INTO clientes (nombre, correo)
+VALUES
+('Juan Pérez', 'juan@example.com'),
+('Ana López', 'ana@example.com'),
+('Carlos Ruiz', 'carlos@example.com');
+```
+
+***
+
+### Paso 2: Duplicar la estructura completa (incluyendo índices y restricciones)
+
+```sql
+CREATE TABLE clientes_backup (LIKE clientes INCLUDING ALL);
+```
+
+Esto crea `clientes_backup` con:
+
+*   Las mismas columnas.
+*   Índices (incluye el `PRIMARY KEY` y el `UNIQUE`).
+*   Restricciones (`NOT NULL`).
+*   Defaults (`fecha_registro` con `CURRENT_DATE`).
+
+***
+
+###  Paso 3: Copiar los datos
+
+```sql
+INSERT INTO clientes_backup SELECT * FROM clientes;
+```
+
+Ahora `clientes_backup` tiene la misma estructura y los mismos datos que `clientes`.
+
+ 
+### 🔍 Verificación rápida
+
+```sql
+SELECT * FROM clientes_backup;
+```
+
+ 
+
+💡 **Tip avanzado:** Si quieres que esto sea **automático y parametrizable**, puedo crearte una **función en PL/pgSQL** que reciba:
+
+*   Nombre de la tabla original.
+*   Nombre de la tabla destino.
+*   Opción para copiar solo estructura o estructura + datos.
+ 
