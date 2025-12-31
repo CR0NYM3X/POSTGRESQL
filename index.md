@@ -1,6 +1,12 @@
 
-https://www.postgresql.org/docs/current/indexes-types.html
-https://medium.com/@jramcloud1/reindexing-in-postgresql-17-the-complete-dba-guide-to-keeping-your-indexes-healthy-20d0cd8e828f
+
+
+# INDEX
+Un índice es una estructura de datos que almacena una referencia a los datos en una tabla, permitiendo que las búsquedas y otras operaciones sean mucho más rápidas. Piensa en un índice como el índice de un libro, que te permite encontrar rápidamente la página donde se menciona un tema específico.
+
+### Conceptos: 
+**Baja cardinalidad** (columnas con pocos valores diferentes, Ejemplo status : successful y failed) 
+<br>**Alta cardinalidad** (columnas con muchos valores diferentes, Ejemplo: némeros teléfonos, direccione, etc )
 
 Imagina que tienes un libro enorme con miles de páginas llenas de información, como nombres, números o fechas. Si alguien te pidiera buscar una palabra específica en ese libro, tendrías dos opciones:
 
@@ -33,13 +39,6 @@ Supongamos que buscas el número "42" en una tabla con millones de registros.
 
  --- 
 
-
-# INDEX
-Un índice es una estructura de datos que almacena una referencia a los datos en una tabla, permitiendo que las búsquedas y otras operaciones sean mucho más rápidas. Piensa en un índice como el índice de un libro, que te permite encontrar rápidamente la página donde se menciona un tema específico.
-
-### Conceptos: 
-**Baja cardinalidad** (columnas con pocos valores diferentes, Ejemplo status : successful y failed) 
-<br>**Alta cardinalidad** (columnas con muchos valores diferentes, Ejemplo: némeros teléfonos, direccione, etc )
 
 ## Impacto diferente en las operaciones de `INSERT`, `UPDATE` y `DELETE` en comparación con las consultas `SELECT`.
 
@@ -260,18 +259,78 @@ La reindexación es importante porque los índices desorganizados pueden llevar 
 # Borar un index
 	DROP INDEX IF EXISTS public.index_emp_nombre ;
 
+---
 
-## Usar CLUSTER
-El propósito de este comando es mejorar el rendimiento de las consultas que utilizan un indice.  agrupa  la tabla el índice indicado, los datos se almacenan físicamente en el orden del índice, lo que puede acelerar las búsquedas y mejorar la eficiencia de las consultas.
+# **CLUSTER en PostgreSQL**
 
-```SQL
-	-- configurarle un cluster a una tabla
-	ALTER TABLE IF EXISTS public.table_test CLUSTER ON idx_table_test;
+El comando **`CLUSTER`** se utiliza para **reorganizar físicamente los datos de una tabla según el orden de un índice específico**, con el objetivo de **mejorar el rendimiento de las consultas** que aprovechan dicho índice.  
+Al ejecutar `CLUSTER`, PostgreSQL reescribe la tabla siguiendo el orden del índice indicado, lo que puede acelerar búsquedas secuenciales y optimizar la eficiencia en consultas que filtran o ordenan por ese índice.
 
-  	-- Indicas que ejecute los clusteres 
- 	cluster;
+#### **Características importantes**
+
+*   No cambia la lógica de las consultas, solo la disposición física de los datos.
+*   El efecto no es permanente: si se insertan o actualizan filas después, el orden puede perderse.
+*   Puede requerir espacio adicional y bloquear la tabla durante la operación.
+
+
+
+#### **Ejemplo práctico**
+
+```sql
+-- Configurar la tabla para usar un índice específico en clustering
+ALTER TABLE IF EXISTS public.table_test CLUSTER ON idx_table_test;
+
+-- Ejecutar el clustering en todas las tablas configuradas
+CLUSTER;
 ```
 
+
+La recomendación general para usar **`CLUSTER`** en PostgreSQL es:
+
+
+
+### ✅ **Cuándo usarlo**
+
+*   Cuando tienes **consultas frecuentes que se benefician del orden físico de los datos**, por ejemplo:
+    *   Consultas que filtran o hacen rangos sobre una columna indexada.
+    *   Consultas que ordenan por el mismo índice repetidamente.
+*   En tablas **grandes y poco actualizadas** (más lectura que escritura), porque el orden se pierde con inserciones y actualizaciones.
+
+
+
+### ⚠️ **Cuándo NO usarlo**
+
+*   En tablas con **alta frecuencia de inserciones o actualizaciones**, ya que el orden físico se degradará rápidamente.
+*   Si el índice no aporta un beneficio significativo en la mayoría de las consultas.
+
+
+
+### 🔍 **Buenas prácticas**
+
+*   Ejecutar `CLUSTER` **ocasionalmente** (no en cada cambio), o programarlo en mantenimiento cuando la fragmentación sea alta.
+*   Considerar **`VACUUM FULL`** o **`REINDEX`** como alternativas si solo buscas compactar espacio o reconstruir índices.
+*   Para clustering automático, usar **`pg_repack`** (herramienta externa) en entornos críticos, porque evita bloqueos prolongados.
+
+
+
+**solo se puede definir un índice para CLUSTER por tabla**. PostgreSQL permite asociar **una tabla con un único índice para clustering**, porque el orden físico solo puede seguir un criterio.
+
+Sin embargo:
+
+*   Puedes tener **muchos índices en la misma tabla**, pero **solo uno será el índice de clustering**.
+*   Si necesitas cambiar el índice usado para clustering, puedes hacerlo con:
+
+```sql
+ALTER TABLE public.table_test CLUSTER ON otro_indice;
+```
+
+*   Si no quieres que la tabla tenga clustering, puedes desasociar el índice con:
+
+```sql
+ALTER TABLE public.table_test SET WITHOUT CLUSTER;
+```
+ 
+---
 
 
  
@@ -1765,4 +1824,8 @@ middle -[hidden]-> leaf
 ### Bibliografia 
 ```
 https://medium.com/@moinullabaig/part-1-unlocking-postgresql-performance-with-index-only-scans-6b3639cea96e
+
+https://www.postgresql.org/docs/current/indexes-types.html
+https://medium.com/@jramcloud1/reindexing-in-postgresql-17-the-complete-dba-guide-to-keeping-your-indexes-healthy-20d0cd8e828f
+
 ```
