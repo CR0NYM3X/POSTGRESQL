@@ -52,11 +52,17 @@ OPENSSLDIR: "/etc/pki/tls"
 
 En este ejemplo nosotros crearemos nuestro propio sistema PKI con las configuraciones y archivos necesarios para no manipular las carpetas originales y intervenir en los registros que ya existentes
  ```BASH
+	mkdir -p  /tmp/pki
+	sudo chown postgres:postgres /tmp/pki
+	sudo chmod 700 /tmp/pki
 
   mkdir -p  /tmp/pki/CA #Subdirectorio que puede contener archivos de la Autoridad Certificadora, como certificados de la CA, claves privadas y listas de revocación de certificados (CRL).
   mkdir -p  /tmp/pki/tls  #Subdirectorio que contiene archivos de configuración y certificados relacionados con TLS (Transport Layer Security).
   mkdir -p  /tmp/pki/certs # Subdirectorio para almacenar certificados públicos.
   mkdir -p  /tmp/pki/private #Subdirectorio para almacenar claves privadas.
+
+
+
 
   mkdir -p /tmp/pki/CA/newcerts # Guarda certificados nuevos en caso de no indicar la ruta de salida.
   touch   /tmp/pki/CA/index.txt # Este archivo actúa como una base de datos que registra todos los certificados emitidos y revocados por la CA. ermite a la CA llevar un seguimiento de todos los certificados, incluyendo su estado (válido, revocado, caducado).
