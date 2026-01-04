@@ -612,6 +612,8 @@ postgres@postgres# select proname from pg_proc where proname ilike '%balan%';
 
 ## Bibliografía
 ```
+Escalado de bases de datos con replicación, particionamiento y fragmentación -> https://medium.com/@vinodbokare0588/scaling-databases-with-replication-partitioning-and-sharding-4d0a006adfe3
+
 https://docs.citusdata.com/en/v13.0/
 https://docs.citusdata.com/en/v10.2/cloud/availability.html
 https://www.citusdata.com/blog/2018/02/21/three-approaches-to-postgresql-replication/
