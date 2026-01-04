@@ -60,6 +60,8 @@ Grafana
 - **  pgAgent:** Ejecucion de tareas programadas , Propia de postgresq, y puedes administrarla desde pgAdmin
 - **  pg_cron:** Ejecucion de tareas programadas , Planifica y ejecuta tareas dentro de PostgreSQL, como vacuums o análisis, en horarios programados, lo que ayuda a mantener el rendimiento de la base de datos de forma automática y sin intervención manual.
 
+- **pg_timetable:** Herramienta para la planificación y ejecución de tareas cron en la base de datos.
+
 
 
 **adminpack :**
@@ -321,7 +323,6 @@ Gestionar replicación lógica para mantener consistencia y facilitar reconfigur
 - ** pg_partman:** Gestiona la partición de tablas de forma automática, lo cual es fundamental para mejorar el rendimiento en bases de datos con grandes volúmenes de datos, especialmente en tablas de series temporales.
 
 
-- **pg_timetable:** Herramienta para la planificación y ejecución de tareas cron en la base de datos.
 
 - ** pg_prewarm:** Pre-carga tablas o índices en la memoria compartida de PostgreSQL al inicio del servidor, mejorando el rendimiento de las consultas que acceden frecuentemente a estos datos. (https://www.youtube.com/watch?v=prbF4O0d-7M).
  
