@@ -533,6 +533,10 @@ Este comando te mostrará una tabla con el porcentaje de uso de CPU, la memoria 
 
 # Links 
 ```sql
+
+-------------------- POSTGRESQL BACKUP --------------------
+pgBackRest PITR in Docker -> https://dataegret.com/2025/12/pgbackrest-pitr-in-docker-a-simple-demo/
+
 -------------------- POSTGRESQL HA DOCKER --------------------
 Running PostgreSQL in Docker Container with Volume -> https://medium.com/@basit26374/how-to-run-postgresql-in-docker-container-with-volume-bound-c141f94e4c5a
 Initializing a PostgreSQL Database with a Dataset using Docker Compose: A Step-by-step Guide -> https://medium.com/@asuarezaceves/initializing-a-postgresql-database-with-a-dataset-using-docker-compose-a-step-by-step-guide-3feebd5b1545
