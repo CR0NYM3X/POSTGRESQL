@@ -48,6 +48,8 @@ El archivado continuo de WAL es útil para:
 ### **5. Modificación en memoria**
 
 *   Se modifica la página en **shared\_buffers** (no en disco).
+*   Eliminación (DELETE): Cuando eliminas una fila, PostgreSQL no la borra físicamente de inmediato. En su lugar, marca la fila como eliminada, pero sigue ocupando espacio en la tabla.
+*   Actualización (UPDATE): Al actualizar una fila, PostgreSQL crea una nueva versión de la fila con los datos actualizados y marca la versión antigua como eliminada. Esto también genera una tupla muerta.
 *   La página se marca como **dirty Pages** (pendiente de escritura a disco) y significa que la versión de esa página en memoria es más reciente que la copia en disco. [[Más de Dirty Pages]](https://stormatics.medium.com/what-are-dirty-pages-in-postgresql-f292fd9817f5)
 
 
@@ -91,7 +93,7 @@ El archivado continuo de WAL es útil para:
 
 ### **11. Mantenimiento posterior**
 
-*   **VACUUM / Autovacuum:** Recupera espacio y actualiza estadísticas.
+*   **VACUUM / Autovacuum:** Lo que hace VACUUM estándar: Escanea las tablas buscando "filas muertas" y las marca como espacio disponible solo para Postgres. La próxima vez que insertes datos, Postgres usará esos huecos en lugar de pedirle más espacio al sistema operativo. El archivo en el disco sigue midiendo lo mismo, pero ahora tiene "huecos" que Postgres sabe llenar. por ejemplo en una pagina se insertaron 10 filas, pero se eliminaron 8, entonces solo tiene 2 filas vivas y 8 files muertas las cuales ocupan espacio y no se pueden usar, al hacer el vacuum , esas 8 filas muertas se les reclama el espacio y se al proximo insert ese espacio se usara .
 *   **ANALYZE:** Optimiza el rendimiento de futuras consultas.
 
  
