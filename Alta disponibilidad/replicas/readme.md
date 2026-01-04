@@ -610,6 +610,9 @@ Depende de tus necesidades:
 
 ## Bibliografía 
 ```
+
+Escalado de bases de datos con replicación, particionamiento y fragmentación -> https://medium.com/@vinodbokare0588/scaling-databases-with-replication-partitioning-and-sharding-4d0a006adfe3
+
 https://www.youtube.com/watch?v=kW8xT_cgEMM
 https://medium.com/@c.ucanefe/patroni-ha-proxy-feed1292d23f
 
