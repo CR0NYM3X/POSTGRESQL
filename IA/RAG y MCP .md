@@ -185,4 +185,27 @@ Podrías proponerles crear un **"Asistente de Optimización de SQL"**:
  
 ```
 https://www.pgedge.com/blog/building-a-rag-server-with-postgresql-part-2-chunking-and-embeddings
+
+
+
+RAG With PostgreSQL -> https://pgdash.io/blog/rag-with-postgresql.html
+
+Cómo construir un sistema RAG privado usando PostgreSQL (pgvector), Llama 3 y Ollama -> https://www.reddit.com/r/PostgreSQL/comments/1fzevwj/how_to_build_a_private_rag_system_using/?tl=es-419
+
+Building AI-Powered Search and RAG with PostgreSQL and Vector Embeddings -> https://medium.com/@richardhightower/building-ai-powered-search-and-rag-with-postgresql-and-vector-embeddings-09af314dc2ff
+
+PostgreSQL with pgvector as a Vector Database for RAG -> https://codeawake.com/blog/postgresql-vector-database
+
+Build a Fully Local RAG App With PostgreSQL, Llama 3.2, and Ollama -> https://medium.com/@chadhamoksh/build-a-fully-local-rag-app-with-postgresql-llama-3-2-and-ollama-b18cec13382d
+
+Building a FastAPI-Powered RAG Backend with PostgreSQL & pgvector -> https://medium.com/@fredyriveraacevedo13/building-a-fastapi-powered-rag-backend-with-postgresql-pgvector-c239f032508a
+
+RAG Powered AI Agent: Integrate PostgreSQL Database as LLM Knowledge Base (LangChain, Pinecone, Gemini) | Part14 -> https://vardhmanandroid2015.medium.com/rag-powered-ai-agent-integrate-postgresql-database-as-llm-knowledge-base-langchain-pinecone-d9a7bad1e403
+
+How to use PostgresDB as your One-Stop RAG Solution -> https://medium.com/@brechterlaurin/how-to-use-postgresdb-as-your-one-stop-rag-solution-8536ef7d762e
+
+Build a Data Analyst Agent with MCP, RAG, and PostgreSQL -> https://medium.com/@sathishkraju/build-a-data-analyst-agent-with-mcp-rag-and-postgresql-dd315e22de72
+
+Postgres as a vector Database | Implementing Hybrid search with Postgres for RAG Using Groq. -> https://medium.com/@meeran03/postgres-as-a-vector-database-implementing-hybrid-search-with-postgres-for-rag-using-groq-494ca3e41d57
+
 ```
