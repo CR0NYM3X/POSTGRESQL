@@ -215,7 +215,7 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    	sudo chown postgres:postgres  postgresql.crt
 	sudo chown postgres:postgres  postgresql.key
 	sudo chmod 600 postgresql.key
-	sudo chmod 644 postgresql.crt
+	sudo chmod 600 postgresql.crt
    ```
 
  
