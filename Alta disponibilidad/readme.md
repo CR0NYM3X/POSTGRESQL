@@ -6,6 +6,8 @@
 - BDR
 - PostgreSQL-XL
 - Patroni + etcd
+- Stolon
+- YugabyteDB - Open Source [Multi-Master]
 
 *** Pool de conexiones *** 
 - PgBouncer - Pendiente 
