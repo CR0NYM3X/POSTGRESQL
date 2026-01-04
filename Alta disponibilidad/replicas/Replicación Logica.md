@@ -493,6 +493,8 @@ GRANT SELECT ON pglogical.subscription TO migration_admin;
 
 ## Bibliografía
 ```
+Réplicas de lectura de PostgreSQL: guía completa para comprenderlas, implementarlas y decidir cuándo las necesita -> https://medium.com/@jleonro/postgresql-read-replicas-complete-guide-to-understanding-implementing-and-deciding-when-you-need-c870f615930b
+
 [PostgreSQL Replication Deep Dive] - https://medium.com/@danielonthenet/postgresql-replication-deep-dive-53b593243f3f
 
 [Multi-Master] Active Active in Postgres 16 -> https://www.crunchydata.com/blog/active-active-postgres-16
