@@ -163,6 +163,9 @@ https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-po
 
 # Performance
 ```
+
+PostgreSQL 18 Upgrade: How It Makes Your Databases 2–3x Faster on AWS RDS -> https://medium.com/@vinodbokare0588/postgresql-18-upgrade-how-it-makes-your-databases-2-3x-faster-37e87b5f361f
+
 Lista de consultas traviesas de Papá Noel en PostgreSQL: ¿cómo ganarse un lugar en la lista de consultas buenas? ->  https://drunkdba.medium.com/postgresql-santas-naughty-query-list-how-to-earn-a-spot-on-the-nice-query-list-ebc59b800e2f
 
 Porque postgresql es mejor -> https://medium.com/@vinodbokare0588/why-postgres-is-best-b034108f1ef7
