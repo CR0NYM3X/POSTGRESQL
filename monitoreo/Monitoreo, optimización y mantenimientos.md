@@ -805,7 +805,7 @@ REINDEX INDEX public.idx_psql_tables_columns_;
 | **Tiempo de ejecución**           | Rápido                            | Lento                             |
 | **Impacto en el rendimiento**     | Bajo                              | Alto                              |
 
-Elimina las tuplas marcadas como obsoletas o muertas por transacciones anteriores. Cuando se insertan, actualizan o eliminan datos en una base de datos, PostgreSQL no elimina físicamente las tuplas obsoletas de inmediato; simplemente las marca como obsoletas. El comando VACUUM libera el espacio ocupado por estas tuplas obsoletas, lo que ayuda a reducir el tamaño de la base de datos y a mejorar el rendimiento.
+En PostgreSQL, borrar o actualizar datos no libera espacio en el disco automáticamente; solo marca los registros como 'tuplas muertas'. El comando VACUUM se encarga de limpiar estas tuplas para que el espacio quede disponible dentro de la base de datos. Es importante entender que no reduce el tamaño del archivo en el disco, sino que permite que Postgres reutilice esos 'huecos' en lugar de seguir creciendo.
 ```sh
 VACUUM;
   ```
