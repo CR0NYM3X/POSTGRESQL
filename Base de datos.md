@@ -31,6 +31,33 @@ createdb -p 5432 mytestdba -E "UTF8" -O postgres -T template0
        TABLESPACE = pg_default
        CONNECTION LIMIT = -1;  --- El -1 quiere decir que son conexiones elimitadas
 
+********************************
+
+ 
+## 2. Encoding (Codificación): ¿Cómo se guarda en el disco?
+
+El **Encoding** es el mapa que dice: "Este número binario equivale a este glifo (letra)".
+
+* **UTF-8 (El estándar de facto en Postgres):** Es una codificación de longitud variable. Los caracteres básicos ocupan 1 byte, pero los complejos (emojis, japonés) pueden ocupar hasta 4.
+* **Importancia en Arquitectura:** Si el `client_encoding` (lo que envía la aplicación) no coincide con el `server_encoding` (lo que guarda la base de datos), los datos se corromperán.
+ 
+## 3. LC_CTYPE: La Identidad de los Caracteres
+
+Este concepto suele confundirse con el encoding, pero es distinto. **CTYPE** (Character Classification) define las propiedades de los caracteres.
+
+* **¿Para qué sirve?** Determina qué es una letra, qué es un número, qué es una mayúscula y qué es una minúscula.
+* **Impacto en Postgres:** Funciones como `UPPER(texto)`, `LOWER(texto)` o expresiones regulares dependen de CTYPE. Sin un CTYPE correcto (por ejemplo, configurado como `C` o `POSIX`), Postgres podría no saber que la "Á" es la mayúscula de la "á".
+ 
+## 4. Collation (Colación): La Regla de Ordenamiento
+
+Si el Encoding define cómo se guarda, la **Collation** define cómo se **compara** y se **ordena**.
+
+* **El Problema:** ¿La "CH" va después de la "C" o después de la "H"? ¿La "ñ" va después de la "n" o al final del alfabeto? ¿"A" es igual a "a" (Case Insensitive)?
+* **En Postgres:** La colación es crítica para los índices. Si cambias la colación de una columna, el orden del índice cambia por completo.
+* **Ejemplo:** En una colación `es_ES` (España), el orden será distinto a una colación `C` (orden binario por número de código).
+
+
+ 
 
 /******************** TIPOS DE ENCODING ********************\
 ### ❌ Desventajas de usar `SQL_ASCII`:
