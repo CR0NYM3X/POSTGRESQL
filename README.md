@@ -68,7 +68,7 @@ https://docs.percona.com/percona-for-postgresql
 https://pgpedia.info/s/shared_preload_libraries.html
 https://www.sqlservercentral.com/articles/rules-in-postgresql
 https://www.cybertec-postgresql.com/en/blog/
-
+https://dataegret.com/news-blog/
 --- Documentacion postgresql <br>
 https://runebook.dev/es/docs/postgresql/-index-
 https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf  
