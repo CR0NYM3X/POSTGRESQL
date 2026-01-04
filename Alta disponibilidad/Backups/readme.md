@@ -197,6 +197,10 @@ La regla establece:
 
 ## Bibliografía 
 ```
+PostgreSQL backup and restore — Complete guide to backing up and restoring databases -> https://medium.com/@pawale7663/postgresql-backup-and-restore-complete-guide-to-backing-up-and-restoring-databases-14d19bb57329
+
+
+
 https://dbsguru.com/physical-postgresql-backup/
 https://www.mafiree.com/readBlog/incremental-backup-in-postgresql-17
 https://www.mydbops.com/blog/postgresql-17-incremental-backup-pg-basebackup-pg-combinebackup
