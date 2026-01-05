@@ -165,6 +165,8 @@ https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-po
 
 # Performance
 ```
+El ritual de invocación del asesino de OOM: "Solo aumenta work_mem" -> https://drunkdba.medium.com/the-oom-killer-summoning-ritual-just-increase-work-mem-7afb4b22ec44
+
 Escalado de bases de datos con replicación, particionamiento y fragmentación -> https://medium.com/@vinodbokare0588/scaling-databases-with-replication-partitioning-and-sharding-4d0a006adfe3
 PostgreSQL 18 Upgrade: How It Makes Your Databases 2–3x Faster on AWS RDS -> https://medium.com/@vinodbokare0588/postgresql-18-upgrade-how-it-makes-your-databases-2-3x-faster-37e87b5f361f
 
