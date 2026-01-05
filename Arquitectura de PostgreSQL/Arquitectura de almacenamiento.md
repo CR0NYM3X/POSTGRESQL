@@ -2,8 +2,6 @@
 
 # Arquitectura de almacenamiento de PostgreSQL
 
-## Visibilidad
- La Visibilidad es el proceso por el cual PostgreSQL decide si una transacción específica tiene permitido ver una fila determinada, basándose en el estado de esas transacciones (xmin y xmax).
 
 ## 1. ¿Qué es el Visibility Map?
 
@@ -64,4 +62,73 @@ Aunque vive en un directorio diferente (`pg_wal`), opera al mismo nivel lógico 
 | **Free Space Map (FSM)** | Espacio disponible en páginas. | Acelerar los INSERTs y reutilizar espacio. |
 | **Main Fork** | Los datos reales (tuplas). | Almacenamiento de la información. |
 
+---
+
+
+# Visibilidad
+ 
+ La Visibilidad es el proceso por el cual PostgreSQL decide si una transacción específica tiene permitido ver una fila determinada, basándose en el estado de esas transacciones (xmin y xmax).
+
+
+
+Para entender **cómo** PostgreSQL toma esta decisión en tiempo real, debemos entrar en las tripas del **MVCC (Multi-Version Concurrency Control)**.
+
+No es solo mirar los números `xmin` y `xmax`, sino compararlos contra algo llamado **Snapshot (Instantánea)** y consultar un registro de estados llamado **CLOG**.
+
+Aquí tienes el paso a paso técnico de cómo ocurre esa "magia":
+
+ 
+
+### 1. Los protagonistas: `xmin` y `xmax`
+
+Cada vez que insertas o modificas una fila, Postgres guarda ocultamente:
+
+* **`xmin`:** El ID de la transacción que **creó** la fila.
+* **`xmax`:** El ID de la transacción que **borró o modificó** la fila. Si la fila está vigente, el `xmax` es `0`.
+
+### 2. El "Snapshot" (La foto del momento)
+
+Cuando inicias una consulta (o una transacción, dependiendo del nivel de aislamiento), PostgreSQL toma una "foto" del estado del sistema. Este snapshot contiene:
+
+* **Xmin del snapshot:** El ID de la transacción más antigua que aún está activa.
+* **Xmax del snapshot:** El ID de la próxima transacción que se asignará (cualquier ID igual o mayor a este es el "futuro" y no es visible).
+* **Lista de transacciones activas:** Una lista de IDs que están trabajando justo ahora pero no han terminado (no han hecho `COMMIT`).
+
+### 3. El CLOG (Commit Log)
+
+Los números `xmin` y `xmax` por sí solos no dicen si la transacción tuvo éxito. Postgres consulta el **CLOG**, un área de memoria que guarda el estado de cada transacción: ¿Está en curso?, ¿Hizo Commit?, ¿Hizo Rollback?
+
+---
+
+### 4. El Algoritmo de Visibilidad (Simplificado)
+
+Cuando tu consulta llega a una fila, aplica estas reglas lógicas para decidir si la "ve" o la ignora:
+
+#### Para el `xmin` (¿Quién la creó?):
+
+1. **¿El `xmin` abortó?** (Vía CLOG). Si la transacción que la creó falló, la fila es **invisible**.
+2. **¿El `xmin` todavía no hace commit?** Si la transacción sigue activa, la fila es **invisible** (a menos que seas tú mismo quien la creó).
+3. **¿El `xmin` es "el futuro"?** Si el ID es mayor al límite de tu snapshot, la fila es **invisible**.
+4. **¿El `xmin` hizo commit?** Si el CLOG dice que sí y el ID es "pasado" para tu snapshot, pasamos a revisar el `xmax`.
+
+#### Para el `xmax` (¿Quién la borró?):
+
+1. **¿El `xmax` es 0?** Significa que nadie la ha borrado. **¡La fila es VISIBLE!**
+2. **¿El `xmax` abortó?** La transacción que intentó borrarla falló. **¡La fila es VISIBLE!**
+3. **¿El `xmax` hizo commit?** La fila fue borrada definitivamente por alguien más antes de tu foto. **Fila INVISIBLE**.
+4. **¿El `xmax` está activo o es el futuro?** Alguien la está borrando ahora mismo o después de tu foto, pero para ti, sigue existiendo. **¡La fila es VISIBLE!**
+
+ 
+### Ejemplo Práctico: El Update
+
+Cuando haces un `UPDATE` de una fila, PostgreSQL no cambia los datos ahí mismo. Hace esto:
+
+1. **En la fila vieja:** Marca el `xmax` con el ID de tu transacción actual. (Para otros, sigue siendo visible hasta que tú hagas commit).
+2. **Crea una fila nueva:** Con los datos nuevos y pone tu ID actual en el `xmin`. (Nadie la verá hasta que tú hagas commit).
+
+**Resultado:** Dependiendo de cuándo "tomaron la foto" las demás transacciones, algunas verán la versión vieja y otras (las que lleguen después de tu commit) verán la nueva. **Esto es lo que permite que Postgres lea y escriba al mismo tiempo sin bloquearse.**
+
+### ¿Por qué esto es importante?
+
+Este proceso explica por qué PostgreSQL necesita el **VACUUM**. Como las filas "borradas" (con un `xmax` válido y comprometido) siguen físicamente en el disco, el VACUUM debe pasar eventualmente para ver qué filas ya no son visibles para **nadie** en el sistema y liberar ese espacio.
  
