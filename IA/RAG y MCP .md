@@ -184,9 +184,10 @@ Podrías proponerles crear un **"Asistente de Optimización de SQL"**:
 3. **Objetivo:** El alumno le da una consulta SQL mal hecha; la IA busca en la documentación (RAG) por qué está mal, prueba la consulta en vivo (MCP) y le entrega al alumno la versión optimizada y explicada.
  
 ```
+
+Power your RAG and Agentic applications with PostgreSQL -> https://github.com/timescale/pgai
+
 https://www.pgedge.com/blog/building-a-rag-server-with-postgresql-part-2-chunking-and-embeddings
-
-
 
 RAG With PostgreSQL -> https://pgdash.io/blog/rag-with-postgresql.html
 
