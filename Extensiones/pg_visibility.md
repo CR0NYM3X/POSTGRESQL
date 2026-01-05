@@ -737,6 +737,126 @@ Time: 0.442 ms
 postgres@test#
 
 ```
+---
+
+
+Para que PostgreSQL marque una página como **All-Visible**, el proceso de `VACUUM` debe realizar una auditoría técnica basada en el **MVCC (Multiversion Concurrency Control)**.
+
+No basta con que los datos estén "ahí"; el motor debe garantizar que **ninguna** transacción (actual o futura) verá algo distinto en esa página. Aquí tienes el proceso paso a paso:
+
+ 
+## 1. El Horizonte de Visibilidad (`OldestXmin`)
+
+Antes de empezar, PostgreSQL calcula un valor llamado **`OldestXmin`**.
+
+* Este es el ID de la transacción más antigua que todavía está activa en la base de datos.
+* Cualquier transacción con un ID menor a este ya terminó (se hizo `COMMIT` o `ROLLBACK`) y es considerada "pasado histórico" para todos.
+
+## 2. Las 3 Reglas de Oro en la Página
+
+Cuando el `VACUUM` escanea una página de 8KB, revisa cada **Tuple** (fila) y valida que cumpla simultáneamente estas tres condiciones:
+
+1. **Inserción Confirmada:** El  (quien creó la fila) debe estar marcado como **completado** en el CLOG (*Commit Log*) y debe ser **menor** que el `OldestXmin`.
+2. **Sin Borrados Pendientes:** El  (quien borró la fila) debe ser **cero** o estar marcado como **abortado**. Si hay un  de una transacción que hizo `COMMIT`, esa fila es "basura" (dead tuple), y la página **no** puede ser All-Visible hasta que el `VACUUM` elimine físicamente ese espacio.
+3. **Sin Versiones Intermedias:** No debe haber ninguna fila en la página que sea una "versión vieja" de un `UPDATE` que todavía sea necesaria para alguna transacción lenta.
+
+## 3. La consulta al CLOG (Commit Log)
+
+Postgres no confía solo en lo que dice la tabla. Para cada  y  que encuentra, hace una búsqueda ultrarrápida en el **CLOG** (ubicado en `pg_xact`).
+
+* El CLOG es un mapa de bits que le dice: `Transacción 101 -> COMMIT`, `Transacción 102 -> ABORT`.
+* Si todas las filas de la página apuntan a transacciones con `COMMIT` y son más antiguas que el horizonte de visibilidad, la página es "segura".
+
+
+
+## 4. El Sello Final: `PD_ALL_VISIBLE`
+
+Si la página pasa la auditoría de todas sus filas, PostgreSQL realiza dos acciones de escritura:
+
+1. **En el Header de la página:** En los primeros bytes del bloque físico (el `PageHeaderData`), activa un bit llamado `PD_ALL_VISIBLE`. Este bit es la fuente de verdad física.
+2. **En el Visibility Map (VM):** Actualiza el archivo auxiliar `_vm` poniendo un `1` en la posición de ese bloque. Esto es lo que permite que los **Index-Only Scans** funcionen sin leer la tabla.
+
+> **Dato Clave:** Si una página está vacía (no tiene filas), PostgreSQL también la marca como **All-Visible**, ya que, técnicamente, "todo lo que hay" (nada) es visible para todos.
+
+
+
+## ¿Qué pasa si una sola fila falla?
+
+Si en una página de 200 filas, **199 son visibles** pero **1 fila** fue insertada hace un milisegundo por una transacción que sigue abierta:
+
+* El `VACUUM` detecta que esa fila tiene un  mayor al `OldestXmin`.
+* Por seguridad, **toda la página** se queda con el bit en `false`.
+* El Visibility Map mostrará `f` para ese bloque.
+
+---
+
+
+PostgreSQL utiliza un sistema llamado **MVCC (Multiversion Concurrency Control)** para gestionar la visibilidad. A diferencia de otros motores que bloquean filas para lectura/escritura, Postgres mantiene múltiples versiones de una misma fila simultáneamente.
+
+Aquí tienes el flujo detallado de cómo determina la visibilidad y cómo esto alimenta al **Visibility Map (VM)**.
+
+---
+
+## 1. Los metadatos de la fila (Heap Tuple Header)
+
+Cada fila (tuple) en PostgreSQL tiene campos ocultos en su encabezado que son cruciales para la visibilidad:
+
+* **`xmin`:** El ID de la transacción () que insertó la fila.
+* **`xmax`:** El ID de la transacción que eliminó o actualizó la fila (si es `0`, la fila no ha sido tocada).
+* **`t_ctid`:** Un puntero a la versión más reciente de la fila.
+* **Hint Bits:** Marcadores que indican si la transacción `xmin` o `xmax` ya ha sido confirmada (`COMMITTED`) o abortada (`ABORTED`).
+
+---
+
+## 2. El proceso de verificación: Snapshot de Transacción
+
+Cuando realizas una consulta, Postgres genera un **Snapshot** (una "foto" del estado de la base de datos). Este snapshot contiene:
+
+1. **`xmin` (bajo):** Todas las transacciones menores a este ID ya están terminadas (visibles).
+2. **`xmax` (alto):** Cualquier transacción igual o mayor a este ID aún no ha comenzado (invisible).
+3. **`xip_list`:** Una lista de transacciones que están "en curso" en el momento del snapshot.
+
+### Reglas lógicas de visibilidad:
+
+Para que una fila sea visible para tu consulta, debe cumplir:
+
+* El `xmin` debe estar **COMMITTED** (confirmado).
+* El `xmin` no debe estar en la lista de transacciones activas (`xip_list`).
+* El `xmax` debe ser **0**, estar **ABORTED**, o ser una transacción que aún no se confirma.
+
+ 
+
+## 3. El Mapa de Visibilidad (Visibility Map - VM)
+
+El **Visibility Map** es una estructura separada del archivo de datos principal (el *heap*). Almacena dos bits por cada página de datos:
+
+1. **All-visible bit:** Si está activo, significa que todas las filas de esa página son visibles para todas las transacciones actuales y futuras (no hay versiones antiguas ni transacciones sin confirmar).
+2. **All-frozen bit:** Si está activo, significa que todas las filas de la página están "congeladas" (ya fueron procesadas para evitar el *XID wraparound*).
+
+ 
+
+## 4. El Flujo: ¿Cómo se llena el Visibility Map?
+
+El llenado del mapa de visibilidad no ocurre en tiempo real durante cada `INSERT` o `UPDATE`, sino que es un proceso delegado principalmente al **VACUUM**.
+
+### El proceso paso a paso:
+
+1. **Operaciones de Escritura:** Cuando insertas o borras filas, Postgres marca los `xmin/xmax` en el heap. En este momento, el bit en el VM para esa página se **apaga** (se pone en 0), ya que la página ahora contiene cambios que no todos pueden ver.
+2. **Ejecución de VACUUM (o Autovacuum):**
+* El VACUUM escanea las páginas del heap.
+* Comprueba si hay filas muertas (*dead tuples*) que puedan ser eliminadas.
+* **Verificación de Visibilidad:** Si después de la limpieza, el VACUUM detecta que **todas** las filas de una página son lo suficientemente antiguas como para ser visibles para cualquier transacción activa (basándose en el *OldestXmin*), entonces...
+
+
+3. **Actualización del VM:** El VACUUM marca el bit **All-visible** en el Visibility Map para esa página específica.
+ 
+
+## 5. ¿Para qué sirve este flujo? (El beneficio real)
+
+La razón principal por la que Postgres se esfuerza en mantener este mapa es el **Index-Only Scan**.
+
+* **Sin VM:** Los índices no guardan información de visibilidad (`xmin/xmax`). Para saber si una fila encontrada en el índice es válida, Postgres tendría que ir siempre al *heap* (disco) a comprobar los headers.
+* **Con VM:** Si el índice apunta a una página que en el VM está marcada como **All-visible**, Postgres confía en que la fila es visible y **no lee el heap**, ahorrando muchísimas operaciones de entrada/salida (I/O).
  
 
 ---
