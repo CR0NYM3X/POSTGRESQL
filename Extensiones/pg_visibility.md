@@ -485,8 +485,63 @@ ANALYZE produccion_diaria;
 * El **`VACUUM FULL`** recupera espacio en disco.
 * El **`VACUUM`** (normal) recorre la nueva tabla y marca las páginas como `all_visible`. Como la tabla acaba de ser creada y no tiene "basura" (bloat), este segundo Vacuum es extremadamente rápido.
 * El **`ANALYZE`** asegura que Postgres sepa cuántas filas hay exactamente en la nueva estructura para elegir los mejores planes de ejecución.
+---
 
 
+# Por qué VACUUM  si llena el mapa de visibilidad ?
+
+ Para entenderlo, hay que ver al **`VACUUM`** no solo como un "limpiador", sino como un **"auditor"**.
+
+La razón técnica es que el **Visibility Map (VM)** es, por definición, un **producto del escaneo de limpieza**. Aquí te explico el porqué paso a paso:
+ 
+
+## 1. El `VACUUM` es el único que "revisa" toda la página
+
+Cuando ejecutas un `VACUUM` estándar, el motor recorre cada página (bloque) de la tabla buscando "filas muertas" (dead tuples). Durante ese recorrido, Postgres aprovecha para hacer una validación lógica:
+
+1. **Analiza cada fila:** Mira los identificadores de transacción ( y ) de cada registro en el bloque.
+2. **Pregunta:** "¿Hay alguna fila aquí que sea invisible para alguien o que sea basura?"
+3. **Conclusión:** Si la respuesta es **"No, todas las filas son visibles para todas las transacciones actuales y futuras"**, entonces el `VACUUM` tiene la autoridad para decir: *"He auditado este bloque y está limpio"*.
+4. **Acción:** En ese preciso momento, escribe un **bit** en el archivo `.vm` (el Visibility Map) marcando esa página como `all_visible`.
+
+ 
+ 
+## 2. ¿Por qué otros procesos NO lo llenan?
+
+### El caso del `INSERT`
+
+Cuando insertas datos, Postgres solo escribe. No puede marcar la página como "All-Visible" porque:
+
+* **Transacciones concurrentes:** La fila que acabas de insertar **no es visible** para las transacciones que empezaron antes que la tuya. Por lo tanto, el bloque *no es* "visible para todos".
+* **Rendimiento:** Sería carísimo que cada `INSERT` tuviera que bloquear y actualizar un archivo auxiliar (el VM).
+
+### El caso del `VACUUM FULL`
+
+Aunque `VACUUM FULL` lee y escribe los datos, su objetivo es la **compactación física**.
+
+* Internamente, `VACUUM FULL` mueve filas de un lugar a otro para eliminar huecos.
+* Postgres está diseñado de forma modular: el código que "mueve y compacta" (Full) es distinto al código que "audita visibilidad" (estándar).
+* Al terminar el `FULL`, la tabla es técnicamente "nueva". Postgres prefiere que sea el proceso de `VACUUM` normal el que haga la auditoría oficial de visibilidad una vez que la tabla ya está asentada.
+ 
+
+## 3. El VM es una herramienta "PARA" el VACUUM
+
+Aquí está el secreto mejor guardado: **El Visibility Map se creó principalmente para que el `VACUUM` trabaje menos en el futuro.**
+
+Es un círculo virtuoso:
+
+1. El **primer `VACUUM**` hace el trabajo pesado: escanea todo y llena el mapa.
+2. El **segundo `VACUUM**` consulta el mapa antes de empezar.
+3. Si el mapa dice que el bloque es `all_visible`, el `VACUUM` **se salta ese bloque** y no gasta recursos leyéndolo.
+
+> **En resumen:** El `VACUUM` llena el mapa porque es el único proceso que tiene la tarea de verificar la visibilidad de cada fila vieja. Es como un inspector que pone un sello de "Aprobado" en la puerta de una habitación; hasta que el inspector no entra y revisa, no se puede poner el sello.
+
+ 
+
+### Un dato curioso para tu laboratorio:
+
+Si haces un `INSERT` y esperas a que el **`autovacuum`** (el proceso automático de Postgres) pase por la tabla, verás que el mapa de visibilidad se llena "solo" sin que tú lances el comando. Esto es porque el `autovacuum` es, en esencia, un `VACUUM` estándar corriendo en segundo plano.
+ 
 ---
 
 ## 📊 14. Otros tipos de tools 
