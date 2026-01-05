@@ -642,6 +642,101 @@ Por eso, una base de datos con muchas actualizaciones constantes suele tener un 
 
 PostgreSQL prefiere **ser lento pero seguro**. En cuanto hay una mínima sospecha de que una página ha cambiado (un `INSERT`, `UPDATE` o `DELETE`), el bit del Visibility Map se apaga. Solo el `VACUUM` (manual o automático) tiene el "poder" de volver a encenderlo después de inspeccionar la página fila por fila.
 
+ ---
+
+# Laboratorio revisando la visibilidad de otra forma 
+```sql
+
+postgres@test# CREATE EXTENSION pageinspect;
+ERROR:  extension "pageinspect" already exists
+Time: 0.962 ms
+postgres@test# drop table ventas ;
+DROP TABLE
+Time: 11.493 ms
+postgres@test#
+postgres@test#
+postgres@test# CREATE TABLE ventas (
+test(#     id SERIAL PRIMARY KEY,
+test(#     producto TEXT
+test(# );
+CREATE TABLE
+Time: 6.114 ms
+postgres@test#
+postgres@test# INSERT INTO ventas (producto) VALUES ('Producto A'), ('Producto B');
+INSERT 0 2
+Time: 1.535 ms
+postgres@test#
+postgres@test#
+postgres@test# SELECT lp, t_xmin, t_xmax, t_ctid
+test-# FROM heap_page_items(get_raw_page('ventas', 0));
++----+--------+--------+--------+
+| lp | t_xmin | t_xmax | t_ctid |
++----+--------+--------+--------+
+|  1 |   2822 |      0 | (0,1)  |
+|  2 |   2822 |      0 | (0,2)  |
++----+--------+--------+--------+
+(2 rows)
+
+Time: 1.133 ms
+postgres@test#
+postgres@test#
+postgres@test# BEGIN;
+BEGIN
+Time: 0.180 ms
+postgres@test#* DELETE FROM ventas WHERE id = 1;
+DELETE 1
+Time: 0.334 ms
+postgres@test#* -- No hacemos COMMIT todavía
+postgres@test#*
+postgres@test#*
+postgres@test#* SELECT lp, t_xmin, t_xmax, t_ctid
+test-*# FROM heap_page_items(get_raw_page('ventas', 0));
++----+--------+--------+--------+
+| lp | t_xmin | t_xmax | t_ctid |
++----+--------+--------+--------+
+|  1 |   2822 |   2823 | (0,1)  |
+|  2 |   2822 |      0 | (0,2)  |
++----+--------+--------+--------+
+(2 rows)
+
+Time: 0.353 ms
+postgres@test#*
+postgres@test#*
+postgres@test#*
+postgres@test#*
+postgres@test#* SELECT lp,
+test-*#        pg_visible_in_snapshot(t_xmin::text::xid8, pg_current_snapshot()) AS xmin_visible,
+test-*#        pg_visible_in_snapshot(t_xmax::text::xid8, pg_current_snapshot()) AS xmax_visible
+test-*# FROM heap_page_items(get_raw_page('ventas', 0));
++----+--------------+--------------+
+| lp | xmin_visible | xmax_visible |
++----+--------------+--------------+
+|  1 | t            | f            |
+|  2 | t            | t            |
++----+--------------+--------------+
+(2 rows)
+
+Time: 0.465 ms
+postgres@test#* commit;
+COMMIT
+Time: 1.399 ms
+postgres@test#
+postgres@test# SELECT lp,
+test-#        pg_visible_in_snapshot(t_xmin::text::xid8, pg_current_snapshot()) AS xmin_visible,
+test-#        pg_visible_in_snapshot(t_xmax::text::xid8, pg_current_snapshot()) AS xmax_visible
+test-# FROM heap_page_items(get_raw_page('ventas', 0));
++----+--------------+--------------+
+| lp | xmin_visible | xmax_visible |
++----+--------------+--------------+
+|  1 | t            | t            |
+|  2 | t            | t            |
++----+--------------+--------------+
+(2 rows)
+
+Time: 0.442 ms
+postgres@test#
+
+```
  
 
 ---
