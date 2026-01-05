@@ -161,26 +161,27 @@ SELECT count(*) ,avail FROM pg_freespace('ventas') ;
 
 
 -- relpages = Cantidad de paginas | catndidad de tuplas 
- SELECT relname, relpages,reltuples FROM pg_class  WHERE relname = 'ventas';
-+---------+----------+-----------+
-| relname | relpages | reltuples |
-+---------+----------+-----------+
-| ventas  |        0 |        -1 |
-+---------+----------+-----------+
+SELECT relname, relpages,reltuples, pg_relation_size(relname::regclass) as size_bytes FROM pg_class  WHERE relname = 'ventas';
++---------+----------+-----------+------------+
+| relname | relpages | reltuples | size_bytes |
++---------+----------+-----------+------------+
+| ventas  |        0 |        -1 |     606208 |
++---------+----------+-----------+------------+
 (1 row)
+
 
 --- Hacer el primer mantenimiento para actualizar las estadisticas 
 postgres@test# ANALYZE ventas ;
 ANALYZE
 Time: 76.255 ms
+ 
 
-
-postgres@test# SELECT relname, relpages,reltuples FROM pg_class  WHERE relname = 'ventas';
-+---------+----------+-----------+
-| relname | relpages | reltuples |
-+---------+----------+-----------+
-| ventas  |       74 |     10000 |
-+---------+----------+-----------+
+    SELECT relname, relpages,reltuples, pg_relation_size(relname::regclass) as size_bytes FROM pg_class  WHERE relname = 'ventas';
++---------+----------+-----------+------------+
+| relname | relpages | reltuples | size_bytes |
++---------+----------+-----------+------------+
+| ventas  |       74 |     10000 |     606208 |
++---------+----------+-----------+------------+
 (1 row)
 
 
@@ -199,13 +200,14 @@ postgres@test# SELECT relname, relpages,reltuples FROM pg_class  WHERE relname =
 DELETE 1000
 Time: 2.970 ms
 
-    SELECT relname, relpages,reltuples FROM pg_class  WHERE relname = 'ventas';
-+---------+----------+-----------+
-| relname | relpages | reltuples |
-+---------+----------+-----------+
-| ventas  |       74 |     10000 |
-+---------+----------+-----------+
+    SELECT relname, relpages,reltuples, pg_relation_size(relname::regclass) as size_bytes FROM pg_class  WHERE relname = 'ventas';
++---------+----------+-----------+------------+
+| relname | relpages | reltuples | size_bytes |
++---------+----------+-----------+------------+
+| ventas  |       74 |     10000 |     606208 |
++---------+----------+-----------+------------+
 (1 row)
+
 
 ```
 
@@ -228,13 +230,14 @@ Time: 2.970 ms
 VACUUM
 Time: 32.997 ms
 
-       SELECT relname, relpages,reltuples FROM pg_class  WHERE relname = 'ventas';
-+---------+----------+-----------+
-| relname | relpages | reltuples |
-+---------+----------+-----------+
-| ventas  |       74 |      9000 |
-+---------+----------+-----------+
+       SELECT relname, relpages,reltuples, pg_relation_size(relname::regclass) as size_bytes FROM pg_class  WHERE relname = 'ventas';
++---------+----------+-----------+------------+
+| relname | relpages | reltuples | size_bytes |
++---------+----------+-----------+------------+
+| ventas  |       74 |      9000 |     606208 |
++---------+----------+-----------+------------+
 (1 row)
+
 
 
 
@@ -251,7 +254,7 @@ WHERE relname = 'ventas';
 +--------+-------------------------------+-----------------+-------------------------------+------------------+------------+
 | tabla  |          last_vacuum          | last_autovacuum |         last_analyze          | last_autoanalyze | n_live_tup |
 +--------+-------------------------------+-----------------+-------------------------------+------------------+------------+
-| ventas | 2026-01-05 14:10:49.720673-07 | NULL            | 2026-01-05 14:09:45.490318-07 | NULL             |       9000 |
+| ventas | 2026-01-05 14:40:16.973065-07 | NULL            | 2026-01-05 14:39:15.615488-07 | NULL             |       9000 |
 +--------+-------------------------------+-----------------+-------------------------------+------------------+------------+
 (1 row)
 
@@ -283,8 +286,9 @@ WHERE relname = 'ventas';
 
 ## Consultamos las tuplas 
 ```
--- SELECT relname, relpages,reltuples, pg_relation_size(relname::regclass) as size_bytes FROM pg_class  WHERE relname = 'ventas';
-postgres@test# SELECT pg_relation_size('ventas') as size_bytes, pg_relation_size('ventas')  / current_setting('block_size')::int AS total_pages;
+
+
+ SELECT relname, relpages,reltuples, pg_relation_size(relname::regclass) as size_bytes FROM pg_class  WHERE relname = 'ventas';
 +---------+----------+-----------+------------+
 | relname | relpages | reltuples | size_bytes |
 +---------+----------+-----------+------------+
@@ -292,12 +296,9 @@ postgres@test# SELECT pg_relation_size('ventas') as size_bytes, pg_relation_size
 +---------+----------+-----------+------------+
 (1 row)
 
+-- OTRA FORMA DE REVISAR -- SELECT pg_relation_size('ventas') as size_bytes, pg_relation_size('ventas')  / current_setting('block_size')::int AS total_pages;
 
 
-
-postgres@test# ANALYZE ventas;
-ANALYZE
-Time: 102.237 ms
 ```
 
 ### 🔹 **Hacer el segundo mantenimiento**
@@ -324,6 +325,24 @@ Time: 0.643 ms
 +-------+-------+
 +-------+-------+
 (0 rows)
+
+
+-- Hacemos el tercer mantenimiento 
+  VACUUM  ventas;
+VACUUM
+Time: 144.408 ms
+
+-- volvemos a consultar 
+      SELECT * FROM pg_freespace('ventas') where avail != 0 LIMIT 10;
++-------+-------+
+| blkno | avail |
++-------+-------+
+|    66 |  6720 |
++-------+-------+
+(1 row)
+
+Time: 0.683 ms
+
 
 ```
 
