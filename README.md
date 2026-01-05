@@ -41,6 +41,7 @@ https://www.scalingpostgres.com
 https://www.postgresql.org/about/contact/
 https://www.postgresql.org/account/submitbug/
 
+PodCast de PostgreSQL -> https://postgres.fm/episodes
 https://boringsql.com/archive/
 https://scalegrid.io/blog/
 https://www.heatware.net/postgresql/partitioning-vs-sharding/
