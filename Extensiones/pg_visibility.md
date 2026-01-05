@@ -796,7 +796,7 @@ PostgreSQL utiliza un sistema llamado **MVCC (Multiversion Concurrency Control)*
 Aquí tienes el flujo detallado de cómo determina la visibilidad y cómo esto alimenta al **Visibility Map (VM)**.
 
 ---
-
+# flujo detallado de cómo determina la visibilidad y cómo esto alimenta al Visibility Map (VM) 
 ## 1. Los metadatos de la fila (Heap Tuple Header)
 
 Cada fila (tuple) en PostgreSQL tiene campos ocultos en su encabezado que son cruciales para la visibilidad:
@@ -806,7 +806,7 @@ Cada fila (tuple) en PostgreSQL tiene campos ocultos en su encabezado que son cr
 * **`t_ctid`:** Un puntero a la versión más reciente de la fila.
 * **Hint Bits:** Marcadores que indican si la transacción `xmin` o `xmax` ya ha sido confirmada (`COMMITTED`) o abortada (`ABORTED`).
 
----
+ 
 
 ## 2. El proceso de verificación: Snapshot de Transacción
 
