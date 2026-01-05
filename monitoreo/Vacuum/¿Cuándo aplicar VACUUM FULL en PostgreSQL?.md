@@ -1,6 +1,11 @@
  
 
-## 🧠 Análisis estructurado: ¿Cuándo aplicar `VACUUM FULL` en PostgreSQL?
+## 🧠 Análisis estructurado: ¿Cuándo aplicar [`VACUUM FULL`](https://www.postgresql.org/docs/18/sql-vacuum.html) en PostgreSQL?
+
+
+
+Este método requiere espacio adicional en disco, ya que escribe una nueva copia de la tabla y no libera la copia anterior hasta que la operación finaliza. Normalmente, esto solo debe usarse cuando se necesita recuperar una cantidad significativa de espacio dentro de la tabla.
+
 
 ***
 
