@@ -10,6 +10,8 @@
 *   Fragmentación interna
  
 
+
+
 ### ✅ Ventajas
 
 *   **Diagnóstico profundo**: Permite ver qué tuplas están visibles, muertas o congeladas directamente en el nivel de página.
@@ -20,7 +22,7 @@
 
 ### ❌ Desventajas
 
-*   **No es para producción**: Está pensado para entornos de prueba o análisis, no para uso continuo en sistemas en vivo.
+*   **No es para producción**: Está pensado para entornos análisis, no para uso continuo en sistemas en vivo.
 *   **Lectura técnica avanzada**: Requiere conocimientos sobre el almacenamiento interno de PostgreSQL (MVCC, páginas, tuplas).
 *   **No modifica datos**: Solo inspecciona; no corrige ni limpia.
  
@@ -51,40 +53,18 @@
 
  
 
-### 🔄 Competencias o tecnologías alternativas
-
-| Tecnología            | Propósito                 | Diferencias                       |
-| --------------------- | ------------------------- | --------------------------------- |
-| `pgstattuple`         | Estadísticas de ocupación | Más amigable, menos detallado     |
-| `auto_explain`        | Diagnóstico de planes     | No inspecciona almacenamiento     |
-| `pg_freespacemap`     | Espacio libre por página  | Complementa `pg_visibility`       |
-| `pg_stat_user_tables` | Estadísticas generales    | No muestra visibilidad por página |
-
  
 
-### ⚠️ Consideraciones antes y después de la implementación
 
-*   Requiere instalación manual: `CREATE EXTENSION pg_visibility;`
-*   Solo funciona con tablas normales (no vistas ni foreign tables).
-*   Puede generar carga de lectura si se usa en tablas grandes.
- 
-
-### 📝 Notas importantes
-
-*   Compatible desde PostgreSQL 9.6 en adelante.
-*   No requiere reinicio del servidor.
-*   No necesita privilegios de superusuario, pero sí permisos sobre la tabla.
-
-
-### 💬 Opinión de la comunidad
-
-*   Muy valorado por DBAs avanzados.
-*   Poco conocido por desarrolladores, pero útil para entender MVCC.
-*   Recomendado en cursos de PostgreSQL de nivel intermedio/avanzado.
- 
 ***
 
- 
+## . ¿Qué es el Visibility Map (VM)?
+
+El Visibility Map es un archivo auxiliar (con sufijo `_vm`) que PostgreSQL mantiene para cada tabla. Tiene dos objetivos principales:
+
+1. **Index-Only Scans:** Permite saber si todas las filas de una página son visibles para todos. Si es así, el motor puede obtener datos directamente del índice sin ir a la tabla (Heap).
+2. **Optimización de VACUUM:** Permite que el proceso de VACUUM salte páginas donde no hay nada que limpiar.
+
 
 ## 🧭 1. Índice
 
@@ -168,11 +148,29 @@ Este manual tiene como propósito enseñar el uso de la extensión `pg_visibilit
 
 ```sql
 CREATE EXTENSION pg_visibility;
+
+postgres@test# \dx+ pg_visibility
+      Objects in extension "pg_visibility"
++-----------------------------------------------+
+|              Object description               |
++-----------------------------------------------+
+| function pg_check_frozen(regclass)            |
+| function pg_check_visible(regclass)           |
+| function pg_truncate_visibility_map(regclass) |
+| function pg_visibility_map(regclass)          |
+| function pg_visibility_map(regclass,bigint)   |
+| function pg_visibility_map_summary(regclass)  |
+| function pg_visibility(regclass)              |
+| function pg_visibility(regclass,bigint)       |
++-----------------------------------------------+
+
+
 ```
 
 ### 🧪 Creación de datos
 
 ```sql
+--  drop table produccion_diaria ;
 CREATE TABLE produccion_diaria (
     id SERIAL PRIMARY KEY,
     fecha DATE,
@@ -182,101 +180,326 @@ CREATE TABLE produccion_diaria (
 INSERT INTO produccion_diaria (fecha, cantidad)
 SELECT CURRENT_DATE - i, (random() * 100)::int
 FROM generate_series(1, 1000) AS i;
+
+postgres@test# SELECT * FROM pg_visibility_map_summary('produccion_diaria');
++-------------+------------+
+| all_visible | all_frozen |
++-------------+------------+
+|           0 |          0 |
++-------------+------------+
+(1 row)
+
+Time: 1.322 ms
+postgres@test# SELECT * FROM pg_visibility_map('produccion_diaria') LIMIT 10;
++-------+-------------+------------+
+| blkno | all_visible | all_frozen |
++-------+-------------+------------+
+|     0 | f           | f          |
+|     1 | f           | f          |
+|     2 | f           | f          |
+|     3 | f           | f          |
+|     4 | f           | f          |
+|     5 | f           | f          |
++-------+-------------+------------+
+(6 rows)
+
+Time: 0.585 ms
+postgres@test# SELECT * FROM pg_visibility('produccion_diaria') LIMIT 10;
++-------+-------------+------------+----------------+
+| blkno | all_visible | all_frozen | pd_all_visible |
++-------+-------------+------------+----------------+
+|     0 | f           | f          | f              |
+|     1 | f           | f          | f              |
+|     2 | f           | f          | f              |
+|     3 | f           | f          | f              |
+|     4 | f           | f          | f              |
+|     5 | f           | f          | f              |
++-------+-------------+------------+----------------+
+(6 rows)
+
+Time: 0.550 ms
+postgres@test# VACUUM produccion_diaria;
+VACUUM
+Time: 12.165 ms
+postgres@test# SELECT * FROM pg_visibility_map_summary('produccion_diaria');
++-------------+------------+
+| all_visible | all_frozen |
++-------------+------------+
+|           6 |          0 |
++-------------+------------+
+(1 row)
+
+Time: 1.117 ms
+postgres@test# VACUUM FULL produccion_diaria;
+VACUUM
+Time: 23.539 ms
+postgres@test# SELECT * FROM pg_visibility_map_summary('produccion_diaria');
++-------------+------------+
+| all_visible | all_frozen |
++-------------+------------+
+|           0 |          0 |
++-------------+------------+
+(1 row)
+
+Time: 0.523 ms
+postgres@test# VACUUM produccion_diaria;
+VACUUM
+Time: 12.099 ms
+postgres@test# SELECT * FROM pg_visibility_map_summary('produccion_diaria');
++-------------+------------+
+| all_visible | all_frozen |
++-------------+------------+
+|           6 |          6 |
++-------------+------------+
+(1 row)
+
+Time: 0.523 ms
+postgres@test# SELECT * FROM pg_visibility_map('produccion_diaria') LIMIT 10;
++-------+-------------+------------+
+| blkno | all_visible | all_frozen |
++-------+-------------+------------+
+|     0 | t           | t          |
+|     1 | t           | t          |
+|     2 | t           | t          |
+|     3 | t           | t          |
+|     4 | t           | t          |
+|     5 | t           | t          |
++-------+-------------+------------+
+(6 rows)
+
+Time: 0.409 ms
+postgres@test# SELECT * FROM pg_visibility('produccion_diaria') LIMIT 10;
++-------+-------------+------------+----------------+
+| blkno | all_visible | all_frozen | pd_all_visible |
++-------+-------------+------------+----------------+
+|     0 | t           | t          | t              |
+|     1 | t           | t          | t              |
+|     2 | t           | t          | t              |
+|     3 | t           | t          | t              |
+|     4 | t           | t          | t              |
+|     5 | t           | t          | t              |
++-------+-------------+------------+----------------+
+(6 rows)
+
+Time: 0.250 ms
+postgres@test# SELECT * FROM pg_check_frozen('produccion_diaria');
++--------+
+| t_ctid |
++--------+
++--------+
+(0 rows)
+
+Time: 0.539 ms
+postgres@test# SELECT * FROM pg_check_visible('produccion_diaria');
++--------+
+| t_ctid |
++--------+
++--------+
+(0 rows)
+
+Time: 0.516 ms
+postgres@test#
+postgres@test# SELECT * FROM pg_truncate_visibility_map('produccion_diaria');
++----------------------------+
+| pg_truncate_visibility_map |
++----------------------------+
+|                            |
++----------------------------+
+(1 row)
+
+Time: 8.081 ms
+postgres@test#
+postgres@test# SELECT * FROM pg_visibility_map_summary('produccion_diaria');
++-------------+------------+
+| all_visible | all_frozen |
++-------------+------------+
+|           0 |          0 |
++-------------+------------+
+(1 row)
+
+Time: 1.034 ms
+
+
 ```
+ 
 
-### 🔍 Uso de `pg_visibility`
+##  Explicación de Funciones y Columnas
 
-#### Ver resumen de visibilidad
+### Funciones Utilizadas
 
 ```sql
+
+-- Da un conteo total de cuántas páginas (bloques) en la tabla están marcadas como "totalmente visibles" o "totalmente congeladas".
 SELECT * FROM pg_visibility_map_summary('produccion_diaria');
+
+-- Muestra el estado de cada bloque individual según el archivo VM.
+-- puedes agregar un segundo parametro para especificar el numero de la pagina
+SELECT * FROM pg_visibility_map('produccion_diaria') LIMIT 10; 
+
+-- Es más profunda; muestra lo que dice el VM y lo compara con el bit `pd_all_visible` que está físicamente en la cabecera de la página de datos.
+-- puedes agregar un segundo parametro para especificar el numero de la pagina 
+SELECT * FROM pg_visibility('produccion_diaria') LIMIT 10;       
+
+
+--  Verifican la integridad, buscando filas que NO deberían estar ahí si la página se supone que está congelada o es visible. Si devuelven 0 filas, todo está correcto.
+SELECT * FROM pg_check_frozen('produccion_diaria');
+SELECT * FROM pg_check_visible('produccion_diaria');
+
+-- No recomendado - Borra el mapa de visibilidad de la tabla (útil para pruebas o si sospechas de corrupción).
+SELECT * FROM pg_truncate_visibility_map('produccion_diaria');
+
+
 ```
+ 
+### Columnas Retornadas
 
-**Simulación de salida:**
+| Columna | Significado |
+| --- | --- |
+| **`blkno`** | El número del bloque (página) de 8KB en el archivo de la tabla. |
+| **`all_visible`** | Según el mapa de visibilidad, ¿son todas las filas de este bloque visibles para todos? |
+| **`all_frozen`** | Según el mapa de visibilidad, ¿están todas las filas de este bloque "congeladas" (protegidas contra el wraparound de XID)? |
+| **`pd_all_visible`** | El bit de visibilidad real guardado en el encabezado de la página física (`PageHeader`). |
 
-| all\_visible | all\_frozen | total\_pages |
-| ------------ | ----------- | ------------ |
-| 800          | 0           | 1000         |
 
-#### Ver visibilidad por página
+
+ 
+
+
+---
+
+
+
+
+## 3. Análisis del Flujo del Laboratorio
+
+### Paso 1: CREATE e INSERT (`all_visible = 0`)
+
+Al insertar las 1000 filas, PostgreSQL escribe los datos en las páginas. Sin embargo, aunque las filas ya están ahí, el **Visibility Map aún no se ha actualizado**. El VM no se actualiza en tiempo real con cada `INSERT` por razones de rendimiento; se actualiza principalmente durante un `VACUUM`.
+
+### Paso 2: El primer `VACUUM` (`all_visible = 6`)
+
+Ejecutaste un `VACUUM` estándar.
+
+* **¿Qué pasó?** El proceso escaneó la tabla y se dio cuenta de que las transacciones que insertaron los datos ya terminaron. Por lo tanto, todas las filas en esos 6 bloques son visibles para cualquier transacción futura.
+* **Resultado:** Marcó los 6 bloques como `all_visible = t`.
+
+### Paso 3: El misterio del `VACUUM FULL` (`all_visible = 0`)
+
+Aquí notaste que al hacer `VACUUM FULL`, los contadores volvieron a cero.
+
+* **Razonamiento:** `VACUUM FULL` no limpia la tabla vieja; **crea una tabla completamente nueva** y mueve los datos ahí, eliminando la vieja. Al ser un archivo nuevo, el Visibility Map se descarta y se crea uno nuevo vacío. Hasta que no corra un `VACUUM` normal o el `autovacuum` pase por la "nueva" tabla, el mapa no se poblará.
+
+### Paso 4: Segundo `VACUUM` (`all_frozen = 6`)
+
+Aquí es donde se pone interesante: ahora aparecen como **congeladas (frozen)**.
+
+* **¿Qué pasó?** En PostgreSQL, las filas tienen un ID de transacción (`xmin`). Cuando las filas son "viejas" (nadie las va a borrar o modificar y han pasado suficientes transacciones), `VACUUM` las "congela" cambiando su ID por uno especial llamado `FrozenXID`.
+* **Por qué ahora sí:** Probablemente al repetir el proceso y ejecutar `VACUUM` sobre la tabla recién creada por el `FULL`, el motor determinó que los datos eran candidatos perfectos para congelar (ya que son datos estáticos de un laboratorio). Una página `all_frozen` es automáticamente `all_visible`.
+
+### Paso 5: `pg_truncate_visibility_map`
+
+Finalmente, usaste la "bomba nuclear" de la extensión. Esta función truncó el archivo del mapa. Por eso, aunque los datos seguían en la tabla, el resumen volvió a mostrar **0**, porque simplemente borraste el mapa que contenía esa información.
+
+ 
+---
+
+ 
+## 1. ¿Por qué es BUENO tener páginas Visibles y Congeladas?
+
+### El beneficio de "All-Visible" (Rendimiento)
+
+Cuando una página es "All-Visible", PostgreSQL puede realizar un **Index-Only Scan**.
+
+* **Sin VM:** Si haces una consulta que solo pide columnas que están en el índice, Postgres de todos modos tiene que ir al archivo de la tabla (el Heap) para ver si esa fila es visible para tu transacción. Esto genera mucho **I/O (lectura de disco)**.
+* **Con VM:** Postgres mira el Visibility Map. Si el bit dice "t" (true), confía en el mapa y devuelve el dato del índice directamente. Es órdenes de magnitud más rápido.
+
+### El beneficio de "All-Frozen" (Mantenimiento)
+
+Cuando una página está "All-Frozen", PostgreSQL sabe que los datos allí son tan antiguos que ya no necesitan ser revisados nunca más para temas de mantenimiento de IDs de transacción.
+
+* **Ahorro en VACUUM:** En los siguientes procesos de `VACUUM`, el motor simplemente **salta** estas páginas. No las lee, no consume CPU ni disco con ellas.
+ 
+
+## 2. ¿Qué pasa si NO se marcan páginas (Consecuencias)?
+
+Si tu laboratorio siempre mostrara `0` en `all_visible` y `all_frozen`, tu base de datos entraría en un estado de degradación:
+
+### A. Degradación del Rendimiento (I/O excesivo)
+
+Tus índices dejarían de ser tan eficientes. Incluso si tienes índices perfectos, PostgreSQL se vería obligado a leer el archivo de la tabla para cada fila encontrada para verificar visibilidad, aumentando la latencia de las consultas.
+
+### B. El riesgo del Transaction ID Wraparound (El "Apocalipsis")
+
+PostgreSQL usa números de 32 bits para las transacciones. Si llegas a ~2 mil millones de transacciones sin "congelar" los datos viejos, la base de datos **entrará en modo de solo lectura o se apagará** para evitar la pérdida de datos (porque los IDs nuevos empezarían a solaparse con los viejos y los datos viejos "desaparecerían").
+
+> Las páginas **Frozen** son la cura contra este problema.
+
+### C. "Vacuum Bloat" y fatiga de disco
+
+Si el `VACUUM` no puede marcar páginas como visibles, cada vez que pase tendrá que escanear la tabla completa de principio a fin.
+
+* En una tabla de 1 GB no importa.
+* En una tabla de 1 TB, el `VACUUM` nunca terminaría, consumiendo todo el ancho de banda de tus discos constantemente.
+
+ 
+
+## 3. Resumen: Comparativa de consecuencias
+
+| Situación | Consecuencia en Consultas | Consecuencia en Almacenamiento |
+| --- | --- | --- |
+| **Mucho All-Visible** | Consultas ultra rápidas (Index-Only Scans). | Menor desgaste de disco (menos I/O). |
+| **Poco All-Visible** | Consultas lentas (siempre van al Heap). | Alto consumo de recursos por VACUUM constante. |
+| **Mucho All-Frozen** | Rendimiento estable. | Protección total contra Wraparound. |
+| **Cero All-Frozen** | Riesgo de parada total del servicio. | VACUUMs extremadamente pesados y largos. |
+
+ 
+
+## Razonamiento de tu laboratorio
+
+En tu laboratorio, cuando hiciste el `VACUUM` y viste que pasó de **0 a 6**, estabas viendo a PostgreSQL "optimizándose a sí mismo".
+
+1. Al principio (0), Postgres no sabía si los datos eran para todos.
+2. Tras el `VACUUM` (6 visibles), Postgres dijo: "Listo, esto ya es estable, puedo usar los índices rápido".
+3. Tras el segundo `VACUUM` (6 congelados), Postgres dijo: "Estos datos no van a cambiar en mucho tiempo, los marco como permanentes (frozen) para no volver a leer este bloque en el próximo mantenimiento".
+
+---
+
+## 1. La solución inmediata: El encadenamiento de comandos
+
+Dado que `VACUUM FULL` crea una tabla nueva "ciega", la solución es ejecutar un `VACUUM` estándar (sin FULL) inmediatamente después. El flujo ideal en un script de mantenimiento debería ser:
 
 ```sql
-SELECT * FROM pg_visibility_map('produccion_diaria') LIMIT 10;
-```
-
-**Simulación de salida:**
-
-| blkno | all\_visible | all\_frozen |
-| ----- | ------------ | ----------- |
-| 0     | true         | false       |
-| 1     | false        | false       |
-| ...   | ...          | ...         |
-
-#### Ver detalles de una página específica
-
-```sql
-SELECT * FROM pg_visibility('produccion_diaria', 1);
-```
-
-**Simulación de salida:**
-
-| blkno | tuple\_offset | is\_visible |
-| ----- | ------------- | ----------- |
-| 1     | 0             | true        |
-| 1     | 1             | false       |
-
-
-
-## 🧼 Mantenimiento
-
-Si se detecta bloat:
-
-```sql
+-- 1. Compactar la tabla (bloqueo total, crea archivo nuevo)
 VACUUM FULL produccion_diaria;
+
+-- 2. Poblar el Visibility Map (rápido, no bloquea lecturas)
+VACUUM produccion_diaria;
+
+-- 3. Actualizar estadísticas para el optimizador de consultas
+ANALYZE produccion_diaria;
+
 ```
 
-***
+### ¿Por qué hacer esto?
 
-## 🧠 10. Consideraciones
-
-*   No usar en producción sin pruebas previas
-*   Requiere permisos elevados
-*   Puede afectar rendimiento si se usa en tablas grandes
+* El **`VACUUM FULL`** recupera espacio en disco.
+* El **`VACUUM`** (normal) recorre la nueva tabla y marca las páginas como `all_visible`. Como la tabla acaba de ser creada y no tiene "basura" (bloat), este segundo Vacuum es extremadamente rápido.
+* El **`ANALYZE`** asegura que Postgres sepa cuántas filas hay exactamente en la nueva estructura para elegir los mejores planes de ejecución.
 
 
+---
 
-## ✅ 11. Buenas prácticas
-
-*   Usar en conjunto con `pgstattuple` para análisis más profundo
-*   Automatizar inspección en tablas críticas
-*   Documentar resultados y acciones tomadas
-
-
-
-## 💡 12. Recomendaciones
-
-*   Integrar en rutinas de mantenimiento mensual
-*   Usar antes de aplicar `VACUUM FULL`
-*   Comparar con estadísticas de `pg_stat_user_tables`
-
-
-
-## 🔄 13. Otros tipos
-
-*   `pgstattuple`: muestra estadísticas de ocupación
-*   `pg_freespacemap`: muestra espacio libre por página
-
-
-
-## 📊 14. Tabla comparativa
+## 📊 14. Otros tipos de tools 
 
 | Extensión        | Visibilidad | Espacio libre | Estadísticas |
 | ---------------- | ----------- | ------------- | ------------ |
 | pg\_visibility   | ✅           | ❌             | ❌            |
 | pgstattuple      | ❌           | ✅             | ✅            |
 | pg\_freespacemap | ❌           | ✅             | ❌            |
+| pg_stat_user_tables |            |              |             |
 
 
+ 
 
 ## 📚 15. Bibliografía
 
