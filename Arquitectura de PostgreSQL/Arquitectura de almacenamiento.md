@@ -2,7 +2,8 @@
 
 # Arquitectura de almacenamiento de PostgreSQL
 
- 
+## Visibilidad
+ La Visibilidad es el proceso por el cual PostgreSQL decide si una transacción específica tiene permitido ver una fila determinada, basándose en el estado de esas transacciones (xmin y xmax).
 
 ## 1. ¿Qué es el Visibility Map?
 
