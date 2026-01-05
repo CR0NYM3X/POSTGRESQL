@@ -1819,6 +1819,195 @@ middle -[hidden]-> leaf
 @enduml
 
 ```
+----
+
+
+# Laboratorio: Index Scan, Index-Only Scan, INCLUDE
+
+### 1. Preparación del Entorno
+
+Primero, crearemos una tabla de "Ventas" con suficientes datos para que el optimizador prefiera usar índices.
+
+```sql
+-- 1. Crear la tabla
+CREATE TABLE ventas (
+    id SERIAL PRIMARY KEY,
+    cliente_id INT,
+    monto NUMERIC,
+    fecha_venta TIMESTAMP,
+    comentarios TEXT -- Columna pesada para forzar el Heap
+);
+
+-- 2. Insertar 100,000 registros aleatorios
+INSERT INTO ventas (cliente_id, monto, fecha_venta, comentarios)
+SELECT 
+    floor(random() * 1000) + 1, 
+    (random() * 500)::numeric(10,2),
+    now() - (random() * interval '365 days'),
+    md5(random()::text) -- Texto aleatorio pesado
+FROM generate_series(1, 100000);
+
+-- 3. Crear un índice estándar en cliente_id
+CREATE INDEX idx_ventas_cliente ON ventas(cliente_id);
+
+-- 4. ¡IMPORTANTE! Actualizar estadísticas y Visibility Map
+VACUUM ANALYZE ventas;
+
+```
+
+
+
+### 2. Escenario 1: Index Scan (El salto a la tabla)
+
+Aquí buscamos por `cliente_id`, pero pedimos el `monto`. El índice tiene el ID del cliente, pero **no el monto**, así que debe ir al "Heap" (la tabla).
+
+**Consulta:**
+
+```sql
+EXPLAIN ANALYZE
+SELECT cliente_id, monto 
+FROM ventas 
+WHERE cliente_id = 500;
+
+```
+
+* **Qué observar:** En el output verás `Index Scan using idx_ventas_cliente`.
+* **Explicación:** Postgres encuentra las filas en el índice, pero hace un "salto" al disco para leer la columna `monto`.
+
+
+
+### 3. Escenario 2: Index-Only Scan (El atajo perfecto)
+
+Ahora pediremos **solo** la columna que está en el índice.
+
+**Consulta:**
+
+```sql
+EXPLAIN ANALYZE
+SELECT cliente_id 
+FROM ventas 
+WHERE cliente_id = 500;
+
+```
+
+* **Qué observar:** Verás `Index Only Scan using idx_ventas_cliente`.
+* **Explicación:** Como el índice ya tiene el `cliente_id`, Postgres no toca la tabla para nada. La respuesta viene directo del archivo del índice.
+
+
+
+### 4. Escenario 3: Covering Index con `INCLUDE`
+
+Imagina que tu aplicación siempre pide el `monto` cuando busca por `cliente_id`. Podemos "incluir" el monto en el índice de cliente sin que sea parte de la lógica de ordenamiento.
+
+**Paso a paso:**
+
+```sql
+-- 1. Eliminamos el índice viejo
+DROP INDEX idx_ventas_cliente;
+
+-- 2. Creamos el índice de cobertura (Covering Index)
+-- cliente_id se usa para buscar (ordenado)
+-- monto se guarda en las hojas (no ordenado) para que esté a la mano
+CREATE INDEX idx_ventas_cliente_monto_incl ON ventas(cliente_id) INCLUDE (monto);
+-- CREATE INDEX idx_ventas_cliente_monto_incl ON ventas(cliente_id,monto) ;
+
+-- 3. Limpiamos para asegurar el Visibility Map
+VACUUM ANALYZE ventas;
+
+```
+
+**Consulta de prueba:**
+
+```sql
+EXPLAIN ANALYZE
+SELECT cliente_id, monto 
+FROM ventas 
+WHERE cliente_id = 500;
+
+```
+
+* **Qué observar:** ¡Magia! Aunque pediste el `monto`, ahora verás `Index Only Scan`.
+* **Explicación:** Gracias al `INCLUDE`, el `monto` ahora vive en el índice. Hemos convertido un *Index Scan* lento en un *Index Only Scan* rápido sin cambiar la consulta SQL.
+
+
+
+### Resumen para tus alumnos:
+
+1. **Index Scan:** El índice es un mapa; encuentras la dirección y vas a la casa (tabla) por el paquete.
+2. **Index-Only Scan:** El paquete es tan pequeño que el mapa ya lo trae pegado; no vas a la casa.
+3. **INCLUDE:** Decides pegar un paquete extra al mapa para no tener que viajar a la casa la próxima vez.
+ 
+
+Esta es una de las preguntas más finas y de nivel "Senior" que tus alumnos podrían hacer. Tienes razón: **ambas formas permiten el Index-Only Scan**, pero tienen diferencias arquitectónicas profundas en cómo se almacena el índice y para qué se pueden usar.
+
+Aquí tienes la comparativa para que se las expliques:
+ 
+
+### 1. Índice Multicolumna: `(cliente_id, monto)`
+
+En este índice, **ambas columnas son "llaves"**. Esto significa que el índice está ordenado primero por `cliente_id` y, dentro de cada ID, los datos están ordenados por `monto`.
+
+* **Ventajas:**
+* Puedes usar el índice para filtrar por ambos: `WHERE cliente_id = 500 AND monto > 100`.
+* Puedes usarlo para ordenar: `ORDER BY cliente_id, monto`.
+
+
+* **Desventajas:**
+* **Tamaño en los nodos internos:** El valor de `monto` se guarda en todos los niveles del árbol B-Tree (nodos raíz, ramas y hojas). Esto hace que el índice ocupe más espacio en la memoria RAM (Buffer Cache).
+* **Restricción de Unicidad:** Si quieres que el `cliente_id` sea único, no puedes usar este índice, porque la unicidad se aplicaría a la **pareja** `(cliente_id, monto)`.
+
+ 
+
+### 2. Índice con `INCLUDE`: `(cliente_id) INCLUDE (monto)`
+
+Aquí, `cliente_id` es la **llave** (ordenada), pero `monto` es solo **carga útil** (payload). El `monto` solo se guarda en las "hojas" del árbol (el nivel más bajo).
+
+* **Ventajas:**
+* **Unicidad (La razón principal):** Puedes crear un índice único en `cliente_id` y aun así incluir el `monto` para tener *Index-Only Scan*.
+* `CREATE UNIQUE INDEX idx ON ventas(cliente_id) INCLUDE (monto);` -> Esto garantiza que el ID no se repita, cosa que el índice multicolumna no puede hacer.
+
+
+* **Eficiencia de Memoria:** Al no guardar el `monto` en los nodos internos del árbol, el índice es más "esbelto". Esto permite que quepan más ramas del índice en la RAM, acelerando las búsquedas.
+
+
+* **Desventajas:**
+* **No sirve para filtrar por monto:** No puedes usar este índice eficientemente para un `WHERE monto > 100`, porque los montos en las hojas no están ordenados.
+* **No sirve para ordenar por monto:** Un `ORDER BY cliente_id, monto` requerirá un paso de ordenamiento extra (Sort) en el CPU.
+
+
+ 
+### Comparativa Visual para tu clase
+
+Imagina el árbol del índice:
+
+| Característica | Multicolumna `(A, B)` | `(A) INCLUDE (B)` |
+| --- | --- | --- |
+| **¿Index-Only Scan?** | Sí | Sí |
+| **¿B ordenado?** | Sí | No |
+| **¿Dónde vive B?** | En todo el árbol | Solo en las hojas |
+| **¿Permite UNIQUE en A?** | No (sería unique en A+B) | **Sí** |
+| **Tamaño del índice** | Más grande | Más pequeño (nodos internos) |
+ 
+
+### ¿Cuál es mejor y por qué?
+
+**Usa el Índice Multicolumna `(cliente_id, monto)` si:**
+
+* Vas a filtrar frecuentemente por ambas columnas en el `WHERE`.
+* Necesitas que los resultados salgan ordenados por ambos campos.
+
+**Usa el Índice con `INCLUDE` si:**
+
+1. **Quieres garantizar unicidad** en la columna principal pero necesitas los datos de la otra para un *Index-Only Scan*.
+2. **Quieres ahorrar espacio en RAM** y sabes que la columna incluida (`monto`) **nunca** se usará para filtrar ni para ordenar, sino solo para mostrarse en el `SELECT`.
+
+### Ejemplo de "la vida real" para tus alumnos:
+
+Si tienes una tabla de `usuarios` y siempre que buscas por `email` quieres mostrar su `nombre`:
+
+* **Opción correcta:** `CREATE UNIQUE INDEX idx_email ON usuarios(email) INCLUDE (nombre);`
+* **¿Por qué?** Porque el `email` debe ser único (el `INCLUDE` lo permite) y el `nombre` solo lo quieres para "pintarlo" en la pantalla sin tener que ir a la tabla pesada. No necesitas ordenar a los usuarios por nombre dentro del mismo email (porque solo hay un email por persona).
+
 
 
 ### Bibliografia 
