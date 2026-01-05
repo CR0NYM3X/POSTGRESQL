@@ -544,6 +544,107 @@ Si haces un `INSERT` y esperas a que el **`autovacuum`** (el proceso automático
  
 ---
 
+# Vacuum valida fila por fila ?
+
+Para que PostgreSQL pueda decir con total seguridad que una página (un bloque de 8KB) es "All-Visible", no tiene más remedio que inspeccionar lo que hay dentro, fila por fila.
+
+Aquí te explico cómo ocurre esa "inspección" técnica y por qué es necesaria:
+
+### 1. El escaneo de los IDs de Transacción ( y )
+
+Cada fila (tuple) en Postgres tiene dos etiquetas ocultas fundamentales para la visibilidad:
+
+* : El ID de la transacción que **creó** la fila.
+* : El ID de la transacción que **borró o actualizó** la fila (si está en 0, la fila no ha sido borrada).
+
+Cuando el `VACUUM` entra en una página, actúa como un auditor de impuestos:
+
+1. Mira la **Fila A**: "¿Quién te creó? ¿La transacción que te creó ya terminó y es visible para todos?".
+2. Mira la **Fila B**: "¿Alguien te borró? Si te borraron, ¿esa transacción ya es tan vieja que nadie te necesita?".
+3. **La Condición:** Si el `VACUUM` termina de revisar todas las filas de la página y confirma que **absolutamente todas** son visibles para cualquier transacción actual o futura (y no hay "basura" o versiones muertas), entonces marca la página en el mapa.
+
+### 2. El "Sello" en el Visibility Map
+
+Solo cuando ese escaneo fila por fila termina con éxito para esa página, el `VACUUM` hace dos cosas:
+
+* En la **cabecera de la página física** (`PageHeader`), activa el bit `pd_all_visible`.
+* En el **archivo del Visibility Map** (`_vm`), activa el bit correspondiente a ese bloque.
+
+### 3. ¿Por qué es tan importante que sea fila por fila?
+
+Imagina que en una página de 80 filas, 79 son visibles para todos, pero hay **una sola fila** que acaba de ser insertada por una transacción que aún no hace `COMMIT`.
+
+* Si Postgres marcara la página como "All-Visible" sin revisar esa fila, otra consulta podría intentar un **Index-Only Scan**, ver la página marcada como "segura" y leer esa fila que aún no debería ser visible, rompiendo la integridad de la base de datos (**Lectura Sucia**).
+
+### 4. La gran excepción: ¿Cuándo NO valida fila por fila?
+
+Aquí es donde el Visibility Map se vuelve "mágico". En los **siguientes** procesos de `VACUUM` (después del primero que hiciste en tu laboratorio):
+
+* El `VACUUM` llega a la tabla.
+* Primero lee el Visibility Map.
+* Si el mapa dice que el Bloque #1 es `all_visible`, el `VACUUM` **se salta ese bloque por completo**.
+* **¡Ya no valida fila por fila!** Confía en el mapa y ahorra muchísimo trabajo de disco y CPU.
+
+--- 
+
+
+# Hacer una modificacion despues del primer vacuum que pasa? 
+
+Esa es la pregunta clave que revela la genialidad detrás del diseño de PostgreSQL. Si el `VACUUM` saltara bloques a ciegas sin importar que los datos cambiaron, la base de datos se corrompería rápidamente.
+
+La respuesta es: **El Visibility Map (VM) no es estático; se "ensucia" (se resetea) en tiempo real.**
+
+Aquí te explico el proceso exacto de qué pasa cuando modificas un dato después de que el mapa ya estaba en `true`.
+ 
+
+### 1. El mecanismo de "Limpieza de Bits" (Bit Clearing)
+
+En el momento exacto en que tú ejecutas un `UPDATE` o un `DELETE` en una fila, PostgreSQL realiza una operación interna crítica:
+
+1. **Localización:** El motor identifica en qué bloque (página) vive la fila que vas a modificar.
+2. **Reset inmediato:** Antes de escribir el cambio, el motor **apaga los bits** `all_visible` y `all_frozen` de ese bloque específico en el Visibility Map.
+3. **Cambio a False:** El estado del bloque en el mapa pasa de `t` (true) a `f` (false) instantáneamente.
+ 
+### 2. ¿Por qué ocurre esto al modificar?
+
+Recuerda que en PostgreSQL, un `UPDATE` no sobrescribe el dato viejo. Lo que hace es:
+
+* Marcar la fila vieja como **muerta** (invisible para futuras transacciones).
+* Insertar una **fila nueva** con los datos actualizados.
+
+En ese instante, la página ya no es "totalmente visible para todos" porque contiene una "fila muerta" (basura/bloat) que solo el `VACUUM` puede ver y limpiar. Por seguridad, Postgres marca el bloque como "sucio" en el mapa para avisarle al siguiente `VACUUM`: *"Oye, aquí pasó algo, ya no puedes saltarte esta página; tienes que entrar y revisar fila por fila"*.
+ 
+
+### 3. El ciclo de vida del bloque (Ejemplo práctico)
+
+Imagina tu tabla `produccion_diaria` con sus 6 bloques:
+
+| Evento | Estado del Bloque #1 en el VM | Comportamiento del VACUUM |
+| --- | --- | --- |
+| **Después del 1er VACUUM** | `t` (All-Visible) | El siguiente VACUUM lo saltaría. |
+| **Haces un UPDATE en el Bloque #1** | **`f` (Sucio)** | El bit se apaga automáticamente al modificar. |
+| **Llega el 2do VACUUM** | `f` (False) | **Entra al bloque**, limpia la fila muerta del UPDATE. |
+| **Al terminar ese 2do VACUUM** | **`t` (All-Visible)** | Vuelve a poner el bit en `true` porque ya limpió. |
+
+ 
+### 4. ¿Qué pasa con las lecturas (Index-Only Scans)?
+
+Esto también afecta a las consultas. Si el bit en el VM es `false`:
+
+* Postgres ya no puede confiar solo en el índice.
+* La consulta se ve obligada a ir a la tabla física (el Heap) para verificar si la fila que encontró es la versión nueva o la vieja.
+
+Por eso, una base de datos con muchas actualizaciones constantes suele tener un Visibility Map con muchos `false`, lo que hace que las consultas sean un poco más pesadas que en una tabla que es solo de lectura (donde casi todo es `true`).
+
+ 
+
+### Resumen: La seguridad ante todo
+
+PostgreSQL prefiere **ser lento pero seguro**. En cuanto hay una mínima sospecha de que una página ha cambiado (un `INSERT`, `UPDATE` o `DELETE`), el bit del Visibility Map se apaga. Solo el `VACUUM` (manual o automático) tiene el "poder" de volver a encenderlo después de inspeccionar la página fila por fila.
+
+ 
+
+---
 ## 📊 14. Otros tipos de tools 
 
 | Extensión        | Visibilidad | Espacio libre | Estadísticas |
