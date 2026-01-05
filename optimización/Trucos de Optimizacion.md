@@ -364,4 +364,57 @@ SELECT email FROM usuarios WHERE email = 'profe@ejemplo.com';
 
 > "Un Index-Only Scan es cuando el índice se vuelve la base de datos misma para esa consulta. Si pides solo lo que indexaste, Postgres no tiene que trabajar doble yendo a la tabla. Por eso el `SELECT *` es el enemigo de esta optimización: obliga a la base de datos a dejar de leer el índice (pequeño y rápido) para ir a buscar basura a la tabla (grande y lenta)".
 
----
+--- 
+# On-Premise - Cloud [Link](https://www.scalingpostgres.com/episodes/398-latency-killing-performance/)
+
+Este post de **Cybertec** es una pieza fundamental para tu curso de arquitectura, porque explica por qué una base de datos puede ser lenta aunque el procesador (CPU) sea el más rápido del mundo. El culpable: **La latencia.**
+
+Aquí tienes el resumen desglosado para que lo expliques a tus alumnos:
+
+### 1. El Objetivo del Post
+
+El autor busca demostrar con datos reales que la diferencia de rendimiento entre tener servidores físicos propios (**On-Premise**) y usar la nube (**Cloud**) no se debe a la potencia del equipo, sino a la **distancia física y lógica** que recorren los datos.
+
+### 2. El Problema: Latencia vs. Rendimiento
+
+El post explica que en PostgreSQL, la mayoría de las operaciones (especialmente las escrituras) dependen de qué tan rápido el disco le diga a la base de datos: *"Ya guardé la información"*.
+
+* **En la nube (Cloud):** Tu base de datos y tu disco (almacenamiento) **no están en el mismo lugar**. Están conectados por una red interna. Cada vez que haces un `COMMIT`, el dato debe viajar por esa red, guardarse y enviar una confirmación de vuelta.
+* **En servidores físicos (On-Premise):** El disco suele estar conectado directamente a la placa base (bus local). El viaje es casi instantáneo.
+
+### 3. Conceptos Clave para tu clase
+
+#### A. Latencia de Red (El "Ping")
+
+El post muestra que en la nube, el simple hecho de enviar un paquete de un servidor a otro añade milisegundos que en un servidor físico no existen.
+
+* **Dato para alumnos:** Si una consulta hace 100 viajes de red pequeños, y cada uno tarda 1ms, la consulta tardará 100ms solo en "viajes", sin contar el procesamiento.
+
+#### B. Latencia de Disco (El problema del WAL)
+
+PostgreSQL usa el **WAL (Write Ahead Log)**. Para que una transacción sea segura, el WAL debe escribirse en el disco de forma síncrona.
+
+* En **On-premise** con discos NVMe, esto tarda unos **pocos microsegundos**.
+* En **Cloud** (usando almacenamiento en red como AWS EBS), esto puede tardar **milisegundos**.
+* **Conclusión:** La nube puede ser **10 o 50 veces más lenta** en escrituras pesadas debido a esta arquitectura.
+
+#### C. Rendimiento (Throughput) vs. Latencia
+
+El post aclara que la nube es excelente en *Throughput* (puede mover mucha información a la vez), pero es mala en *Latencia* (qué tan rápido responde una sola petición). Para una base de datos transaccional, la latencia es mucho más importante.
+
+### 4. La Solución / Recomendaciones
+
+El post no dice que la nube sea mala, sino que como arquitecto debes saber elegir:
+
+1. **Si necesitas velocidad extrema:** Usa servidores físicos o instancias de nube con "Local NVMe" (como el post de PlanetScale Metal que vimos antes).
+2. **Si usas nube estándar:** Debes optimizar tu código para hacer **menos viajes al servidor** (usar procedimientos almacenados, reducir el número de commits pequeños, o usar conexiones persistentes).
+
+
+
+### Resumen Ejecutivo para tu curso:
+
+> "La nube es como pedir comida por delivery: puedes pedir mucha comida (Throughput), pero siempre tardará en llegar porque tiene que viajar por la calle (Red). Tener el servidor físico es como cocinar en tu propia cocina: es inmediato porque todo está a la mano."
+
+ 
+ 
+
