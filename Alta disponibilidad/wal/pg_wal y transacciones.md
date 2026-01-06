@@ -3263,3 +3263,23 @@ Así, cuando llega el checkpoint, hay menos trabajo pendiente → evita picos de
     *   Al finalizar una recuperación, se archivan los segmentos pendientes.
 
  
+---- 
+
+
+# ¿Qué pasa si se apaga antes de que el `walwriter` actúe?
+
+Tenemos dos escenarios posibles:
+
+#### Escenario A: No habías hecho `COMMIT` (o el proceso de commit no terminó)
+
+Si la luz se va mientras los datos están solo en el **WAL Buffer**, ese registro se pierde. Sin embargo, esto **no es un problema para la integridad**:
+
+* Como el registro nunca llegó al disco, cuando la base de datos reinicie, simplemente será como si la transacción nunca hubiera ocurrido.
+* PostgreSQL nunca le dijo al usuario "Tu cambio se guardó", por lo tanto, no hay una promesa rota.
+
+#### Escenario B: El riesgo del "Asynchronous Commit"
+
+Existe un parámetro llamado `synchronous_commit`.
+
+* **Si está en `on` (por defecto):** No hay riesgo. Si recibiste el mensaje de éxito, el WAL está en disco. Si no lo recibiste, no está.
+* **Si lo pones en `off`:** Aquí es donde ocurre lo que tú temes. Postgres te dice "¡Listo, guardado!" en cuanto el cambio llega al **WAL Buffer**, sin esperar al disco. Si la luz se va en ese pequeño milisegundo antes de que el `walwriter` actúe, **perderás transacciones que el sistema te juró que ya estaban guardadas.**
