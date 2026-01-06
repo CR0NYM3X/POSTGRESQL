@@ -79,7 +79,6 @@ Problema: La tabla `ventas` ha sufrido muchas eliminaciones y sospechamos fragme
 ### ✅ **7. Estructura Semántica**
 
 *   Extensión: `pg_freespacemap`
-*   Función principal: `pg_freespacemap_relations` y `pg_freespacemap_pages`
 *   Parámetros: `relid` (OID de la tabla), `blkno` (número de bloque)
 
 ***
