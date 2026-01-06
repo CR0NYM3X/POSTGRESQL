@@ -9,7 +9,11 @@ La extensión `tablefunc` en PostgreSQL es una extensión que proporciona funcio
 
 
 ### Instalación:
+    -- Instalar el paquete de las  extensiones 
     sudo yum install postgresql-contrib
+
+    -- Instalar extension 
+    create EXTENSION tablefunc ;
 
 
 ## Ejemplos de uso:
