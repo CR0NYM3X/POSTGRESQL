@@ -132,3 +132,44 @@ Cuando haces un `UPDATE` de una fila, PostgreSQL no cambia los datos ahí mismo.
 
 Este proceso explica por qué PostgreSQL necesita el **VACUUM**. Como las filas "borradas" (con un `xmax` válido y comprometido) siguen físicamente en el disco, el VACUUM debe pasar eventualmente para ver qué filas ya no son visibles para **nadie** en el sistema y liberar ese espacio.
  
+----
+----
+----
+----
+### Arquitectura de PostgreSQL  #3
+```
+-- Explicar y tambien enseñar los parámetros que controlan el comportamiento.
+
+
+ .- Estructura del Directorio de Datos
+		.- pg_wal
+		.- pg_global
+		.- pg_default
+		.- DATA
+ .- Arquitectura de almacenamiento. 
+		.- método de acceso Tablas heap y Indice B-Tree (el sistema que utiliza para organizar, almacenar y recuperar datos de manera eficiente dentro de la base de datos)
+		.- (Page, archivos, vistas )
+		.- Toast
+		.- método de acceso heap
+		.- Storage
+		.- HOT
+		.- Tipos de Compresión en PostgreSQL
+ .- WALs
+ .- Memoria 
+		.- (Buffer, Paginas Gigantes)
+ .- MVCC 
+ .- Mantimiento
+ .- Ciclo de vida de consultas y Escritura (UPD,INS,DEL)
+
+ .- ACID 
+ .- Aislamiento (READ COMMITTED, SERIALIZABLE)
+ .- Metadatos 
+ .- 
+ .- fillfactor
+ .- 
+ .- 
+ .- 
+ .- 
+ .- 
+ .- 
+```
