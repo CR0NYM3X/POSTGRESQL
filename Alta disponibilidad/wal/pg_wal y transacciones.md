@@ -3283,3 +3283,13 @@ Existe un parámetro llamado `synchronous_commit`.
 
 * **Si está en `on` (por defecto):** No hay riesgo. Si recibiste el mensaje de éxito, el WAL está en disco. Si no lo recibiste, no está.
 * **Si lo pones en `off`:** Aquí es donde ocurre lo que tú temes. Postgres te dice "¡Listo, guardado!" en cuanto el cambio llega al **WAL Buffer**, sin esperar al disco. Si la luz se va en ese pequeño milisegundo antes de que el `walwriter` actúe, **perderás transacciones que el sistema te juró que ya estaban guardadas.**
+
+ 
+###  ¿Quién manda a disco?
+
+Existen tres situaciones que obligan al WAL a salir de la memoria e irse al disco duro (`pg_wal`):
+
+1. **Un `COMMIT` de cualquier usuario:** (Si `synchronous_commit` es `on`). Esto vacía el buffer hasta el punto de esa transacción.
+2. **El `walwriter`:** Se despierta cada cierto tiempo (definido por `wal_writer_delay`, usualmente 200ms) para ir adelantando trabajo y que los buffers no se llenen.
+3. **Buffer lleno:** Si el `WAL Buffer` se llena por una carga masiva de datos, se tiene que escribir en disco para hacer espacio.
+ 
