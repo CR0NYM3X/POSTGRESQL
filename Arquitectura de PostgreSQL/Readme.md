@@ -16,7 +16,7 @@
 | [pg_stat_statements](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pg_stat_statements.md)  | Estadísticas de ejecución de consultas            | Muy usado para identificar consultas más costosas; no analiza almacenamiento.         |
 
  
-### **Vistas para análisis interno y diagnóstico**
+### **Tabla, Vistas o Funciones para análisis interno y diagnóstico**
 
 | **Tecnología** | **Propósito** | **Diferencias / Comentarios** |
 | --- | --- | --- |
@@ -26,6 +26,7 @@
 | **pg_stat_bgwriter** | Monitorea la actividad del Background Writer y del Checkpointer. | Ayuda a saber si los checkpoints se disparan por tiempo o por llenado de buffers (`checkpoints_req`). |
 | **pg_stat_io** | Estadísticas detalladas de I/O por tipo de proceso, objeto y contexto. | **Nota:** Esta vista se introdujo en **Postgres 16**. En tu versión (15.14) aún no está disponible. |
 | **pg_statio_user_tables** | Muestra estadísticas de entrada/salida (I/O) físicas de las tablas. | A diferencia de la vista lógica, esta te dice cuántos bloques se leyeron de disco vs. cuántos se leyeron de la RAM (caché). |
+| **pg_control_checkpoint()** |  Muestra el estado exacto del último checkpoint en el archivo de control. |  Es una función. No es estadística acumulada; muestra el LSN y la línea de tiempo (timeline) actual. |
  
 
 
