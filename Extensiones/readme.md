@@ -230,8 +230,9 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 pageinspect  -> es una extensión de PostgreSQL que permite examinar el contenido de las páginas de la base de datos a bajo nivel. Mostrar información detallada sobre tuplas (filas) individuales
 
-- **pg_buffercache**: Permite monitorear el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia³(https://www.youtube.com/watch?v=prbF4O0d-7M).
+- **pg_buffercache**: Permite monitorear el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia(https://www.youtube.com/watch?v=prbF4O0d-7M).
 
+- ** pgfincore:** Permite analizar qué partes de las tablas y los índices están en caché en la memoria del sistema operativo, ayudando a optimizar el uso de la caché.
 
 
 ************ BACKUP ************
@@ -333,8 +334,6 @@ Gestionar replicación lógica para mantener consistencia y facilitar reconfigur
 - ** hypopg:** Permite simular la creación de índices sin necesidad de materializarlos físicamente, ayudando a evaluar el impacto de nuevos índices en el rendimiento antes de su creación.
 
 - ** plpgsql_check:** Extiende el lenguaje PL/pgSQL con herramientas de validación y optimización, detectando posibles problemas de rendimiento en funciones y procedimientos almacenados.
-
-- ** pgfincore:** Permite analizar qué partes de las tablas y los índices están en caché en la memoria del sistema operativo, ayudando a optimizar el uso de la caché.
 
 - ** pl/profiler:** Proporciona un perfilador para PL/pgSQL, permitiendo medir el tiempo de ejecución de cada línea de código en las funciones almacenadas, lo cual es útil para identificar y optimizar cuellos de botella.
 
