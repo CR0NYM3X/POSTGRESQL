@@ -15,16 +15,18 @@
 | [auto_explain](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/auto_explain.md)        | Registra automáticamente planes de ejecución      | Útil para diagnosticar consultas lentas; no analiza almacenamiento físico.            |
 | [pg_stat_statements](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pg_stat_statements.md)  | Estadísticas de ejecución de consultas            | Muy usado para identificar consultas más costosas; no analiza almacenamiento.         |
 
-
-### **Vistas para analisis interno y diagnóstico**
-
-| **Tecnología**        | **Propósito**                                     | **Diferencias / Comentarios**                                                         |
-| --------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| pg_stat_user_tables | Esta es una Vista que muestra Estadísticas generales por tabla                  | No muestra visibilidad a nivel de página; más orientado a métricas globales.          |
-
  
+### **Vistas para análisis interno y diagnóstico**
 
-
+| **Tecnología** | **Propósito** | **Diferencias / Comentarios** |
+| --- | --- | --- |
+| **pg_stat_user_tables** | Muestra estadísticas generales de actividad por tabla (escaneos, inserts, updates). | No muestra visibilidad a nivel de página; más orientado a métricas de uso lógico. |
+| **pg_stat_database** | Proporciona métricas agregadas por base de datos (commits, rollbacks, bloques leídos). | Ideal para detectar archivos temporales (`temp_bytes`) y conflictos de sesiones. |
+| **pg_stat_wal** | Registra estadísticas sobre la generación de Write Ahead Logs (WAL). | **Crítica para tu caso:** Permite ver cuántos registros y bytes de WAL se generan y cuántos `fsync` se realizan. |
+| **pg_stat_bgwriter** | Monitorea la actividad del Background Writer y del Checkpointer. | Ayuda a saber si los checkpoints se disparan por tiempo o por llenado de buffers (`checkpoints_req`). |
+| **pg_stat_io** | Estadísticas detalladas de I/O por tipo de proceso, objeto y contexto. | **Nota:** Esta vista se introdujo en **Postgres 16**. En tu versión (15.14) aún no está disponible. |
+| **pg_statio_user_tables** | Muestra estadísticas de entrada/salida (I/O) físicas de las tablas. | A diferencia de la vista lógica, esta te dice cuántos bloques se leyeron de disco vs. cuántos se leyeron de la RAM (caché). |
+ 
 
 
 
