@@ -424,6 +424,28 @@ Nunca permitas login remoto para postgres en producción.
 --- 
 
 
+### 1. El requisito real: No usar "root"
+
+PostgreSQL tiene una restricción de seguridad estricta: **no puede ser ejecutado por el usuario root**. Por lo tanto, crear un usuario dedicado es obligatorio, pero el nombre es totalmente a tu elección (puedes llamarlo `dbadmin`, `pgdata`, `pg_service`, etc.).
+
+### 2. Implicaciones de cambiar el nombre
+
+Al usar un usuario distinto a `postgres`, debes tener en cuenta que El directorio de datos (`PGDATA`) y el directorio donde instalaste los binarios deben pertenecer al usuario que creaste.
+ 
+
+* **Usuario Superuser por Defecto:** Cuando ejecutes el comando `initdb` para inicializar la base de datos, PostgreSQL creará automáticamente un **superuser de base de datos** con el mismo nombre que el **usuario del sistema operativo** que ejecutó el comando.
+* Si el usuario de Linux es `dbadmin`, tu superusuario de Postgres será `dbadmin`.
+
+
+* **Conexiones Locales:** Por defecto, Postgres intenta conectar usando el nombre del usuario actual del shell. Si entras como `dbadmin`, el comando `psql` intentará entrar a la base de datos `dbadmin` con el rol `dbadmin`.
+ 
+
+### ¿Por qué la gente usa siempre "postgres"?
+
+Principalmente por **estandarización y soporte**. Muchos scripts de automatización (como Ansible o Terraform), herramientas de monitoreo y extensiones de terceros asumen que el usuario se llama `postgres`. Si trabajas en un equipo grande, usar el nombre estándar facilita que otros administradores entiendan el entorno rápidamente.
+
+> **Tip de experto:** Si decides usar un nombre personalizado, asegúrate de documentarlo bien en tu equipo o en el archivo `README` del servidor, y no olvides configurar la variable de entorno `$PGUSER` en el `.bashrc` de ese usuario para facilitar las tareas administrativas.
+ 
 
 Una medida de seguridad fundamental de PostgreSQL. **Nunca** se permite inicializar o ejecutar la base de datos como el usuario `root`, ya que si alguien lograra hackear la base de datos, tendría acceso total a todo tu servidor.
  el sistema no creó automáticamente el usuario `postgres`. Vamos a hacerlo manualmente y a dejar todo listo con tus rutas personalizadas.
@@ -439,11 +461,12 @@ Este usuario será el propietario del binario y del directorio de datos:
 ------------------ [Opcion #1 ]  ------------------
 
 # Crear usuario sin acceso a login gráfico
-sudo adduser --system --home /home/postgres --shell /bin/bash --group postgres
+sudo adduser --system --home /home/postgres --shell /sbin/nologin --group postgres
 
 
   --system: crea un usuario del sistema.
   --home /opt/postgresql: define el home (puedes usar `/var/lib/postgresql` si prefieres).
+  --shell /sbin/nologin → impide login por SSH o consola
   --group postgres: crea el grupo con el mismo nombre.
 
 ------------------ [Opcion #2 ] -  Tambien se puede asi ------------------
@@ -497,7 +520,7 @@ Esto prohíbe que `postgres` se conecte por SSH.
 mkdir -p /opt/postgresql/data /opt/postgresql/log
 
 # Cambiar el dueño de toda la carpeta a 'postgres'
-sudo chown -R postgres:postgres /opt/postgresql
+sudo chown -R postgres:postgres /opt/postgresql 
 
 # Dar permisos estrictos a la carpeta de datos (Postgres lo exige)
 chmod 700 /opt/postgresql/data
