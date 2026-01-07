@@ -67,4 +67,56 @@ Para entender la **arquitectura semántica** (Nivel 4), imagina una biblioteca a
 3.  **Planner:** Decide si busca en el índice de tarjetas o camina pasillo por pasillo (Planificación).
 4.  **Executor:** Camina físicamente, saca el libro y te lo entrega (Ejecución).
 
-Te sugiero comenzar explorando tu directorio de datos local (`ls -l $PGDATA/base`) como se menciona en tus fuentes, y luego usar extensiones como `pageinspect` para ver el interior de una página real. ¡Mucho éxito en tu estudio!
+Te sugiero comenzar explorando tu directorio de datos local (`ls -l $PGDATA/base`) como se menciona en tus fuentes, y luego usar extensiones como `pageinspect` para ver el interior de una página real.  
+
+
+
+
+----
+----
+----
+----
+### Arquitectura de PostgreSQL  #3
+```
+-- Explicar y tambien enseñar los parámetros que controlan el comportamiento.
+
+
+ .- Estructura del Directorio de Datos
+		.- pg_wal
+		.- pg_global
+		.- pg_default
+		.- DATA
+ .- Arquitectura de almacenamiento. 
+		.- método de acceso Tablas heap y Indice B-Tree (el sistema que utiliza para organizar, almacenar y recuperar datos de manera eficiente dentro de la base de datos)
+		.- (Page, archivos, vistas )
+		.- Toast
+		.- método de acceso heap
+		.- Storage
+		.- HOT
+		.- Tipos de Compresión en PostgreSQL
+ .- WALs
+ .- Memoria 
+		.- (Share Buffer [MMAP vs POSIX] , Paginas Gigantes, CLOG Buffers, WAL Buffer)
+ .- MVCC 
+ .- Mantimiento
+ .- Ciclo de vida de consultas y Escritura (UPD,INS,DEL)
+
+ .- ACID 
+ .- Aislamiento (READ COMMITTED, SERIALIZABLE)
+ .- Metadatos 
+ .- 
+ .- fillfactor
+ .- 
+ .- 
+ .- 
+ .- 
+ .- 
+ .- 
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+https://postgreshelp.com/postgresql-dynamic-shared-memory-posix-vs-mmap/
+
+
+```
+
+
