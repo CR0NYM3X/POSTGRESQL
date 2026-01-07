@@ -562,7 +562,70 @@ Connection options:
 
 ```
 
+---
 
+# ¿Que pasa cuando **secundario se apaga** pero el **slot de replicación** sigue activo?:
+
+
+
+### 1. El conflicto entre el Slot y el Archivado
+
+Es fundamental entender que PostgreSQL tiene una "lista de tareas" para cada archivo WAL de 16MB antes de poder borrarlo o reciclarlo. Para que un archivo desaparezca de tu carpeta `pg_wal`, debe cumplir **dos condiciones obligatorias**:
+
+1. **Condición de Archivado:** El `archive_command` debe haber devuelto un éxito (0). Es decir, el archivo ya está comprimido y guardado en tu backup.
+2. **Condición de Slot:** Todos los *Replication Slots* deben haber confirmado que ya recibieron ese archivo.
+
+**¿Qué pasa si el secundario se apaga?**
+La condición 1 se cumple (el archivo se archiva y comprime), pero la **condición 2 falla**. Como el secundario está apagado, el Slot "se queda clavado" en el último punto que leyó.
+
+> **Resultado:** Aunque el archivo ya esté a salvo en tu sistema de archivado (comprimido), PostgreSQL **NO lo borrará de la carpeta `pg_wal` del primario**.
+
+
+
+### 2. El efecto "Bola de Nieve" en el disco
+
+Si tu servidor primario sigue recibiendo muchas escrituras (muchos `INSERT`, `UPDATE`), seguirá generando archivos de 16MB.
+
+* El sistema de archivado los enviará a tu repositorio externo (S3, NAS, etc.).
+* Pero en la carpeta local `/var/lib/postgresql/data/pg_wal/`, los archivos se empezarán a acumular.
+
+Si el servidor secundario pasa 2 días apagado, podrías terminar con cientos de gigabytes ocupados en el primario. Si el disco se llena al 100%, **el servidor primario se detendrá (Panic)** y no arrancará hasta que liberes espacio manualmente.
+
+
+
+### 3. ¿Por qué PostgreSQL prefiere llenar el disco que borrar el WAL?
+
+Parece un error, pero es una medida de seguridad. El Slot de replicación existe porque tú le dijiste a Postgres: *"No quiero que mi réplica se desincronice NUNCA"*.
+Postgres asume que prefieres que el primario se detenga antes de que la réplica pierda un solo dato que no pueda recuperar.
+
+
+
+### 4. ¿Cómo protegerte de esto? (La configuración vital)
+
+Desde versiones recientes (PostgreSQL 13+), existe un parámetro "salvavidas" que deberías configurar siempre que uses Slots:
+
+**`max_slot_wal_keep_size`**
+
+Este parámetro le pone un límite al egoísmo del Slot. Por ejemplo:
+
+```ini
+max_slot_wal_keep_size = '50GB'
+
+```
+
+* **Qué hace:** Si el secundario se apaga y los WALs acumulados superan los 50GB, el primario dirá: *"Lo siento, secundario, no puedo esperar más o mi disco explotará"*.
+* **Consecuencia:** Postgres borrará los WALs viejos. El Slot se marcará como **"invalidado"**.
+* **El castigo:** Cuando el secundario vuelva a encenderse, ya no podrá sincronizarse por streaming porque le faltan datos que ya no existen. Tendrás que reconstruir la réplica desde cero (con un `pg_basebackup`).
+
+
+
+### 5. Resumen del comportamiento con Archivado + Compresión
+
+1. **Archivado:** Sigue funcionando. Tus backups están al día y comprimidos.
+2. **Compresión:** El proceso de comprimir el WAL para enviarlo al archivo ayuda a ahorrar espacio en el *destino* del backup, pero **no ayuda en nada** al espacio del disco local del primario (donde cada archivo sigue pesando 16MB).
+3. **Slot:** Es el "ancla". Mientras el secundario esté apagado, el ancla no se mueve y los archivos en `pg_wal` crecen indefinidamente.
+
+ 
 
 
 
