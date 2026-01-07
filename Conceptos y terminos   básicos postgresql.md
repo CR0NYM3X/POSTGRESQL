@@ -1101,6 +1101,12 @@ Las diferencias entre **UTF-8**, **UTF-16** y **UTF-32**
 
 **Uso común**: Es poco utilizado debido a su ineficiencia en el uso de memoria.
 
+
+### 2. LATIN1 (ISO-8859-1): El estándar europeo
+
+* **Qué es:** Una codificación de **un solo byte** (8 bits). Puede representar hasta 256 caracteres.
+* **Comportamiento:** Los primeros 127 caracteres son iguales al ASCII (inglés básico). Del 128 al 255 se usan para tildes, eñes y caracteres europeos.
+* **Por qué funcionó:** Tu base de datos tiene guardado el byte `0xe1`. En `LATIN1`, ese byte significa exactamente **"á"**. Como es un solo byte, no hay reglas complejas; el servidor simplemente dice: "Aquí hay un `0xe1`, envíaselo al usuario como una `á`".
  
 
 ### Comparación rápida:
