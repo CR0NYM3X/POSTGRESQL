@@ -365,6 +365,10 @@ vim /home/postgres/.bash_profile
  
 # el client_encoding  no se cambia 
 
+```bash
+jdbc:postgresql://host:5432/test?charSet=LATIN1
+```
+
 ### 1. La solución definitiva: Variable de entorno
 
 En Linux, la forma más poderosa de forzar a `psql` es definiendo la variable `PGCLIENTENCODING` antes de entrar. Haz la prueba con esto:
