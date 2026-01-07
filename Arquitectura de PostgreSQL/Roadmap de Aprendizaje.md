@@ -12,6 +12,38 @@ Antes de entender la lógica, debes entender dónde vive la información. Postgr
 2.  **Segmentación de Archivos:**
     *   Aprende que PostgreSQL escribe datos secuencialmente en archivos "Heap". Cuando un archivo alcanza 1GB, se crea uno nuevo (ej. `25156.1`), dividiendo la tabla en segmentos manejables.
 
+# Segmentos 
+
+## Tamaños base en PostgreSQL
+
+*   **Tamaño de página (block)**: **8 KB**  
+    (valor por defecto y el más común)
+*   **Tamaño de segmento**: **1 GB**  
+    (valor fijo a nivel de código del motor, no configurable)
+
+ 
+ **Un segmento de PostgreSQL contiene exactamente:**
+
+### **131,072 páginas de 8 KB**
+
+ 
+
+## Cómo se refleja en la práctica
+
+*   Cada archivo físico de una tabla o índice (`base/…/relfilenode`, `relfilenode.1`, `relfilenode.2`, etc.)
+*   Tiene **máximo 1 GB**
+*   Cuando se llena, PostgreSQL crea automáticamente el siguiente segmento
+
+Ejemplo:
+
+```text
+16384        → hasta 1 GB (131,072 páginas)
+16384.1      → siguiente 1 GB
+16384.2      → siguiente 1 GB
+```
+ 
+---
+
 ### Nivel 2: La Unidad Atómica (Páginas y Bloques)
 Este es el "ladrillo" fundamental de la arquitectura. Si no dominas la "Página", no dominarás PostgreSQL.
 
