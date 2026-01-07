@@ -1515,3 +1515,40 @@ En bases de datos, **cardinalidad** se refiere al **número de elementos (filas)
 *   **Alta cardinalidad**: Muchos valores únicos (ej. columna `id_cliente`).
 *   **Baja cardinalidad**: Pocos valores únicos (ej. columna `sexo`).
  
+---
+
+##   ¿Qué es la memoria compartida?
+
+La **memoria compartida** es un mecanismo que permite que **dos o más procesos** accedan **a la misma región de memoria RAM** al mismo tiempo, **sin hacer copias** de los datos.
+
+En lugar de que cada proceso tenga su propia copia de la información, **todos trabajan sobre los mismos datos en memoria**.
+
+
+##   ¿Para qué sirve la memoria compartida?
+
+Sirve para:
+
+*   **Compartir datos grandes entre procesos**
+*   **Reducir el uso de memoria RAM**
+*   **Evitar copias innecesarias de datos**
+*   **Mejorar el rendimiento y la velocidad**
+*   **Permitir procesamiento paralelo eficiente**
+
+Es especialmente útil cuando los datos son grandes y el rendimiento es crítico.
+
+***
+
+## ✅ ¿Por qué se usa?
+
+Porque sin memoria compartida:
+
+*   Cada proceso duplica los datos
+*   Se usa más RAM
+*   Hay más carga de CPU y disco
+*   El sistema escala peor
+
+Con memoria compartida:
+
+*   Los datos se cargan **una sola vez**
+*   Todos los procesos los reutilizan
+*   El sistema es **más rápido y eficiente**
