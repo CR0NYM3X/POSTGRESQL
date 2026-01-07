@@ -540,3 +540,91 @@ Después de aplicar los cambios, puedes verificar que el sistema los tomó corre
 * **Para ver páginas grandes:** `grep Huge /proc/meminfo`
 
  
+---
+
+# Problemas de usar "NOT"
+
+El uso de `NOT` es, por definición, **menos eficiente** que una búsqueda positiva. Esto se debe a un principio fundamental de las bases de datos: **los índices están diseñados para encontrar dónde está algo, no para encontrar dónde "no está".**
+
+Aquí te explico por qué `NOT` suele ser lento y qué alternativas tienes para mejorar el rendimiento.
+
+ 
+
+## 1. El problema del "Índice Inútil"
+
+Imagina que tienes un libro y usas el índice al final para buscar la palabra "PostgreSQL". Vas directo a la página. Eso es un **Index Scan**.
+
+Ahora imagina que te pido: "Busca todas las páginas donde **no** aparezca la palabra 'PostgreSQL'". El índice del libro no te sirve de nada. Tienes que leer el libro hoja por hoja de principio a fin. Eso es un **Sequential Scan** (Escaneo secuencial), y es lo que le pasa a tu base de datos cuando usas `NOT`.
+
+ 
+
+## 2. El caso de `NOT IN` vs `NOT EXISTS`
+
+Este es uno de los errores más comunes. `NOT IN` tiene dos problemas: rendimiento y lógica de `NULL`.
+
+* **Problema de Rendimiento:** Con `NOT IN`, PostgreSQL a menudo tiene dificultades para optimizar la consulta, especialmente si la lista interna es grande.
+* **Problema de NULL:** Si la lista dentro del `NOT IN` contiene un solo valor `NULL`, la consulta completa **no devolverá ningún resultado**, lo cual suele ser un error de lógica.
+
+### La alternativa eficiente: `NOT EXISTS`
+
+`NOT EXISTS` suele ser mucho más rápido porque el optimizador de PostgreSQL puede usar lo que se llama un **"Anti-Join"**. En cuanto encuentra una coincidencia, descarta ese registro y pasa al siguiente sin procesar toda la subconsulta.
+
+**Mal (`NOT IN`):**
+
+```sql
+SELECT * FROM clientes 
+WHERE id NOT IN (SELECT cliente_id FROM pedidos);
+
+```
+
+**Bien (`NOT EXISTS`):**
+
+```sql
+SELECT * FROM clientes c
+WHERE NOT EXISTS (
+    SELECT 1 FROM pedidos p WHERE p.cliente_id = c.id
+);
+
+```
+
+ 
+
+## 3. ¿Existe algo mejor que `NOT LIKE`?
+
+Como vimos antes, `NOT LIKE '%texto%'` obliga a leer toda la tabla. Si realmente necesitas velocidad, tienes estas opciones:
+
+### A. Si buscas exclusión de categorías
+
+Si usas `NOT LIKE` para excluir categorías fijas (ej. `WHERE categoria NOT LIKE 'PROMO%'`), es mil veces mejor tener una columna booleana o un sistema de etiquetas (tags).
+
+* **Eficiente:** `WHERE es_promocion = false` (Esto sí puede usar un índice B-tree).
+
+### B. Si es búsqueda de texto libre
+
+Si no hay de otra, usa los **Índices de Trigrama (`pg_trgm`)** que mencionamos antes. Aunque el `NOT` sigue siendo pesado, el índice ayuda a descartar bloques de datos rápidamente, algo que el `LIKE` normal no puede hacer.
+
+ 
+## 4. El truco del "Índice Parcial" (La solución Pro)
+
+Si siempre estás consultando lo mismo, por ejemplo, "usuarios que **no** están inactivos", no obligues a la base de datos a filtrar en cada consulta. Crea un índice que ya tenga el trabajo hecho.
+
+```sql
+-- Creamos un índice solo para los registros que nos interesan
+CREATE INDEX idx_usuarios_activos ON usuarios (id) 
+WHERE estado <> 'inactivo';
+
+```
+
+Ahora, cuando hagas `SELECT ... WHERE estado <> 'inactivo'`, PostgreSQL irá directo al índice parcial, ignorando todos los registros "inactivos" sin tener que leerlos.
+
+ 
+
+## Resumen: ¿Cuándo usar qué?
+
+| Caso | Evita usar... | Usa preferiblemente... | Razón |
+| --- | --- | --- | --- |
+| **Listas de IDs** | `NOT IN (...)` | `NOT EXISTS` | Mejor manejo de NULLs y más rápido (Anti-join). |
+| **Búsqueda texto** | `NOT LIKE '%abc%'` | `pg_trgm` + GIN | Permite usar índices en búsquedas parciales. |
+| **Filtros constantes** | `NOT LIKE` o `<>` | **Índices Parciales** | El motor ya sabe qué registros ignorar antes de empezar. |
+| **Relaciones** | `NOT IN` | `LEFT JOIN ... WHERE ... IS NULL` | A veces el optimizador lo prefiere sobre `NOT EXISTS`. |
+ 
