@@ -374,6 +374,7 @@ En entornos donde la aplicación no requiere una conexión persistente con la ba
 ```
 PostgreSQL usa memoria compartida para shared_buffers, por lo que debes asegurarte que los valores del kernel lo permitan.
 ###  Tamaños maximos y minimos en    bytes
+cat /etc/sysctl.conf
 cat /proc/sys/kernel/shmmax
 cat /proc/sys/kernel/shmall
 
