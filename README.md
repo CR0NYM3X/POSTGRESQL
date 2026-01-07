@@ -65,6 +65,7 @@ https://www.crunchydata.com/postgres-tips
 https://www.crunchydata.com/developers/tutorials
 https://www.percona.com/blog/category/postgresql/
 https://www.cybertec-postgresql.com/en/postgresql-blog/
+https://www.postgresql.fastware.com/blog
 https://dbasinapuros.com/blog/
 https://ongres.com/blog/
 https://postgreshelp.com/
