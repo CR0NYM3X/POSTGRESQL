@@ -1,22 +1,4 @@
 
-
-
-Reestructuración esta carpeta 
-
-*** Replica ***
-- Conceptos clave.
-- Evaluación de Resiliencia y Desempeño de Réplicas
-- Herramientas.
-- Parámetros para replicas (Pre-Replica).
-- Monitoreo de Replicas (Post-Replica).
-- Topologias.
-- Preguntas.
-- Buenas practicas.
-- Best Practices for Postgres Database Replication -> https://medium.com/timescale/best-practices-for-postgres-database-replication-b5ed69caf96d
-
-
-
-
  
 ## 🎯 ¿Para qué sirve hacer réplicas en PostgreSQL?
 Las réplicas pueden ser sincrónicas (alta disponibilidad) o asincrónicas (recuperación ante desastres).
@@ -606,6 +588,40 @@ Depende de tus necesidades:
 - Integración con otros sistemas.
 - Migración progresiva.
 - Auditoría de cambios.
+
+
+ ---
+
+ # Streaming vs. Log Shipping
+
+### 1. Replicación por Streaming vs. Log Shipping
+
+Existen dos formas de enviar datos, y es vital no mezclarlas:
+
+* **Log Shipping (Basado en archivos):** Este es el que tú imaginabas. Espera a que el archivo de 16 MB se llene, se cierre y entonces el `archive_command` lo copia al servidor secundario. Esto genera un retraso (lag) de varios segundos o minutos.
+* **Streaming Replication (Basado en registros):** En cuanto haces un `INSERT` o `UPDATE`, se genera un pequeño **registro WAL** (de unos pocos bytes o KB). El proceso `WalSender` en el primario lee ese registro **directamente de la memoria (WAL Buffers)** o del disco y lo envía por la red al instante.
+
+### 2. ¿Se escribe primero en disco o se envía?
+
+Depende de tu configuración, pero normalmente suceden casi al mismo tiempo. El flujo es el siguiente:
+
+1. **Transacción:** Tú ejecutas un `COMMIT`.
+2. **WAL Buffer:** El cambio se escribe en la memoria RAM del servidor primario (WAL Buffers).
+3. **Escritura Local:** El proceso `WAL Writer` escribe ese cambio en el archivo WAL del disco duro del primario.
+4. **Streaming:** El proceso `WalSender` toma ese cambio y lo manda por la red al servidor secundario.
+5. **Recepción:** El secundario recibe el trozo de datos, lo guarda en su propio WAL y lo aplica.
+
+ 
+### 4. ¿Qué pasa si el secundario es lento?
+
+Si tu secundario no puede procesar los datos tan rápido como llegan, los archivos WAL de 16 MB empezarán a acumularse en la carpeta `pg_wal` del servidor primario.
+
+PostgreSQL no borrará esos archivos de 16 MB hasta que:
+
+1. Hayan sido archivados con éxito (si tienes `archive_mode` activo).
+2. **El servidor secundario confirme que ya los recibió** (si usas **Replication Slots**).
+
+> **Ojo:** Si el secundario se desconecta y usas un Slot de replicación, el primario seguirá guardando archivos de 16 MB indefinidamente hasta llenar el disco. ¡Ten cuidado con eso!
  
 
 ## Bibliografía 
