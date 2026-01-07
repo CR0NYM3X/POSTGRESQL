@@ -16,7 +16,10 @@ El **planificador de consultas** (también conocido como optimizador de consulta
 
 El objetivo principal del optimizador es minimizar el tiempo de ejecución de las consultas y el uso de recursos del sistema, asegurando que las consultas se ejecuten de la manera más rápida y eficiente posible.
  
+---
+En un plan de consulta paralela, ¿cuál es el rol del nodo `Gather` o `Gather Merge`?
 
+----
 ### Plan de Ejecución
 El **plan de ejecución** es el resultado del trabajo del planificador de consultas. Es un conjunto detallado de pasos que el sistema de base de datos seguirá para ejecutar la consulta. Este plan incluye información sobre qué índices se utilizarán, cómo se unirán las tablas, el orden de las operaciones, y más².
 
@@ -2112,3 +2115,37 @@ Caché de Sistema Operativo:
 
 
 ```
+
+
+---
+
+# los nodos **Gather** y **Gather Merge** 
+ Son los "puntos de reunión" de una consulta paralela. Representan el momento exacto en que PostgreSQL deja de trabajar con múltiples núcleos y vuelve a un solo hilo de ejecución para entregarte el resultado.
+
+Aquí tienes el resumen definitivo para distinguirlos y saber qué esperar de cada uno:
+
+ 
+
+### 1. Comparativa Rápida
+
+| Nodo | Su función principal | ¿Cómo entrega los datos? | Coste de CPU |
+| --- | --- | --- | --- |
+| **`Gather`** | **Colector simple.** Simplemente une los registros que le envían los *workers*. | **Desordenado.** El primero que termina es el primero que entrega. | Bajo. |
+| **`Gather Merge`** | **Colector con orden.** Mezcla los resultados manteniendo una secuencia lógica. | **Ordenado.** Garantiza el orden (`ORDER BY`) de la consulta. | Más alto (por la lógica de mezcla). |
+
+ 
+
+### 2. Tres puntos clave para tu diagnóstico
+
+* **El Nodo es un Embudo:** Todo el trabajo que se hizo rápido en paralelo tiene que pasar por este único nodo. Si tu consulta devuelve **millones de filas**, el `Gather` puede convertirse en un cuello de botella, ya que el proceso Líder tiene que procesar toda esa información él solo.
+* **Aparecen por necesidad:** PostgreSQL elegirá `Gather Merge` solo si tu consulta tiene un `ORDER BY` o si el siguiente paso en el plan (como un *Merge Join*) requiere que los datos estén ordenados. Si no hay necesidad de orden, siempre preferirá el `Gather` por ser más liviano.
+* **La "Trampa" del Líder:** Recuerda que el proceso Líder no solo espera; él también ayuda a procesar datos. Sin embargo, si el `Gather` le exige mucho esfuerzo para reunir los resultados, el Líder dejará de ayudar a los *workers* para dedicarse exclusivamente a recibir datos, lo que puede ralentizar un poco la ejecución.
+
+ 
+
+### 3. ¿Cuándo es buena o mala señal?
+
+* **Es buena señal:** Cuando el tiempo de ejecución (en `EXPLAIN ANALYZE`) del nodo `Gather` es significativamente menor que la suma del tiempo de los trabajadores. Significa que la paralelización valió la pena.
+* **Es mala señal:** Si ves que los trabajadores terminan rápido pero el nodo `Gather` tarda mucho tiempo en "cerrar". Esto suele indicar que hay demasiada transferencia de datos entre los procesos y la sobrecarga de comunicación está matando la ganancia de velocidad.
+
+ 
