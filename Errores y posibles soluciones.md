@@ -361,7 +361,54 @@ vim /home/postgres/.bash_profile
 # 5 - Con esto ya debe de quedar 
 ```
 
+---
+ 
+# el client_encoding  no se cambia 
 
+### 1. La solución definitiva: Variable de entorno
+
+En Linux, la forma más poderosa de forzar a `psql` es definiendo la variable `PGCLIENTENCODING` antes de entrar. Haz la prueba con esto:
+
+```bash
+export PGCLIENTENCODING=latin1
+psql -p 5414 -d test
+
+```
+
+Una vez dentro, ejecuta `show client_encoding;`. Debería mostrar **LATIN1**.
+
+*Si esto funciona, puedes agregar ese `export` al final de tu archivo `~/.bash_profile` o `~/.bashrc` para que sea permanente.*
+
+### 2. ¿Por qué falló el `ALTER ROLE`?
+
+El orden de prioridad en PostgreSQL es este:
+
+1. **Parámetros de conexión del cliente** (Lo que `psql` negocia al inicio) **<-- AQUÍ ESTÁ TU PROBLEMA.**
+2. `ALTER ROLE ... SET ...`
+3. `ALTER DATABASE ... SET ...`
+4. `postgresql.conf`
+
+Como tu terminal Linux está configurada en `en_US.UTF-8` (lo vimos en tu tabla de bases de datos), el cliente `psql` toma el nivel 1 de prioridad y aplasta tus configuraciones de los niveles 2, 3 y 4.
+
+### 3. Verifica tu Localización (Locale)
+
+Ejecuta este comando en tu terminal Linux (fuera de postgres):
+
+```bash
+locale
+
+```
+
+Probablemente verás que `LANG` o `LC_CTYPE` dicen `en_US.UTF-8`. Mientras eso esté así, `psql` siempre intentará conectar en UTF8 a menos que uses el `export` que te puse arriba.
+ 
+
+### 4. Otra opción: Forzar desde el `.psqlrc`
+
+Veo que tienes un archivo `.psqlrc` bastante personalizado (por el emoji del elefante 🐘 y los mensajes de tiempo). Puedes forzar la codificación agregando esta línea al principio de tu archivo `/home/postgres/.psqlrc`:
+
+```sql
+\encoding latin1
+  
 
 
 
