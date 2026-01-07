@@ -23,7 +23,7 @@ https://www.todopostgresql.com/carreras/
 https://www.interdb.jp/pg/index.html
 https://pgadminedb.readthedocs.io/en/latest/
 https://www.tutorialdba.com/p/postgresql-architecture.html
-
+https://postgreshelp.com/category/case-study/
 
 -- Tutoriales
 https://gitlab.com/xavki/presentations-postgresql
@@ -68,7 +68,6 @@ https://www.cybertec-postgresql.com/en/postgresql-blog/
 https://www.postgresql.fastware.com/blog
 https://dbasinapuros.com/blog/
 https://ongres.com/blog/
-https://postgreshelp.com/
 https://www.todopostgresql.com/blog/
 https://dataegret.com/news-blog/
 https://www.credativ.de/en/blog/
