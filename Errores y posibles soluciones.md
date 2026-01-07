@@ -128,6 +128,8 @@ Este detalle se presenta ya que se ingreso un caracter no valido
 
 ```SQL
 
+SET client_encoding TO 'LATIN1';
+
 ********** CUANDO SALE EL ERROR **********
 Al realizar una consulta "select * from mytabla_test limit 10" salia el error "ERROR:  invalid byte sequence for encoding "UTF8": 0xbf"
 
@@ -246,10 +248,62 @@ BEGIN
  
 END $$;
 
+### Resumen del error `0xe1 0x6c 0x6f`
+
+Lo que intentabas leer era probablemente la palabra **"álo"** (como en "catálogo").
+
+* En **LATIN1**: Se guarda como `e1` (á) + `6c` (l) + `6f` (o). **(3 bytes)**.
+* En **UTF8**: La "á" se debería guardar como `c3 a1`. La palabra completa sería `c3 a1 6c 6f`. **(4 bytes)**.
+
+Como tu base de datos `SQL_ASCII` tiene guardada la versión de 3 bytes (Latin1), cuando tu cliente intentó leerla como si fuera UTF8, se confundió al ver que a la "á" le faltaban piezas.
+
+> **Nota:** Si planeas seguir trabajando con esta base de datos, te recomiendo dejar tu configuración de conexión o driver siempre en `LATIN1` (o `WIN1252`) para evitar que estos errores interrumpan tus reportes.
 
 
 
 ```
+
+
+ 
+
+### 1. El problema: Dos manuales diferentes
+Imagina que los datos en tu base de datos son como piezas de un rompecabezas y el "Encoding" (codificación) es el manual de instrucciones para armarlas.
+En tu base de datos hay una palabra guardada (probablemente una que lleva la letra **á**).
+
+* **En el manual LATIN1 (lo que tienes guardado):** Para escribir la letra **á**, solo necesitas **1 pieza** (el byte `0xe1`).
+* **En el manual UTF8 (lo que tu programa quería leer):** Para escribir la letra **á**, el manual dice que necesitas **2 piezas obligatoriamente** (`0xc3` y `0xa1`).
+
+### 2. ¿Qué vio la computadora? (Paso a paso)
+
+Tu programa (que usa UTF8) empezó a leer los bytes que encontró en la base de datos:
+
+1. **Encuentra el primer byte: `0xe1**`
+* **Regla de UTF8:** "Si un grupo empieza con `0xe1`, significa que es una letra especial que debe tener **3 piezas en total**".
+* **Computadora dice:** "Ok, espero las otras 2 piezas para formar la letra".
+
+
+2. **Encuentra el segundo byte: `0x6c` (que es la letra "l")**
+* **Regla de UTF8:** "La segunda pieza de un grupo de tres **DEBE** empezar con un código específico (un bit 1 seguido de un 0)".
+* **Computadora revisa el `0x6c`:** "¡Un momento! Esta pieza (`0x6c`) no sigue la regla. No encaja con la primera".
+
+
+3. **El Choque (Error):**
+* Como la segunda pieza no es lo que el manual de UTF8 esperaba, la computadora se confunde, se detiene y te lanza el error: **"Secuencia de bytes no válida"**. Es como si intentaras meter una pieza de DUPLO en un set de LEGO técnico; simplemente no cierran.
+
+ 
+
+### 3. ¿Por qué con LATIN1 sí funciona?
+
+Cuando cambiaste a `LATIN1`, le diste a la computadora el manual correcto para esos datos.
+
+* En el manual **LATIN1**, no hay "grupos de piezas". Cada pieza es una letra independiente.
+* `0xe1` = **á**
+* `0x6c` = **l**
+* `0x6f` = **o**
+* **Resultado:** La computadora lee **"álo"** sin problemas porque no busca reglas complejas de combinación.
+
+ ---
+
 
 # Errores en el  archivo s.pgsql.5432.lock
 
