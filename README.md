@@ -86,6 +86,7 @@ https://dba.stackexchange.com/?tags=postgresql
 medium.com
 https://runebook.dev/en/docs/postgresql
 https://www.hydra.so/blog-posts/
+https://docs.digitalocean.com/products/databases/postgresql/
 
 
 ----- Eventos  de Postgresql:
