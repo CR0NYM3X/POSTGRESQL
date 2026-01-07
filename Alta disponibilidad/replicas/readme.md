@@ -626,6 +626,8 @@ PostgreSQL no borrará esos archivos de 16 MB hasta que:
 
 ## Bibliografía 
 ```
+- Best Practices for Postgres Database Replication -> https://medium.com/timescale/best-practices-for-postgres-database-replication-b5ed69caf96d
+
 PostgreSQL High-Availability Architectures -> https://www.cybertec-postgresql.com/en/postgresql-high-availability-architectures/
 Escalado de bases de datos con replicación, particionamiento y fragmentación -> https://medium.com/@vinodbokare0588/scaling-databases-with-replication-partitioning-and-sharding-4d0a006adfe3
 
