@@ -1552,3 +1552,72 @@ Con memoria compartida:
 *   Los datos se cargan **una sola vez**
 *   Todos los procesos los reutilizan
 *   El sistema es **más rápido y eficiente**
+
+
+---
+
+
+# DAG
+
+## 1. ¿Qué es un DAG exactamente?
+
+Para que un sistema sea considerado un DAG, debe cumplir con tres propiedades fundamentales:
+
+1. **Grafo (Graph):** Es un conjunto de nodos (tareas o datos) conectados por aristas (relaciones).
+2. **Dirigido (Directed):** Las conexiones tienen un sentido único. Si vas de la Tarea A a la Tarea B, hay una flecha que indica el orden. No es una relación ambigua.
+3. **Acíclico (Acyclic):** Esta es la clave. **No existen ciclos o bucles.** Si empiezas en el punto A y sigues las flechas, es imposible volver al punto A.
+
+
+
+## 2. ¿Para qué sirve una "Estrategia DAG"?
+
+En el mundo de la ingeniería de datos y el desarrollo de software, un DAG sirve principalmente para **gestionar dependencias**.
+
+### A. Orquestación de Datos (ETL/ELT)
+
+Es el uso más común hoy en día (herramientas como **Apache Airflow**, **Prefect** o **dbt**).
+
+* **Problema:** Tienes 100 tablas que transformar. La Tabla C depende de la Tabla A y la B.
+* **Estrategia DAG:** El sistema dibuja el mapa de dependencias. Sabe que puede ejecutar A y B en paralelo, pero debe esperar a que ambas terminen para iniciar C. Si hubiera un ciclo (A depende de B y B depende de A), el sistema se bloquearía; el DAG evita esto por definición.
+
+### B. Planificación de Consultas (Query Plans) en Postgres/SQL
+
+Cuando lanzas un `EXPLAIN` en PostgreSQL, lo que ves es básicamente un árbol (que es un tipo simple de DAG).
+
+* El motor decide: "Primero hago un *Index Scan* (Nodo 1), luego un *Hash Join* (Nodo 2)".
+* El flujo de datos va desde las hojas (tablas) hacia la raíz (el resultado final) sin retroceder.
+
+### C. Control de Versiones (Git)
+
+Git utiliza un DAG para representar la historia de los commits. Cada commit apunta a su "padre". Las ramas y los *merges* crean una estructura de grafo dirigida hacia atrás en el tiempo, pero nunca verás un commit que sea su propio antepasado.
+
+### D. Criptomonedas (Alternativa a Blockchain)
+
+Sistemas como **IOTA** o **Nano** no usan una cadena lineal (Blockchain), sino un DAG. Esto permite que las transacciones se validen en paralelo, mejorando drásticamente la escalabilidad y eliminando la necesidad de "mineros" tradicionales.
+
+
+
+## 3. Ventajas de implementar sistemas basados en DAG
+
+| Ventaja | Descripción |
+| --- | --- |
+| **Paralelismo** | El sistema identifica qué nodos no tienen dependencias mutuas y los ejecuta al mismo tiempo. |
+| **Recuperación de errores** | Si una tarea falla, el DAG sabe exactamente qué ramas se ven afectadas y cuáles pueden seguir ejecutándose. |
+| **Trazabilidad (Linaje)** | Puedes ver exactamente de dónde viene un dato y por qué procesos pasó. |
+| **Eficiencia** | No hay procesos redundantes ni esperas innecesarias si la ruta crítica está despejada. |
+
+
+
+## 4. Ejemplo Práctico: Un Pipeline de Datos
+
+Imagina que estás procesando logs de PostgreSQL para un reporte:
+
+1. **Nodo A:** Extraer logs de `/var/lib/postgresql/data/log`.
+2. **Nodo B:** Filtrar errores 500.
+3. **Nodo C:** Contar conexiones por IP.
+4. **Nodo D (Depende de B y C):** Generar reporte PDF.
+5. **Nodo E (Depende de D):** Enviar por email al DBA.
+
+El sistema sabe que si **B** falla, no tiene sentido intentar **D**, pero **C** podría terminar su trabajo.
+
+ 
