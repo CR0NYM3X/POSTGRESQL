@@ -24,6 +24,9 @@ https://www.interdb.jp/pg/index.html
 https://pgadminedb.readthedocs.io/en/latest/
 https://www.tutorialdba.com/p/postgresql-architecture.html
 https://postgreshelp.com/category/case-study/
+https://severalnines.com/blog/understanding-postgresql-architecture/
+https://www.instaclustr.com/blog/postgresql-architecture/
+
 
 -- Tutoriales
 https://gitlab.com/xavki/presentations-postgresql
@@ -71,7 +74,8 @@ https://ongres.com/blog/
 https://www.todopostgresql.com/blog/
 https://dataegret.com/news-blog/
 https://www.credativ.de/en/blog/
-
+https://planetscale.com/blog
+https://neon.com/blog
 
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
