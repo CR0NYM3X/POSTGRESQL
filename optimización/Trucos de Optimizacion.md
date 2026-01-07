@@ -419,3 +419,124 @@ El post no dice que la nube sea mala, sino que como arquitecto debes saber elegi
  
 
 
+---
+
+# shared_buffers
+
+El parámetro `shared_buffers` no es una "isla"; su configuración impacta y depende directamente de otros valores dentro de PostgreSQL y de la configuración del núcleo (kernel) de Linux.
+
+Aquí te detallo cómo se relaciona con el ecosistema del servidor para que puedas ajustarlo correctamente:
+
+
+
+## 1. Relación con otros parámetros de PostgreSQL
+
+`shared_buffers` determina cuánta memoria RAM reserva PostgreSQL para su propia caché de datos. Si lo mueves, debes considerar estos otros:
+
+* **`max_connections`**: Cada conexión consume una cantidad pequeña pero acumulativa de memoria RAM. Si subes mucho los `shared_buffers` y también tienes un `max_connections` muy alto, podrías quedarte sin RAM para los procesos individuales.
+* **`work_mem`**: Esta es la memoria para operaciones de ordenamiento (sort) y uniones (hash joins). A diferencia de `shared_buffers`, que es global, `work_mem` se asigna **por cada operación dentro de una consulta**. Si asignas el 80% de tu RAM a `shared_buffers`, no dejarás espacio para que `work_mem` funcione, provocando que las consultas usen el disco (lento) o que el sistema colapse (OOM Killer).
+* **`effective_cache_size`**: No reserva memoria, pero le dice al optimizador cuánta memoria crees que hay disponible en total (incluyendo la caché del Sistema Operativo). Típicamente se configura al **50% - 75%** de la RAM total.
+* **`huge_pages`**: Si tu `shared_buffers` es mayor a unos pocos gigabytes, es casi obligatorio usar Huge Pages en Linux para mejorar el rendimiento y reducir la sobrecarga de la CPU al gestionar tablas de páginas grandes.
+ 
+### Límites de Memoria Compartida (Kernel Parameters)
+
+En versiones modernas de PostgreSQL (9.3+), el uso de memoria compartida es más flexible, pero en sistemas muy cargados o versiones antiguas, debes revisar el archivo `/etc/sysctl.conf`:
+
+* **`kernel.shmmax`**: Es el tamaño máximo de un solo segmento de memoria compartida. Debe ser mayor que tu `shared_buffers`.
+* **`kernel.shmall`**: Es la cantidad total de memoria compartida permitida en el sistema (en páginas).
+
+### Huge Pages (Páginas Grandes)
+
+Si configuras `shared_buffers` con un valor alto (ej. 16GB o más), el kernel de Linux gastará mucha CPU gestionando páginas estándar de 4KB. Configurar **Huge Pages** (generalmente de 2MB) permite que el kernel gestione esa memoria de forma mucho más eficiente.
+
+* Debes reservar las páginas en Linux: `vm.nr_hugepages`.
+* Y activar el parámetro en Postgres: `huge_pages = try` o `on`.
+
+### Swappiness
+
+* **`vm.swappiness`**: Se recomienda bajar este valor a **1** o **10**. Esto evita que Linux mueva datos de la RAM (de tus buffers) al disco (swap) prematuramente, lo cual destruiría el rendimiento de tu base de datos.
+
+
+
+Estos parámetros son **configuraciones del núcleo (kernel) de Linux** y se gestionan fuera de PostgreSQL, directamente en el sistema operativo. Tienes dos formas de hacerlo: una temporal (para probar) y una permanente (para que no se pierda al reiniciar).
+
+Aquí te explico cómo y dónde hacerlo:
+
+
+
+## 1. Configuración Permanente (Recomendado)
+
+Para que los cambios persistan después de un reinicio, debes editar el archivo `/etc/sysctl.conf` o crear un archivo nuevo en `/etc/sysctl.d/`.
+
+### Pasos:
+
+1. Abre el archivo con privilegios de administrador:
+```bash
+sudo nano /etc/sysctl.conf
+
+```
+
+
+2. Ve al final del archivo y agrega las líneas con los valores que necesites. Por ejemplo:
+```text
+# Optimización para PostgreSQL
+vm.swappiness = 10
+vm.nr_hugepages = 4096
+kernel.shmmax = 18446744073709551615
+kernel.shmall = 18446744073709551615
+
+```
+
+
+3. Guarda el archivo y cierra (`Ctrl+O`, `Enter`, `Ctrl+X`).
+4. **Carga los cambios inmediatamente** sin reiniciar el servidor con este comando:
+```bash
+sudo sysctl -p
+
+```
+
+ 
+
+## 2. Configuración Temporal (Para pruebas)
+
+Si solo quieres probar el impacto en el rendimiento sin comprometer el próximo inicio del sistema, puedes usar el comando `sysctl -w`:
+
+```bash
+sudo sysctl -w vm.swappiness=10
+sudo sysctl -w vm.nr_hugepages=4096
+
+```
+
+*Nota: Estos valores se borrarán si el servidor se apaga o se reinicia.*
+
+
+
+## 3. ¿Cómo saber qué valores poner?
+
+No se trata de poner números al azar, especialmente con las **Huge Pages**. Aquí te doy una guía rápida:
+
+### Para `vm.swappiness`:
+
+* **Valor 60 (Default):** Linux mueve datos a la swap con frecuencia. Malo para bases de datos.
+* **Valor 1 a 10:** Recomendado para PostgreSQL. Le dice al kernel: "No uses el disco a menos que sea estrictamente necesario".
+
+### Para `vm.nr_hugepages`:
+
+Este valor depende totalmente de tu `shared_buffers`. Si pones un número muy pequeño, Postgres no arrancará; si pones uno muy grande, desperdiciarás RAM que nadie más podrá usar.
+
+**La fórmula básica es:**
+
+
+> **Ejemplo:** Si tu `shared_buffers` es de 8GB ( KB):
+>  páginas.
+
+
+
+## 4. Verificación
+
+Después de aplicar los cambios, puedes verificar que el sistema los tomó correctamente con:
+
+* **Para ver swappiness:** `cat /proc/sys/vm/swappiness`
+* **Para ver páginas grandes:** `grep Huge /proc/meminfo`
+
+ 
