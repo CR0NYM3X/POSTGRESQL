@@ -460,13 +460,13 @@ Este usuario será el propietario del binario y del directorio de datos:
 
 ------------------ [Opcion #1 ]  ------------------
 
-# Crear usuario sin acceso a login gráfico
-sudo adduser --system --home /home/postgres --shell /sbin/nologin --group postgres
+# Crear el usuario postgres (sin contraseña y como usuario de sistema para mayor seguridad)
+sudo adduser --system --home /home/postgres --shell /bin/bash --group postgres
 
 
   --system: crea un usuario del sistema.
   --home /opt/postgresql: define el home (puedes usar `/var/lib/postgresql` si prefieres).
-  --shell /sbin/nologin → impide login por SSH o consola
+  --shell /bin/bash → Se pueda conectar con bash
   --group postgres: crea el grupo con el mismo nombre.
 
 ------------------ [Opcion #2 ] -  Tambien se puede asi ------------------
@@ -509,9 +509,67 @@ Esto prohíbe que `postgres` se conecte por SSH.
 4.  Reinicia el servicio SSH:
     ```bash
     sudo systemctl restart ssh
-    ```
+     ```
+
+---
+
+
+## Paso 3: Configurar privilegios específicos con `sudo` a un usuario
+Ahora configuraremos el archivo **sudoers** para que **únicamente** el usuario `dbadmin` pueda convertirse en `postgres` y por seguridad no se use el usuario postgres para iniciar session 
+
+1. Ejecuta el editor seguro para el archivo sudoers:
+```bash
+sudo visudo
+
+```
+
+2. Añade la siguiente línea al final del archivo:
+```text
+dbadmin ALL=(postgres) ALL
+
+```
+
+* **dbadmin**: El usuario que recibe el permiso.
+* **ALL**: En cualquier host.
+* **(postgres)**: Puede ejecutar comandos **como** el usuario postgres.
+* **ALL**: Puede ejecutar cualquier comando.
+
+Si prefieres que no le pida la contraseña de `dbadmin` cada vez que cambie a `postgres`, usa:
+`dbadmin ALL=(postgres) NOPASSWD: ALL`
+
+---
  
 
+### Prueba B: Acceso desde `dbadmin` (Correcto)
+
+Entra como `dbadmin` y prueba el cambio de usuario:
+
+```bash
+
+
+# Intentamos entrar como postgres usando sudo
+sudo -u -i postgres 
+
+-u El sistema busca en el archivo sudoers si tú tienes permiso para actuar específicamente como postgres.
+-i Se cargan todas las variables de entorno de postgres (como su $PATH, sus alias y configuraciones de base de datos).
+``` 
+
+
+ 
+
+## Para que sirve `NOPASSWD: ALL`  
+
+Aquí hay un concepto de `sudo` que es vital entender: **Sudo no te pide la contraseña del usuario al que quieres entrar, te pide TU propia contraseña.**
+
+### ¿Cómo funciona el flujo de contraseñas?
+
+Cuando `dbadmin` ejecuta `sudo -u postgres -i`:
+
+1. **Sin NOPASSWD:** El sistema dice: *"Hola dbadmin, para dejarte ser postgres, primero demuéstrame que tú eres realmente dbadmin"*. Entonces te pide la **contraseña de dbadmin**.
+2. **Con NOPASSWD:** El sistema dice: *"Hola dbadmin, ya sé quién eres y confío en ti para este comando específico. Pasa directamente"*.
+ 
+ 
+---
 ###  2. Asignar permisos al directorio de instalación
 
 ```bash
