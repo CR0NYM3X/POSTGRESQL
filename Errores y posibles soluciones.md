@@ -123,7 +123,7 @@ Una vez que se obtiene el dato se ejecuta el siguiente comando:
 ```
 
 
-# Error \#3 (ERROR:  invalid byte sequence for encoding "UTF8": 0xbf)
+# Error \#3 (ERROR:  invalid byte sequence for encoding "UTF8": 0xbf) [link](https://www.postgresql.org/docs/current/multibyte.html)
 Este detalle se presenta ya que se ingreso un caracter no valido 
 
 ```SQL
