@@ -154,12 +154,6 @@ SELECT * FROM pg_stat_file(current_setting('data_directory') || '/global/pg_cont
   psql ([es la version de Binarios del psql que estas ejecutando ], server [versión de data])
 ```
 
-### Conectarse  a la base de datos 
-```
- psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres
-
- psql "dbname=my_dba_test host=10.44.1.155 user=postgres sslmode=disable"
-```
 
 ### ejecutar querys en la base de datos
 ```
@@ -1619,5 +1613,75 @@ Imagina que estás procesando logs de PostgreSQL para un reporte:
 5. **Nodo E (Depende de D):** Enviar por email al DBA.
 
 El sistema sabe que si **B** falla, no tiene sentido intentar **D**, pero **C** podría terminar su trabajo.
+
+ 
+---- 
+
+# Tipo de conexiones 
+
+## 2️⃣ Conexión usando `psql` (CLI oficial)
+
+### 🔹 2.1 Con parámetros explícitos
+
+```bash
+# Variables de entorno (libpq)
+export PGHOST=localhost
+export PGPORT=5432
+export PGDATABASE=appdb
+export PGUSER=appuser
+export PGPASSWORD=secret
+export PGCLIENTENCODING=UTF8
+
+PGCLIENTENCODING=UTF8 psql -h localhost -U appuser -d appdb
+ psql -d my_dba_test  -h 10.44.1.155 -p 5432 -U postgres
+
+```
+
+
+### 🔹 2.1 Con conexion string
+```bash
+https://www.postgresql.org/docs/current/app-psql.html
+psql "host=localhost port=5432 dbname=appdb user=appuser password=secret options='-c client_encoding=UTF8'"
+ psql "dbname=my_dba_test host=10.44.1.155 user=postgres sslmode=disable"
+```
+ 
+
+## 3️⃣ URI / URL de conexión (`libpq` compatible)
+
+Formato general:
+
+```text
+https://www.postgresql.org/docs/current/libpq-connect.html
+postgresql://user:password@host:port/dbname?param=value
+postgresql://appuser:secret@localhost:5432/appdb?options=-cclient_encoding=UTF8
+```
+
+  
+
+## 5️⃣ JDBC (Java / Spring / Microservicios)
+
+### 🔹 5.1 JDBC URL básica
+PostgreSQL JDBC usa UTF-8 por defecto
+
+```text
+
+jdbc:postgresql://localhost:5432/appdb?user=appuser&password=secret
+jdbc:postgresql://localhost:5432/appdb?options=-c%20client_encoding=UTF8
+jdbc:postgresql://localhost:5432/nombre_bd?client_encoding=UTF8
+jdbc:postgresql://localhost:5432/appdb?charSet=UTF8
+```
+ 
+ 
+### 🔹 6.1 Connection string ODBC
+
+```text
+Driver={PostgreSQL Unicode};
+Server=localhost;
+Port=5432;
+Database=appdb;
+Uid=appuser;
+Pwd=secret;
+ClientEncoding=UTF8;
+```
 
  
