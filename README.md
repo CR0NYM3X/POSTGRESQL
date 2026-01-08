@@ -76,6 +76,7 @@ https://dataegret.com/news-blog/
 https://www.credativ.de/en/blog/
 https://planetscale.com/blog
 https://neon.com/blog
+https://supabase.com/blog?category=postgres
 
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
