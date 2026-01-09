@@ -685,6 +685,7 @@ REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";
 
 # SCHEMA :
 	REVOKE ALL PRIVILEGES ON SCHEMA nombre_del_esquema FROM nombre_del_rol;
+    REVOKE TEMP ON DATABASE postgres FROM test;
   
 
 # FUNCTIONS:
