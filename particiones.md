@@ -651,30 +651,33 @@ postgres@postgres#  select table_schema,table_name,table_type  from information_
 ```SQL
 
 --- /*****  Ver todas las particiones y sus esquemas  *****\
-SELECT 
-	current_database() as db_name,
-	npar.nspname AS parent_schema,
-	cpar.relname AS parent_table,
-	nrel.nspname AS child_schema,
-	crel.relname AS child_table  
-FROM pg_inherits i
-	INNER JOIN pg_class cpar ON i.inhparent = cpar.oid    and cpar.relkind = 'p'
-	INNER JOIN pg_namespace npar ON cpar.relnamespace = npar.oid
-	INNER JOIN pg_class crel ON i.inhrelid = crel.oid   and  crel.relkind = 'r'
-	INNER JOIN pg_namespace nrel ON crel.relnamespace = nrel.oid 
-where  pg_catalog.set_config('client_encoding', current_setting('server_encoding'), true) is not null 
-ORDER BY npar.nspname   ;
+SELECT
+    current_database() AS db_name,
+    npar.nspname AS parent_schema,
+    cpar.relname AS parent_table,
+    nrel.nspname AS child_schema,
+    crel.relname AS child_table
+FROM pg_class       AS cpar
+JOIN pg_namespace   AS npar ON npar.oid = cpar.relnamespace
+LEFT JOIN pg_inherits AS i  ON i.inhparent = cpar.oid
+LEFT JOIN pg_class     AS crel ON crel.oid = i.inhrelid and  crel.relkind = 'r'
+LEFT JOIN pg_namespace AS nrel ON nrel.oid = crel.relnamespace
+WHERE cpar.relkind = 'p'  -- solo tablas "padre" particionadas
+and pg_catalog.set_config('client_encoding', current_setting('server_encoding'), true) is not null 
+ORDER BY parent_schema, parent_table, child_schema, child_table;
+ 
 
-+-------------------------+-------------------+-----------------------+------------------+
-| schema_name_partitioned | table_partitioned | schema_name_partition | tables_partition |
-+-------------------------+-------------------+-----------------------+------------------+
-| public                  | ventas            | prttb                 | ventas_2020      |
-| public                  | ventas            | prttb                 | ventas_2021      |
-| public                  | ventas            | prttb                 | ventas_2022      |
-| public                  | ventas            | prttb                 | ventas_2023      |
-| public                  | ventas            | prttb                 | ventas_2024      |
-+-------------------------+-------------------+-----------------------+------------------+
-(4 rows)
++---------+---------------+---------------------+--------------+---------------------------+
+| db_name | parent_schema |    parent_table     | child_schema |        child_table        |
++---------+---------------+---------------------+--------------+---------------------------+
+| test    | public        | employee_attendance | NULL         | NULL                      |
+| test    | public        | sales_data          | NULL         | NULL                      |
+| test    | public        | user_activities     | public       | user_activities_p20250201 |
+| test    | public        | user_activities     | public       | user_activities_p20250301 |
+| test    | public        | user_activities     | public       | user_activities_p20250401 |
++---------+---------------+---------------------+--------------+---------------------------+
+(5 rows)
+
 
 
 --- /***** se utiliza para separar una partición de su tabla particionada principal.  *****\
