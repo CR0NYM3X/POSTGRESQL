@@ -652,17 +652,18 @@ postgres@postgres#  select table_schema,table_name,table_type  from information_
 
 --- /*****  Ver todas las particiones y sus esquemas  *****\
 SELECT 
-		npar.nspname AS schema_name_partitioned,
-		cpar.relname AS table_partitioned,
-		nrel.nspname AS schema_name_partition,
-		crel.relname AS tables_partition
+	current_database() as db_name,
+	npar.nspname AS parent_schema,
+	cpar.relname AS parent_table,
+	nrel.nspname AS child_schema,
+	crel.relname AS child_table  
 FROM pg_inherits i
-INNER JOIN pg_class crel ON i.inhrelid = crel.oid and not crel.oid in(select conindid from pg_constraint)
-INNER JOIN pg_class cpar ON i.inhparent = cpar.oid and not cpar.oid in(select conindid from pg_constraint)
-INNER JOIN pg_namespace nrel ON crel.relnamespace = nrel.oid
-INNER JOIN pg_namespace npar ON cpar.relnamespace = npar.oid
-ORDER BY inhparent ,inhrelid 
-;
+	INNER JOIN pg_class cpar ON i.inhparent = cpar.oid    and cpar.relkind = 'p'
+	INNER JOIN pg_namespace npar ON cpar.relnamespace = npar.oid
+	INNER JOIN pg_class crel ON i.inhrelid = crel.oid   and  crel.relkind = 'r'
+	INNER JOIN pg_namespace nrel ON crel.relnamespace = nrel.oid 
+where  pg_catalog.set_config('client_encoding', current_setting('server_encoding'), true) is not null 
+ORDER BY npar.nspname   ;
 
 +-------------------------+-------------------+-----------------------+------------------+
 | schema_name_partitioned | table_partitioned | schema_name_partition | tables_partition |
