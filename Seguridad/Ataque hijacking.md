@@ -781,29 +781,7 @@ GRANT  EXECUTE ON FUNCTION fn_copy_by_conf_secure(text) TO app_role;
 -- REVOKE TEMP ON DATABASE postgres FROM user_hijacking;
 
 ```
-
-### Intento de ataque (fallido)
-
-```sql
--- El atacante de nuevo crea TEMP VIEW con el mismo nombre:
-CREATE TEMP VIEW customers_cards AS
-SELECT * FROM bank.customers_cards;
-
--- Llama a la función segura:
-SELECT bank.fn_copy_by_conf_secure('customers_cards');
-
--- Resultado:
--- La función siempre ejecuta COPY contra "bank.customers_cards"
--- porque:
--- 1) Fijamos search_path
--- 2) Calificamos con esquema desde copy_conf
--- 3) Validamos existencia exacta con to_regclass
--- → NO se usa pg_temp
-```
-
-> 🎉 **El hijacking fracasa**. El `COPY` exporta **solo** lo que dice tu `copy_conf` (esquema + tabla exacta).
-
-
+ 
 
 ## 🛡️ Recomendaciones (versión pulida y accionable)
 
@@ -820,7 +798,7 @@ SELECT bank.fn_copy_by_conf_secure('customers_cards');
 4.  **Revoca `EXECUTE` a `PUBLIC`**  
     Otorga `EXECUTE` únicamente a los roles de aplicación que lo necesiten.
 
-5.  **Evita SQL dinámico inseguro**  
+5.  **Evita SQL dinámico inseguro, sanitizar las entradas de querys**  
     Usa `format('%I.%I', esquema, tabla)` y `format('%L', ruta)` o `USING`.
 
 6.  **Pruebas obligatorias de hijacking**  
