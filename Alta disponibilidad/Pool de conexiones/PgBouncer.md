@@ -706,7 +706,262 @@ server_reset_query = 'DISCARD ALL'
 
  ```
 
+---
 
+ 
+# 🔁 PgBouncer `pool_mode`: tipos, diferencias y cuándo usar cada uno
+
+PgBouncer no es solo “un pool”, sino que **cambia el modelo de conexión** a PostgreSQL dependiendo del `pool_mode`.
+
+***
+
+## 🧠 Concepto base (imprescindible)
+
+PgBouncer **separa**:
+
+*   🔹 **Sesión del cliente** (psql / app)
+*   🔹 **Conexión backend a PostgreSQL**
+
+👉 Según el `pool_mode`, **cómo y cuándo** se asigna un backend **cambia completamente**.
+
+***
+
+## 📌 Tipos de `pool_mode`
+
+PgBouncer tiene **3 modos**:
+
+1.  `session`
+2.  `transaction`
+3.  `statement`
+
+Vamos uno por uno.
+
+***
+
+## 1️⃣ `pool_mode = session` (más seguro, más predecible)
+
+### 🔍 ¿Cómo funciona?
+
+*   Un cliente obtiene **una conexión backend dedicada**
+*   La conserva **hasta que se desconecta**
+*   Cuando el cliente se va ➜ PgBouncer **cierra o libera** el backend
+
+```text
+Cliente ──────────► Backend PostgreSQL
+```
+
+***
+
+### ✅ ¿Qué SÍ funciona aquí?
+
+*   ✅ TEMP TABLE
+*   ✅ `SET` / `RESET`
+*   ✅ `search_path`
+*   ✅ Cursores
+*   ✅ Prepared statements
+*   ✅ `LISTEN / NOTIFY`
+*   ✅ Comportamiento idéntico a conectar directo a Postgres
+
+***
+
+### ❌ ¿Desventajas?
+
+*   ❌ Menor capacidad de escalado
+*   ❌ Más conexiones concurrentes a PostgreSQL
+
+***
+
+### ✅ ¿Cuándo usarlo?
+
+Usa `session` cuando:
+
+✔ Usas **TEMP TABLE**  
+✔ Usas **SECURITY DEFINER**  
+✔ Esperas sesiones limpias y aisladas  
+✔ Prefieres **seguridad y predictibilidad**  
+✔ Tu carga no es extrema
+
+📌 **Recomendado para entornos críticos y sensibles**
+
+***
+
+## 2️⃣ `pool_mode = transaction` (el más usado, el más peligroso si no se entiende)
+
+### 🔍 ¿Cómo funciona?
+
+*   Cada **transacción** obtiene un backend
+*   Al terminar la transacción (`COMMIT/ROLLBACK`), el backend se **devuelve al pool**
+*   El siguiente cliente puede recibir **ese mismo backend**
+
+```text
+Cliente A ── TX ──► Backend #1
+Cliente B ── TX ──► Backend #1 (reusado)
+```
+
+***
+
+### ✅ ¿Qué SÍ funciona?
+
+*   ✅ Queries simples
+*   ✅ OLTP clásico
+*   ✅ Transacciones cortas
+*   ✅ Alto volumen de conexiones
+
+***
+
+### ❌ ¿Qué NO funciona bien?
+
+*   ❌ TEMP TABLE (heredan estado)
+*   ❌ `SET search_path`
+*   ❌ `SET ROLE`
+*   ❌ Session variables
+*   ❌ Cursor persistente
+*   ❌ Código con estado de sesión
+
+***
+
+### ⚠️ Riesgos reales
+
+*   Contaminación entre usuarios
+*   Hijacking con `pg_temp`
+*   Comportamiento no determinista
+*   Bugs intermitentes difíciles de reproducir
+
+***
+
+### ✅ ¿Cuándo usarlo?
+
+Usa `transaction` cuando:
+
+✔ Aplicación **stateless**
+✔ SOLO SQL puro por transacción
+✔ NO usas TEMP TABLE
+✔ NO usas funciones basadas en sesión
+✔ Necesitas **alta concurrencia**
+
+📌 **Es el modo más común en microservicios**, pero también el que más incidentes genera si se usa mal.
+
+***
+
+## 3️⃣ `pool_mode = statement` (el más extremo, casi nunca recomendado)
+
+### 🔍 ¿Cómo funciona?
+
+*   Cada **statement individual** usa un backend
+*   Entre statements el backend puede cambiar
+
+```text
+SELECT → Backend #1
+INSERT → Backend #7
+UPDATE → Backend #3
+```
+
+***
+
+### ✅ ¿Qué SÍ funciona?
+
+*   ✅ SELECTs simples
+*   ✅ Cargas muy controladas
+*   ✅ Workloads extremadamente simples
+
+***
+
+### ❌ ¿Qué NO funciona?
+
+*   ❌ Transacciones
+*   ❌ TEMP TABLE
+*   ❌ Funciones complejas
+*   ❌ Prepared statements
+*   ❌ Cualquier cosa con estado
+
+***
+
+### ✅ ¿Cuándo usarlo?
+
+🟡 **Casi nunca**
+
+Solo si:
+
+*   Conoces exactamente tus queries
+*   No usas transacciones
+*   Quieres máxima reutilización
+*   Estás dispuesto a aceptar muchas limitaciones
+
+***
+
+## 📊 Comparativa rápida (clara)
+
+| Característica           | session | transaction       | statement |
+| ------------------------ | ------- | ----------------- | --------- |
+| TEMP TABLE               | ✅       | ❌                 | ❌         |
+| search\_path persistente | ✅       | ❌                 | ❌         |
+| Seguridad                | 🔒 Alta | ⚠️ Media          | ⚠️ Baja   |
+| Escalabilidad            | Media   | Alta              | Muy alta  |
+| Debug / predictibilidad  | ✅       | ❌                 | ❌         |
+| Uso recomendado          | ✅ Sí    | ✅ Sí (con reglas) | ❌ No      |
+
+***
+
+## 🧠 Regla de oro (léela dos veces)
+
+> **Si tu código espera “estado de sesión”, NO uses `transaction` ni `statement`.**
+
+Esto incluye:
+
+*   TEMP TABLE
+*   `SECURITY DEFINER`
+*   `search_path`
+*   Variables de configuración
+
+***
+
+## 🔐 Recomendación profesional (alineada a todo lo que viste)
+
+Basado en:
+
+*   Hijacking
+*   SECURITY DEFINER
+*   pg\_temp
+*   copy\_conf
+*   Funciones privilegiadas
+
+### ✅ Reglas claras
+
+*   Usa **`session`** para:
+    *   Funciones sensibles
+    *   Administración
+    *   Exportación (`COPY`)
+*   Usa **`transaction`** solo para:
+    *   Apps simples
+    *   Queries cortas
+    *   Sin estado de sesión
+*   **Nunca mezcles TEMP + transaction**
+
+***
+
+## ✅ Configuración ejemplo recomendada
+
+```ini
+[databases]
+app_db = host=127.0.0.1 dbname=app_db pool_mode=session
+```
+
+O incluso **dos pools distintos**:
+
+*   Uno `session` para admin / funciones
+*   Uno `transaction` para la app
+
+***
+
+## 🧠 Conclusión
+
+*   PgBouncer **no es transparente**
+*   `pool_mode` define **qué garantías tienes**
+*   Elegir mal **rompe seguridad y lógica**
+*   Tu molestia con las TEMP es **una señal correcta**
+
+👉 **El problema no es PgBouncer, es usar el modo equivocado para el tipo de aplicación.**
+ 
 
 
 # Bibliografías 
