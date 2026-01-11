@@ -64,6 +64,7 @@ https://labs.dalibo.com/
 
 -- Blog solo para postgresql 
 https://www.enterprisedb.com/blog
+https://www.crunchydata.com/blog
 https://www.crunchydata.com/postgres-tips
 https://www.crunchydata.com/developers/tutorials
 https://www.percona.com/blog/category/postgresql/
