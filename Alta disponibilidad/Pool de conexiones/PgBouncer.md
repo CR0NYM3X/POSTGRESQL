@@ -1,4 +1,84 @@
+# PgBouncer
 
+Para entender la potencia de **PgBouncer**, hay que entender primero el "talón de Aquiles" de PostgreSQL: cada vez que alguien se conecta a Postgres, la base de datos tiene que crear un **proceso nuevo en el sistema operativo (un "fork")**.
+
+Crear un proceso es caro: consume memoria (unos 10MB por conexión) y tiempo de CPU. Si tienes 2,000 usuarios conectándose y desconectándose cada segundo, tu servidor gastará más energía gestionando procesos que resolviendo tus consultas SQL.
+
+Aquí es donde entra PgBouncer para "salvar el día".
+
+ 
+
+## 1. ¿Qué es PgBouncer y qué lo hace tan potente?
+
+Es un **gestor de conexiones (connection pooler) ligero**. Actúa como un intermediario o "repartidor".
+
+**Lo que lo hace potente es su arquitectura:**
+A diferencia de Postgres, PgBouncer **no abre un proceso por usuario**. Utiliza una técnica llamada **I/O asíncrono (basado en `libevent`)**. Un solo proceso de PgBouncer puede gestionar miles de conexiones de red simultáneas consumiendo apenas unos pocos megabytes de RAM.
+
+ 
+
+## 2. ¿Cómo establece la conexión con PostgreSQL? (¿Procesos o Conexiones?)
+
+Esta es la clave de tu duda:
+
+* **Desde la App a PgBouncer:** Se abren **conexiones de red (sockets)**. La app cree que está hablando con Postgres, pero está hablando con PgBouncer. Pueden ser miles.
+* **Desde PgBouncer a Postgres:** PgBouncer abre **conexiones reales** (que en Postgres se ven como procesos). Pero abre **pocas** y las mantiene abiertas.
+
+**¿Cómo funciona el truco?**
+Imagina un banco con 1,000 clientes (apps) pero solo 5 cajeros (conexiones a Postgres). PgBouncer es la **fila**. Cuando un cliente termina de hacer su depósito, PgBouncer no cierra la conexión con el cajero; simplemente le pasa el siguiente cliente de la fila a ese mismo cajero. El cajero (Postgres) nunca se entera de que cambió de cliente, él solo ve trabajo continuo.
+
+ 
+## 3. ¿Cómo hace la conexión con anticipación?
+
+PgBouncer no espera a que llegue un usuario para ir a "tocarle la puerta" a Postgres. Él puede mantener un "retén" de conexiones listas.
+
+Esto se configura con el parámetro **`min_pool_size`**.
+
+* Si pones `min_pool_size = 10`, en cuanto arranques PgBouncer, él irá a Postgres y abrirá 10 conexiones aunque no haya ningún usuario conectado.
+* **Ventaja:** Cuando llegue el primer usuario real, la conexión ya está "caliente" y establecida. El usuario entra instantáneamente.
+
+ 
+## 4. ¿Se ocupa un usuario previamente configurado?
+
+**Sí.** Para que PgBouncer pueda abrir esas conexiones con anticipación, necesita saber **cómo loguearse** en Postgres. Tienes dos formas de darle esta información:
+
+### A. La forma explícita (En la cadena de conexión)
+
+En la sección `[databases]`, le dices qué usuario usar para ese pool:
+
+```ini
+[databases]
+mibase = host=127.0.0.1 port=5432 dbname=produccion user=operador password=secreto
+
+```
+
+Aquí, PgBouncer usará siempre a `operador` para abrir las conexiones del pool.
+
+### B. La forma transparente (User Mapping)
+
+Si quieres que PgBouncer respete el usuario que viene desde la App:
+
+1. Necesitas un archivo llamado **`userlist.txt`**.
+2. Dentro pones: `"mi_usuario_app" "clave123"`.
+3. Cuando PgBouncer necesita abrir una conexión con anticipación para `mi_usuario_app`, lee ese archivo, toma la clave y se conecta a Postgres.
+
+ 
+### Resumen de Ventajas y Desventajas
+
+| Ventaja | Desventaja |
+| --- | --- |
+| **Ahorro de RAM masivo:** Puedes pasar de gastar 10GB en conexiones a solo 200MB. | **Punto de falla único:** Si PgBouncer se cae, nadie entra (por eso se suele usar en Alta Disponibilidad). |
+| **Velocidad:** Elimina el tiempo de "handshake" de login en cada consulta. | **Incompatibilidad:** En modo transacción, no puedes usar algunas funciones (como `LISTEN/NOTIFY`). |
+| **Protección:** Evita que una ráfaga de tráfico tumbe a Postgres por falta de RAM. | **Configuración extra:** Tienes que mantener el archivo de usuarios sincronizado. |
+
+ 
+
+### ¿Cómo explota el rendimiento esto?
+
+Al tener las conexiones "pre-abiertas" (`min_pool_size`), eliminas la latencia de creación de procesos. Y al usar **Transaction Pooling**, permites que 10 conexiones reales de Postgres sirvan a 1,000 usuarios de tu aplicación web, porque la mayoría del tiempo el usuario está leyendo la página, no ejecutando una consulta.
+
+
+--- 
 ### 🔄 **Flujo de manejo de conexiones persistentes con PgBouncer y PostgreSQL**
 
 Este diagrama muestra cómo **PgBouncer**, un pool de conexiones para PostgreSQL, gestiona las conexiones entre los **clientes** y el **servidor PostgreSQL** de forma eficiente. El objetivo es **optimizar el uso de conexiones backend** sin que el cliente note la diferencia.
