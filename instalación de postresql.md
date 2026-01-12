@@ -180,17 +180,102 @@ Puedes modificar parámetros del kernel usando:
 
 ### 📄 Ejemplo de configuración recomendada (`40-postgresql.conf`):
 
-```conf
+ 
+
+### ¿Para que sirve el archivo ?
+
+**Sí y no.** No es un archivo que venga "de fábrica" en una instalación limpia de Linux, pero es la **convención estándar** recomendada por expertos y utilizada por scripts de automatización (como Ansible, Puppet o instaladores avanzados) para gestionar PostgreSQL.
+
+El directorio `/etc/sysctl.d/` permite segmentar la configuración del kernel. En lugar de meter todo en el archivo principal `sysctl.conf`, se crean "snippets" (fragmentos). El número **`40-`** es simplemente un orden de prioridad: los archivos se cargan por orden alfanumérico.
+
+ 
+### ¿Para qué sirve? (El contenido "Potente")
+
+Su propósito es centralizar los ajustes del Sistema Operativo que mencionamos antes para que PostgreSQL "explote" el hardware. Si encuentras o creas este archivo, normalmente contiene estos parámetros críticos:
+
+#### 1. Gestión de Memoria y Swap
+
+* **`vm.swappiness = 1`**: (Lo que ya discutimos) Evita que el SO mande a Postgres al disco.
+* **`vm.overcommit_memory = 2`**: Es vital en servidores críticos. Evita que el kernel "prometa" más RAM de la que tiene, lo que previene que el **OOM Killer** mate a Postgres de forma inesperada.
+* **`vm.overcommit_ratio = 80`**: Define qué porcentaje de la RAM se puede asignar.
+
+#### 2. Rendimiento de Escritura (Disk Flush)
+
+* **`vm.dirty_background_ratio = 5`**: Le dice al kernel que empiece a escribir datos al disco en segundo plano muy pronto. Esto evita que se acumule mucha "basura" en RAM y que luego el sistema se congele al intentar escribir gigabytes de golpe.
+* **`vm.dirty_ratio = 15`**: El límite máximo antes de que el sistema obligue a todas las aplicaciones a detenerse para escribir en disco.
+
+#### 3. Conectividad (Ideal para tu duda de PgBouncer)
+
+* **`net.core.somaxconn = 4096`**: Aumenta el límite de la cola de conexiones que el SO puede aceptar. Si tienes miles de usuarios intentando entrar a PgBouncer, necesitas que este número sea alto para que el SO no rechace los paquetes "TCP SYN".
+
+
+### 1. `kernel.shmmax` (El límite de un solo segmento)
+
+* **Para qué sirve:** Define el tamaño máximo de un **único** segmento de memoria compartida que un proceso puede solicitar al kernel.
+* **Riesgo:** Si es menor que tus `shared_buffers`, Postgres fallará al iniciar.
+* **Recomendación Pro:** Antiguamente se calculaba con pinzas, pero hoy, para "explotar" el rendimiento, lo ideal es configurarlo para que pueda albergar casi toda la RAM si fuera necesario.
+
+### 2. `kernel.shmall` (El límite total del sistema)
+
+* **Para qué sirve:** Define la cantidad **total** de memoria compartida (en páginas, no en bytes) que se puede usar en todo el sistema.
+* **Cálculo:** Se obtiene dividiendo los bytes totales entre el tamaño de página (normalmente 4096 bytes).
+
+
+ 
+### ¿Por qué usar este archivo en lugar de `sysctl.conf`?
+
+1. **Orden y Limpieza:** Si un día decides desinstalar Postgres o moverlo, simplemente borras el archivo `40-postgresql.conf` y el resto del sistema queda intacto.
+2. **Persistencia:** Al estar en `/etc/sysctl.d/`, te aseguras de que cada vez que el servidor se reinicie, estos ajustes "agresivos" se apliquen automáticamente.
+3. **Prioridad:** El prefijo `40` asegura que tus cambios se apliquen después de los parámetros básicos del sistema (que suelen ser `10-` o `20-`), pero permiten que ajustes de red específicos (como un `60-networking.conf`) tengan la última palabra si fuera necesario.
+ 
+### Cómo crear uno de "Alto Rendimiento" ahora mismo
+
+Si quieres llevar tu servidor al máximo como lo hemos platicado, podrías crear este archivo con este comando:
+
+```bash
+sudo nano /etc/sysctl.d/40-postgresql.conf
+
+```
+
+**Copia y pega este contenido (Ajustado para 2026):**
+
+```text
+# --- Memoria Compartida (System V) ---
+# Permitir segmentos de hasta 48GB (75% de la RAM)
+kernel.shmmax = 51539607552
+
+# Total de páginas permitidas (shmmax / 4096)
+kernel.shmall = 12582912
+
+# --- Gestión de Memoria y Swap ---
 vm.swappiness = 1
+vm.overcommit_memory = 2
+vm.overcommit_ratio = 80
+vm.dirty_background_ratio = 5
+vm.dirty_ratio = 15
+vm.nr_hugepages = 1300
+
+# --- Red de Alta Concurrencia (Miles de usuarios) ---
+net.core.somaxconn = 4096
+net.ipv4.tcp_max_syn_backlog = 8192
+net.ipv4.ip_local_port_range = 1024 65535
+net.ipv4.tcp_timestamps = 0
+
+# -- Otros 
 vm.dirty_expire_centisecs = 500
 vm.dirty_writeback_centisecs = 250
-vm.dirty_ratio = 10
-vm.dirty_background_ratio = 3
-vm.overcommit_memory = 2
-net.ipv4.tcp_timestamps = 0
-vm.overcommit_ratio = 85
-vm.nr_hugepages = 1300
+
+
 ```
+
+Luego, aplicas los cambios con:
+
+```bash
+sudo sysctl --system
+
+```
+
+ 
 
 ### 🧠 Explicación de parámetros clave:
 
@@ -887,6 +972,55 @@ Es por esto que se inicializó solo. Como vimos antes, esto se desactiva cambian
  
 
 ---
+
+ 
+
+## 1. Protección mediante `systemd` (La forma más fácil)
+
+Si usas una distribución moderna de Linux (Ubuntu 22.04+, Debian 12, RHEL 9, etc.), puedes usar las capacidades de **Cgroups v2** a través de systemd para blindar a Postgres.
+
+Puedes editar el servicio de PostgreSQL para que el sistema operativo "garantice" su RAM:
+
+1. Ejecuta: `sudo systemctl edit postgresql`
+2. Agrega estas líneas:
+
+```ini
+[Service]
+# Protege la memoria de Postgres hasta este límite (ej. 16GB)
+# El kernel no swapeará este proceso a menos que sea crítico
+MemoryLow=16G
+# Prohibe terminantemente que el kernel swapee este proceso
+MemoryMin=8G
+
+```
+
+* **`MemoryLow`:** Es una "promesa" suave. El kernel intentará no tocar esta RAM.
+* **`MemoryMin`:** Es una protección dura. El kernel **nunca** moverá esa cantidad de RAM al swap.
+
+ 
+
+## 2. Bloqueo de Memoria con `huge_pages` (La forma recomendada)
+
+Esta es la forma "nativa" de Postgres para evitar el swap en su área más crítica: los **Shared Buffers**.
+
+En Linux, las "páginas" normales de memoria son de 4KB. Las **Huge Pages** son de 2MB o más. Lo más importante es que **las Huge Pages no pueden ser enviadas al Swap por diseño del Kernel**.
+
+**Pasos para activarlo:**
+
+1. En `postgresql.conf`:
+```text
+huge_pages = on  # En lugar de 'try'
+
+```
+
+
+2. Debes calcular y reservar las páginas en el SO (usando `vm.nr_hugepages` en `/etc/sysctl.conf`).
+
+**Ventaja:** Te aseguras de que el 25%-40% de tu RAM (lo que asignaste a `shared_buffers`) sea **totalmente inmune** al swap, mejorando además el rendimiento de la CPU.
+
+
+---
+
 
 ### Links de referenicias 
 ```bash
