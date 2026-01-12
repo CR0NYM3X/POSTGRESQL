@@ -206,6 +206,10 @@ vm.nr_hugepages = 1300
 - **`vm.nr_hugepages = 1300`**  
   Define cuántas páginas enormes se reservan. Esto mejora el rendimiento de PostgreSQL, pero debe ajustarse según la RAM disponible.
 
+
+
+
+
 ---
 
 ## 📊 Aplicar y monitorear cambios
@@ -239,6 +243,30 @@ THP puede causar problemas de rendimiento en bases de datos. Para desactivarlo:
    ```
 
 ---
+
+
+
+## Nivel 1: El Sistema Operativo (Linux Tuning)
+
+Antes de tocar Postgres, debes preparar la pista de aterrizaje. Sin esto, el SO limitará a la base de datos.
+
+* **Límites de Archivos (`ulimit`):** Postgres abre un archivo por cada tabla e índice, y un socket por cada conexión.
+* *Configuración:* En `/etc/security/limits.conf`, sube `nofile` a **65535** o más para el usuario `postgres`.
+
+
+* **Huge Pages (Páginas Gigantes):** Por defecto, Linux usa páginas de 4KB. Para bases de datos grandes, esto satura el "TLB cache" de la CPU.
+* **Inteligencia:** Configura `huge_pages = try` en Postgres y reserva las páginas en el kernel (`vm.nr_hugepages`). Esto puede darte un **10-15%** de mejora de rendimiento bruto en CPU.
+
+
+* **Swappiness:** No querrás que Postgres use el disco como RAM.
+* *Configuración:* `vm.swappiness = 1`. No lo pongas en 0, para permitir que el SO mueva procesos secundarios, pero proteja a Postgres.
+
+
+* **Transparent Huge Pages (THP):** **¡Apágalo!** Es el enemigo #1 de las bases de datos OLTP porque causa latencias aleatorias.
+
+
+---
+
 
 ## 📁 Sistema de archivos recomendado
 
