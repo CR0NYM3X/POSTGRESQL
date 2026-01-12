@@ -175,6 +175,7 @@ Puedes modificar parámetros del kernel usando:
 - `/etc/sysctl.conf` (archivo principal)
 - `/etc/sysctl.d/40-postgresql.conf` (archivo personalizado)
 
+
 > Si instalaste PostgreSQL desde los repositorios, probablemente ya exista `/etc/sysctl.d/30-postgresql-shm.conf`, que ajusta parámetros de memoria compartida.
 
 ### 📄 Ejemplo de configuración recomendada (`40-postgresql.conf`):
@@ -195,6 +196,9 @@ vm.nr_hugepages = 1300
 
 - **`vm.swappiness = 1`**  
   Reduce el uso de SWAP. Por defecto es 60, lo que significa que el sistema empieza a usar SWAP cuando se ha ocupado el 60% de la RAM. SWAP es lento, así que lo ideal es usar más RAM.
+
+	- cat /proc/sys/vm/swappiness
+	- sysctl vm.swappiness
 
 - **`vm.dirty_expire_centisecs` y `vm.dirty_writeback_centisecs`**  
   Controlan cuándo los datos modificados en memoria se consideran "suficientemente viejos" para ser escritos en disco. Se expresan en centésimas de segundo.
@@ -264,6 +268,66 @@ Antes de tocar Postgres, debes preparar la pista de aterrizaje. Sin esto, el SO 
 
 * **Transparent Huge Pages (THP):** **¡Apágalo!** Es el enemigo #1 de las bases de datos OLTP porque causa latencias aleatorias.
 
+
+### ¿Por qué "1" para sistemas supercríticos?
+
+Cuando tienes una base de datos de alto rendimiento, el peor enemigo es la **latencia impredecible**. Si el `swappiness` es alto, ocurre lo siguiente:
+
+1. **Disk Thrashing:** El sistema operativo empieza a mover páginas de la memoria de PostgreSQL (que están en RAM) al disco para hacer espacio para el caché del sistema de archivos.
+2. **El "Lag" del Swap:** Cuando Postgres necesita esos datos "swapeados", tiene que esperar a que el disco (que es órdenes de magnitud más lento que la RAM) los devuelva. Esto genera picos de latencia (spikes) que pueden hacer que las aplicaciones fallen por *timeout*.
+3. **Predictibilidad:** Con `swappiness = 1`, garantizas que casi el 100% de las consultas de Postgres se resuelvan en RAM o en el caché del procesador.
+
+ 
+
+### Comparativa de Valores en Escenarios Críticos
+
+| Valor | Nivel de Riesgo | Comportamiento |
+| --- | --- | --- |
+| **60 (Default)** | **Alto** | El SO prioriza el caché de archivos sobre la memoria de la BD. Causa latencias aleatorias. |
+| **10** | **Bajo / Seguro** | Recomendado para la mayoría de servidores de producción. Es conservador y estable. |
+| **1** | **Mínimo / Performance** | **Ideal para sistemas supercríticos.** Prioriza la memoria de los procesos sobre todo lo demás. |
+| **0** | **Peligroso** | Puede causar que el OOM Killer mate a Postgres incluso si hay Swap disponible. |
+
+ 
+
+### El Riesgo Real: El OOM Killer 💀
+
+El riesgo de configurar un `swappiness` muy bajo en un servidor crítico es que **quitas la "válvula de escape"**.
+
+Si tu servidor se queda sin RAM física (por ejemplo, por una fuga de memoria o una consulta mal optimizada que consume gigas de `work_mem`):
+
+* Con un `swappiness` alto, el sistema se pondría muy lento (pero seguiría vivo).
+* Con `swappiness = 1`, el kernel tiene tan poco margen de maniobra que el **OOM Killer** entrará en acción casi de inmediato y **matará el proceso que más RAM use** (probablemente tu instancia de PostgreSQL).
+
+
+#### Cómo mitigar este riesgo en sistemas supercríticos:
+
+1. **Monitoreo agresivo:** Debes tener alertas cuando el uso de RAM supere el 80-85%.
+2. **Ajuste de `oom_score_adj`:** Puedes configurar Linux para que, en caso de emergencia, prefiera matar otros procesos (como logs, agentes de monitoreo, ssh) antes que a PostgreSQL.
+3. **Cálculo estricto de Memoria:** Asegúrate de que `shared_buffers` + (`max_connections` * `work_mem`) nunca exceda la RAM física disponible.
+ 
+
+### Cómo aplicar el cambio "Supercrítico"
+
+Para asegurar que esto persista y sea efectivo ahora mismo:
+
+1. **Aplicar de inmediato:**
+```bash
+sudo sysctl -w vm.swappiness=1
+sudo sysctl -w vm.vfs_cache_pressure=50
+```
+
+
+2. **Hacerlo permanente:**
+Edita `/etc/sysctl.conf` y asegúrate de tener:
+```text
+vm.swappiness = 1
+vm.vfs_cache_pressure = 50 
+```
+ 
+*(Bajar el cache_pressure a 50 ayuda a que el kernel no "olvide" los metadatos de los archivos de la BD tan rápido).*
+
+---
 
 ---
 
