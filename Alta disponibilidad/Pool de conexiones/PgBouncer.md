@@ -839,7 +839,78 @@ Si un solo PgBouncer se queda corto por el límite de CPU monohilo, la estrategi
 
  
 ---
+# Configuración potente para pgbouncer 
+
+Para llevar a PostgreSQL y tu sistema operativo al límite de su capacidad en 2026, no basta con subir los números; hay que hacer que el sistema trabaje **en armonía**. Si configuras un parámetro muy alto sin ajustar el resto, crearás un cuello de botella en otro lugar (el famoso efecto "cobija corta").
+
+Aquí tienes el "Blueprint" de una configuración inteligente dividida en los tres niveles de poder:
+
  
+
+## Nivel 1: El Sistema Operativo (Linux Tuning)
+
+Antes de tocar Postgres, debes preparar la pista de aterrizaje. Sin esto, el SO limitará a la base de datos.
+
+* **Límites de Archivos (`ulimit`):** Postgres abre un archivo por cada tabla e índice, y un socket por cada conexión.
+* *Configuración:* En `/etc/security/limits.conf`, sube `nofile` a **65535** o más para el usuario `postgres`.
+
+
+* **Huge Pages (Páginas Gigantes):** Por defecto, Linux usa páginas de 4KB. Para bases de datos grandes, esto satura el "TLB cache" de la CPU.
+* **Inteligencia:** Configura `huge_pages = try` en Postgres y reserva las páginas en el kernel (`vm.nr_hugepages`). Esto puede darte un **10-15%** de mejora de rendimiento bruto en CPU.
+
+
+* **Swappiness:** No querrás que Postgres use el disco como RAM.
+* *Configuración:* `vm.swappiness = 1`. No lo pongas en 0, para permitir que el SO mueva procesos secundarios, pero proteja a Postgres.
+
+
+* **Transparent Huge Pages (THP):** **¡Apágalo!** Es el enemigo #1 de las bases de datos OLTP porque causa latencias aleatorias.
+
+ 
+## Nivel 2: PostgreSQL Core (`postgresql.conf`)
+
+Aquí es donde optimizas cómo Postgres consume el hardware.
+
+| Parámetro | Configuración "Inteligente" | Por qué es vital |
+| --- | --- | --- |
+| **`shared_buffers`** | **25% a 30%** de la RAM total | Es el "caché de trabajo". No pongas más del 40%, ya que Postgres también depende del caché del SO. |
+| **`work_mem`** | **Cálculo:**  | Es la RAM por cada operación de ordenamiento/join. Si es muy bajo, usa disco; si es muy alto, el OOM-Killer matará a Postgres. |
+| **`maintenance_work_mem`** | **5%** de la RAM total | Acelera la creación de índices y el VACUUM. |
+| **`effective_cache_size`** | **75%** de la RAM total | No reserva memoria; solo le dice al planificador cuánta RAM hay disponible en total (incluyendo el caché del SO). |
+| **`max_worker_processes`** | Igual al número de CPUs lógicas | Permite que Postgres use paralelismo real para consultas pesadas. |
+
+ 
+
+## Nivel 3: Gestión Explosiva con PgBouncer
+
+Para gestionar miles de conexiones sin que el servidor colapse por el costo de "context switching" (el costo de la CPU de saltar entre 5,000 procesos), PgBouncer es obligatorio.
+
+### La Configuración Maestra:
+
+1. **`pool_mode = transaction`**: Es el único modo que te permitirá escalar a miles de usuarios reales.
+2. **`max_client_conn = 10000`**: Capacidad de red para recibir a los usuarios.
+3. **`default_pool_size = (CPUs \times 2) + (\text{Discos SSD})`**: Esta es la fórmula mágica. No necesitas 1,000 conexiones a la BD; necesitas que las que tengas sean ultra rápidas. Tener 100 conexiones reales procesando constantemente es mejor que 2,000 esperando en fila de CPU.
+4. **`so_reuseport = 1`**: En versiones recientes, permite que múltiples procesos de PgBouncer escuchen en el mismo puerto, eliminando el cuello de botella del monohilo.
+
+ 
+
+## El "Cálculo de Oro" para no morir en el intento
+
+Si tienes un servidor con **64GB de RAM** y quieres 5,000 usuarios concurrentes vía PgBouncer:
+
+1. **Postgres `max_connections**`: Ponlo en **200** o **300**. (PgBouncer se encargará del resto).
+2. **`shared_buffers`**: **16GB**.
+3. **`work_mem`**:
+
+
+
+Configura `work_mem = 64MB`. Esto garantiza que incluso en el peor escenario de carga, tu servidor no se quedará sin RAM.
+
+> **Nota Crítica:** Si usas **SSD o NVMe**, asegúrate de bajar `random_page_cost` a **1.1**. El valor por defecto (4.0) es de la época de los discos mecánicos y hace que Postgres ignore tus índices.
+
+ 
+
+
+---
 
 
 # Bibliografías 
