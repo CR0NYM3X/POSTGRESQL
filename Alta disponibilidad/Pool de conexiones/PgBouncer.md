@@ -705,9 +705,140 @@ server_reset_query = 'DISCARD ALL'
 
 
  ```
-
 ---
 
+# Tipos de Pooling
+
+PgBouncer es una herramienta esencial para gestionar conexiones en PostgreSQL, especialmente cuando tienes muchas aplicaciones o usuarios conectándose al mismo tiempo. Su funcionamiento se basa en tres modos de "pooleo" (`pool_mode`), cada uno con un nivel de agresividad distinto para reciclar las conexiones.
+
+Aquí tienes el detalle de cada uno:
+ 
+ 
+## 1. Session Pooling (Modo Sesión)
+
+Es el modo más conservador y el que viene por defecto. Cuando una aplicación se conecta, PgBouncer le asigna una conexión del servidor y **esa aplicación se queda con ella hasta que se desconecta voluntariamente**.
+
+* **Ventajas:** * Total compatibilidad: Soporta todas las funciones de PostgreSQL (tablas temporales, comandos `SET`, `LISTEN/NOTIFY`, `PREPARE`, etc.).
+* Es transparente para la aplicación; se comporta exactamente como si estuvieras conectado directamente a la base de datos.
+
+
+* **Desventajas:**
+* Poca eficiencia de escala: Si tienes 500 usuarios conectados "en espera" (idle), gastarás 500 conexiones reales en el servidor de PostgreSQL.
+
+
+* **Cuándo usarlo:** Para tareas administrativas, scripts de migración o aplicaciones que no pueden vivir sin funciones de sesión.
+* **Cuándo NO usarlo:** En aplicaciones web con miles de usuarios concurrentes donde el servidor de BD tiene recursos limitados (RAM/CPU).
+
+ 
+## 2. Transaction Pooling (Modo Transacción)
+
+Es el modo **más utilizado y recomendado** para la mayoría de los casos. Aquí, PgBouncer le entrega una conexión a la aplicación **solo mientras dure una transacción** (`BEGIN` ... `COMMIT/ROLLBACK`). En cuanto termina la transacción, la conexión vuelve al pool para que otro usuario la use.
+
+* **Ventajas:**
+* Extrema eficiencia: Puedes tener 5,000 clientes conectados a PgBouncer, pero solo 50 conexiones reales en Postgres, siempre que no todos lancen transacciones al mismo milisegundo.
+* Reduce drásticamente el consumo de memoria en el servidor de base de datos.
+
+
+* **Desventajas:**
+* Rompe funciones de sesión: No puedes usar `SET` (a menos que uses `SET LOCAL`), no funcionan los `ADVISORY LOCKS` de sesión y el uso de `PREPARE` requiere configuraciones especiales en versiones recientes.
+
+
+* **Cuándo usarlo:** Aplicaciones web, microservicios y cualquier entorno de alta concurrencia.
+* **Cuándo NO usarlo:** Si tu aplicación depende fuertemente de variables de sesión que deben persistir entre diferentes transacciones.
+ 
+
+## 3. Statement Pooling (Modo Sentencia)
+
+Es el modo más agresivo. La conexión se devuelve al pool **inmediatamente después de cada consulta SQL individual**.
+
+* **Ventajas:**
+* Máximo aprovechamiento de las conexiones del servidor.
+
+
+* **Desventajas:**
+* **No permite transacciones multi-sentencia**: Si intentas hacer un `BEGIN`, PgBouncer dará un error o la siguiente instrucción caerá en una conexión distinta, rompiendo la lógica.
+
+
+* **Cuándo usarlo:** Solo si tu aplicación funciona exclusivamente en modo `autocommit` (una sola consulta a la vez) y necesitas una escala masiva.
+* **Cuándo NO usarlo:** En el 99% de las aplicaciones modernas, ya que la mayoría usa transacciones (aunque sea de forma implícita).
+
+ 
+### Tabla Comparativa de Resumen
+
+| Característica | Session | Transaction | Statement |
+| --- | --- | --- | --- |
+| **Reciclaje de conexión** | Al desconectarse | Al terminar transacción | Al terminar cada query |
+| **Escalabilidad** | Baja | **Muy Alta** | Máxima |
+| **Tablas temporales** | Sí | No (solo dentro de la trans.) | No |
+| **Comandos SET** | Sí | Solo `SET LOCAL` | No |
+| **Recomendado para** | Admin / Migraciones | **Producción / Web** | Casos muy específicos |
+
+ 
+## ¿Cuál es el recomendado?
+
+En la gran mayoría de los escenarios de producción, se recomienda el **`pool_mode = transaction`**.
+
+Este modo ofrece el mejor balance entre ahorro de recursos y funcionalidad. Permite que tu base de datos respire al mantener un número bajo de conexiones reales (que son costosas en memoria para PostgreSQL), mientras que tus aplicaciones pueden escalar casi sin límites.
+
+### Recomendación Pro:
+
+Si tu aplicación principal necesita **Transaction Mode** para escalar, pero tienes un par de tareas de mantenimiento que requieren **Session Mode**, puedes configurar **dos pools diferentes** en el mismo archivo `pgbouncer.ini` apuntando a la misma base de datos, cada uno con un modo distinto.
+
+--- 
+ 
+# Qué pasa si tengo miles de usuario intentando conectarse al mismo tiempo ?
+
+Lo que parece como una posible "desventaja" es, en realidad, el escenario donde PgBouncer brilla, pero tiene matices importantes sobre cómo gestiona ese tráfico masivo.
+
+Aquí te explico qué sucede técnicamente cuando miles de usuarios intentan entrar al mismo tiempo:
+
+  
+### 1. El concepto de "Cola de Espera" (Queuing)
+
+A diferencia de PostgreSQL (que si llega al límite lanza un error de inmediato), PgBouncer actúa como un **amortiguador**.
+
+* **Si tienes 5,000 usuarios** intentando conectarse pero solo **100 conexiones** reales a la base de datos (`default_pool_size = 100`):
+* PgBouncer aceptará las 5,000 conexiones de red (siempre que tu configuración `max_client_conn` lo permita).
+* Pondrá a los usuarios en una **cola interna**.
+* A medida que las transacciones terminan (en modo `transaction`), la conexión se libera y se le entrega al siguiente usuario en la cola en milisegundos.
+
+
+
+### 2. ¿Qué pasa si la cola es demasiado grande? (Desventajas reales)
+
+Aunque PgBouncer evita que la base de datos muera, si el volumen es excesivo, podrías enfrentar estos problemas:
+
+* **Latencia de Aplicación:** El usuario no verá un error de "Conexión rechazada", pero su consulta tardará más en responder porque está esperando su turno en la cola de PgBouncer.
+* **Timeouts:** Si el tiempo de espera en la cola supera el `timeout` configurado en tu aplicación (o el `query_wait_timeout` de PgBouncer), la aplicación cortará la conexión pensando que la base de datos no responde.
+* **Cuello de botella de CPU (Single-thread):** Históricamente, PgBouncer es **monohilo** (usa un solo núcleo del procesador). Aunque es extremadamente eficiente, si tienes una avalancha de miles de conexiones *nuevas* con SSL/TLS al mismo segundo, el proceso de "handshake" puede saturar ese núcleo de CPU.
+
+ 
+
+### 3. Cómo manejar miles de usuarios (Buenas Prácticas 2026)
+
+Si esperas miles de conexiones concurrentes, debes ajustar estos parámetros en tu `pgbouncer.ini`:
+
+| Parámetro | Recomendación para miles de usuarios |
+| --- | --- |
+| **`max_client_conn`** | Súbelo a **5000** o **10000**. Es el límite total de usuarios "colgados" del pooler. |
+| **`default_pool_size`** | Manténlo bajo (ej. **100-200**). Contra más bajo, más rápido responde Postgres, pero la cola será más larga. |
+| **`reserve_pool_size`** | Configura un pequeño extra (ej. **20**) que solo se use cuando la cola esté muy llena. |
+| **`ulimit -n`** | **Crucial:** Aumenta los límites de archivos abiertos en el Sistema Operativo (Linux), de lo contrario PgBouncer no podrá abrir miles de sockets. |
+
+### 4. La solución definitiva: Escalado Horizontal
+
+Si un solo PgBouncer se queda corto por el límite de CPU monohilo, la estrategia moderna es usar **múltiples instancias de PgBouncer** escuchando en el mismo puerto mediante una opción llamada `SO_REUSEPORT`. Esto permite que el tráfico se distribuya entre varios núcleos de CPU.
+ 
+
+### Resumen: ¿Cuándo es un problema real?
+
+* **Es una ventaja si:** Los usuarios hacen consultas rápidas. PgBouncer reciclará las conexiones tan rápido que nadie notará la espera.
+* **Es una desventaja si:** Los usuarios abren transacciones muy largas (ej. reportes pesados). En ese caso, la cola no avanza, los 5,000 usuarios se quedan esperando y tu sistema se siente "congelado".
+
+**Mi recomendación:** Usa siempre **`pool_mode = transaction`** para estos casos de alta concurrencia y asegúrate de que tus queries estén optimizadas (índices correctos) para que salgan rápido de la conexión y dejen paso al siguiente.
+
+ 
+---
  
 
 
