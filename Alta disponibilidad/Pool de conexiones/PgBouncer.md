@@ -40,28 +40,56 @@ Esto se configura con el parámetro **`min_pool_size`**.
  
 ## 4. ¿Se ocupa un usuario previamente configurado?
 
-**Sí.** Para que PgBouncer pueda abrir esas conexiones con anticipación, necesita saber **cómo loguearse** en Postgres. Tienes dos formas de darle esta información:
+**Sí.** Para que PgBouncer pueda abrir esas conexiones con anticipación, necesita saber **cómo loguearse** en Postgres. 
 
-### A. La forma explícita (En la cadena de conexión)
 
-En la sección `[databases]`, le dices qué usuario usar para ese pool:
+## 1. (El concepto de Pool)
+
+PgBouncer no crea un solo gran "almacén" de conexiones. Crea pequeños "compartimentos" llamados **Pools**. Cada pool se define por la pareja `(Usuario, Base de Datos)`.
+
+* Si entra `juan` a `db_test` -> Pool A (5 conexiones fijas).
+* Si entra `maria` a `db_test` -> Pool B (otras 5 conexiones fijas).
+
+ 
+## 2. ¿Cómo cambiar este comportamiento?
+
+Tienes tres caminos dependiendo de qué tanta "agresividad" quieras en el reciclaje de conexiones:
+ 
+
+### Opción A: Desactivar o reducir el "Pre-abierto"
+
+Si quieres que PgBouncer sea más conservador y no abra conexiones "por si acaso", cambia el valor en el `.ini`:
+
+* **`min_pool_size = 0`**: PgBouncer solo abrirá conexiones cuando un usuario las pida. Si no hay nadie conectado, hay 0 conexiones hacia Postgres. Es lo más ahorrador de RAM.
+* **`min_pool_size = 1`**: Mantendrá solo una conexión por pool. Es un buen equilibrio para que el primer usuario no sienta latencia, pero sin saturar el backend.
+
+### Opción B: Consolidación mediante "User Remapping"
+
+Esta es la forma de **forzar a que todos usen el mismo pool**. Como vimos antes, si en la sección `[databases]` especificas un usuario fijo, PgBouncer mezclará a todos los usuarios en un solo grupo de conexiones. no importa con que usuario el cliente se conecte, postgres siempre vera que se conecto   el mismo usuario del pool que especificaste por ejemplo user_pool1
 
 ```ini
 [databases]
-mibase = host=127.0.0.1 port=5432 dbname=produccion user=operador password=secreto
+db_test = host=10.168.1.100 port=5432 dbname=db_test user=user_pool1 password=...
 
 ```
 
-Aquí, PgBouncer usará siempre a `operador` para abrir las conexiones del pool.
+* **Resultado:** No importa si entran 1,000 usuarios diferentes, PgBouncer solo mirará el pool de `db_master` y mantendrá solo 5 conexiones en total hacia Postgres (según tu `min_pool_size`).
 
-### B. La forma transparente (User Mapping)
+### Opción C: Ajustar el tiempo de vida (`server_idle_timeout`)
+
+Si decides mantener un `min_pool_size` alto, puedes configurar qué tan rápido se deben cerrar las conexiones que sobran:
+
+* **`server_idle_timeout = 60`**: Si una conexión del pool lleva más de 60 segundos sin usarse y hay más conexiones de las que indica `min_pool_size`, PgBouncer la cerrará para liberar RAM en el servidor de Postgres.
+
+
+
+### C. La forma transparente (User Mapping)
 
 Si quieres que PgBouncer respete el usuario que viene desde la App:
 
 1. Necesitas un archivo llamado **`userlist.txt`**.
 2. Dentro pones: `"mi_usuario_app" "clave123"`.
 3. Cuando PgBouncer necesita abrir una conexión con anticipación para `mi_usuario_app`, lee ese archivo, toma la clave y se conecta a Postgres.
-
  
 ### Resumen de Ventajas y Desventajas
 
@@ -71,6 +99,31 @@ Si quieres que PgBouncer respete el usuario que viene desde la App:
 | **Velocidad:** Elimina el tiempo de "handshake" de login en cada consulta. | **Incompatibilidad:** En modo transacción, no puedes usar algunas funciones (como `LISTEN/NOTIFY`). |
 | **Protección:** Evita que una ráfaga de tráfico tumbe a Postgres por falta de RAM. | **Configuración extra:** Tienes que mantener el archivo de usuarios sincronizado. |
 
+
+### 1. ¿Qué es mejor: Especificar el pool o dejar el `min_pool_size = 5`?
+
+En tu escenario de **miles de conexiones**, dejar `min_pool_size = 5` por cada usuario es, en términos técnicos, **una "trampa" de recursos**.
+
+#### El problema del "Pool por Usuario" (Transparente)
+
+Como no especificas un `user=` en la sección `[databases]`, PgBouncer crea un pool independiente para cada pareja `(Usuario, DB)`.
+
+* Si tienes **1,000 usuarios** distintos:
+.
+* **Resultado:** Saturarás la RAM y el CPU de tu PostgreSQL solo manteniendo esas conexiones "abiertas" sin hacer nada. Estás anulando el beneficio de usar PgBouncer.
+
+#### La recomendación: "Un solo Pool Grande" (Remapping)
+
+Para escalabilidad masiva, lo mejor es **especificar el pool** (Remapping) usando un usuario fijo hacia la base de datos.
+
+| Estrategia | Ventaja | Desventaja |
+| --- | --- | --- |
+| **Por Usuario (`min=5`)** | Auditoría total (sabes quién hizo qué). | **Riesgo de saturación explosiva.** Difícil de predecir cuánta RAM consumirá. |
+| **Pool Único (Remapping)** | **Rendimiento predecible.** 1,000 usuarios de la App usan solo 100 conexiones reales de Postgres. | Pierdes el nombre del usuario real en los logs de Postgres (todos se ven como `db_master`). |
+
+> **Veredicto:** Si tienes miles de usuarios, **especifica el pool**. Es mejor tener un pool consolidado de, por ejemplo, 100 o 200 conexiones que sirvan a todos, que tener miles de pools minúsculos de 5 conexiones cada uno.
+ 
+  
  
 
 ### ¿Cómo explota el rendimiento esto?
