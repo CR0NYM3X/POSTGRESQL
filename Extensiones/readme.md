@@ -31,7 +31,7 @@ Grafana
 2. Protección Contra Ataques
 
 	Fail2Ban: Bloquea IPs tras varios intentos fallidos.
-	
+	pg_tde :  TDE significa Transparent Data Encryption (Cifrado de Datos Transparente).  Es una extensión diseñada para PostgreSQL que protege los datos "en reposo" (cuando están guardados en el disco duro), asegurando que si alguien roba físicamente los archivos del servidor o los respaldos, no pueda leer la información.
 
 
 
