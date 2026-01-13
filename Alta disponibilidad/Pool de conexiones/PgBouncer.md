@@ -140,24 +140,24 @@ Al tener las conexiones "pre-abiertas" (`min_pool_size`), eliminas la latencia d
 
 1. **Cliente (App):** Intenta abrir una conexión enviando: `Usuario: juan`, `DB: db_test`, `Password: ****`.
 2. **PgBouncer:** Recibe la conexión en el puerto `6432`.
-3. **PgBouncer (Búsqueda Local):** Revisa el archivo `userlist.txt`.
+3. **PgBouncer (Búsqueda Local):** Revisa en el archivo `userlist.txt` el usuario juan y el hash de la contraseña esto evita estar consultando al servidor postgres por su hash y es mas rápido.
 * **Resultado:** No encuentra la contraseña de `juan`. Pero nota que tiene configurado un `auth_user`.
 
 
 
 ### Fase 2: La Acción del "Guardia" (`auth_user`)
 
-4. **PgBouncer:** Busca la contraseña del `pgbouncer_auth_user` en el `userlist.txt`.
+4. **PgBouncer:** Busca la contraseña del `pgbouncer_auth_user` en el `userlist.txt`, ojo la contraseña tiene que estar en texto plano en el usarlist.txt no en hash.
 * **Resultado:** Éxito. PgBouncer ahora sabe su propia "identidad secreta".
 
 
 5. **PgBouncer -> PostgreSQL:** Abre una conexión interna ultra rápida al servidor de base de datos usando el `pgbouncer_auth_user`.
 6. **PgBouncer -> PostgreSQL (Query):** Ejecuta la consulta configurada:
-`SELECT p_user, p_password FROM public.lookup('juan');`
+` SELECT usename, passwd from public.get_auth('juan');`
 
 ### Fase 3: La Verdad de la Base de Datos
 
-7. **PostgreSQL:** Procesa la función `lookup`. Verifica en sus tablas internas (`pg_shadow`) y le devuelve a PgBouncer el hash de la contraseña de `juan`.
+7. **PostgreSQL:** Procesa la función `public.get_auth`. Verifica en sus tablas internas (`pg_shadow`) y le devuelve a PgBouncer el hash de la contraseña de `juan`.
 8. **PgBouncer:** Recibe el hash. Ahora, PgBouncer realiza el cálculo matemático (SCRAM-SHA-256) contra la contraseña que el cliente envió originalmente en el Paso 1.
 
  
