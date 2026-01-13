@@ -248,6 +248,8 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 pageinspect  -> es una extensión de PostgreSQL que permite examinar el contenido de las páginas de la base de datos a bajo nivel. Mostrar información detallada sobre tuplas (filas) individuales
 
+pg_surgery -> es una extensión oficial de PostgreSQL (introducida en la versión 14) diseñada para realizar operaciones de bajo nivel en las filas (tuplas) de una tabla e se utiliza para intervenir directamente en la salud de los datos cuando los mecanismos normales del motor (como DELETE o VACUUM) no funcionan debido a corrupción de datos.
+
 - **pg_buffercache**: Permite monitorear el uso del buffer cache para entender mejor cómo se está utilizando la memoria y ajustar configuraciones en consecuencia(https://www.youtube.com/watch?v=prbF4O0d-7M).
 
 - ** pgfincore:** Permite analizar qué partes de las tablas y los índices están en caché en la memoria del sistema operativo, ayudando a optimizar el uso de la caché.
