@@ -132,52 +132,71 @@ Al tener las conexiones "pre-abiertas" (`min_pool_size`), eliminas la latencia d
 
 
 --- 
-### 🔄 **Flujo de manejo de conexiones persistentes con PgBouncer y PostgreSQL**
 
-Este diagrama muestra cómo **PgBouncer**, un pool de conexiones para PostgreSQL, gestiona las conexiones entre los **clientes** y el **servidor PostgreSQL** de forma eficiente. El objetivo es **optimizar el uso de conexiones backend** sin que el cliente note la diferencia.
+ 
+## Flujo Semántico: Escenario de Autenticación Dinámica
+
+### Fase 1: La Petición del Cliente (Handshake Inicial)
+
+1. **Cliente (App):** Intenta abrir una conexión enviando: `Usuario: juan`, `DB: db_test`, `Password: ****`.
+2. **PgBouncer:** Recibe la conexión en el puerto `6432`.
+3. **PgBouncer (Búsqueda Local):** Revisa el archivo `userlist.txt`.
+* **Resultado:** No encuentra la contraseña de `juan`. Pero nota que tiene configurado un `auth_user`.
+
+
+
+### Fase 2: La Acción del "Guardia" (`auth_user`)
+
+4. **PgBouncer:** Busca la contraseña del `pgbouncer_auth_user` en el `userlist.txt`.
+* **Resultado:** Éxito. PgBouncer ahora sabe su propia "identidad secreta".
+
+
+5. **PgBouncer -> PostgreSQL:** Abre una conexión interna ultra rápida al servidor de base de datos usando el `pgbouncer_auth_user`.
+6. **PgBouncer -> PostgreSQL (Query):** Ejecuta la consulta configurada:
+`SELECT p_user, p_password FROM public.lookup('juan');`
+
+### Fase 3: La Verdad de la Base de Datos
+
+7. **PostgreSQL:** Procesa la función `lookup`. Verifica en sus tablas internas (`pg_shadow`) y le devuelve a PgBouncer el hash de la contraseña de `juan`.
+8. **PgBouncer:** Recibe el hash. Ahora, PgBouncer realiza el cálculo matemático (SCRAM-SHA-256) contra la contraseña que el cliente envió originalmente en el Paso 1.
+
+ 
+
+### Fase 4: Establecimiento y Remapping (El Embudo)
+
+9. **Validación Exitosa:** PgBouncer le dice al **Cliente**: "Bienvenido, tus credenciales son correctas".
+10. **PgBouncer (Routing):** Ahora PgBouncer mira la sección `[databases]`.
+* **Si hay User Remapping:** PgBouncer toma la consulta de `juan` y la mete en el pool del usuario `app_runtime` (el usuario potente que definimos).
+* **Si NO hay Remapping:** PgBouncer abre una conexión a Postgres como `juan`.
+
+
+11. **PostgreSQL:** Recibe la consulta real, la ejecuta y devuelve los resultados a PgBouncer.
+12. **PgBouncer -> Cliente:** Entrega los datos al cliente.
+
+ 
+
+### Fase 5: El Fin del Ciclo (Reciclaje)
+
+13. **Cliente (App):** Envía un `COMMIT` o termina su consulta (en `pool_mode = transaction`).
+14. **PgBouncer:** **¡No cierra la conexión con Postgres!** Simplemente corta el vínculo con el cliente `juan` y deja la conexión de servidor libre y "caliente".
+15. **Siguiente Cliente:** Cuando llega `pedro`, PgBouncer repite el proceso de validación, pero reutiliza la misma conexión física que dejó `juan` para hablar con Postgres.
+
+ 
+
+## Resumen del Ciclo de Vida Técnicamente
+
+| Actor | Acción Principal | Herramienta Clave |
+| --- | --- | --- |
+| **Cliente** | Solicita acceso | Credenciales SCRAM |
+| **PgBouncer** | Coordina la confianza | `auth_user` |
+| **userlist.txt** | Valida al Pooler | Contraseña del `auth_user` |
+| **PostgreSQL** | Valida al Usuario | Función `public.lookup()` |
+| **Pooler Engine** | Recicla la conexión | `pool_mode = transaction` |
+ 
 
 ---
 
-### 🧠 **Paso a paso del flujo**
 
-1. **🔗 Conexión persistente del cliente a PgBouncer**  
-   El cliente (una aplicación, por ejemplo) establece una conexión persistente con PgBouncer. Esta conexión no se cierra entre transacciones, lo que permite reutilizarla.
-
-2. **📥 PgBouncer solicita una conexión backend**  
-   Cuando el cliente inicia una transacción (`BEGIN`, una consulta SQL, etc.), PgBouncer necesita una conexión real a PostgreSQL. Entonces, **toma una conexión libre del pool** (por ejemplo, `ConnX`).
-
-3. **🔄 Asignación temporal de ConnX al cliente**  
-   PgBouncer **asigna temporalmente** esa conexión backend (`ConnX`) al cliente solo durante la duración de la transacción.
-
-4. **⚙️ Ejecución de la transacción**  
-   - El cliente envía la instrucción SQL.
-   - PgBouncer la reenvía a PostgreSQL usando `ConnX`.
-   - PostgreSQL procesa la instrucción y devuelve el resultado por `ConnX`.
-
-5. **📤 Reenvío del resultado al cliente**  
-   PgBouncer recibe el resultado desde PostgreSQL y lo **reenvía al cliente**.
-
-6. **✅ Finalización de la transacción**  
-   El cliente envía `COMMIT` o `ROLLBACK`. PgBouncer lo reenvía a PostgreSQL usando `ConnX`, y PostgreSQL confirma la finalización.
-
-7. **🏁 Transacción concluida**  
-   La transacción ha terminado correctamente.
-
-8. **🔁 Liberación de ConnX al pool**  
-   PgBouncer **libera la conexión backend** (`ConnX`) y la devuelve al pool para que pueda ser usada por otro cliente.
-
-9. **📬 Confirmación al cliente**  
-   El cliente recibe la confirmación del `COMMIT` o `ROLLBACK`.
-
-10. **🔄 Cliente sigue conectado a PgBouncer**  
-    Aunque la conexión backend fue liberada, **la conexión entre el cliente y PgBouncer permanece activa**, lista para futuras transacciones.
- 
-
-### 🧩 ¿Por qué es importante este flujo?
-
-- **PgBouncer actúa como intermediario inteligente**, reutilizando conexiones backend para múltiples clientes.
-- Esto **reduce el consumo de recursos** en PostgreSQL, especialmente en sistemas con muchos clientes concurrentes.
-- PgBouncer permite **escalar mejor** las aplicaciones sin saturar el servidor de base de datos.
 
 # Restart , start 
  ```
