@@ -103,6 +103,7 @@ medium.com
 https://runebook.dev/en/docs/postgresql
 https://www.hydra.so/blog-posts/
 https://docs.digitalocean.com/products/databases/postgresql/
+https://www.paradedb.com/blog
 
 
 ----- Eventos  de Postgresql:
