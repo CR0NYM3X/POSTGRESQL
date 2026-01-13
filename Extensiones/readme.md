@@ -327,7 +327,8 @@ Citus es una extensión de código abierto para **PostgreSQL** que convierte la 
 - **Soporte para multi-tenancy**: Ideal para aplicaciones SaaS con múltiples clientes.
 - **Almacenamiento columnar**: Optimiza el rendimiento en análisis de datos y consultas agregadas.
 
- 
+multigres :  Es una capa de infraestructura (un proxy inteligente y un orquestador) que se coloca frente a tus instancias de PostgreSQL. Su objetivo es que puedas tener decenas o cientos de servidores de base de datos trabajando juntos, pero que tu aplicación los vea y los use como si fueran una sola base de datos Postgres estándar. y sirve para Sharding Horizontal,Enrutamiento de Consultas, Alta Disponibilidad y Failover, Pooling de Conexiones  https://multigres.com/docs
+
 PgDog : actúa como middleware (capa intermedia) entre la aplicación y PostgreSQL. No necesitas cambiar el esquema ni el código de la aplicación: intercepta las consultas, decide a qué shard enviarlas, balancea carga y gestiona conexiones. Además, incluye pooling, failover y health checks, cosas que Citus no hace por sí mismo.
 
 Escalar PostgreSQL horizontalmente vía sharding.
