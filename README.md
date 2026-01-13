@@ -85,6 +85,9 @@ https://postgres.ai/blog
 https://vondra.me/
 https://www.pgrs.net/
 https://cloudnative-pg.io/blog/
+https://xata.io/blog/
+https://www.pgedge.com/blog
+https://www.thenile.dev/blog
 
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
