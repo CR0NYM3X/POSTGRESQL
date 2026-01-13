@@ -531,5 +531,15 @@ https://www.postgresql.org/ftp/projects/
 
 -- Mas de 1000 extensiones para postgresql
 https://gist.github.com/joelonsql/e5aa27f8cc9bd22b8999b7de8aee9d47
+-----------------------------------------------------------
+ 						IA 
+----------------------------------------------------
+
+
+https://docs.pgedge.com/?_gl=1*1vi3im3*_gcl_au*MTQ0ODEyNTYxMC4xNzY1ODI4ODQy#pgedge-tools-and-utilities
+pgEdge Postgres MCP Server : https://dbhub.ai/
+pgEdge RAG Server
+pgEdge Vectorizer
+postgresml -> convierte a tu base de datos PostgreSQL en una plataforma de ML completa. https://github.com/postgresml/postgresml
 
 ```
