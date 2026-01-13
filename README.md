@@ -79,6 +79,12 @@ https://planetscale.com/blog
 https://neon.com/blog
 https://supabase.com/blog?category=postgres
 https://www.depesz.com/
+https://databaserookies.wordpress.com/
+https://hdombrovskaya.wordpress.com/
+https://postgres.ai/blog
+https://vondra.me/
+https://www.pgrs.net/
+https://cloudnative-pg.io/blog/
 
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
@@ -89,7 +95,7 @@ https://blog.unixpad.com/
 https://hexacluster.ai/blog
 https://www.sqlservercentral.com/articles
 https://dba.stackexchange.com/?tags=postgresql
-
+https://www.dbi-services.com/blog/
 medium.com
 https://runebook.dev/en/docs/postgresql
 https://www.hydra.so/blog-posts/
@@ -110,7 +116,7 @@ https://it-inzhener.com/en/articles/category/name=postgresql
  
 
 --- Documentacion postgresql 
-
+https://pgpedia.info/
 https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf  
 https://wiki.postgresql.org/wiki/Main_Page/es
 https://doxygen.postgresql.org/index.html
