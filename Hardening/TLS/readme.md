@@ -161,6 +161,9 @@ En este documento, encontrarás todo lo que necesitas saber sobre TLS (Transport
  
 # Referencias extras.
 ```
+
+ Duperar trafico de TLS con Wireshark ->  https://www.thenile.dev/blog/postgres-and-wireshark
+
   - **Documentation PostgreSQL**  https://www.postgresql.org/docs/
   - **Transport Layer** Security (TLS) Parameters https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml
   - **Qué es TLS** https://www.cloudflare.com/es-es/learning/ssl/transport-layer-security-tls/
