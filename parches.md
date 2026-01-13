@@ -109,6 +109,9 @@ Al instalar este archivo RPM, se configura tu sistema para acceder al repositori
 
 #   Vulnerabilidades de seguridad 
 ```
+-- Saber porque ocupas parchar 
+https://why-upgrade.depesz.com/show?from=18&to=18.1&keywords=cve
+
 ########## Common Vulnerabilities and Exposures (CVE) ###########
 
 https://www.postgresql.org/support/security/
