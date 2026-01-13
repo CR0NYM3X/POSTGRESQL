@@ -15,6 +15,7 @@
 | [pgstattuple](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pgstattuple.md)         | Muestra estadísticas de ocupación y fragmentación | Ideal para ver espacio ocupado y tuples muertas; menos detallado que pg_visibility. |
 | [auto_explain](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/auto_explain.md)        | Registra automáticamente planes de ejecución      | Útil para diagnosticar consultas lentas; no analiza almacenamiento físico.            |
 | [pg_stat_statements](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pg_stat_statements.md)  | Estadísticas de ejecución de consultas            | Muy usado para identificar consultas más costosas; no analiza almacenamiento.         |
+| pg_surgery  |  salud de los datos         | oficial de PostgreSQL >= versión 14, Realiza operaciones de bajo nivel en las filas (tuplas) de una tabla , e se utiliza para intervenir directamente en la salud de los datos cuando no funcionan debido a corrupción de datos.         |
 
  
 ### **Tabla, Vistas o Funciones para análisis interno y diagnóstico**
