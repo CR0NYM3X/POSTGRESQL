@@ -340,6 +340,8 @@ Gestionar replicación lógica para mantener consistencia y facilitar reconfigur
  
 ### **7. Rendimiento y Optimización:**
 
+pg_gather : Scan and collect the minimal amount of data needed to identify potential problems in your PostgreSQL database, and then generate an analysis report using that data. This project provides two SQL scripts for users:  
+ https://github.com/jobinau/pg_gather
 pgtune ->  calcula valores basados en reglas fijas de hardware y Ajusta parametro 
 pg_tuner ->es una herramienta de optimización automática de parámetros de PostgreSQL que utiliza técnicas de Optimización Bayesiana a través de la librería Optuna  https://github.com/s-hironobu/pg_tuner
 
