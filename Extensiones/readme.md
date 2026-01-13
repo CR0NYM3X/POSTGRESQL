@@ -24,12 +24,21 @@ Power By
 Grafana 
 
 
-### Herramientas de Operador o Administracion automatica ####
+### Herramientas de Operador o Administracion automatica kubernetes ####
+
+Zalado postgres-operator : https://github.com/zalando/postgres-operator
 CloudNativePG : es un "Operador" de código abierto diseñado específicamente para PostgreSQL. Un operador es un software que extiende la funcionalidad de Kubernetes para que sepa cómo manejar aplicaciones complejas que tienen "estado" (como una base de datos). Su propósito principal es que no tengas que configurar manualmente la alta disponibilidad, los respaldos o las actualizaciones de Postgres. Tú solo le dices "quiero un clúster de 3 nodos" en un archivo de configuración, y el operador hace todo el trabajo sucio.
 
-### Herramientas de Seguridad para PostgreSQL
 
 
+### Herramientas de migracion ####
+ora2pg
+pgLoader
+Babelfish for PostgreSQL :es una capa de traducción de código abierto que permite que PostgreSQL entienda y ejecute consultas escritas originalmente para Microsoft SQL Server. https://babelfishpg.org/  
+
+
+
+############ Herramientas de Seguridad para PostgreSQL #####################
 
 2. Protección Contra Ataques
 
@@ -47,6 +56,7 @@ CloudNativePG : es un "Operador" de código abierto diseñado específicamente p
 	OPM: Monitoreo especializado para PostgreSQL con alertas avanzadas.
 
 
+
 4. Cifrado y Protección de Datos
 
 	Vault: Gestión dinámica de secretos y claves de cifrado.
@@ -58,6 +68,11 @@ CloudNativePG : es un "Operador" de código abierto diseñado específicamente p
 	ELK Stack: Visualización y análisis avanzado de logs.
 	OSSEC: Detección de intrusiones y monitoreo de cambios no autorizados.
 
+* **pgextwlist (Extensions Whitelist):** Permite a los administradores definir una **"lista blanca"** de extensiones que los usuarios normales (que no son superusuarios) pueden instalar. Es vital en entornos de nube para mantener la seguridad sin bloquear a los desarrolladores.
+
+6.- Validaciones
+- ** plpgsql_check:** Extiende el lenguaje PL/pgSQL con herramientas de validación y optimización, detectando posibles problemas de rendimiento en funciones y procedimientos almacenados.
+--------------------------------------------------------------------------------------
 
 ### **5. Ejecucion de tareas programadas :**
 - **  pgAgent:** Ejecucion de tareas programadas , Propia de postgresq, y puedes administrarla desde pgAdmin
@@ -65,8 +80,7 @@ CloudNativePG : es un "Operador" de código abierto diseñado específicamente p
 
 - **pg_timetable:** Herramienta para la planificación y ejecución de tareas cron en la base de datos.
 
-
-
+ 
 **adminpack :**
 proporciona una serie de funciones de soporte que herramientas de administración y gestión, como pgAdmin, pueden utilizar para ofrecer funcionalidades adicionales1
 . Algunas de las funcionalidades incluyen la gestión remota de archivos de registro del servidor,  Debes usarlo cuando necesitas acceso remoto a ciertos archivos del sistema operativo desde tu base de datos, sin necesidad de acceso SSH
@@ -97,9 +111,6 @@ Prometheus es una herramienta de monitoreo y alerta de código abierto que se ut
    - **Descripción**: Conjunto de extensiones que mejoran la seguridad de PostgreSQL, incluyendo autenticación avanzada y control de acceso.
    - **Características**: Autenticación basada en certificados, control de acceso granular, integración con sistemas de gestión de identidades.
  
-######## Migraciones de diferentes gestores o  motores ##########3
-ora2pg
-pgLoader
 
 ### **5. Seguridad:**
 
@@ -198,8 +209,12 @@ Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia ga
 
 ************ MONITOREO DE ESPACIO ************
 
-- **pg_stat_kcache:**  Extiende el monitoreo para incluir estadísticas del sistema operativo, como lecturas y escrituras de disco a nivel de bloque, ayudando a correlacionar el rendimiento de la base de datos con el uso de recursos a nivel del sistema.
- 
+* **bg_mon (Background Monitor):** Es una herramienta de monitoreo en tiempo real que recolecta estadísticas del sistema (CPU, memoria, I/O) directamente desde el proceso de fondo de Postgres. Te permite ver qué está pasando con los recursos del servidor sin salir de la base de datos.
+
+- **pg_stat_kcache:**  Complementa a la famosa `pg_stat_statements`. Mientras que la estándar te dice cuántas veces se ejecutó una consulta, esta te dice cuánta **CPU** y cuánto **uso de disco real** (a nivel de kernel) consumió esa consulta específicamente.
+
+
+- **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
 
 - **pg_stat_user_tables:** Ofrece estadísticas sobre el uso de tablas por usuario, incluyendo conteo de accesos, cantidad de inserts, updates, deletes, y bloqueos. Es útil para entender el impacto de cada usuario en la base de datos.
 
@@ -339,7 +354,6 @@ pg_tuner ->es una herramienta de optimización automática de parámetros de Pos
 
 - ** hypopg:** Permite simular la creación de índices sin necesidad de materializarlos físicamente, ayudando a evaluar el impacto de nuevos índices en el rendimiento antes de su creación.
 
-- ** plpgsql_check:** Extiende el lenguaje PL/pgSQL con herramientas de validación y optimización, detectando posibles problemas de rendimiento en funciones y procedimientos almacenados.
 
 - ** pl/profiler:** Proporciona un perfilador para PL/pgSQL, permitiendo medir el tiempo de ejecución de cada línea de código en las funciones almacenadas, lo cual es útil para identificar y optimizar cuellos de botella.
 
@@ -348,7 +362,6 @@ rendimiento general de la base de datos.
 
 - ** timescaledb:** Una extensión optimizada para manejar series temporales de manera eficiente, mejorando el rendimiento en consultas que involucran grandes volúmenes de datos temporales.
 
-- **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
 - **pg_stat_monitor:** Extensión avanzada para monitoreo de consultas.
 
 
@@ -441,6 +454,22 @@ pg_comparator \
 - **Timeout**: Esperas relacionadas con tiempos de espera configurados.
  
 
+
+
+### Replicación y Datos
+
+* **decoderbufs:** Es una extensión lógica de decodificación que utiliza **Protocol Buffers (Protobuf)**. Sirve principalmente para enviar cambios de la base de datos a herramientas de terceros como **Debezium**, facilitando la arquitectura de *Change Data Capture* (CDC).
+* **pgq (PostgreSQL Queue):** Un sistema de **colas genérico** de alto rendimiento. Se usa cuando necesitas procesar eventos de forma asíncrona dentro de la base de datos (por ejemplo, "enviar un correo después de que se inserte un usuario").
+
+
+* **pgfaceting:** Diseñada para implementar **búsquedas por facetas** de manera ultra rápida (como los filtros de "Talla", "Color" o "Marca" en Amazon). Optimiza la computación de estos filtros sobre grandes volúmenes de datos.
+ 
+
+### Funciones Avanzadas y Big Data
+
+* **plproxy:** Es un lenguaje de procedimientos que actúa como un **proxy**. Permite distribuir consultas entre múltiples bases de datos (sharding). La aplicación le pide algo a "Postgres A" y `plproxy` sabe que debe ir a buscarlo a "Postgres B" o "C".
+
+* **roaringbitmap:** Implementa un tipo de dato llamado "Roaring Bitmaps". Se usa para realizar operaciones de conjuntos (Intersección, Unión, Diferencia) de forma **increíblemente rápida** sobre millones de registros. Es muy común en sistemas de análisis de audiencia o segmentación de usuarios.
 
 
 
