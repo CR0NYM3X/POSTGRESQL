@@ -1,8 +1,5 @@
-Tu duda es excelente porque toca el punto donde mucha gente se confunde entre **Distribución** (repartir el trabajo) y **Replicación** (copiar los datos para no perderlos).
+![Diagrama](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Alta%20disponibilidad/Sistemas%20Distribuidos/img/diagrama.png)
 
-Lo que mencionas de que "ahora todos los nodos saben qué tienen los demás" es una característica que llegó en **Citus 11**, llamada *Metadata Sync*. Pero ojo: que un nodo **sepa** dónde está el dato no significa que **tenga** el dato.
-
-Aquí te explico por qué seguimos necesitando a Patroni y cómo se evita que se pierdan los datos:
 
 ### 1. El Gran Error: "Saber" no es "Tener" (Metadatos vs. Datos)
 
