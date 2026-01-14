@@ -88,7 +88,7 @@ https://cloudnative-pg.io/blog/
 https://xata.io/blog/
 https://www.pgedge.com/blog
 https://www.thenile.dev/blog
-
+https://stackgres.io/blog/
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
 https://scalegrid.io/blog/
