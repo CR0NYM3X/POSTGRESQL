@@ -55,6 +55,9 @@ Migración de bases de datos grandes de Azure PostgreSQL -> https://medium.com/@
 
 #  Semantica 
 ```
+Explicación de la ruta de escritura en PostgreSQL: fsync, WAL, COPY y tablas sin registro -> https://medium.com/@ariyanwaliya/postgresql-write-path-explained-fsync-wal-copy-and-unlogged-tables-8f4243e42292
+
+
 PostgreSQL Recovery Internals -> https://www.cybertec-postgresql.com/en/postgresql-recovery-internals/
 
 PostgreSQL Deep Dive: Key Components and Query Flow (Part 1) -> https://medium.com/@salmanhoque/postgresql-deep-dive-key-components-and-query-flow-part-1-6e92c33eb08b
