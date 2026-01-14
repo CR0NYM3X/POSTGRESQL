@@ -111,7 +111,7 @@ https://postgrespro.com/events
 https://postgresconf.org/conferences
 https://www.crunchydata.com/events
 https://p2d2.cz/en/
-
+https://postgresql.life/
 
 ---- pendientes 
 https://www.metisdata.io/blog
