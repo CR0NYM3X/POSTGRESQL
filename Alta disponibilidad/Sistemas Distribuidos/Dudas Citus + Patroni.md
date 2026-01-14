@@ -143,3 +143,8 @@ Si no quieres convertirte en un administrador de sistemas experto solo para tene
 2. No necesitas configurar Patroni; el protocolo Raft (el corazón de Yugabyte) ya maneja las fallas por ti.
 3. Se comporta como un Postgres 100% puro para tu aplicación.
  
+
+# Links
+```bash
+https://www.citusdata.com/blog/2023/03/06/patroni-3-0-and-citus-scalable-ha-postgres/
+```
