@@ -24,8 +24,8 @@ Power By
 Grafana 
 
 
-### Herramientas de Operador o Administracion automatica kubernetes ####
-
+### Herramientas de Operador o Administracion automatica kubernetes, desplegar proyectos grandes con pocas configuraciones ####
+stackgres  -> https://github.com/ongres/stackgres - https://stackgres.io/blog/stackgres-1-0-0-open-source-postgres-aas-with-120-extensions/
 Zalado postgres-operator : https://github.com/zalando/postgres-operator
 CloudNativePG : es un "Operador" de código abierto diseñado específicamente para PostgreSQL. Un operador es un software que extiende la funcionalidad de Kubernetes para que sepa cómo manejar aplicaciones complejas que tienen "estado" (como una base de datos). Su propósito principal es que no tengas que configurar manualmente la alta disponibilidad, los respaldos o las actualizaciones de Postgres. Tú solo le dices "quiero un clúster de 3 nodos" en un archivo de configuración, y el operador hace todo el trabajo sucio.
 
