@@ -1,4 +1,4 @@
-
+# Preguntas que las empresas pueden realizar 
 
 ## 🧠 **Evaluación por Pregunta – Bloque Principal**
 
@@ -250,3 +250,110 @@
   - DevOps e integración CI/CD.  
   - Análisis de logs y troubleshooting avanzado.  
   - Uso de herramientas modernas como `pgBadger`, `Flyway`, `Terraform`.
+
+
+---
+---
+
+# Preguntas que puedes hacer a las empresas 
+ 
+
+### ✅ **Sobre el Rol y Expectativas**
+
+1.  ¿Cuáles son las responsabilidades principales del puesto en los primeros 6 meses?
+2.  ¿Cómo se mide el éxito o desempeño de su trabajo?
+3.  ¿Qué herramientas y tecnologías utilizan actualmente para la administración de bases de datos?
+
+
+### ✅ **Sobre el Equipo y Cultura**
+
+4.  ¿Cómo está conformado el equipo de bases de datos y con qué otros equipos colaboraría?
+5.  ¿Cuál es la cultura de trabajo en la empresa? ¿Es más colaborativa o individual?
+6.  ¿Cómo manejan la capacitación y el desarrollo profesional?
+
+ 
+
+### ✅ **Sobre Crecimiento y Estabilidad**
+
+10. ¿Qué oportunidades de crecimiento profesional ofrece la empresa?
+11. ¿Cómo ha evolucionado el área de tecnología en los últimos años?
+12. ¿Cuál es la visión de la empresa para los próximos 3 a 5 años?
+
+ 
+
+### ✅ **Sobre Beneficios y Condiciones**
+
+13. ¿Cómo manejan el trabajo remoto o híbrido?
+14. ¿Qué beneficios adicionales ofrecen (bonos, capacitaciones, certificaciones)?
+15. ¿Cómo es el proceso de revisión salarial y evaluaciones de desempeño?
+
+
+
+### ✅ **Sobre Seguridad y Cumplimiento**
+
+16. ¿Qué políticas de seguridad y cumplimiento normativo aplican en las bases de datos?
+17. ¿Hay proyectos relacionados con alta disponibilidad, disaster recovery o cloud?
+
+
+
+### ✅ **Sobre Proyectos y Retos**
+
+7.  ¿Qué proyectos importantes están en curso relacionados con bases de datos?
+8.  ¿Cuáles son los mayores retos técnicos que enfrentan actualmente?
+9.  ¿Hay planes de migración, modernización o adopción de nuevas tecnologías?
+ 
+
+--------------------------------------------------------------------------------------------------------
+
+### ✅ **Equipo de trabajo**
+
+*   ¿Cómo está conformado el equipo y cuántas personas lo integran?
+*   ¿Cuál es la dinámica de trabajo? ¿Hay roles bien definidos o se trabaja de forma colaborativa?
+*   ¿Cada cuánto tiempo se hacen cambios de equipo o rotaciones internas?
+
+
+
+### ✅ **Bonos y compensaciones**
+
+*   ¿Existen bonos por desempeño, productividad o certificaciones?
+*   ¿Hay incentivos por trabajar en proyectos críticos o fuera de horario?
+
+
+
+### ✅ **Horas extras y carga laboral**
+
+*   ¿Cómo manejan las horas extras? ¿Son pagadas, compensadas con tiempo libre o no se contemplan?
+*   ¿Cuál es la política para trabajo en fines de semana o días festivos?
+
+
+
+### ✅ **Días pendientes y vacaciones**
+
+*   ¿Cuántos días de vacaciones ofrecen y cómo se gestionan?
+*   ¿Hay días personales o flexibles adicionales?
+
+
+
+### ✅ **Periodo de prueba**
+
+*   ¿Cuál es la duración del periodo de prueba?
+*   ¿Qué garantías ofrecen durante ese tiempo? (Por ejemplo, prestaciones desde el primer día, seguridad laboral)
+*   ¿Qué criterios utilizan para confirmar la contratación definitiva?
+
+
+
+### ✅ **Otros puntos importantes**
+
+*   ¿Cómo manejan revisiones salariales y promociones?
+*   ¿Hay plan de carrera definido para este puesto?
+*   ¿Ofrecen capacitaciones y certificaciones pagadas por la empresa?
+
+ 
+
+💡 **Tip profesional:** Cuando preguntes sobre el periodo de prueba, hazlo con un enfoque positivo, por ejemplo:  
+*"Me gustaría entender cómo funciona el periodo de prueba y qué apoyo brinda la empresa para asegurar que el colaborador tenga éxito en ese tiempo."*
+ 
+
+
+
+
