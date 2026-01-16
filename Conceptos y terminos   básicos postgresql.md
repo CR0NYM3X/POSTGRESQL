@@ -1685,3 +1685,180 @@ ClientEncoding=UTF8;
 ```
 
  
+
+
+----
+
+
+
+# pg_tem_ y pg_toast_temp_
+
+## 1. ¿Por qué tienen números (`pg_temp_N` / `pg_toast_temp_N`)?
+
+PostgreSQL es un sistema multi-proceso. Cada vez que una aplicación se conecta a la base de datos, el proceso principal (`postmaster`) le asigna un **Backend ID** único a esa sesión.
+
+* **`pg_temp_54`**: Es el esquema temporal privado para la sesión con el ID 54. Solo esa sesión puede ver y usar las tablas ahí creadas.
+* **`pg_toast_temp_54`**: Si una tabla temporal en la sesión 54 tiene columnas muy grandes (como el `TEXT` o `BYTEA` que mencionaste), PostgreSQL necesita usar la técnica **TOAST**. Como la tabla es temporal, su "almacén de desbordamiento" (TOAST) también debe ser temporal y privado para esa sesión.
+
+**Resumen:** Los números corresponden al ID del proceso que los creó para evitar colisiones entre cientos de usuarios conectados simultáneamente.
+
+---
+
+## 2. El proceso de limpieza: ¿Es automático?
+
+**Teóricamente, sí.** En condiciones normales:
+
+1. Cuando la sesión termina (el usuario se desconecta), PostgreSQL ejecuta un comando interno de limpieza.
+2. Borra las tablas dentro de esos esquemas.
+3. El esquema se queda vacío y "marcado" para ser reutilizado por el siguiente proceso que herede ese ID.
+
+### El problema: ¿Por qué no se borran?
+
+Si tu base de datos se **cayó por falta de espacio** o si hubo cierres forzados (`kill -9` a procesos de Postgres), los procesos no tuvieron oportunidad de limpiar su basura. Esto genera **"Temporary File Orphans"** (archivos huérfanos).
+
+* **Los esquemas no desaparecen:** Ver los esquemas en `information_schema.schemata` es normal; PostgreSQL prefiere mantener la estructura del esquema vacía para reutilizarla luego.
+* **Lo que importa es el contenido:** Si el disco está lleno, no es por el "nombre" del esquema, sino por los archivos físicos en el disco dentro de `/sysx/data/base/[DB_ID]/`.
+
+---
+
+## 3. Estrategia de depuración para `/sysx/data`
+
+Si sospechas que estos esquemas temporales están devorando tu espacio tras la caída, sigue estos pasos como experto:
+
+### A. Identificar el espacio real en temporales
+
+No mires solo el nombre del esquema, mira cuánto pesan en disco. Ejecuta esto para ver qué base de datos tiene más "basura" temporal:
+
+```sql
+SELECT datname, pg_size_pretty(pg_database_size(datname)) 
+FROM pg_database ORDER BY pg_database_size(datname) DESC;
+
+```
+
+### B. Limpieza Manual Segura
+
+Si la base de datos ya arrancó, **no borres archivos a mano** todavía. Usa las herramientas del motor:
+
+1. **Reiniciar el servicio:** Al iniciar, PostgreSQL intenta detectar archivos temporales huérfanos de la sesión anterior y los marca para eliminación.
+2. **DROP CASCADE (Cuidado):** Si ves esquemas numerados de sesiones que sabes que ya no existen (por ejemplo, de hace días), podrías intentar borrarlos, pero **PostgreSQL generalmente no te deja borrar `pg_temp_n**` si el sistema cree que el ID podría estar activo.
+3. **Localizar archivos `t_` en el sistema de archivos:**
+Ve a tu directorio de datos y busca archivos que empiecen con `t` seguido de números. Estos son los archivos físicos de tablas temporales.
+```bash
+find /sysx/data/base/ -name "t*_*"
+
+```
+
+
+* Si Postgres está **detenido**, es seguro mover o borrar estos archivos.
+* Si Postgres está **encendido**, solo bórralos si estás seguro de que no hay sesiones activas.
+
+
+
+### C. El comando mágico para el espacio "fantasma"
+
+A veces el espacio no se libera porque el sistema operativo mantiene el archivo abierto aunque Postgres lo haya borrado. Si después de borrar archivos `df -h` sigue marcando 100%, ejecuta:
+
+```bash
+lsof +L1 | grep delete
+
+```
+
+Esto te mostrará procesos que tienen "secuestrado" el espacio de archivos ya borrados. Tendrás que reiniciar esos procesos o el servicio de Postgres.
+
+---
+
+## 4. Recomendación de Experto para tu Configuración
+
+Dado que tienes `/sysx/data` separado, para evitar que las tablas temporales de un usuario descuidado (que haga un `SELECT * INTO TEMP ...` de una tabla de 50GB) te llenen el disco principal, te sugiero:
+
+1. **Mover los temporales a otro disco:** Puedes crear un Tablespace en un cuarto disco (o incluso en `/pg_log` si tienes espacio de sobra ahí) y configurar:
+```sql
+-- En postgresql.conf
+temp_tablespaces = 'nombre_de_tu_tablespace_en_otro_disco'
+
+```
+
+### para que sirve el directorio pgsql_tmp ? 
+
+**`pgsql_tmp` es el "desagüe" de la memoria RAM de tu servidor.**
+
+Mientras que los esquemas `pg_temp` que vimos antes guardan **tablas temporales** (datos estructurados que tú creas), la carpeta `pgsql_tmp` guarda **archivos temporales de ejecución**.
+
+Aquí tienes el detalle técnico de por qué existe y por qué puede estar llenando tu disco `/sysx/data`.
+ 
+
+## 1. ¿Para qué sirve exactamente?
+
+PostgreSQL intenta realizar todas las operaciones (ordenamientos, uniones de tablas, etc.) en la memoria RAM, específicamente en el espacio asignado por el parámetro `work_mem`.
+
+Cuando una consulta es tan grande o compleja que supera el `work_mem` asignado, PostgreSQL no puede detenerse, así que **"desborda" el excedente al disco duro**. Esos archivos de desborde se guardan en la carpeta `pgsql_tmp`.
+
+### Operaciones que generan archivos en `pgsql_tmp`:
+
+* **External Sorts:** Cuando haces un `ORDER BY` de millones de filas que no caben en RAM.
+* **Hash Joins:** Al cruzar tablas gigantescas.
+* **Materialize:** Operaciones intermedias de consultas muy complejas.
+* **Creación de índices:** El proceso de `CREATE INDEX` requiere mucho espacio temporal para ordenar las claves antes de insertarlas en el árbol final.
+ 
+
+## 2. ¿Por qué es un peligro para tu disco `/sysx/data`?
+
+El problema principal es que estos archivos pueden crecer de forma explosiva:
+
+1. **Consultas ineficientes:** Un programador lanza un `SELECT *` con un `JOIN` mal hecho (producto cartesiano) y Postgres genera un archivo temporal de 200GB intentando resolverlo.
+2. **Múltiples conexiones:** Si tienes 50 usuarios haciendo operaciones pesadas al mismo tiempo, cada uno crea sus propios archivos en `pgsql_tmp`.
+3. **Archivos Huérfanos:** Si el proceso de la base de datos se cae (como te pasó a ti), PostgreSQL no siempre tiene tiempo de borrar estos archivos. Al reiniciar, esos archivos se quedan ahí ocupando espacio pero ya no sirven para nada.
+ 
+
+## 3. Diferencia clave: `pg_temp` vs `pgsql_tmp`
+
+Es muy común confundirlos, pero funcionan distinto:
+
+| Característica | Esquema `pg_temp_N` | Carpeta `pgsql_tmp` |
+| --- | --- | --- |
+| **Contenido** | **Tablas temporales** creadas explícitamente (`CREATE TEMP TABLE`). | **Archivos de trabajo** creados por el motor (Sorts, Joins). |
+| **Visibilidad** | Los ves con un `\dt` o consultando esquemas. | Solo los ves a nivel de Sistema Operativo (Linux). |
+| **Ubicación** | Dentro de los archivos de datos de la base. | En subcarpetas específicas llamadas `pgsql_tmp`. |
+| **Persistencia** | Duran lo que dure la sesión del usuario. | Deberían borrarse en cuanto termine la consulta. |
+ 
+
+## 4. ¿Cómo limpiar y controlar esto?
+
+### Limpieza de emergencia (Postgres Apagado)
+
+Si tu base de datos está caída y necesitas espacio **YA**, puedes borrar el contenido de estas carpetas con total seguridad:
+
+```bash
+# Buscar todas las carpetas pgsql_tmp y vaciarlas
+find /sysx/data -name "pgsql_tmp" -type d -exec rm -rf {}/* \;
+
+ 
+### Prevención (Postgres Encendido)
+
+Para evitar que esto vuelva a llenar tu disco `/sysx/data`, te recomiendo estas dos configuraciones en tu `postgresql.conf`:
+
+1. **Limitar el tamaño de archivos temporales:**
+Esto matará cualquier consulta que intente crear un archivo temporal más grande de, por ejemplo, 10GB, protegiendo la salud del disco.
+```sql
+temp_file_limit = 10GB
+ 
+
+2. **Moverlos de disco (Tablespace Temporal):**
+Como tienes tres discos, si el disco `/pg_log` tiene mucho espacio libre, podrías crear ahí una carpeta para los temporales y decirle a Postgres que los use:
+```sql
+-- En el SO
+mkdir /pg_log/temp_space
+chown postgres:postgres /pg_log/temp_space
+
+-- En SQL
+CREATE TABLESPACE fast_temp LOCATION '/pg_log/temp_space';
+ALTER SYSTEM SET temp_tablespaces = 'fast_temp';
+SELECT pg_reload_conf();
+
+```
+
+
+ 
+Esto garantiza que si `/sysx/data` se llena, será por **datos reales** y no por procesos temporales mal optimizados.
+
+ 
