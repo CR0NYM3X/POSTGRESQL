@@ -756,6 +756,11 @@ SELECT * FROM ejecutar_consulta_dinamica('select schemaname::varchar,tablename::
 
 ## Notación de parámetros nombrados
 
+En PostgreSQL, para poder saltarte el orden o ignorar parámetros que ya tienen un valor por defecto, debes usar la Notación por Nombre (usando el operador =>).
+
+ ¿Desde qué versión se puede usar el orden que quieras?
+La notación por nombre (=>) se introdujo en PostgreSQL 9.0.
+
 ```sql
 --- DROP FUNCTION  asd( text ,text ) ; 
 
