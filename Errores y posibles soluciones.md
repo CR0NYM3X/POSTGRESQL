@@ -363,7 +363,7 @@ vim /home/postgres/.bash_profile
 
 ---
  
-# el client_encoding  no se cambia 
+# Error #5 el client_encoding  no se cambia 
 
 ```bash
 jdbc:postgresql://host:5432/test?charSet=LATIN1
@@ -412,7 +412,86 @@ Veo que tienes un archivo `.psqlrc` bastante personalizado (por el emoji del ele
 
 ```sql
 \encoding latin1
-  
+```
+
+-----
+
+
+# Error #6 -  Espacio Lleno del disco  DATA
+
+
+Si `/sysx/data` está al 100%, estamos en el escenario más delicado porque aquí reside la estructura física de tus tablas e índices. Al estar lleno, PostgreSQL no puede realizar operaciones de escritura mínimas ni siquiera para arrancar el proceso de recuperación.
+
+Como experto, aquí tienes las tres rutas de acción técnica, de la más segura a la más agresiva:
+
+
+## 1. Limpieza de archivos temporales (La "vía rápida")
+
+Cuando una consulta pesada (un `SORT` o `JOIN` masivo) falla o el sistema se apaga inesperadamente, PostgreSQL puede dejar archivos temporales huérfanos que ocupan gigabytes.
+
+* **Identifica y borra `pgsql_tmp`:**
+Busca dentro de las carpetas de las bases de datos. Estos archivos son seguros de borrar **si la base de datos está apagada**.
+```bash
+# Buscar carpetas de temporales
+find /sysx/data/base -name "pgsql_tmp" -type d
+
+# Entrar y borrar su contenido (no la carpeta en sí, solo el contenido)
+rm -rf /sysx/data/base/*/pgsql_tmp/*
+
+```
+
+ 
+
+## 2. Expansión de Volumen (La vía recomendada)
+
+Si tu infraestructura lo permite (LVM, AWS EBS, GCP Disk, VMware), esta es la solución que garantiza la integridad total de los datos.
+
+1. **Aumenta el disco** desde tu hipervisor o panel de control.
+2. **Extiende el sistema de archivos** (ejemplo para LVM y XFS/Ext4):
+```bash
+# Para LVM
+lvextend -l +100%FREE /dev/mapper/vg_sysx-lv_data
+
+# Para Ext4
+resize2fs /dev/mapper/vg_sysx-lv_data
+
+# Para XFS
+xfs_growfs /sysx/data
+
+```
+
+
+
+Una vez que tengas aunque sea 100MB libres, el servicio arrancará.
+
+
+## 3. El truco del "Enlace Simbólico" (Emergencia extrema)
+
+Si no puedes ampliar el disco y no hay temporales que borrar, necesitamos "engañar" a PostgreSQL para que crea que tiene espacio.
+
+> [!WARNING]
+> Realiza esto con precaución. Es solo para que la base de datos inicie y puedas ejecutar un `DROP TABLE` o `VACUUM`.
+
+1. Identifica un archivo de índice o tabla muy grande dentro de `/sysx/data/base/...`.
+2. **Mueve** ese archivo físico a otro disco que tenga espacio (por ejemplo, a `/pg_log` temporalmente).
+3. Crea un **enlace simbólico** (symlink) apuntando de vuelta a la ubicación original.
+```bash
+mv /sysx/data/base/12345/67890 /pg_log/archivo_temporal_67890
+ln -s /pg_log/archivo_temporal_67890 /sysx/data/base/12345/67890
+chown postgres:postgres /sysx/data/base/12345/67890
+
+```
+
+4. Inicia PostgreSQL. Ahora que tiene espacio "virtual", podrás entrar y borrar datos antiguos de forma controlada.
+
+ 
+## 4. Acciones post-recuperación (Una vez que inicie)
+
+No te confíes. En cuanto el servicio esté arriba, debes liberar espacio real:
+
+* **VACUUM FULL:** Si tienes tablas con mucho espacio muerto (bloat), el `VACUUM FULL` compactará el archivo, pero **ojo**: requiere espacio extra para trabajar.
+* **REINDEX:** Si un índice está corrupto o es gigante, `REINDEX TABLE nombre_tabla;` puede ayudar.
+* **DROP/TRUNCATE:** Elimina tablas de logs antiguos o tablas temporales que ya no sirvan.
 
 
 
