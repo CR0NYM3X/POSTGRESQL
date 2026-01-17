@@ -12,3 +12,8 @@ La lógica de TSB: ¿Cómo supo Microsoft exactamente qué parchar antes de que 
 El "Vulnerability Equities Process" (VEP)
 Existe un proceso real en EE. UU. donde el gobierno decide si una vulnerabilidad debe mantenerse en secreto para espionaje o revelarse al fabricante para ser parchada.
 ```
+
+
+3.- )  - John Calvin Maxwell  "Gurú del Liderazgo" , dice que  ocupamos del talento Humano para visiones grandes, 
+Maxwell critica la idea de que los grandes líderes hacen todo solos. Según él, eso es una cuestión de ego, no de eficacia.
+Si tu visión se puede cumplir solo por ti mismo, no necesitas un equipo. Pero si tu visión es realmente grande, no podrás cumplirla sin uno
