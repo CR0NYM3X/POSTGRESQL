@@ -118,6 +118,11 @@ Patroni PostgreSQL High Availability with pgBackRest -> https://medium.com/@dick
 
 # Replica
 ```
+
+Una guía práctica para la replicación de PostgreSQL con servidores en espera asincrónicos y sincrónicos -> https://www.percona.com/blog/guide-to-postgresql-replication-with-both-asynchronous-and-synchronous-standbys/
+
+
+
 Step-by-Step Guide to PostgreSQL Streaming Replication using RepMgr  -> https://shridharkhanal.medium.com/step-by-step-guide-to-postgresql-streaming-replication-using-repmgr-5f620727dbc4
 
 Managing PostgreSQL Failover with RepMgr: A Step-by-Step Guide -> https://shridharkhanal.medium.com/managing-postgresql-failover-with-repmgr-a-step-by-step-guide-58680e904132
@@ -139,6 +144,14 @@ PITR in PostgreSQL using pg_basebackup and WAL. -> https://medium.com/@dickson.g
 
 # Security
 ```
+
+-------------------------------------------- PG_TDE -------------------------------------------------------
+https://www.percona.com/blog/keep-postgresql-secure-with-tde-and-the-latest-updates/
+https://www.percona.com/blog/what-is-perconas-transparent-data-encryption-extension-for-postgresql-pg_tde/
+
+
+
+
 pg_audit -> https://stormatics.medium.com/guide-to-auditing-and-monitoring-access-in-postgresql-8c759aa3ee25
 Extension Security in PostgreSQL -> https://tomasz-gintowt.medium.com/security-in-postgresql-ffe75ec677e7
 
