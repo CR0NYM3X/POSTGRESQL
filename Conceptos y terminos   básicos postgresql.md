@@ -1868,7 +1868,7 @@ Esto garantiza que si `/sysx/data` se llena, será por **datos reales** y no por
 
 ### 1. ¿Qué pasó con `postmaster`?
 
-Tienes toda la razón en su definición: históricamente, `postmaster` era el nombre del binario que actuaba como el proceso "padre" o supervisor. Su función era escuchar nuevas conexiones, hacer el *fork* de procesos hijos para cada cliente y gestionar la memoria compartida.
+históricamente, `postmaster` era el nombre del binario que actuaba como el proceso "padre" o supervisor. Su función era escuchar nuevas conexiones, hacer el *fork* de procesos hijos para cada cliente y gestionar la memoria compartida.
 
 Sin embargo, desde hace muchas versiones, **`postmaster` y `postgres` son exactamente el mismo binario**. Si te fijas en tus salidas de la versión 11 a la 15:
 `postmaster -> postgres`
