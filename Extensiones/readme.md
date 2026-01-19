@@ -217,6 +217,17 @@ SIEM  detección de amenazas
 Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia gama de funcionalidades para la detección de amenazas, el monitoreo de integridad y la respuesta a incidente
 
 
+
+
+| **[check_postgres](https://github.com/bucardo/check_postgres)** | Script de monitoreo basado en Nagios que automatiza la verificación de salud de la DB (bloqueos, replicación, espacio). | **Para Alertas:** Es el "perro guardián". Se integra con sistemas como Zabbix o Nagios para disparar correos o alarmas cuando algo sale de los parámetros normales. |
+
+| **[PgHero](https://github.com/ankane/pghero)** | Dashboard gráfico de rendimiento que identifica de forma persistente consultas lentas, falta de índices y espacio desperdiciado. | **Para Optimización:** Es la favorita de los desarrolladores. Te da sugerencias claras de qué arreglar (como "crea este índice") sin que tengas que ser un experto en bases de datos. |
+
+| **[pgCenter](https://github.com/lesovsky/pgcenter)** | Consola de administración en tiempo real que organiza las estadísticas de Postgres en una interfaz tipo `top` de Linux. | **Para Emergencias:** Es la herramienta de "guerra" del DBA. Te permite ver exactamente qué está pasando en el servidor en este segundo y "matar" procesos o ver bloqueos rápidamente. |
+
+ 
+
+
 ************ MONITOREO EN INICIO DE SESION ************
 - **pgBouncer:** Pool de conexiones ligero para optimizar el manejo de conexiones.
 
