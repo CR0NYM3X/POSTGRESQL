@@ -94,11 +94,17 @@ Gestión de Archivos de Registro:
 
 Prometheus es una herramienta de monitoreo y alerta de código abierto que se utiliza ampliamente para recopilar y analizar métricas de sistemas y aplicaciones. Para monitorear PostgreSQL con Prometheus, se utiliza un componente llamado Postgres Exporter.
 
+
+pg_snakeoil - El antivirus PostgreSQL -> https://github.com/df7cb/pg_snakeoil
+
+pgauditlogtofile -> complemento de pgaudit para no contaminar el log de postgresql -> https://github.com/df7cb/pgauditlogtofile
+ 
+
 2. **PostgreSQL TDE (Transparent Data Encryption)**:
    - **Descripción**: TDE proporciona cifrado de datos en reposo para PostgreSQL, asegurando que los datos almacenados en disco estén protegidos.
    - **Características**: Cifrado de tablas y columnas, gestión de claves de cifrado, integración con módulos de seguridad de hardware (HSM).
 
-3. **pgauditlog**:
+3. **pgaudit**:
    - **Descripción**: Herramienta de auditoría que permite registrar y analizar eventos de seguridad en PostgreSQL.
    - **Características**: Registro de eventos de seguridad, análisis de logs, generación de informes de auditoría.
 
