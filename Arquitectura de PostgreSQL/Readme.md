@@ -16,6 +16,10 @@
 | [auto_explain](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/auto_explain.md)        | Registra automáticamente planes de ejecución      | Útil para diagnosticar consultas lentas; no analiza almacenamiento físico.            |
 | [pg_stat_statements](https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pg_stat_statements.md)  | Estadísticas de ejecución de consultas            | Muy usado para identificar consultas más costosas; no analiza almacenamiento.         |
 | pg_surgery  |  salud de los datos         | oficial de PostgreSQL >= versión 14, Realiza operaciones de bajo nivel en las filas (tuplas) de una tabla , e se utiliza para intervenir directamente en la salud de los datos cuando no funcionan debido a corrupción de datos.         |
+| **pg_filedump** | Utilidad forense de bajo nivel para **inspeccionar archivos físicos** (heaps, índices, archivos de control) directamente desde el sistema operativo. | A diferencia de una consulta SQL, no requiere que la base de datos esté activa. Es vital para diagnosticar corrupción de datos (bit-rot) y recuperar información cuando el motor de Postgres no puede leer un bloque dañado. |
+| **pg_waldump** | Herramienta para decodificar y visualizar los registros del **Write Ahead Log (WAL)**, mostrando cada cambio realizado en la base de datos antes de que se escriba en las tablas. | Mientras que `pg_filedump` analiza el "presente" de los archivos, `pg_waldump` analiza el "pasado" (la secuencia de transacciones). Es fundamental para entender qué causó un aumento repentino en el tráfico de escritura o para auditorías de recuperación ante desastres. |
+ 
+
 
  
 ### **Tabla, Vistas o Funciones para análisis interno y diagnóstico**
