@@ -117,6 +117,11 @@ pgauditlogtofile -> complemento de pgaudit para no contaminar el log de postgres
    - **Descripción**: Conjunto de extensiones que mejoran la seguridad de PostgreSQL, incluyendo autenticación avanzada y control de acceso.
    - **Características**: Autenticación basada en certificados, control de acceso granular, integración con sistemas de gestión de identidades.
  
+pg_filedump ->  pg_filedump es para auditoría física: entender por qué un archivo de la base de datos está roto o qué datos quedan en un archivo después de un fallo catastrófico. -> https://github.com/df7cb/pg_filedump
+	La base de datos no arranca: Si el motor está caído y necesitas ver qué hay dentro de los archivos de datos.
+	Corrupción de datos: Es la herramienta número uno para investigar "Data Corruption". Permite ver exactamente qué byte está mal en una página de disco.
+	Recuperación forense: Permite intentar extraer datos de tablas que han sido dañadas y que herramientas como pg_dump no pueden leer porque el motor de Postgres falla al intentar acceder a ellas.
+
 
 ### **5. Seguridad:**
 
