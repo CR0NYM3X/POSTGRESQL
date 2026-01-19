@@ -241,6 +241,56 @@ La normalización es una herramienta poderosa para diseñar bases de datos limpi
 > En PostgreSQL, aplicar estas formas normales es sencillo gracias a su robusto sistema de relaciones y claves foráneas.
 
 
+---
+
+# Normalizacion explicación coloquial
+
+explicar las reglas de normalización (las famosas Formas Normales), imagina que estamos organizando el **clóset de la casa**. Si tiras todo adentro sin orden, vas a encontrar lo que buscas, pero vas a tardar horas y probablemente rompas algo en el camino.
+
+Aquí te explico las primeras tres reglas como si estuviéramos tomando un café:
+
+ 
+
+## 1. Primera Forma Normal (1FN): "Un lugar para cada cosa"
+
+La regla de oro aquí es: **Nada de grupos ni listas en una sola celda.**
+
+* **El problema:** Imagina una tabla de "Usuarios" donde en la columna `telefonos` guardas tres números separados por una coma: `"555-123, 555-456, 555-789"`.
+* **La solución:** Esto es un pecado en bases de datos. La 1FN dice que cada celda debe tener **un solo valor atómico** (indivisible). Si un usuario tiene tres teléfonos, o creas tres filas para ese usuario o, mejor aún, llevas los teléfonos a otra tabla.
+* **En resumen:** Prohibido guardar "combos" o listas en un solo cuadrito.
+
+ 
+## 2. Segunda Forma Normal (2FN): "Si no depende del jefe, no va en esta oficina"
+
+Para aplicar esta, primero ya debes cumplir la 1FN. Esta regla trata sobre la **dependencia de la llave primaria**.
+
+* **El problema:** Imagina una tabla de `Pedidos` donde la llave es el `ID_Pedido`. Si en esa misma tabla pones el `Nombre_del_Cliente`, estás cometiendo un error. ¿Por qué? Porque el nombre del cliente no depende del *pedido* en sí, sino del *cliente*.
+* **La solución:** Si un dato no depende directamente de la "llave" principal de esa tabla, sácalo de ahí y llévalo a su propia tabla (`Clientes`).
+* **En resumen:** Cada columna de la tabla debe decir algo sobre la **llave principal**, y nada más que sobre la llave.
+
+ 
+## 3. Tercera Forma Normal (3FN): "Cero chismes (Elimina dependencias transitorias)"
+
+Esta es la más sutil. Dice que una columna no debe depender de otra columna que **no sea la llave**.
+
+* **El problema:** Tienes una tabla de `Empleados`. La llave es `ID_Empleado`. Tienes las columnas `Nombre`, `Codigo_Postal` y `Ciudad`.
+* Aquí hay un "chisme": La `Ciudad` depende del `Codigo_Postal`, no directamente del `ID_Empleado`. Si cambias el código postal, la ciudad debería cambiar sola.
+
+
+* **La solución:** Crea una tabla de `Codigos_Postales` donde guardes qué ciudad le toca a cada código. En la tabla de `Empleados` solo dejas el `Codigo_Postal`.
+* **En resumen:** No busques atajos. Si el dato A depende de B, y B depende de la Llave, entonces A y B se van a su propia tabla.
+
+ 
+
+### ¿Por qué tanto lío?
+
+Si no normalizas, cuando un cliente cambie de nombre, vas a tener que buscar en 500 filas de pedidos para cambiarlo en todos lados (**Redundancia**). Si te olvidas de una fila, tendrás datos inconsistentes (**Anomalías**).
+
+
+
+---
+
+
 ```
 
 https://ebac.mx/blog/normalizacion-de-bases-de-datos
@@ -249,3 +299,4 @@ https://www.datacamp.com/es/tutorial/normalization-in-sql
 
 https://www.youtube.com/watch?v=kvt2wE-q-yY
 ```
+
