@@ -243,10 +243,20 @@ https://tomasz-gintowt.medium.com/vacuum-in-postgresql-not-just-cleaning-up-c4dc
 # Monitoreo 
 ```
 Scaling PostgreSQL Monitoring at Trendyol: Our Journey with pgwatch -> https://medium.com/trendyol-tech/scaling-postgresql-monitoring-at-trendyol-our-journey-with-pgwatch-1556faa81d24
-
 Understanding Database Locks in PostgreSQL -> https://medium.com/@aditimishra_541/understanding-database-locks-in-postgresql-0392f0ab52d1
-
 Proactively Detecting and Killing Long-Running Locks in PostgreSQL -> https://erdmyzn.medium.com/proactively-detecting-and-killing-long-running-locks-in-postgresql-944f88e6e7f7
+PostgreSQL Monitoring -> https://ozwizard.medium.com/postgresql-monitoring-4df5e4ce1afc
+Monitoring a PostgreSQL Cluster on Kubernetes with Prometheus and Grafana ->  https://medium.com/@dinhnguyen1812/monitoring-a-postgresql-cluster-on-kubernetes-with-prometheus-and-grafana-a9a69ec36f53
+How to Monitor PostgreSQL Performance -> https://blog.kloudmate.com/how-to-monitor-postgresql-performance-2de746eacaf6
+Monitoring PostgreSQL Cluster: Server, Database and Logs ->  https://ozwizard.medium.com/monitoring-postgresql-cluster-server-database-and-logs-40d55689db3a
+Real-Time Data Streaming: Monitoring Database Changes with Postgres, Debezium, and Kafka -> https://medium.com/@jushijun/real-time-data-streaming-monitoring-database-changes-with-postgres-debezium-and-kafka-f37c85cc9975
+PostgreSQL 17: Mastering the Art of Monitoring & Managing Long-Running and Blocked Queries -> https://medium.com/@jramcloud1/postgresql-17-mastering-the-art-of-monitoring-managing-long-running-and-blocked-queries-24a31dd57b56
+PostgreSQL Log Management: Mastering Logging, Monitoring, and Optimization in PostgreSQL 17 ->  https://medium.com/@jramcloud1/postgresql-log-management-mastering-logging-monitoring-and-optimization-in-postgresql-17-9dba1b33ea9a
+PostgreSQL 17 Performance Tuning: Monitoring Inserts, Updates, and HOT Updates -> https://medium.com/@jramcloud1/23-postgresql-17-performance-tuning-monitoring-inserts-updates-and-hot-updates-a786dfbe4821
+How to Monitor PostgreSQL With Telegraf and MetricFire -> https://medium.com/@MetricFire/how-to-monitor-postgresql-with-telegraf-and-metricfire-268041a2fcc1
+Monitoring PostgreSQL with Zabbix Agent on RHEL 9 -> https://hakanmazi123.medium.com/monitoring-postgresql-with-zabbix-agent-on-rhel-9-4caecdb84b27
+
+PostgreSQL 17 Performance Tuning: Monitoring Inserts, Updates, and HOT Updates -> https://medium.com/@jramcloud1/23-postgresql-17-performance-tuning-monitoring-inserts-updates-and-hot-updates-a786dfbe4821 
 
 ```
 
