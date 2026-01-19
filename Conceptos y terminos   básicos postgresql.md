@@ -1862,3 +1862,43 @@ SELECT pg_reload_conf();
 Esto garantiza que si `/sysx/data` se llena, será por **datos reales** y no por procesos temporales mal optimizados.
 
  
+--- 
+
+# postmaster 
+
+### 1. ¿Qué pasó con `postmaster`?
+
+Tienes toda la razón en su definición: históricamente, `postmaster` era el nombre del binario que actuaba como el proceso "padre" o supervisor. Su función era escuchar nuevas conexiones, hacer el *fork* de procesos hijos para cada cliente y gestionar la memoria compartida.
+
+Sin embargo, desde hace muchas versiones, **`postmaster` y `postgres` son exactamente el mismo binario**. Si te fijas en tus salidas de la versión 11 a la 15:
+`postmaster -> postgres`
+
+Es un **enlace simbólico (symlink)**. El software detecta cómo fue invocado:
+
+* Si lo llamas como `postmaster`, asume que quieres levantar el servidor.
+* Si lo llamas como `postgres`, hace lo mismo (siempre que pases los parámetros adecuados como `-D`).
+
+### 2. ¿Por qué ya no aparece en la 16 y 17?
+
+A partir de las versiones más recientes (específicamente en los empaquetamientos modernos para RHEL/CentOS/Rocky), la comunidad y los mantenedores de los repositorios PGDG decidieron empezar a **eliminar el enlace simbólico `postmaster**`.
+
+**Las razones son simples:**
+
+1. **Limpieza:** Se quiere estandarizar todo bajo el nombre `postgres`.
+2. **Obsolescencia:** El término "postmaster" se considera legado. Toda la documentación oficial ahora apunta a usar `postgres` o `pg_ctl`.
+3. **Seguridad/Claridad:** Evita confusiones con otros servicios de correo (como el alias `postmaster` de SMTP).
+
+### 3. ¿Significa esto que el proceso ya no existe?
+
+**No.** El proceso supervisor (el padre de todos) sigue existiendo y funcionando exactamente igual, pero ahora se llama simplemente `postgres`.
+
+Si haces un `ps -fea | grep postgres` en tu versión 17, verás que el proceso principal (el que tiene el PID más bajo y es padre de los demás) aparece así:
+`/usr/pgsql-17/bin/postgres -D /ruta/data`
+
+### En resumen:
+
+* **Antes de la v16:** Te creaban el acceso directo `postmaster` por pura compatibilidad histórica.
+* **v16 y v17:** Ya no crean el acceso directo; esperan que uses directamente el binario `postgres`.
+* **Funcionalidad:** Es idéntica. El binario `postgres` de la versión 17 hace el mismo trabajo de "postmaster" que hacía el de la versión 11.
+
+ 
