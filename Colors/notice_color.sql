@@ -1,11 +1,10 @@
 
 /*
+Permite manejar los logs a otro nivel, guardandolo en su propia tabla, propio archivo de log a nivel S.O incluso mostrando el mensaje personalizado en pantalla  
 
 
 FUNCION QUE TE PERMITE AGREGARLE COLOR AL TEXTO
 23/01/2025
-
-
 
 */
  
@@ -246,3 +245,4 @@ SELECT notice_color('TEXT TRANSFORMADO BOLD' , '', '' ,TRUE  ,NULL, false, 'lowe
  
  
  
+
