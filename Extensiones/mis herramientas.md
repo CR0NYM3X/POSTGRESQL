@@ -1,0 +1,26 @@
+
+# Script Terminados 
+[pgTLSCheck](https://github.com/CR0NYM3X/pgTLSCheck) :  Bash diseñada para realizar pentesting específico sobre la capa TLS/SSL de servidores PostgreSQL. Perfecta para administradores, auditores de seguridad, equipos DevSecOps y profesionales que buscan reforzar la postura criptográfica de su infraestructura de datos. Permite detectar configuraciones inseguras, cipher suites vulnerables, conexiones cifradas,
+
+
+[pgTLSinfo](https://github.com/CR0NYM3X/pgTLSinfo) :  función de PostgreSQL diseñada para inspeccionar certificados X.509 y servidores PostgreSQL con SSL/TLS habilitado, obteniendo información técnica completa del entorno de seguridad y conexión.
+
+
+[pg_tcpcheck](https://github.com/CR0NYM3X/pg_tcpcheck) :  funcion de diagnóstico de red diseñada para ejecutarse directamente desde PostgreSQL. Permite verificar la disponibilidad de servicios TCP (puertos) en servidores remotos de forma masiva, segura y eficiente.
+
+[pg_auto_revoke_exec](https://github.com/CR0NYM3X/pg_auto_revoke_exec) :  Función de seguridad para PostgreSQL que supervisa la creación de funciones y procedimientos, revocando automáticamente el permiso EXECUTE del rol PUBLIC si está presente en la funcion. Esto refuerza la protección contra accesos no autorizados en entornos multiusuario o productivos.
+
+
+
+[pg_stat_monitor](https://github.com/CR0NYM3X/pg_stat_monitor) : función avanzada para PostgreSQL que fusiona estadísticas internas de sesión (pg_stat_activity) con métricas de procesos extraídas directamente del sistema operativo. Permite visualizar en tiempo real el uso de recursos y comportamiento de cada proceso backend del servidor.
+
+
+# Scripts en DESARROLLO
+```
+pg_background_mgr -> https://github.com/CR0NYM3X/pg_background_mgr
+pg_privileges  -> https://github.com/CR0NYM3X/pg_privileges
+pgAuditSimple  -> https://github.com/CR0NYM3X/pgAuditSimple
+pgVaultLog     -> https://github.com/CR0NYM3X/pgVaultLog
+pg_prttb        -> https://github.com/CR0NYM3X/pg_prttb
+SQLMeta-Tracker -> https://github.com/CR0NYM3X/SQLMeta-Tracker
+```
