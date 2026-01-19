@@ -309,8 +309,9 @@ Si no normalizas, cuando un cliente cambie de nombre, vas a tener que buscar en 
 
 
 ---
+
 # Estrategia de normalización
-Igual todo depende del crecimiento a futuro de la tabla y la cantidad de registros actual y si la tabla se realiza muchas escrituras o lecturas.
+Igual todo depende del crecimiento a futuro de la tabla y la cantidad de registros actual, si son pocos registros algunas tablas pueden haz estar desnormalizada, si son algo de registros ahi se debe normalizar y son muchos dependiendo del escenario donde se usan mucho join pues se dernomaliza y si no hay muchos join pues solo se normaliza,  también  es importante si la tabla recibe  muchas escrituras o lecturas.
 
 
 ### La "Prueba del Join"
