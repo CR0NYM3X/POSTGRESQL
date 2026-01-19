@@ -17,3 +17,6 @@ Existe un proceso real en EE. UU. donde el gobierno decide si una vulnerabilidad
 3.- )  - John Calvin Maxwell  "Gurú del Liderazgo" , dice que  ocupamos del talento Humano para visiones grandes, 
 Maxwell critica la idea de que los grandes líderes hacen todo solos. Según él, eso es una cuestión de ego, no de eficacia.
 Si tu visión se puede cumplir solo por ti mismo, no necesitas un equipo. Pero si tu visión es realmente grande, no podrás cumplirla sin uno
+
+
+4.-) Pelicula [Mi amigo el robot] ->  Representa la amistad y el amor ->  Algunas personas llegan a tu vida para hacerla hermosa, aunque no se queden para siempre 
