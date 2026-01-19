@@ -628,3 +628,107 @@ Ahora, cuando hagas `SELECT ... WHERE estado <> 'inactivo'`, PostgreSQL irá dir
 | **Filtros constantes** | `NOT LIKE` o `<>` | **Índices Parciales** | El motor ya sabe qué registros ignorar antes de empezar. |
 | **Relaciones** | `NOT IN` | `LEFT JOIN ... WHERE ... IS NULL` | A veces el optimizador lo prefiere sobre `NOT EXISTS`. |
  
+
+
+
+---
+
+# Actualizacion  de registros masivos
+
+Para manejar **millones de registros automáticamente** en PostgreSQL sin que tengas que lanzar manualmente cada lote, lo más recomendable es usar un **procedimiento en PL/pgSQL** que vaya actualizando en chunks hasta terminar. Así evitas bloqueos largos y controlas el impacto en el sistema.
+
+
+
+## 🛠 Ejemplo de procedimiento automático en lotes
+
+```sql
+DO $$
+DECLARE
+    v_limit     INTEGER := 100000; -- tamaño del lote
+    v_rows      INTEGER;
+BEGIN
+    LOOP
+        -- Actualiza un lote de registros
+        WITH cte AS (
+            SELECT id
+            FROM mi_tabla
+            WHERE mi_columna != 'nuevo_valor'
+            LIMIT v_limit
+        )
+        UPDATE mi_tabla
+        SET mi_columna = 'nuevo_valor'
+        WHERE id IN (SELECT id FROM cte);
+
+        -- Verifica cuántos registros se actualizaron
+        GET DIAGNOSTICS v_rows = ROW_COUNT;
+
+        RAISE NOTICE 'Se actualizaron % filas en este lote', v_rows;
+
+        -- Si ya no hay más filas por actualizar, salimos
+        EXIT WHEN v_rows = 0;
+
+        -- Opcional: pausa breve para no saturar el servidor
+        PERFORM pg_sleep(0.5);
+    END LOOP;
+END $$;
+```
+
+## 🔎 Explicación
+- **`v_limit`**: define el tamaño del lote (ej. 100k filas). Ajusta según tu hardware.
+- **`LOOP`**: repite hasta que no queden filas pendientes.
+- **`GET DIAGNOSTICS ROW_COUNT`**: obtiene cuántas filas se actualizaron en cada iteración.
+- **`pg_sleep`**: opcional para dar respiro al servidor entre lotes.
+- **Automático**: el procedimiento recorre todos los millones de registros sin intervención manual.
+
+
+## ⚠️ Consideraciones
+- **Transacciones**: cada iteración es parte de la misma transacción si lo ejecutas tal cual. Si quieres *commits parciales*, usa un procedimiento almacenado con `CALL` y maneja transacciones externas.
+- **Índices**: si `mi_columna` está indexada, cada actualización también actualiza el índice → más costo.
+- **Vacuum y analyze**: al terminar, ejecuta `VACUUM ANALYZE mi_tabla;` para limpiar páginas muertas y actualizar estadísticas.
+- **Replicación**: si usas streaming replication, considera el impacto en el WAL.
+
+
+
+## 🧠 Impacto en memoria según el método
+
+### 1. **UPDATE set-based (recomendado)**
+**set-based** es que en lugar de recorrer fila por fila con cursores o bucles, dejamos que el motor SQL aplique la operación sobre un conjunto completo de registros en una sola sentencia optimizada.
+- PostgreSQL optimiza internamente y no necesita mantener millones de filas en memoria.
+- El motor trabaja en bloques de páginas del *buffer cache*.
+- El consumo de memoria es relativamente estable, aunque el costo se traslada al **WAL** y al tiempo de bloqueo.
+
+👉 Por eso es más eficiente: no acumula filas en RAM, sino que las procesa con el motor SQL.
+ 
+
+### 2. **Cursores**
+- Un cursor mantiene un conjunto de resultados abierto en memoria (aunque puede hacer *fetch* por lotes).
+- Si no se usa con cuidado, puede consumir mucha memoria porque guarda referencias a millones de filas.
+- Además, cada `FETCH` implica traer datos al cliente o al bloque PL/pgSQL → overhead adicional.
+ 
+
+### 3. **FOR / FOREACH fila a fila**
+- Cada iteración carga una fila en memoria y ejecuta lógica.
+- Para millones de filas, esto significa millones de ciclos en PL/pgSQL → lento y con consumo de memoria acumulado.
+- El *row-by-row processing* no escala bien: más CPU, más RAM, más WAL.
+
+
+### 4. **LOOP / WHILE con lotes**
+- Si lo usas para controlar chunks (ej. 100k filas por ciclo), el consumo de memoria es bajo porque cada lote se procesa y se libera.
+- Aquí la memoria se mantiene controlada, porque no cargas todo el dataset a la vez.
+
+ 
+
+## ⚠️ Riesgos de memoria en operaciones masivas
+- **Work_mem**: si tu query necesita ordenar o agrupar, puede usar mucha memoria por proceso.
+- **Maintenance_work_mem**: si hay índices que se actualizan, también puede crecer el consumo.
+- **Cursores grandes**: pueden saturar RAM si no se usan con `FETCH` limitado.
+- **Transacciones gigantes**: acumulan versiones de filas en memoria/WAL hasta el commit.
+
+
+
+## 🚀 Conclusión
+- **Set-based UPDATE en lotes** → mejor balance entre rendimiento y memoria.
+- **Cursores y FOR fila a fila** → más consumo de memoria y CPU, no recomendados para millones de registros.
+- **LOOP/WHILE con chunks** → buena estrategia porque controlas el tamaño de cada lote y liberas memoria en cada iteración.
+ 
+ 
