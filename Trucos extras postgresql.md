@@ -163,7 +163,7 @@ BEGIN
 END;
 $$;
 
-
+------ bucle con usando loop
 DO $$
 DECLARE
     contador INT := 0;
@@ -179,6 +179,28 @@ BEGIN
         EXIT WHEN contador >= 10;
     END LOOP;
 END $$;
+
+-- Ejemplo: Actualizar en bloques de 10,000 para no saturar
+DO $$
+DECLARE
+    filas_afectadas INT;
+BEGIN
+    LOOP
+        UPDATE mi_tabla
+        SET mi_columna = 'nuevo_valor'
+        WHERE id IN (
+            SELECT id FROM mi_tabla 
+            WHERE mi_columna != 'nuevo_valor' 
+            LIMIT 10000
+        );
+        
+        GET DIAGNOSTICS filas_afectadas = ROW_COUNT;
+        EXIT WHEN filas_afectadas = 0;
+        COMMIT; -- Crucial para liberar recursos
+    END LOOP;
+END $$;
+
+
 
 
 ########## BUCLES FOR ########## 
