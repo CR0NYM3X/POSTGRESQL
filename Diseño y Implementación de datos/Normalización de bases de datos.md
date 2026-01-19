@@ -287,7 +287,45 @@ Esta es la más sutil. Dice que una columna no debe depender de otra columna que
 Si no normalizas, cuando un cliente cambie de nombre, vas a tener que buscar en 500 filas de pedidos para cambiarlo en todos lados (**Redundancia**). Si te olvidas de una fila, tendrás datos inconsistentes (**Anomalías**).
 
 
+# Resumen 
 
+### 1FN: Cero amontonamiento
+
+* **Regla:** Cada celda debe tener **un solo dato**.
+* **Prohibido:** Guardar listas (ej: "Salsa, Reggaetón") o varios teléfonos en un solo campo.
+* **Objetivo:** Que los datos sean "atómicos" (indivisibles).
+
+### 2FN: Cero arrimados
+
+* **Regla:** Todo debe depender de la **llave primaria** (el ID).
+* **Prohibido:** Tener datos de "otra cosa" en la tabla. Si en la tabla de *Ventas* tienes el nombre del cliente, ese nombre está "arrimado", porque depende del cliente, no de la venta.
+* **Objetivo:** Eliminar la redundancia (no repetir nombres en cada fila).
+
+### 3FN: Cero chismes
+
+* **Regla:** Ninguna columna debe depender de otra que **no sea la llave**.
+* **Prohibido:** Dependencias indirectas. Si el *Estado* depende del *Código Postal*, y el CP depende del *ID*, entonces el Estado no debe estar ahí. Es una carambola que ensucia la tabla.
+* **Objetivo:** Que cada dato tenga un único lugar lógico para existir.
+
+
+---
+# Estrategia de normalización
+Igual todo depende del crecimiento a futuro de la tabla y la cantidad de registros actual y si la tabla se realiza muchas escrituras o lecturas.
+
+
+### La "Prueba del Join"
+Si sientes que estás guardando un dato solo para "ahorrarte el Join", pregúntate esto:
+
+¿Si este dato cambia, tengo que ir a actualizar 1,000 filas? * Si la respuesta es SÍ, entonces ese dato no pertenece a esa tabla.
+
+### Ahorro de espacio 
+1. **Datos de tipo texto:** Los textos largos repetidos miles de veces (como el nombre de una categoría o una dirección) ocupan mucho más espacio en disco que un simple `ID` numérico.
+2. **Relación con la Llave:** Si el dato (ej. `Nombre_Proveedor`) no tiene nada que ver con la llave primaria (ej. `ID_Producto`), estás mezclando "entidades". El producto es una cosa y el proveedor es otra.
+
+
+
+
+ 
 ---
 
 
@@ -299,4 +337,5 @@ https://www.datacamp.com/es/tutorial/normalization-in-sql
 
 https://www.youtube.com/watch?v=kvt2wE-q-yY
 ```
+
 
