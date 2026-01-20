@@ -501,10 +501,278 @@ Los CONSTRAINTS (restricciones) son reglas que se aplican a las columnas de una 
 ```
 
 # Restricción de Integridad Referencial (Foreign Key):
+
+La **integridad relacional** (o integridad referencial) es un conjunto de reglas que asegura que las relaciones entre las tablas de una base de datos permanezcan consistentes. Su objetivo principal es evitar "datos huérfanos"; es decir, registros que apuntan a algo que ya no existe.
+
+En PostgreSQL, esto se logra principalmente mediante el uso de **Foreign Keys** (Llaves Foráneas).
+
+ 
+## Cómo funciona la integridad relacional
+
+Imagina que tienes dos tablas: **Clientes** y **Pedidos**. La integridad relacional garantiza que:
+
+1. No puedas crear un pedido para un cliente que no existe.
+2. No puedas borrar a un cliente si todavía tiene pedidos asociados (a menos que decidas borrarlos también en cascada).
+3. Si cambias el ID de un cliente, ese cambio se refleje en sus pedidos.
+
+ 
+
+## Conceptos clave
+
+* **Primary Key (Llave Primaria):** El identificador único de una fila (ej. `id_cliente`).
+* **Foreign Key (Llave Foránea):** Una columna en una tabla que hace referencia a la Llave Primaria de otra tabla (ej. `cliente_id` dentro de la tabla Pedidos).
+
+## Ejemplos prácticos en PostgreSQL
+
+### 1. Creación de tablas con integridad
+
+Aquí definimos que la columna `autor_id` en la tabla `libros` debe existir obligatoriamente en la tabla `autores`.
+
 ```sql
+CREATE TABLE autores (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT NOT NULL
+);
+
+CREATE TABLE libros (
+    id SERIAL PRIMARY KEY,
+    titulo TEXT NOT NULL,
+    autor_id INTEGER REFERENCES autores(id) -- Aquí se establece la integridad
+);
+
+```
+
+### 2. Restricción de Inserción
+
+Si intentas ejecutar lo siguiente en una base de datos vacía:
+
+```sql
+INSERT INTO libros (titulo, autor_id) VALUES ('Cien años de soledad', 99);
+
+```
+
+**Resultado:** PostgreSQL lanzará un error porque el autor con ID `99` no existe. La integridad relacional bloquea la operación para evitar datos basura.
+
+### 3. Acciones en Cascada (`ON DELETE CASCADE`)
+
+A veces quieres que, si eliminas un autor, se borren automáticamente todos sus libros. Esto se define al crear la llave foránea:
+
+```sql
+CREATE TABLE libros (
+    id SERIAL PRIMARY KEY,
+    titulo TEXT NOT NULL,
+    autor_id INTEGER REFERENCES autores(id) ON DELETE CASCADE
+);
+
+```
+
+| Acción | Descripción |
+| --- | --- |
+| **RESTRICT / NO ACTION** | (Por defecto) Impide borrar el registro padre si tiene hijos. |
+| **CASCADE** | Borra automáticamente los registros hijos cuando se borra el padre. |
+| **SET NULL** | Si el padre se borra, la referencia en el hijo se pone como nula. |
+ 
+
+## ¿Por qué es importante?
+
+Sin integridad relacional, tu base de datos perdería su fiabilidad rápidamente. Tendrías facturas sin dueño, comentarios en posts que ya no existen o usuarios vinculados a suscripciones inexistentes, lo que causaría errores críticos en cualquier aplicación.
+
+### Acciones de Integridad Referencial
+
+| Acción | Comportamiento al Borrar/Actualizar el Padre | Caso de Uso Típico |
+| --- | --- | --- |
+| **`NO ACTION`** | Produce un error indicando que la eliminación o actualización viola la restricción. Es el comportamiento por defecto si no especificas nada. | Cuando la seguridad de los datos es crítica y nada debe borrarse si hay dependencias. |
+| **`RESTRICT`** | Similar a `NO ACTION`, pero la validación no se puede aplazar al final de una transacción; ocurre inmediatamente. | Para asegurar que no existan cambios temporales que rompan la integridad. |
+| **`CASCADE`** | Si se borra el padre, se borran los hijos. Si se actualiza el ID del padre, se actualiza automáticamente en los hijos. | Relaciones fuertes, como un "Post" y sus "Comentarios" o un "Pedido" y sus "Detalles". |
+| **`SET NULL`** | Las columnas de la llave foránea en los hijos se ponen en `NULL`. (Requiere que la columna permita nulos). | Cuando quieres conservar el registro hijo pero ya no está asociado al padre (ej. un producto descatalogado). |
+| **`SET DEFAULT`** | Las columnas de la llave foránea en los hijos se cambian a su valor por defecto definido. | Cuando quieres reasignar registros huérfanos a un usuario o categoría "Genérica". |
+ 
+
+### Ejemplo de sintaxis completa
+
+Así es como se ve la implementación de estas acciones al crear una tabla:
+
+```sql
+CREATE TABLE pedidos (
+    id SERIAL PRIMARY KEY,
+    cliente_id INTEGER,
+    -- Definición de la llave foránea con acciones
+    CONSTRAINT fk_cliente
+        FOREIGN KEY (cliente_id) 
+        REFERENCES clientes(id)
+        ON DELETE CASCADE    -- Si borro al cliente, borro sus pedidos
+        ON UPDATE SET NULL   -- Si cambio el ID del cliente, pongo NULL en pedidos
+);
+
+```
+
+### ¿Cuál elegir?
+
+* Usa **`CASCADE`** si el hijo no tiene sentido sin el padre.
+* Usa **`SET NULL`** si el hijo debe persistir de forma independiente (como registros históricos).
+* Usa **`NO ACTION`** (por defecto) si quieres una protección total contra eliminaciones accidentales.
+
+
+
+
+
+# MATCH
+El parámetro `MATCH` define cómo se comporta PostgreSQL cuando una llave foránea tiene múltiples columnas (llaves compuestas) y alguna de ellas contiene un valor nulo (`NULL`).
+
+ 
+
+## Los 3 tipos de MATCH en PostgreSQL
+
+Existen tres variantes principales para manejar la concordancia de llaves foráneas:
+
+### 1. MATCH SIMPLE (El valor por defecto)
+
+Es el que aparece en tu código. Permite que **algunas** de las columnas de la llave foránea sean nulas. Si una de las columnas es `NULL`, PostgreSQL deja de validar la integridad para esa fila específica.
+
+* **Regla:** Si cualquier columna de la llave foránea es nula, se considera que la restricción se cumple (no se busca el valor en la tabla padre).
+* **Para qué sirve:** Para permitir registros "huérfanos parciales" donde la relación es opcional.
+
+### 2. MATCH FULL
+
+Es mucho más estricto. No permite mezclar valores con nulos.
+
+* **Regla:** O todas las columnas de la llave foránea son válidas (existen en la tabla padre) o **todas** deben ser `NULL`. No se permite que una columna tenga un ID y la otra sea nula.
+* **Para qué sirve:** Para asegurar que la relación sea "todo o nada".
+
+### 3. MATCH PARTIAL
+
+Está definido en el estándar SQL, pero **PostgreSQL no lo soporta actualmente**. Su intención era permitir que, si algunas columnas son nulas, se validaran las que sí tienen valores.
+
+ 
+
+## Comparativa con un ejemplo de Llave Compuesta
+
+Imagina una tabla que usa `sucursal_id` y `vendedor_id` como llave para identificar a un empleado.
+
+| Valor en Tabla Hija | MATCH SIMPLE | MATCH FULL |
+| --- | --- | --- |
+| `(1, 10)` | **Válido** (si existe en padre) | **Válido** (si existe en padre) |
+| `(NULL, NULL)` | **Válido** | **Válido** |
+| `(1, NULL)` | **Válido** (No verifica nada) | **Error** (No permite mezcla) |
+
+ 
+
+## ¿Por qué aparece en tu código?
+
+En tu caso, como `producto_id` es una sola columna:
+
+* Si `producto_id` es `5`, PostgreSQL verifica que el producto 5 exista.
+* Si `producto_id` es `NULL`, PostgreSQL simplemente ignora la validación y permite insertar el registro.
+
+En la práctica, la mayoría de los desarrolladores no escriben `MATCH SIMPLE` explícitamente porque es el comportamiento estándar, pero herramientas de modelado de bases de datos (como pgAdmin o DBeaver) lo suelen generar automáticamente al exportar el código SQL.
+
+
+
+### Ejemplo columna compuesta 
+
+Esto ocurre cuando para identificar de forma única un registro en la tabla "padre", no basta con una sola columna, sino que se necesita la combinación de dos o más. A esto se le llama **Llave Primaria Compuesta**.
+
+Cuando la tabla "hija" hace referencia a esa combinación, la **Llave Foránea también debe ser compuesta**.
+
+Aquí es donde entra el dilema de los nulos y el `MATCH SIMPLE`.
+
+ 
+### Ejemplo: Sistema de Inventario por Sucursal
+
+Imagina que tienes una cadena de tiendas. Un producto puede tener el mismo código, pero estar en diferentes sucursales.
+
+#### 1. Tabla Padre: `inventario_sucursal`
+
+Para identificar un lote de productos, necesitas saber la **sucursal** y el **producto**.
+
+| sucursal_id (PK) | producto_id (PK) | stock |
+| --- | --- | --- |
+| 1 (Norte) | 101 (Camisa) | 50 |
+| 2 (Sur) | 101 (Camisa) | 30 |
+
+
+### Tabla Padre de Referencia: `inventario_sucursal`
+
+Esta tabla es la que une a las sucursales con los productos, permitiendo gestionar el stock específico de cada lugar.
+
+```sql
+CREATE TABLE inventario_sucursal (
+    sucursal_id INT,
+    producto_id INT,
+    stock INT DEFAULT 0,
+    ultima_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Definimos la llave primaria compuesta necesaria para la referencia
+    PRIMARY KEY (sucursal_id, producto_id)
+);
+
+```
+
+### ¿Por qué es necesario esto?
+
+Cuando usas una llave foránea que apunta a dos columnas (`sucursal_ref`, `producto_ref`), SQL exige que la tabla destino tenga una restricción de **UNIQUE** o **PRIMARY KEY** exactamente sobre esas mismas dos columnas.
+
+
+
+#### 2. Tabla Hija: `ventas_detalle`
+
+Aquí es donde registras qué vendiste. La llave foránea debe apuntar a ambas columnas para saber de qué sucursal salió el producto.
+
+```sql
+
+CREATE TABLE ventas_detalle (
+    venta_id SERIAL PRIMARY KEY,
+    sucursal_ref INT,
+    producto_ref INT,
+    FOREIGN KEY (sucursal_ref, producto_ref) 
+        REFERENCES inventario_sucursal (sucursal_id, producto_id)
+        MATCH SIMPLE -- <--- Aquí está el detalle
+);
+
+```
+ 
 
 
  
+### ¿Qué pasa con los valores NULL en este ejemplo?
+
+Si intentas insertar datos en `ventas_detalle`, el comportamiento de `MATCH SIMPLE` será el siguiente:
+
+#### Caso A: Valores completos
+
+`INSERT INTO ventas_detalle (sucursal_ref, producto_ref) VALUES (1, 101);`
+
+* **Resultado:** **Válido**. PostgreSQL busca en la tabla padre si existe la combinación (1, 101). Como existe, lo permite.
+
+#### Caso B: Valores inexistentes
+
+`INSERT INTO ventas_detalle (sucursal_ref, producto_ref) VALUES (1, 999);`
+
+* **Resultado:** **Error**. La combinación (1, 999) no existe en la tabla padre.
+
+#### Caso C: Un valor es NULL (El efecto de MATCH SIMPLE)
+
+`INSERT INTO ventas_detalle (sucursal_ref, producto_ref) VALUES (1, NULL);`
+
+* **Resultado:** **Válido**.
+* **¿Por qué?** Porque en `MATCH SIMPLE`, si **al menos una** de las columnas de la llave foránea es `NULL`, PostgreSQL **deja de verificar** la integridad. No le importa que la `sucursal_ref = 1` exista o no; al ver un `NULL`, simplemente "deja pasar" el registro.
+
+ 
+### ¿Por qué esto puede ser un problema?
+
+Si usas `MATCH SIMPLE`, podrías terminar con filas que tienen una sucursal asignada pero no un producto, o viceversa, rompiendo la lógica de tu negocio.
+
+**Cómo evitarlo:**
+
+1. **Usar `NOT NULL`:** Definir las columnas de la llave foránea como `NOT NULL` para obligar a que siempre haya datos.
+2. **Usar `MATCH FULL`:** Si usas `MATCH FULL`, el **Caso C** daría error. Te obligaría a que o ambos sean valores válidos, o ambos sean `NULL`, pero nunca uno sí y el otro no.
+
+
+
+
+ 
+
+```sql
+
 ******************** CREANDO TABLAS ****************
 
 CREATE TABLE fruit_catalog (
