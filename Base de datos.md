@@ -15,7 +15,7 @@ Es aprender todo lo que podemos hacer solo con la base de datos
 createdb -p 5432 mytestdba -E "UTF8" -O postgres -T template0
 
 -- [NOTA] si no especificas el template, se basara en el template1 para crear la nueva Base de datos.
-    CREATE DATABASE "mytestdba" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US';
+    CREATE DATABASE "mytestdba" WITH TEMPLATE = template0 ENCODING = 'SQL_ASCII' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
     
     **Parametros adicionales que le puedes agregar en el with**
        OWNER = postgesql
