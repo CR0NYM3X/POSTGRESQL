@@ -15,6 +15,9 @@
 [pg_stat_monitor](https://github.com/CR0NYM3X/pg_stat_monitor) : función avanzada para PostgreSQL que fusiona estadísticas internas de sesión (pg_stat_activity) con métricas de procesos extraídas directamente del sistema operativo. Permite visualizar en tiempo real el uso de recursos y comportamiento de cada proceso backend del servidor.
 
 
+[pg_logify](https://github.com/CR0NYM3X/pg_logify) : es una función (framework) para PostgreSQL que sirve para mejorar el sistema de logs y auditoría en funciones PL/pgSQL.  imprimir mensajes en sistemas que soporten colores ANSI. Guarda los mensajes automáticamente tanto en una tabla o archivo externo del sistema.
+
+
 [pg_pie](https://github.com/CR0NYM3X/pg_pie) :  función de PostgreSQL que permite "dibujar" gráficos circulares y medidores de porcentaje directamente en tu terminal usando psql.
 
 [pg_progress](https://github.com/CR0NYM3X/pg_progress) :  funcion ligera para PostgreSQL escrita en PL/pgSQL que permite renderizar barras de progreso dinámicas, coloridas y personalizables directamente en la consola de psql
@@ -26,6 +29,5 @@ pg_privileges      -> https://github.com/CR0NYM3X/pg_privileges
 pgAuditSimple      -> https://github.com/CR0NYM3X/pgAuditSimple
 pgVaultLog         -> https://github.com/CR0NYM3X/pgVaultLog
 pg_prttb           -> https://github.com/CR0NYM3X/pg_prttb
-pg_logify          -> https://github.com/CR0NYM3X/pg_logify
 SQLMeta-Tracker    -> https://github.com/CR0NYM3X/SQLMeta-Tracker
 ```
