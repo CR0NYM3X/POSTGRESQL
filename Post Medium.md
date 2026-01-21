@@ -183,6 +183,8 @@ https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-po
 ```
 PostgreSQL Memory Optimization & Performance Tuning  -> https://medium.com/@kunwarishan/postgresql-memory-optimization-performance-tuning-playbook-for-cloud-and-self-managed-fdf43095f6e4
 
+PostgreSQL Just Got Its Biggest Upgrade That Will Change Database Performance in 2026 -> https://medium.com/@DevBoostLab/postgresql-17-performance-upgrade-2026-f4222e71f577
+
 El ritual de invocación del asesino de OOM: "Solo aumenta work_mem" -> https://drunkdba.medium.com/the-oom-killer-summoning-ritual-just-increase-work-mem-7afb4b22ec44
 
 Escalado de bases de datos con replicación, particionamiento y fragmentación -> https://medium.com/@vinodbokare0588/scaling-databases-with-replication-partitioning-and-sharding-4d0a006adfe3
