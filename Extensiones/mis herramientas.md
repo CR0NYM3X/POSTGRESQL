@@ -24,10 +24,11 @@
 
 # Scripts en DESARROLLO
 ```
-pg_background_mgr  -> https://github.com/CR0NYM3X/pg_background_mgr
 pg_privileges      -> https://github.com/CR0NYM3X/pg_privileges
-pgAuditSimple      -> https://github.com/CR0NYM3X/pgAuditSimple
-pgVaultLog         -> https://github.com/CR0NYM3X/pgVaultLog
 pg_prttb           -> https://github.com/CR0NYM3X/pg_prttb
+pgAuditSimple      -> https://github.com/CR0NYM3X/pgAuditSimple
+
+pg_background_mgr  -> https://github.com/CR0NYM3X/pg_background_mgr
+pgVaultLog         -> https://github.com/CR0NYM3X/pgVaultLog
 SQLMeta-Tracker    -> https://github.com/CR0NYM3X/SQLMeta-Tracker
 ```
