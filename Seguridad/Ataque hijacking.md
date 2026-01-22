@@ -576,7 +576,7 @@ ORDER BY a.routine_schema,a.routine_name ;
 (1 row)
 
 
----4 ) Valida si el usuario tiene permisos de public , esto porque el usuario public tiene el permiso por default
+---4 ) Valida si el usuario PUBLIC tiene permisos de CREATE , esto porque el usuario public tiene el permiso por default
 postgres@test# SELECT has_schema_privilege('public', 'public', 'CREATE');
 +----------------------+
 | has_schema_privilege |
