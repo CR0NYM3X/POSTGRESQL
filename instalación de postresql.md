@@ -1024,6 +1024,8 @@ huge_pages = on  # En lugar de 'try'
 
 ### Links de referenicias 
 ```bash
+https://github.com/howtomgr/databases
+
 https://tomasz-gintowt.medium.com/tuning-ubuntu-debian-pod-postgresql-ea1bb71633d8
 Install and configure PostgreSQL Ubuntu - https://documentation.ubuntu.com/server/how-to/databases/install-postgresql/
 https://wiki.postgresql.org/wiki/Apt
