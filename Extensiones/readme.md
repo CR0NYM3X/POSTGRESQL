@@ -72,6 +72,9 @@ Babelfish for PostgreSQL :es una capa de traducción de código abierto que perm
 
 6.- Validaciones
 - ** plpgsql_check:** Extiende el lenguaje PL/pgSQL con herramientas de validación y optimización, detectando posibles problemas de rendimiento en funciones y procedimientos almacenados.
+
+pgstigcheck-inspec -> https://github.com/CrunchyData/pgstigcheck-inspec ->   herramienta de automatización para auditoría y cumplimiento) diseñado específicamente para verificar si tu base de datos PostgreSQL cumple con la STIG (Security Technical Implementation Guide) de la DISA (Defense Information Systems Agency) de los Estados Unidos.
+
 --------------------------------------------------------------------------------------
 
 ### **5. Ejecucion de tareas programadas :**
