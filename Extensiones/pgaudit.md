@@ -147,6 +147,6 @@ https://github.com/pgaudit/pgaudit_analyze
 https://supabase.com/docs/guides/database/extensions/pgaudit
 
 
-
+https://neon.com/blog/postgres-logging-vs-pgaudit
 ```
 
