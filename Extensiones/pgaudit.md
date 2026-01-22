@@ -4,7 +4,7 @@
 
 ## 1. ¿Qué es pgAudit?
 
-**pgAudit** (PostgreSQL Audit Extension) es una extensión de código abierto diseñada para proporcionar registros de auditoría detallados y granulares en PostgreSQL.
+**pgAudit** La extensión nació originalmente en 2ndQuadrant (una de las empresas más influyentes en la historia de PostgreSQL, ahora parte de EDB). (PostgreSQL Audit Extension) es una extensión de código abierto diseñada para proporcionar registros de auditoría detallados y granulares en PostgreSQL.
 
 A diferencia del registro (logging) estándar de PostgreSQL, que está orientado a la depuración y resolución de errores, **pgAudit está diseñado para cumplir con requisitos de seguridad y cumplimiento (compliance)**.
 
