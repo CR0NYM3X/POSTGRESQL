@@ -535,4 +535,6 @@ Data Anonymization on AWS for RDS or Aurora PostgreSQL: A Practical Approach Usi
 
 Postgres Security 101: PostgreSQL Settings (6/8) -> https://ozwizard.medium.com/postgres-security-101-postgresql-settings-6-8-889f7c486e2b
 
+http://github.com/google/security-research/security/advisories/GHSA-468r-mhwc-vxjc
+
 ```
