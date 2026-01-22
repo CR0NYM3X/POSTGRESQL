@@ -29,6 +29,7 @@ stackgres  -> https://github.com/ongres/stackgres - https://stackgres.io/blog/st
 Zalado postgres-operator : https://github.com/zalando/postgres-operator
 CloudNativePG : es un "Operador" de código abierto diseñado específicamente para PostgreSQL. Un operador es un software que extiende la funcionalidad de Kubernetes para que sepa cómo manejar aplicaciones complejas que tienen "estado" (como una base de datos). Su propósito principal es que no tengas que configurar manualmente la alta disponibilidad, los respaldos o las actualizaciones de Postgres. Tú solo le dices "quiero un clúster de 3 nodos" en un archivo de configuración, y el operador hace todo el trabajo sucio.
 
+pgsty/pigsty ->  cumple funciones similares de automatización, Está diseñado para instalarse directamente sobre el sistema operativo Linux (Ubuntu, RHEL, Debian). Utiliza Ansible  -> https://github.com/pgsty/pigsty
 
 
 ### Herramientas de migracion ####
