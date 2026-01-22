@@ -105,6 +105,7 @@ pgauditlogtofile -> complemento de pgaudit para no contaminar el log de postgres
    - **Características**: Cifrado de tablas y columnas, gestión de claves de cifrado, integración con módulos de seguridad de hardware (HSM).
 
 3. **pgaudit**:
+	https://supabase.com/docs/guides/database/extensions/pgaudit
    - **Descripción**: Herramienta de auditoría que permite registrar y analizar eventos de seguridad en PostgreSQL.
    - **Características**: Registro de eventos de seguridad, análisis de logs, generación de informes de auditoría.
 
