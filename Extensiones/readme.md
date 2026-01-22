@@ -54,7 +54,8 @@ Babelfish for PostgreSQL :es una capa de traducción de código abierto que perm
 3. Hardening y Gestión de Conexiones
 
 	PgBouncer: Proxy ligero para limitar conexiones y prevenir abusos.
-	OPM: Monitoreo especializado para PostgreSQL con alertas avanzadas.
+	proxysql -> https://github.com/sysown/proxysql
+
 
 
 
@@ -75,6 +76,12 @@ Babelfish for PostgreSQL :es una capa de traducción de código abierto que perm
 - ** plpgsql_check:** Extiende el lenguaje PL/pgSQL con herramientas de validación y optimización, detectando posibles problemas de rendimiento en funciones y procedimientos almacenados.
 
 pgstigcheck-inspec -> https://github.com/CrunchyData/pgstigcheck-inspec ->   herramienta de automatización para auditoría y cumplimiento) diseñado específicamente para verificar si tu base de datos PostgreSQL cumple con la STIG (Security Technical Implementation Guide) de la DISA (Defense Information Systems Agency) de los Estados Unidos.
+
+
+
+https://github.com/okbob/session_exec
+pg_datamask  --- Enmascaramiento en postgresql  https://www.cybertec-postgresql.com/en/products/data-masking-for-postgresql/
+PostgreSQL Anonymizer --- postgresql_anonymizer_16.x86_64  Enmascaramiento en postgresql   https://postgresql-anonymizer.readthedocs.io/en/stable/ 
 
 --------------------------------------------------------------------------------------
 
@@ -191,7 +198,7 @@ Comunicación segura entre servicios.
 - ** sepgsql:** Integra PostgreSQL con SELinux para aplicar políticas de seguridad a nivel de sistema operativo. Esto añade una capa adicional de control de acceso basada en roles de seguridad de SELinux.
 SE-PostgreSQL: Implementa políticas de seguridad obligatoria (MAC) basadas en SELinux
 
-
+ 
 
 
 
@@ -201,8 +208,8 @@ SE-PostgreSQL: Implementa políticas de seguridad obligatoria (MAC) basadas en S
 
 ************ MONITOREO DE LOGS ************
 
-pg_proctab ---> https://github.com/markwkm/pg_proctab/tree/main
-
+pg_proctab ---> consultar información del sistema operativo directamente mediante comandos SQL, sin necesidad de salir de la terminal de Postgres  https://github.com/markwkm/pg_proctab/tree/main
+OPM -> https://opm.readthedocs.io/index.html
 temboard  -> es una herramienta de código abierto y gratuita para monitorear, Alertas y notificaciones y administrar instancias de PostgreSQL  https://github.com/dalibo/temboard/?tab=readme-ov-file
 pgwatch2 -> Monitoreo general 
 pgAudit: Registra operaciones sensibles como DDL y DML.
@@ -613,16 +620,7 @@ https://github.com/dhamaniasad/awesome-postgres
 
 https://www.timescale.com/blog/top-8-postgresql-extensions/
 
---- Forma de hacer un trigger para login
-https://www.dbi-services.com/blog/postgresql-17-login-event-triggers/
-
-https://github.com/okbob/session_exec
-
-
-
-
-pg_datamask  --- Enmascaramiento en postgresql  https://www.cybertec-postgresql.com/en/products/data-masking-for-postgresql/
-PostgreSQL Anonymizer --- postgresql_anonymizer_16.x86_64  Enmascaramiento en postgresql   https://postgresql-anonymizer.readthedocs.io/en/stable/ 
+ 
  
 ---- crear extensiones: https://postgresconf.org/system/events/document/000/001/158/pg-extensions.pdf 
 
