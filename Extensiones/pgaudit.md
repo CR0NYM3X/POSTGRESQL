@@ -83,7 +83,7 @@ AUDIT: SESSION,1,1,READ,SELECT,TABLE,public.historial_medico,
 1. **pgAudit:** Genera el dato.
 2. **pgauditlogtofile:** Separa el dato en un archivo limpio.
 3. **pg_permissions:** Audita los permisos preventivamente.
-
+4. **pgaudit_analyze**  Este es el compañero más directo. Es un script diseñado específicamente para leer los logs generados por pgAudit e insertarlos en una base de datos para su análisis posterior.
  
 
 ---
@@ -142,7 +142,7 @@ Configuras la extensión para que:
 ```
 pgaudit -> https://github.com/pgaudit/pgaudit
 pgauditlogtofile -> https://github.com/df7cb/pgauditlogtofile
-
+https://github.com/pgaudit/pgaudit_analyze
 
 https://supabase.com/docs/guides/database/extensions/pgaudit
 
