@@ -126,6 +126,8 @@ Registro detallado de actividades y validación de la integridad del sistema fre
 * **pg_track_settings:** Registra históricamente cualquier cambio en los parámetros de configuración de PostgreSQL, permitiendo detectar modificaciones no autorizadas.
 * [Repositorio/Web](https://www.google.com/search?q=https://github.com/voppman/pg_track_settings)
 
+* **config_log:** Extensión que registra cualquier cambio en los parámetros de configuración en tablas de la base de datos, facilitando la auditoría de integridad operativa.
+* [Repositorio](https://github.com/ibarwick/config_log)
 
 * **pg_filedump:** Herramienta esencial para análisis forense y recuperación. Permite leer archivos de datos directamente del disco para investigar corrupción o extraer datos de motores caídos.
 * [Repositorio/Web](https://github.com/df7cb/pg_filedump)
@@ -232,8 +234,6 @@ Mecanismos para prevenir errores humanos críticos y rastrear cambios en el comp
 * [Repositorio](https://github.com/vibhorkum/edb_block_commands)
 
 
-* **config_log:** Extensión que registra cualquier cambio en los parámetros de configuración en tablas de la base de datos, facilitando la auditoría de integridad operativa.
-* [Repositorio](https://github.com/ibarwick/config_log)
 
 
 * **monitoring_role:** Facilita la creación de roles de solo lectura para herramientas de monitoreo (Zabbix/Prometheus) en versiones antiguas de PostgreSQL, protegiendo la privacidad de los datos.
