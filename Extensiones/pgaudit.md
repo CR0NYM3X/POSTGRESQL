@@ -138,6 +138,35 @@ Configuras la extensión para que:
 
 **En resumen:** Usa **pgAudit** para generar la información y **pgauditlogtofile** para que esa información no sea un caos y sea fácil de administrar por separado.
 
+---
+
+
+
+
+# 1. Propósitos Distintos log vs pgaudit
+
+* **Logging Nativo:** Está diseñado para **operaciones y resolución de problemas (troubleshooting)**. Te dice si una consulta fue lenta, si hubo un error o si se perdió una conexión. Es una herramienta para DBAs.
+* **pgAudit:** Está diseñado para **cumplimiento y auditoría**. Su objetivo es proporcionar un rastro detallado de "quién hizo qué y cuándo" para satisfacer auditorías gubernamentales o financieras.
+
+### 2. Diferencias Técnicas Clave
+
+El artículo destaca 5 áreas donde pgAudit supera al logging estándar:
+
+* **Estructura y Claridad:** Mientras que el log nativo es verboso y desordenado, pgAudit genera líneas con el prefijo `AUDIT:` y un formato CSV consistente que facilita su análisis por herramientas externas (como SIEMs).
+* **Seguridad de Datos (Redacción):** El logging nativo puede exponer contraseñas en texto plano en los archivos de log (ej. al ejecutar `CREATE USER`). **pgAudit redacta automáticamente** información sensible, sustituyéndola por `<REDACTED>`.
+* **Categorización de Operaciones:** pgAudit etiqueta cada acción explícitamente como `READ`, `WRITE`, `DDL` o `ROLE`. Esto permite que un auditor busque rápidamente "todos los accesos de lectura a datos sensibles" sin tener que interpretar cada consulta SQL manualmente.
+* **Rastreo de Sesiones:** Incluye IDs de sesión y contadores de sentencias que permiten reconstruir exactamente el flujo de consultas de un usuario, facilitando la forense digital.
+* **Granularidad:** Permite auditar objetos específicos (Tablas) o sesiones completas, lo que ayuda a balancear el nivel de detalle vs. el impacto en el rendimiento.
+
+### 3. Mejores Prácticas mencionadas
+
+Neon recomienda no quedarse solo con la generación de logs, sino:
+
+1. **Centralizar:** Enviar los logs a un repositorio externo (Splunk, ELK, Datadog).
+2. **Alertar:** Configurar alertas automáticas ante actividades sospechosas.
+3. **Retener:** Mantener los logs por periodos largos (HIPAA exige 6 años).
+
+
 # Links
 ```
 pgaudit -> https://github.com/pgaudit/pgaudit
