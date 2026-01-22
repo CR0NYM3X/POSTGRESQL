@@ -517,7 +517,80 @@ https://github.com/citusdata/cstore_fdw
 
 ```
 
+----
 
+
+### Resumen para tu repositorio:
+
+Si estás armando un ecosistema de herramientas, podrías agruparlas así:
+
+1. **Seguridad:** `edb_block_commands`, `monitoring_role`.
+2. **Búsqueda avanzada:** `zombodb`, `pg_search`.
+3. **Análisis de datos masivos (Big Data):** `pipelinedb`, `pg-strom`.
+4. **Geospatial:** `dumppoints`.
+
+
+### 1. [edb_block_commands](https://github.com/vibhorkum/edb_block_commands)
+
+**¿Qué es?**
+Es una extensión diseñada para bloquear comandos SQL específicos a nivel de base de datos. Permite a los administradores prohibir el uso de comandos peligrosos (como `DROP TABLE` o `TRUNCATE`) incluso para usuarios que normalmente tendrían permiso para ejecutarlos.
+
+* **Caso de uso real:** En un entorno de **Producción Crítico**, quieres evitar que un administrador, por un error de dedo o un script mal configurado, borre una tabla importante. Configuras la extensión para bloquear `DROP TABLE` y `TRUNCATE` en horario laboral, obligando a que cualquier cambio estructural pase por un proceso manual de desbloqueo.
+ 
+ 
+ 
+
+### 2. [monitoring_role](https://github.com/frost242/monitoring_role)
+
+**¿Qué es?**
+Es un script/herramienta de ayuda para versiones antiguas de PostgreSQL (anteriores a la 10) que facilita la creación de un usuario con permisos de "solo monitoreo". En versiones modernas de Postgres esto ya viene incluido (`pg_monitor`), pero este repo soluciona el problema de dar acceso a métricas sin dar acceso a los datos.
+
+* **Caso de uso real:** Tienes un servidor de **Zabbix o Prometheus** que necesita conectarse a tu base de datos para medir el uso de CPU y el tamaño de las tablas, pero no quieres que el usuario del monitor pueda ver los saldos de las cuentas de tus clientes por razones de privacidad.
+
+ 
+### 3. [pipelinedb](https://github.com/pipelinedb/pipelinedb)
+
+**¿Qué es?**
+Es una extensión (antiguamente una base de datos propia) para **Streaming de Datos**. Permite ejecutar consultas continuas sobre flujos de datos en tiempo real. En lugar de guardar los datos y luego consultarlos, PipelineDB calcula los resultados (agregaciones) a medida que los datos entran y solo guarda el resultado final.
+
+* **Caso de uso real:** Una aplicación de **Internet de las Cosas (IoT)** que recibe 10,000 lecturas de temperatura por segundo. No quieres guardar millones de filas; solo quieres saber el "promedio por minuto". PipelineDB procesa el flujo en memoria y solo guarda una fila por minuto con el promedio calculado.
+
+ 
+
+### 4. [zombodb](https://github.com/zombodb/zombodb)
+
+**¿Qué es?**
+Es una integración profunda entre **PostgreSQL y Elasticsearch**. Permite que los índices de tus tablas en Postgres sean en realidad índices de Elasticsearch. Esto te da la potencia de búsqueda "Full-Text" (borrosa, por relevancia, autocompletado) de Elasticsearch usando SQL estándar.
+
+* **Caso de uso real:** Tienes una **Tienda Online** con millones de productos. Quieres que cuando un usuario busque "zapato azul", el sistema devuelva resultados incluso si hay errores tipográficos o sinónimos. Usas ZomboDB para buscar en Elasticsearch desde Postgres con un simple `SELECT * FROM productos WHERE nombre ==> 'zapato azul'`.
+
+ 
+
+### 5. [pg_search (de ParadeDB)](https://github.com/paradedb/paradedb/tree/main/pg_search)
+
+**¿Qué es?**
+Es el sucesor moderno e interno de ParadeDB para búsquedas. Utiliza el motor **Tantivy** (escrito en Rust) para dar capacidades de búsqueda rápida tipo Elasticsearch pero *dentro* de PostgreSQL, sin necesidad de un servidor externo de Elasticsearch.
+
+* **Caso de uso real:** Quieres la velocidad de búsqueda de un motor dedicado (como Algolia o Elasticsearch) pero **no quieres gestionar otro servidor**. Instalas esta extensión y tus búsquedas de texto en documentos legales o artículos de blog se vuelven 100 veces más rápidas que el `LIKE` o `tsvector` tradicional.
+
+ 
+
+### 6. [pg-strom](https://github.com/heterodb/pg-strom)
+
+**¿Qué es?**
+Es una extensión de alto rendimiento que permite a PostgreSQL utilizar la **GPU (tarjeta gráfica)** y el almacenamiento NVME directo para procesar consultas. Está diseñada para Big Data y analítica pesada.
+
+* **Caso de uso real:** Una empresa de **Telecomunicaciones** que analiza billones de registros de llamadas (CDR) para detectar fraude. En lugar de que la CPU del servidor se sature procesando millones de sumas, pg-strom envía la carga a una tarjeta NVIDIA, reduciendo el tiempo de consulta de horas a segundos.
+
+ 
+
+### 7. [dumppoints](https://github.com/nmandery/dumppoints)
+
+**¿Qué es?**
+Es una herramienta muy específica para **PostGIS** (geografía en Postgres). Sirve para extraer los puntos individuales de geometrías complejas (como líneas o polígonos) de forma eficiente.
+
+* **Caso de uso real:** Tienes un mapa de una **red de carreteras** (líneas) y necesitas extraer cada coordenada (latitud/longitud) de las curvas para enviarlas a un GPS que solo entiende puntos simples. Esta herramienta "desarma" la carretera en sus puntos constituyentes de forma masiva.
+ 
 
 
 ## Blibliografía
