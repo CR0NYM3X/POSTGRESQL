@@ -996,7 +996,7 @@ https://postgresconf.org/system/events/document/000/001/086/plpgsql.pdf
 
 ---
 
-
+# Funciones de ventana
  
 ## 2. Funciones de Ranking
 
