@@ -442,7 +442,7 @@ El formato `%L` se utiliza para formatear literales SQL y coloca comillas simple
  
   
  select format(nada, 'mundo') from (select 'hola %L' as nada);
-  
+select  format('hola %2$L %3$L %1$L ', ' uno ', ' dos ', ' tres '); -->   hola ' dos ' ' tres ' ' uno ' -> con % y el numero le indicas el valor que quieres que agarrre 
 SELECT FORMAT('Hola, %s', 'PostgreSQL'); --- Hola, PostgreSQL 
 SELECT FORMAT('El número es: %s', 12345);---- El número es: 12345 
 SELECT FORMAT('Nombre: %s, Edad: %s', 'Juan', 30); --- Nombre: Juan, Edad: 30
