@@ -15,10 +15,9 @@ Las funciones devuelven un valor, ya sea un valor escalar o una tabla, y pueden 
 **Ventajas  de usar PROCEDIMIENTO ALMACENADO:**
  Su capacidad única de manejar transacciones (COMMIT/ROLLBACK). Esto es algo que una función NUNCA podrá hacer.
 
+
 # Tipos de funciones  
 ```sql
-
-
 
 **Funciones SQL**: Estas funciones están escritas en el lenguaje SQL y son ideales para operaciones simples y directas.
 /*no necesitas el bloque BEGIN...END porque sql es un lenguaje de consulta directa.  */ 
@@ -52,7 +51,7 @@ select * from fn_articulos(1);
    SELECT depname, empno, salary, 
           avg(salary) OVER (PARTITION BY depname) AS avg_salary
    FROM empsalary;
- 
+
 
 **Funciones agregadas**: Realizan cálculos sobre un conjunto de valores y devuelven un solo valor.
 
@@ -67,8 +66,6 @@ select * from fn_articulos(1);
        RETURN NEW;
    END;
    $$ LANGUAGE plpgsql;
- 
-
 ```
 
 
@@ -997,5 +994,82 @@ https://postgresconf.org/system/events/document/000/001/086/plpgsql.pdf
 
 
 
+---
+
+
+ 
+## 2. Funciones de Ranking
+
+Estas funciones asignan un número o posición a cada fila dentro de su partición.
+
+| Función | Descripción |
+| --- | --- |
+| **`row_number()`** | Número secuencial único para cada fila. |
+| **`rank()`** | Ranking con huecos si hay empates (ej: 1, 2, 2, 4). |
+| **`dense_rank()`** | Ranking sin huecos (ej: 1, 2, 2, 3). |
+| **`percent_rank()`** | Ranking relativo de la fila: . |
+| **`cume_dist()`** | Distribución acumulada: (filas anteriores o iguales) / total_filas. |
+| **`ntile(n)`** | Divide las filas en *n* grupos iguales y asigna el número de grupo. |
+
+
+## 3. Funciones de Valor (Offset)
+
+Permiten acceder a datos de otras filas sin necesidad de hacer un *Self-Join*.
+
+| Función | Descripción |
+| --- | --- |
+| **`lag(val, offset)`** | Accede al valor de la fila **anterior**. |
+| **`lead(val, offset)`** | Accede al valor de la fila **siguiente**. |
+| **`first_value(val)`** | Devuelve el valor de la **primera** fila del marco de la ventana. |
+| **`last_value(val)`** | Devuelve el valor de la **última** fila del marco de la ventana. |
+| **`nth_value(val, n)`** | Devuelve el valor de la **n-ésima** fila del marco. |
+
+
+### Ejemplo: Ranking de empleados por salario
+```
+SELECT 
+    nombre, 
+    departamento, 
+    salario,
+    ROW_NUMBER() OVER (PARTITION BY departamento ORDER BY salario DESC) as posicion_depto,
+    RANK() OVER (ORDER BY salario DESC) as ranking_global
+FROM empleados;
+```
+### Ejemplo: Comparar ventas con el mes anterior
+
+```
+SELECT 
+    mes, 
+    ventas,
+    LAG(ventas) OVER (ORDER BY mes) as ventas_mes_anterior,
+    ventas - LAG(ventas) OVER (ORDER BY mes) as diferencia
+FROM ventas_mensuales;
+```
+
+
+
+## 1. Funciones de Agregado como Ventana
+
+Cualquier función de agregado estándar (`SUM`, `AVG`, `COUNT`, `MAX`, `MIN`) puede usarse como función de ventana añadiendo la cláusula `OVER`.
+```
+### Ejemplo: Suma acumulada
+
+SELECT 
+    fecha, 
+    ventas,
+    SUM(ventas) OVER (ORDER BY fecha) as suma_acumulada
+FROM ventas_diarias;
+```
+
+## Estructura de la Cláusula `OVER`
+
+Para que estas funciones funcionen, necesitas definir la "ventana" usando tres componentes opcionales:
+
+1. **`PARTITION BY`**: Reinicia el cálculo cada vez que cambia el valor de la columna (ej: por departamento).
+2. **`ORDER BY`**: Define el orden lógico en el que se procesan las filas.
+3. **`ROWS/RANGE`**: Define el "marco" (frame), es decir, cuántas filas antes o después de la actual incluir en el cálculo.
+
+> **Nota Importante:** Las funciones de ventana se ejecutan **después** de las cláusulas `WHERE`, `GROUP BY` y `HAVING`. Por eso, si quieres filtrar por el resultado de una función de ventana, debes usar una Subquery o un CTE (Common Table Expression).
+ 
 
 
