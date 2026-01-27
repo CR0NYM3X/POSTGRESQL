@@ -32,10 +32,13 @@ Esta guía consolida las herramientas esenciales para blindar PostgreSQL, organi
 
 ### 🔑 Autenticación y Gestión de Secretos
 
+* **Infisical:**    Gestión centralizada y rotación dinámica de credenciales. más simple que Vault.  El "Vault" para Desarrolladores
+* **OpenBao (El "Fork" Comunitario):**   Gestión centralizada y rotación dinámica de credenciales. totalmente open source  Es 100% compatible con los comandos, APIs y plugins de Vault. Si ya sabes usar Vault
 * **[HashiCorp Vault](https://github.com/hashicorp/vault):** Gestión centralizada y rotación dinámica de credenciales.
 * **[Security Vault Credential Broker](https://github.com/padok-team/security-vault-credential-broker):** Intermediario para inyectar credenciales dinámicas de Vault.
 * **[Ldap2pg](https://github.com/dalibo/ldap2pg):** Sincronización automática de roles y permisos con LDAP/Active Directory.
 * **[pg_auth_mon](https://github.com/RafiaSabih/pg_auth_mon):** Monitor de eventos de login para detectar anomalías.
+
 
 ### 📜 Políticas de Contraseñas y Ejecución
 
