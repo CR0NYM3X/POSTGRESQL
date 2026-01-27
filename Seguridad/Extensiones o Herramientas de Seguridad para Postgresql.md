@@ -140,4 +140,16 @@ Esta guía consolida las herramientas esenciales para blindar PostgreSQL, organi
 * **[sepgsql](https://www.postgresql.org/docs/current/sepgsql.html):** Control de acceso obligatorio (MAC) mediante SELinux.
 * **[edb_block_commands](https://github.com/vibhorkum/edb_block_commands):** Prevención de desastres bloqueando comandos como `DROP` o `TRUNCATE`.
 * **SE-PostgreSQL:** Políticas integradas con el Kernel de Linux para seguridad obligatoria.
- 
+
+* **Auditd (Linux Audit Framework):** Sistema de auditoría del kernel para rastrear accesos y modificaciones de archivos críticos (`pg_hba.conf`, `postgresql.conf`). Permite identificar el **AUID** (ID de usuario real) incluso tras una escalada de privilegios con `sudo`.
+* **AppArmor (PostgreSQL Profile):** Control de Acceso Obligatorio (MAC) basado en rutas para confinar el proceso de Postgres, limitando su capacidad de lectura/escritura únicamente a directorios autorizados por el perfil.
+* **SELinux (Postgres Policy):** Implementación de seguridad de grano fino mediante etiquetas de contexto, asegurando que solo procesos con el tipo `postgresql_t` puedan interactuar con los sockets y archivos de datos.
+
+### ⏱️ Monitoreo de Integridad en Tiempo Real
+
+* **inotify-tools:** Subsistema del kernel para el monitoreo inmediato de eventos en el sistema de archivos (modificaciones, aperturas o borrados de archivos de configuración).
+* **incron (inotify cron):** Programador de tareas basado en eventos de archivos que permite disparar scripts de reacción (alertas, rollbacks o backups) al detectarse cambios en el entorno de Postgres.
+
+### 🔍 Evaluación de Configuración y SO
+
+* **Lynis (PostgreSQL Audit Module):** Escáner de seguridad para sistemas Unix que audita la configuración del sistema operativo, permisos de archivos de datos y parámetros de red específicos para nodos de base de datos.
