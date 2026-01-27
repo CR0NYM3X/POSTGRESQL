@@ -732,3 +732,239 @@ END $$;
 - **LOOP/WHILE con chunks** → buena estrategia porque controlas el tamaño de cada lote y liberas memoria en cada iteración.
  
  
+
+
+---
+
+
+## 1) Evita agrupar por columnas funcionalmente dependientes (usa agregados deterministas)
+
+Si agregas por la **clave primaria** (o una combinación `UNIQUE`) de una tabla, **otras columnas de esa misma tabla son dependientes** y no deben ir al `GROUP BY`.  
+En PostgreSQL no puedes seleccionarlas “tal cual” sin agregar, pero **puedes usar un agregado determinista** (como `max()` o `min()`) para traer un valor consistente **sin expandir grupos**.
+
+**Mal (más trabajo del necesario):**
+
+```sql
+SELECT o.customer_id,
+       c.customer_name,
+       SUM(o.total_amount) AS total_spent
+FROM orders o
+JOIN customers c ON c.customer_id = o.customer_id
+GROUP BY o.customer_id, c.customer_name;  -- c.customer_name es dependiente de customer_id
+```
+
+**Mejor (menos cardinalidad en el agrupamiento):**
+
+```sql
+SELECT o.customer_id,
+       MAX(c.customer_name) AS customer_name,  -- determinista por PK
+       SUM(o.total_amount) AS total_spent
+FROM orders o
+JOIN customers c ON c.customer_id = o.customer_id
+GROUP BY o.customer_id;
+```
+
+**Por qué mejora:**  
+`GROUP BY` solo por `customer_id` hace menos grupos. `MAX(c.customer_name)` no cambia el resultado (es siempre el mismo valor por PK) y permite a PostgreSQL usar `HashAggregate` más pequeño y/o menos sorting.
+
+***
+
+## 2) Pre-agrega y luego “decora” (JOIN) en vez de agrupar por columnas de dimensiones
+
+**No metas columnas de dimensiones en el `GROUP BY` si solo las quieres para presentar.**  
+Primero agrega por la llave, luego haz `JOIN` para recuperar los atributos.
+
+**Mal:**
+
+```sql
+SELECT d.category_name, d.region_name, SUM(f.amount)
+FROM fact_sales f
+JOIN dim_store d ON d.store_id = f.store_id
+GROUP BY d.category_name, d.region_name;  -- demasiadas columnas del dim
+```
+
+**Mejor (dos pasos):**
+
+```sql
+WITH agg AS (
+  SELECT store_id, SUM(amount) AS amt
+  FROM fact_sales
+  GROUP BY store_id
+)
+SELECT d.category_name, d.region_name, a.amt
+FROM agg a
+JOIN dim_store d ON d.store_id = a.store_id;
+```
+
+**Ventaja:** agregas en la tabla **grande** con **menor cardinalidad**, y luego solo añades texto/atributos.
+
+***
+
+## 3) Usa `DISTINCT ON` para “una fila por grupo” (con orden)
+
+Cuando solo necesitas **una fila representativa por grupo** (p. ej., la última compra por cliente), evita `GROUP BY` + `MAX()` + `JOIN` de vuelta. `DISTINCT ON` es **muy eficiente** en PostgreSQL si está bien indexado.
+
+**Con `GROUP BY` + `MAX` (2 fases):**
+
+```sql
+WITH last_order AS (
+  SELECT customer_id, MAX(created_at) AS last_created
+  FROM orders
+  GROUP BY customer_id
+)
+SELECT o.*
+FROM orders o
+JOIN last_order lo
+  ON lo.customer_id = o.customer_id AND lo.last_created = o.created_at;
+```
+
+**Más simple y rápido con `DISTINCT ON`:**
+
+```sql
+SELECT DISTINCT ON (customer_id) o.*
+FROM orders o
+ORDER BY customer_id, created_at DESC;  -- elige la última por cliente
+```
+
+**Tip de rendimiento:** índice recomendado `(customer_id, created_at DESC)`.
+
+***
+
+## 4) `COUNT(DISTINCT ...)` en lugar de agrupar por la columna individual
+
+Si quieres **conteos distintos** por una dimensión (fecha, cliente, etc.), **no agrupe por la segunda columna**; usa `COUNT(DISTINCT)`.
+
+**Mal (más grupos):**
+
+```sql
+-- ¿Cuántos usuarios únicos por día?
+SELECT date_trunc('day', created_at) AS d, user_id, COUNT(*)  -- aquí sobran grupos
+FROM events
+GROUP BY 1, 2;
+```
+
+**Mejor:**
+
+```sql
+SELECT date_trunc('day', created_at) AS d, COUNT(DISTINCT user_id) AS users
+FROM events
+GROUP BY 1;
+```
+
+**Beneficio:** menos cardinalidad → menos memoria/CPU.
+
+***
+
+## 5) Evita agrupar por banderas/derivadas si puedes usar agregados con filtro
+
+No metas una columna booleana en el `GROUP BY` solo para contar condicionalmente.
+
+**Mal:**
+
+```sql
+SELECT customer_id, is_active, COUNT(*) 
+FROM customers
+GROUP BY customer_id, is_active;
+```
+
+**Mejor (agregados con filtro / `FILTER`):**
+
+```sql
+SELECT customer_id,
+       COUNT(*) FILTER (WHERE is_active) AS active_count,
+       COUNT(*) FILTER (WHERE NOT is_active) AS inactive_count
+FROM customers
+GROUP BY customer_id;
+```
+
+**Otra variante (para “sí/no”):**
+
+```sql
+SELECT customer_id,
+       BOOL_OR(is_active) AS any_active
+FROM customers
+GROUP BY customer_id;
+```
+
+***
+
+## 6) Enriquecimiento por la “última versión” con ventanas en lugar de agrupar
+
+Cuando necesitas el **último estado** por entidad, evita `GROUP BY` + `MAX` + `JOIN`.
+
+```sql
+SELECT customer_id, status, updated_at
+FROM (
+  SELECT t.*,
+         ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY updated_at DESC) AS rn
+  FROM customer_status t
+) x
+WHERE rn = 1;
+```
+
+**Razonamiento:** Las ventanas no multiplican grupos; filtras una sola vez al final.
+
+***
+
+## 7) Quita columnas calculadas del `GROUP BY`
+
+Si una columna es **derivada** (ej. `date_trunc`, `CASE`, `COALESCE`), agrupa por la **derivación**, no por la columna base **y** la derivada.
+
+**Mal:**
+
+```sql
+SELECT date_trunc('month', created_at) AS ym, created_at, COUNT(*)
+FROM orders
+GROUP BY 1, 2;  -- 'created_at' aquí sobra
+```
+
+**Mejor:**
+
+```sql
+SELECT date_trunc('month', created_at) AS ym, COUNT(*)
+FROM orders
+GROUP BY 1;
+```
+
+***
+
+## 8) Pre-agrupa antes de `JOIN` con tablas grandes (reduce explosión de filas)
+
+Si vas a unir una tabla de hechos a otra que puede **multiplicar filas**, **pre-agrega** primero.
+
+**Mal (JOIN primero, agrupa después):**
+
+```sql
+SELECT d.country, SUM(f.amount)
+FROM fact_payments f
+JOIN dim_user d ON d.user_id = f.user_id
+GROUP BY d.country;
+```
+
+**Mejor (pre-agrupación):**
+
+```sql
+WITH f_agg AS (
+  SELECT user_id, SUM(amount) AS amt
+  FROM fact_payments
+  GROUP BY user_id
+)
+SELECT d.country, SUM(fa.amt)
+FROM f_agg fa
+JOIN dim_user d ON d.user_id = fa.user_id
+GROUP BY d.country;
+```
+
+**Ganancia:** Menos datos cruzando el JOIN → menos cardinalidad en el `GROUP BY` final.
+
+***
+
+## Consejos de ejecución y verificación
+
+*   **Mira el plan:** `EXPLAIN (ANALYZE, BUFFERS)` para ver si usa `HashAggregate` (suele ser más rápido) o `GroupAggregate` (requiere ordenar).
+*   **Índices útiles:**
+    *   Para `DISTINCT ON (k) ORDER BY k, ts DESC` → índice `(k, ts DESC)`.
+    *   Para agrupar por keys de alta cardinalidad, a veces ayuda un índice para el orden requerido (si cae en `GroupAggregate`).
+*   **`work_mem`:** Si la agregación grande se desborda a disco, subir `work_mem` por sesión puede ayudar.  
+    Ejemplo: `SET work_mem = '256MB';` (ajústalo a tu carga).
+*   **Agregados con `FILTER` y `COUNT(DISTINCT ...)`** suelen reducir columnas en el `GROUP BY`.
