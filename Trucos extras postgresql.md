@@ -505,6 +505,7 @@ select round(1000 * EXTRACT(epoch FROM '2024-01-01 12:01:00'::TIMESTAMP - '2024-
 select age(timestamp '2011-10-01 ', timestamp '2011-11-01') --- saber los días que pasan 
 select ('2011-11-01'::date -  '2011-12-028'::date)--- saber los días que pasan  
 
+
 select to_char( timestamp'2009-12-31 11:25:50' , 'HH12:MI:SS') >  '12:26:52'
 SELECT to_char(now(), 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora;
 
@@ -543,7 +544,51 @@ SELECT DATE_PART('month', TIMESTAMP '2017-09-30'); -- Resultado: 9
 SELECT DATE_PART('year', TIMESTAMP '2017-01-01'); -- Resultado: 2017
 SELECT DATE_PART('century', TIMESTAMP '2017-01-01'); -- Resultado: 21
 
- 
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Trabajando con intervalos
+INTERVAL se utiliza para almacenar y manipular periodos de tiempo.
+A diferencia de TIMESTAMP o DATE, que representan un punto específico en el calendario, el INTERVAL representa una cantidad de tiempo (ej. "3 horas", "2 días" o "5 meses y 10 días").
+
+/*
+INTERVAL HOUR: Solo guarda horas. Si insertas 02:30:00, guardará 02:00:00.
+INTERVAL DAY: Solo guarda días.
+INTERVAL MONTH: Solo guarda meses.
+INTERVAL SECOND: Guarda hasta los segundos (es el comportamiento por defecto).
+INTERVAL HOUR TO MINUTE :	Horas y minutos	Es la que tú necesitas. Ignora segundos.
+INTERVAL DAY TO HOUR    :   Días y horas	Para duraciones largas donde los minutos no importan.
+INTERVAL DAY TO MINUTE  :	Días, horas y minutos	Muy común para tiempos de entrega o logística.
+INTERVAL YEAR TO MONTH  :	Años y meses
+*/
+
+
+CREATE TABLE registro_horas (
+    id serial PRIMARY KEY,
+    tiempo_invertido INTERVAL MINUTE -- Esto ignora los segundos
+);
+
+
+-- Opción 1: Formato de reloj (HH:MM)
+INSERT INTO registro_horas (tiempo_invertido) VALUES ('03:00');
+
+-- Opción 2: Formato descriptivo (muy legible)
+INSERT INTO registro_horas (tiempo_invertido) VALUES ('3 hours');
+
+-- Opción 3: Formato corto
+INSERT INTO registro_horas (tiempo_invertido) VALUES ('3h');
+
+-- Opción 4: Varias filas a la vez
+INSERT INTO registro_horas (tiempo_invertido) 
+VALUES 
+    ('01:30:55'), 
+    ('05:15:55'), 
+    ('10:00:55');
+
+
+SELECT *  FROM registro_horas;
+SELECT TO_CHAR(tiempo_invertido, 'HH24:MI') as horas_minutos  FROM registro_horas;
+
+
 ```
 
  
