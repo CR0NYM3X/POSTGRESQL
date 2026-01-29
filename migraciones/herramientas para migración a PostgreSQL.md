@@ -1,6 +1,10 @@
  
 ## 🧩 herramientas para migración a PostgreSQL
 
+
+
+
+
 ### 1. **Estuary Flow** – *De pago (con opción gratuita limitada)*
 - Migración en tiempo real con CDC (Change Data Capture).
 - Compatible con múltiples entornos (AWS, GCP, Azure, Supabase).
@@ -177,6 +181,22 @@
 7 Best Postgres Migration Tools in 2025 for Reliable Database Transfers -> https://estuary.dev/blog/postgres-migration-tools/
 7 Best PostgreSQL Database Migration Tools in 2025 -> https://www.ispirer.com/postgresql-database-migration-tools
 Best 6 Postgres Database Migration Tools For 2025 -> https://airbyte.com/top-etl-tools-for-sources/postgres-migration-tool
+
+
+--- Páginas que ayudan en migración -------
+
+https://pgfeaturediff.com/?from=17&to=18
+https://www.postgresql.org/about/featurematrix/
+https://why-upgrade.depesz.com/show?from=18&to=18.1&keywords=cve
+
+https://github.com/djrobstep/results
+https://www.postgrescompare.com/
+
+
+
 ```
+
+
+
 
 
