@@ -1266,13 +1266,14 @@ SELECT * FROM ONLY personas;
 
 ---
 
-# Ensuring Unique IDs in Partitioned PostgreSQL Tables 
+# Links
 ```
 
 ONLY  :se utiliza para especificar la tabla ,   sin afectar a sus tablas hijas
 CREATE INDEX index_name ON ONLY parent_table (column_name);
 
 
+https://www.youtube.com/watch?v=msWSlMR4xm0
 https://medium.com/@andriikrymus/ensuring-unique-ids-in-partitioned-postgresql-tables-84b0fa4cf814
 ```
 
