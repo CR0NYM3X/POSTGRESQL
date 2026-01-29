@@ -1,4 +1,4 @@
-
+ 
 # 🚀 ¿Por qué PostgreSQL tiene un límite de 32 TB por tabla?
 
 Muchos desarrolladores creen que las bases de datos son infinitas, pero PostgreSQL tiene reglas físicas grabadas en su código fuente. Si alguna vez te preguntaste de dónde sale el famoso número de **32 Terabytes**, aquí te desvelamos el misterio de la "Matemática del Almacenamiento".
@@ -17,7 +17,7 @@ En el código interno de PostgreSQL, el número de bloques que una sola tabla pu
 
 ## 3. La matemática del límite
 
-Hagamos el cálculo que define el post:
+Hagamos el cálculo:
 
 * **Capacidad de direccionamiento:** Un entero de 32 bits permite un máximo de  combinaciones.
 * **Total de bloques:** Eso significa que una tabla puede tener hasta **4,294,967,296 bloques**.
@@ -41,7 +41,7 @@ Al convertir esos bytes a unidades binarias (Terabytes):
 
 ---
 
-## Conclusión para tu post
+## Conclusión 
 
 El límite de 32 TB no es un error de diseño, sino un **compromiso de eficiencia**. Usar 32 bits para direccionar bloques mantiene los índices compactos y el rendimiento alto. Para el 99.9% de las aplicaciones, 32 TB es un océano de datos; para el otro 0.1%, el particionamiento es el mejor aliado.
 
@@ -50,20 +50,20 @@ El límite de 32 TB no es un error de diseño, sino un **compromiso de eficienci
 
 
 
-## Escenario 1: Primary Key con `BIGINT`
+### Escenario 1: Primary Key con BIGINT
 
-El tipo `BIGINT` es un entero de 8 bytes con signo.
+El tipo **BIGINT** es un entero de 8 bytes con signo.
 
-* **Rango de valores:** De  a .
-* **Capacidad lógica:** Aproximadamente **9 trillones** () de registros.
+* **Rango de valores:** De **$-9,223,372,036,854,775,808$** a **$9,223,372,036,854,775,807$.**.
+* **Capacidad lógica:** Aproximadamente **9 trillones** ($2^{63}-1$) de registros.
 * **Almacenamiento:** Ocupa **8 bytes** fijos.
 * **Comportamiento:** Generalmente se usa con `GENERATED ALWAYS AS IDENTITY`. Esto garantiza que los datos se inserten de forma secuencial.
 
-### Ventajas técnicas:
+**Ventajas técnicas:**
 
-1. **Índices compactos:** Al ser pequeño (8 bytes), el índice B-Tree resultante es muy eficiente y cabe más fácilmente en la memoria RAM (Buffer Cache).
-2. **Localidad de datos:** Como los insertos son secuenciales, se reduce la fragmentación del índice.
-3. **Rendimiento de Join:** Las comparaciones entre enteros son extremadamente rápidas a nivel de CPU.
+* **Índices compactos:** Al ser pequeño (8 bytes), el índice **B-Tree** resultante es muy eficiente y cabe más fácilmente en la memoria RAM (Buffer Cache).
+* **Localidad de datos:** Como los insertos son secuenciales, se reduce la fragmentación del índice y se mejora la velocidad de escritura física en disco.
+* **Rendimiento de Join:** Las comparaciones entre enteros son extremadamente rápidas a nivel de CPU comparadas con tipos de datos de texto o UUID.
 
 ---
 
@@ -141,3 +141,117 @@ Podrías añadir una sección llamada **"¿Cuándo deberías preocuparte?"**:
 > "Si tu tabla está llegando a los 10 TB, no esperes a los 32 TB. El problema no será el límite físico, sino que procesos como el `VACUUM` (la limpieza automática) o la creación de índices tardarán días en completarse. El particionamiento no es solo para el espacio, es para la cordura del administrador."
 
  
+---
+
+
+ 
+## 1. El concepto de "Direccionamiento"
+
+Imagina que una tabla es un libro gigante. Para que PostgreSQL encuentre información, cada "página" (bloque) del libro debe tener un **número de página único**.
+
+En el código fuente de PostgreSQL, el tipo de dato que se usa para asignar estos números de página es un **entero de 32 bits** (específicamente llamado `BlockNumber`).
+
+### ¿Por qué 32 bits equivalen a esa cifra?
+
+En computación, un bit puede ser 0 o 1. Un sistema de 32 bits permite crear combinaciones de ceros y unos hasta alcanzar el valor máximo de:
+
+
+```
+11111111 11111111 11111111 11111111 (2^32) = 4,294,967,296
+```
+
+Es decir, PostgreSQL solo tiene "nombres" o "números de serie" para identificar un máximo de **4,294 millones de bloques**. Si intentaras agregar el bloque número 4,294,967,297, el sistema no tendría un número de 32 bits para identificarlo.
+
+
+## 2. La matemática del límite de 32 TB
+
+Una vez que sabemos cuántos bloques podemos tener, simplemente multiplicamos por el tamaño de cada bloque (que por defecto es **8 KB**):
+
+1. **Total de bloques:** 
+2. **Tamaño por bloque:**  bytes ( KB)
+3. **Cálculo:**  bytes.
+
+Si convertimos esos bytes a Terabytes (usando base 1024):
+
+* 
+ 
+## 3. ¿Es este un límite insuperable?
+
+No es un límite absoluto de la tecnología, sino una decisión de diseño para equilibrar el rendimiento. Sin embargo, en el mundo real, rara vez llegas a chocar con esto por dos razones:
+
+* **Particionamiento:** Puedes dividir una tabla gigante en varias tablas más pequeñas (particiones). Cada partición tendrá su propio límite de 32 TB.
+* **Configuración al compilar:** Si alguien realmente necesitara tablas más grandes, podría cambiar el tamaño del bloque (a 16 KB o 32 KB) al momento de compilar PostgreSQL desde el código fuente, aunque esto no es lo habitual.
+
+---
+
+# Otros limites
+
+PostgreSQL es una bestia en cuanto a escalabilidad, pero como todo sistema basado en arquitectura de archivos, tiene límites físicos definidos por su estructura de bloques.
+
+
+## 1. Límites de Capacidad y Almacenamiento
+
+| Concepto | Límite | Observaciones |
+| --- | --- | --- |
+| **Tamaño máximo de tabla** | **32 TB** | Como vimos, es el límite de direccionar  bloques de 8 KB. |
+| **Tamaño máximo de fila** | **1.6 TB** | Una fila no puede ser más grande que la tabla, pero gracias a TOAST puede ser enorme. |
+| **Tamaño máximo de un campo/celda** | **1 GB** | El límite técnico para un solo valor (un `TEXT` o `BYTEA` muy largo). |
+| **Filas por tabla** | **Ilimitado** | No hay un número fijo de filas; el límite lo pone el espacio de 32 TB. |
+
+ 
+
+## 2. Límites de Columnas e Índices
+
+* **Columnas por tabla:** Entre **250 y 1,600**.
+* *¿Por qué varía?* Depende de los tipos de datos. Cada columna ocupa un espacio en el encabezado de la fila; si usas tipos de datos muy "pesados", el límite se acerca a 250.
+
+
+* **Columnas en un Índice:** Máximo **32**.
+* Si intentas crear un índice compuesto (que cubra varias columnas), no puedes pasar de 32. Este límite se puede aumentar si recompilas PostgreSQL.
+
+
+* **Índices por tabla:** **Ilimitado**.
+* Puedes crear tantos como quieras, pero recuerda que cada índice ralentiza las inserciones (`INSERT`).
+
+ 
+
+## 3. ¿Cómo cabe una fila de 1.6 TB en un bloque de 8 KB? (TOAST)
+
+Esta es la pregunta del millón. Si el bloque (la unidad mínima de lectura) mide solo 8 KB, ¿cómo es posible que un campo de texto mida 1 GB o una fila 1.6 TB?
+
+PostgreSQL usa una técnica llamada **TOAST** (*The Oversized-Attribute Storage Technique*):
+
+1. **Compresión:** Si una fila supera los 2 KB, PostgreSQL intenta comprimirla.
+2. **Almacenamiento "Fuera de línea":** Si aun comprimida es muy grande, PostgreSQL saca ese valor de la tabla principal y lo mueve a una **tabla secundaria (tabla TOAST)**.
+3. **Puntero:** En la tabla original, solo deja un "puntero" (una dirección) de unos cuantos bytes que dice: *"El resto del contenido está en la tabla TOAST"*.
+
+ 
+## 4. Otros límites importantes
+
+* **Identificadores (Nombres):** Los nombres de tablas, columnas o índices tienen un límite de **63 caracteres** por defecto.
+* **Particiones:** Aunque una tabla "hija" tiene el límite de 32 TB, puedes tener miles de particiones, lo que permite bases de datos de **Petabytes**.
+* **Conexiones simultáneas:** Depende de tu RAM, pero usualmente se configura entre 100 y 1000. Para más que eso, se usan "Poolers" como PgBouncer.
+
+ 
+### Un dato curioso sobre los 32 TB
+
+Si alguna vez llegas a llenar una tabla con 32 Terabytes, no necesitas borrar datos. La solución estándar es el **Particionamiento**. Al particionar por fecha (por ejemplo, una tabla por cada año), cada año vuelve a tener su propio límite de 32 TB, extendiendo la vida de tu base de datos indefinidamente.
+
+ 
+
+ 
+
+# links 
+```
+https://www.postgresql.org/docs/current/limits.html
+https://www.postgresql.org/docs/current/storage-toast.html
+
+https://stormatics.tech/blogs/postgresql-column-limits
+https://www.dbi-services.com/blog/what-is-the-maximum-number-of-columns-for-a-table-in-postgresql/
+https://www.enterprisedb.com/blog/postgresql-maximum-table-size
+https://www.postgresql.org/docs/current/storage.html
+
+```
+
+
+
