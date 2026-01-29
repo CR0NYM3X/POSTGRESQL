@@ -112,6 +112,11 @@ Al instalar este archivo RPM, se configura tu sistema para acceder al repositori
 -- Saber porque ocupas parchar 
 https://why-upgrade.depesz.com/show?from=18&to=18.1&keywords=cve
 
+https://endoflife.date/postgresql
+https://www.percona.com/blog/postgresql-13-is-reaching-end-of-life-the-time-to-upgrade-is-now/
+
+
+
 ########## Common Vulnerabilities and Exposures (CVE) ###########
 
 https://www.postgresql.org/support/security/
