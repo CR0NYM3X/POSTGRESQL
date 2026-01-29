@@ -78,6 +78,7 @@ https://www.credativ.de/en/blog/
 https://planetscale.com/blog
 https://neon.com/blog
 https://supabase.com/blog?category=postgres
+https://stormatics.tech/our-blogs
 https://www.depesz.com/
 https://databaserookies.wordpress.com/
 https://hdombrovskaya.wordpress.com/
@@ -104,7 +105,7 @@ https://runebook.dev/en/docs/postgresql
 https://www.hydra.so/blog-posts/
 https://docs.digitalocean.com/products/databases/postgresql/
 https://www.paradedb.com/blog
-
+https://www.dbi-services.com/blog/
 
 ----- Eventos  de Postgresql:
 https://postgrespro.com/events
