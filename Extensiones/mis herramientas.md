@@ -29,6 +29,7 @@ pg_privileges      -> https://github.com/CR0NYM3X/pg_privileges
 pg_prttb           -> https://github.com/CR0NYM3X/pg_prttb
 pgAuditSimple      -> https://github.com/CR0NYM3X/pgAuditSimple
 
+pg_partition_logic -> https://github.com/CR0NYM3X/pg_partition_logic
 pg_background_mgr  -> https://github.com/CR0NYM3X/pg_background_mgr
 pgVaultLog         -> https://github.com/CR0NYM3X/pgVaultLog
 SQLMeta-Tracker    -> https://github.com/CR0NYM3X/SQLMeta-Tracker
