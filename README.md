@@ -39,7 +39,8 @@ https://www.heatware.net/postgresql/
 
 
 
--- PodCast de Postgresql 
+-- PodCast de Postgresql
+https://talkingpostgres.com/episodes
 https://www.scalingpostgres.com
 https://postgres.fm/episodes
 
@@ -101,7 +102,6 @@ https://blog.unixpad.com/
 https://hexacluster.ai/blog
 https://www.sqlservercentral.com/articles
 https://dba.stackexchange.com/?tags=postgresql
-https://www.dbi-services.com/blog/
 medium.com
 https://runebook.dev/en/docs/postgresql
 https://www.hydra.so/blog-posts/
