@@ -62,7 +62,8 @@ https://www.dalibo.com/actus
 https://labs.dalibo.com/
 
 
--- Blog solo para postgresql 
+-- Blog solo para postgresql
+https://blog.vectorchord.ai/
 https://www.enterprisedb.com/blog
 https://www.crunchydata.com/blog
 https://www.crunchydata.com/postgres-tips
