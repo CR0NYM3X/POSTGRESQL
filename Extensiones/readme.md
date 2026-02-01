@@ -642,4 +642,8 @@ pgEdge RAG Server
 pgEdge Vectorizer
 postgresml -> convierte a tu base de datos PostgreSQL en una plataforma de ML completa. https://github.com/postgresml/postgresml
 
+- vectorchord
+
+- pgvector
+
 ```
