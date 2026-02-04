@@ -93,6 +93,8 @@ https://www.pgedge.com/blog
 https://www.thenile.dev/blog
 https://stackgres.io/blog/
 https://www.highgo.ca/blog/
+https://www.tigerdata.com/blog
+
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
 https://scalegrid.io/blog/
@@ -108,6 +110,8 @@ https://www.hydra.so/blog-posts/
 https://docs.digitalocean.com/products/databases/postgresql/
 https://www.paradedb.com/blog
 https://www.dbi-services.com/blog/
+https://clickhouse.com/blog
+
 
 ----- Eventos  de Postgresql:
 https://postgrespro.com/events
