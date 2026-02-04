@@ -249,7 +249,6 @@ pgmonitor -> https://github.com/CrunchyData/pgmonitor
 
 - **pg_stat_kcache:**  Complementa a la famosa `pg_stat_statements`. Mientras que la estándar te dice cuántas veces se ejecutó una consulta, esta te dice cuánta **CPU** y cuánto **uso de disco real** (a nivel de kernel) consumió esa consulta específicamente.
 
-
 - **pg_stat_statements:** Rastrea y acumula estadísticas sobre el rendimiento de las consultas SQL. Permite identificar consultas lentas o que consumen muchos recursos.
 
 - **pg_stat_user_tables:** Ofrece estadísticas sobre el uso de tablas por usuario, incluyendo conteo de accesos, cantidad de inserts, updates, deletes, y bloqueos. Es útil para entender el impacto de cada usuario en la base de datos.
@@ -267,6 +266,10 @@ pgmonitor -> https://github.com/CrunchyData/pgmonitor
 
  pgrowlocks en PostgreSQL se utiliza para mostrar información sobre los bloqueos de filas en una tabla específica. Aquí tienes un resumen de su funcionalidad: --> SELECT * FROM pgrowlocks('mi_tabla');
 
+
+ . **pg_wait_sampling**:
+   - **Descripción**: Esta extensión recopila Eventos estadísticas basadas en muestreo de eventos de espera en PostgreSQL. Permite obtener un historial de eventos de espera y un perfil de espera acumulado para todos los procesos, incluyendo los trabajadores en segundo plano⁵⁶.
+   - **Uso**: Es útil para diagnosticar problemas de rendimiento y analizar qué procesos están esperando y por cuánto tiempo. Para habilitarla, debes agregar `pg_wait_sampling` a la variable `shared_preload_libraries` en el archivo `postgresql.conf` y reiniciar el servidor⁵.
 
  
 
@@ -480,9 +483,7 @@ pg_comparator \
  **pg_readonly**: Permite establecer todas las bases de datos de un clúster en modo solo lectura, útil para situaciones donde se requiere asegurar que no se realicen modificaciones[^20^].
  
  
- . **pg_wait_sampling**:
-   - **Descripción**: Esta extensión recopila Eventos estadísticas basadas en muestreo de eventos de espera en PostgreSQL. Permite obtener un historial de eventos de espera y un perfil de espera acumulado para todos los procesos, incluyendo los trabajadores en segundo plano⁵⁶.
-   - **Uso**: Es útil para diagnosticar problemas de rendimiento y analizar qué procesos están esperando y por cuánto tiempo. Para habilitarla, debes agregar `pg_wait_sampling` a la variable `shared_preload_libraries` en el archivo `postgresql.conf` y reiniciar el servidor⁵.
+
  
  ### Tipos de Eventos Capturados
  
