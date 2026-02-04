@@ -639,4 +639,5 @@ https://www.geeksforgeeks.org/paxos-vs-raft-algorithm-in-distributed-systems/
 https://dev.to/pragyasapkota/consensus-algorithms-paxos-and-raft-37ab
 Patroni -> https://medium.com/@joaovic32/demystifying-high-availability-postgresql-with-patroni-and-pgpool-ii-on-ubuntu-428c91a55b1a
 
+https://www.postgresql.org/docs/current/warm-standby.html#STREAMING-REPLICATION
 ```
