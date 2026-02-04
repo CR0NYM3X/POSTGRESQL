@@ -94,6 +94,8 @@ https://www.thenile.dev/blog
 https://stackgres.io/blog/
 https://www.highgo.ca/blog/
 https://www.tigerdata.com/blog
+https://kmoppel.github.io/
+https://justatheory.com/
 
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
