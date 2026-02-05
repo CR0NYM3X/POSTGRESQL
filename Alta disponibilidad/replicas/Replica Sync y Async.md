@@ -2,6 +2,28 @@
  # **El verdadero HADR en PostgreSQL: ¿Sincronía y Asincronía bajo el mismo techo?**
 
 
+Imagínate que eres el dueño de una pizzería que nunca cierra. Tienes un chef principal (el **Nodo Primario**) que es un genio, pero es humano: le puede dar gripe, se puede quedar atrapado en el tráfico o, peor, se le puede quemar el horno.
+
+Si el chef se va, la pizzería cierra y tú pierdes dinero. Para evitarlo, contratas a un segundo chef (la **Réplica**) que está justo detrás de él, mirando cada movimiento, cada gramo de harina y cada pepperoni que el primero pone. Si el primero se desmaya, el segundo salta al mostrador en segundos. ¡Eso es **HA (Alta Disponibilidad)**!
+
+Pero, ¿qué pasa si se inunda la calle de la pizzería? Ahí necesitas otra pizzería en la ciudad vecina, con los ingredientes listos para abrir en 30 minutos. ¡Eso es **DR (Recuperación ante Desastres)**!
+
+#### La Historia de Terror: El efecto dominó 😱
+
+Trabajé con una empresa de seguros que tenía una réplica "espejo". Muy bonita. Pero un día, el becario (sí, nuestro viejo amigo) ejecutó un `DELETE` masivo sin `WHERE` en el servidor principal.
+
+¿Qué crees que hizo la réplica? Como era una réplica perfecta y veloz, ¡borró todo en 0.5 segundos! No tenían una estrategia de **"Point-in-Time Recovery" (PITR)** ni un retraso configurado. Tenían **Alta Disponibilidad**, sí, ¡pero disponible para el error! Estuvieron fuera de línea 12 horas recuperando cintas de respaldo viejas. Casi pierden la licencia de operación.
+
+#### Bajo el Capó: El motor de la continuidad
+
+PostgreSQL no hace HADR "solo" apretando un botón, es un ensamble de piezas:
+
+1. **Streaming Replication:** Es el flujo constante de registros **WAL** (nuestra libretita de la que hablamos antes) viajando del Primario al Secundario.
+2. **Slots de Replicación:** Es como si el Primario le dijera al Secundario: "No te preocupes, yo te espero, no voy a borrar el diario hasta que me confirmes que ya lo leíste".
+3. **Gestores de Failover (Patroni/Keepalived):** Postgres por sí solo no sabe que "murió". Necesitas un software externo que actúe como árbitro, detecte que el primario no respira y le diga a la réplica: "¡Tu turno, ahora tú eres el jefe!".
+
+
+
 ### ¿Alguna vez te has detenido a pensar si PostgreSQL es capaz de manejar réplicas **Síncronas** y **Asíncronas** simultáneamente en la misma topología?
 
 Muchos administradores creen que la replicación es un interruptor global: o todos van al paso del líder, o todos corren por su cuenta. **Spoiler alert: No es así.** PostgreSQL es lo suficientemente robusto para permitirte tener un "guardaespaldas" que nunca se separa de ti (Réplica Síncrona) y un "mensajero" que viaja a su propio ritmo (Réplica Asíncrona), ambos conectados al mismo servidor primario.
