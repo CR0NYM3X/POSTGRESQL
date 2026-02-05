@@ -13,13 +13,13 @@ https://database.build/db/m6elcqyum78z69ug
 
 --- Certificaciones
 https://www.enterprisedb.com/course/postgresql-12-professional-certification
-
 https://www.todopostgresql.com/certificaciones-postgresql/
 https://www.todopostgresql.com/carreras/
 
 --------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Aprende toda la arquitectura de PostgreSQL 100% recomendado
+https://www.postgresql.org/docs/18/index.html
 https://www.interdb.jp/pg/index.html
 https://pgadminedb.readthedocs.io/en/latest/
 https://www.tutorialdba.com/p/postgresql-architecture.html
