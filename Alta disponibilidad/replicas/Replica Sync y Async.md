@@ -36,6 +36,44 @@ No todo es color de rosa en el mundo de la alta disponibilidad. Aquí te muestro
 
 ---
 
+
+## 1. El Fundamento: ¿Cómo se define la sincronía?
+
+Contrario a lo que se cree, el parámetro que define si una réplica es síncrona no es solo un booleano en el `postgresql.conf` del primario, sino el parámetro **`synchronous_standby_names`**.
+
+* **Réplicas Asíncronas:** Son el comportamiento por defecto. Cualquier nodo que se conecte vía streaming replication y **no** esté listado en `synchronous_standby_names` será asíncrono.
+* **Réplicas Síncronas:** Son aquellas cuyo `application_name` (definido en el `primary_conninfo` de la réplica) aparece en la lista del parámetro mencionado arriba en el servidor A.
+
+---
+
+## 2. Configuración en el Servidor A (Primario)
+
+Para lograr que **C** sea síncrona y **B** sea asíncrona, debes configurar lo siguiente en el `postgresql.conf` del Servidor A:
+
+```ini
+# postgresql.conf en Servidor A
+
+# 1. Habilitar el modo de replicación
+wal_level = logical # o replica
+max_wal_senders = 10 
+
+# 2. Definir quién es síncrono
+# Aquí especificamos que solo el nodo llamado 'replica_c' es síncrono
+synchronous_standby_names = 'FIRST 1 (replica_c)'
+
+# 3. Nivel de compromiso (Controla qué espera el primario)
+synchronous_commit = on 
+
+```
+
+### ¿Por qué esto funciona?
+
+* Cuando el Servidor B se conecta con `application_name = replica_b`, PostgreSQL ve que no está en la lista de `synchronous_standby_names` y lo trata como **asíncrono**.
+* Cuando el Servidor C se conecta con `application_name = replica_c`, PostgreSQL lo obliga a confirmar la recepción del WAL antes de darle el "OK" al commit en el primario.
+
+
+ 
+
 ## Conclusión
 
 PostgreSQL te da las herramientas para construir una arquitectura de clase mundial. La mezcla de replicación síncrona y asíncrona es la base de un verdadero esquema de **High Availability & Disaster Recovery (HADR)**. Solo recuerda: con gran poder, viene una gran responsabilidad de configuración.
