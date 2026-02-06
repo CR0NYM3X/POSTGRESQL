@@ -141,4 +141,39 @@ https://dbdb.io/browse
 
  
 
+
+--------------  HOSTINGs para tu BASE de DATOS sin pagar nada --------------
+
+NEON TECH
+PostgreSQL. 500MB. 100 horas de computación
+→ neon․tech
+
+MONGODB ATLAS
+Mongo, 512MB, backups automáticos
+→ mongodb․com
+
+TURSO
+SQLite, 5GB, 500 millones de lecturas
+→ turso․tech
+
+SUPABASE
+PostgreSQL, 500MB, 5GB de transferencia
+→ supabase․com
+
+COCKROACHDB
+10 GB de almacenamiento, 50M de requests
+→ cockroachlabs․com
+
+FILESS
+MariaDB, 10MB de almacenamiento
+→ filess․io
+
+KOYEB
+PostgreSQL, 1GB, 5 horas de ejecución
+→ koyeb․com
+
+FREEDB TECH
+MySQL, 25MB, máximo 200 conexiones
+→ freedb․tech
+
 ```
