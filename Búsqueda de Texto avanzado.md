@@ -747,4 +747,5 @@ Cuando haces una búsqueda de texto completo con `to_tsvector` y `to_tsquery`, p
 ```
 https://medium.com/the-table-sql-and-devtalk/mastering-postgresql-full-text-search-a-definitive-guide-a794b47dfcbf
 pgvector -> https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pgvector.md
+https://rendiment.io/postgresql/2026/01/21/pgtrgm-pgvector-music.html
 ```
