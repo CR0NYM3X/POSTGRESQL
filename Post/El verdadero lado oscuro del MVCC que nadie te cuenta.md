@@ -51,3 +51,8 @@ No todo es oscuridad. Para dominar el MVCC, un DBA utiliza armas secretas como:
 ### 💡 Conclusión
 
 El MVCC es la razón por la que PostgreSQL es tan increíblemente estable y rápido para manejar a miles de usuarios a la vez, pero tiene un precio. Como DBA, tu trabajo no es solo guardar datos, es **gestionar la basura que el sistema deja atrás.**
+
+
+```
+https://www.cs.cmu.edu/~pavlo/blog/2023/04/the-part-of-postgresql-we-hate-the-most.html
+```
