@@ -1,3 +1,45 @@
+
+
+```
+1.- Capa de Conexión (Connection Layer)
+  Maneja las conexiones de los clientes a la base de datos
+  Autenticación y autorización de usuarios
+  Establecimiento de la sesión
+
+2. Capa de Procesamiento de Consultas (Query Processing Layer)
+  Analiza y planifica las consultas SQL
+  Optimiza las consultas para mejorar el rendimiento
+  Ejecuta las consultas y devuelve los resultados
+
+3. Capa de Almacenamiento (Storage Layer)
+  Maneja el almacenamiento de datos en disco
+  Gestiona la memoria caché y el buffer de datos
+  Realiza la lectura y escritura de datos en disco
+
+4. Capa de Transacciones (Transaction Layer)
+  Maneja las transacciones y la integridad de los datos
+  Asegura la consistencia y la atomicidad de las transacciones
+  Gestiona los bloqueos y la concurrencia
+
+5. Capa de Utilidades (Utility Layer)
+  Proporciona utilidades para la administración de la base de datos
+  Incluye herramientas para la copia de seguridad y restauración
+  Gestiona la seguridad y la autenticación
+
+Algunas de las capas y componentes clave que debes conocer para aprender más sobre la arquitectura de PostgreSQL son:
+
+Parser: analiza las consultas SQL y las convierte en un árbol de sintaxis
+Planner: planifica la ejecución de las consultas
+Executor: ejecuta las consultas y devuelve los resultados
+Buffer Manager: gestiona la memoria caché y el buffer de datos
+Transaction Manager: maneja las transacciones y la integridad de los datos
+
+```
+
+---
+---
+
+
 # Plan de Estudios Avanzado de PostgreSQL
 
 ## Introducción
