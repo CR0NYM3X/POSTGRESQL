@@ -2014,6 +2014,8 @@ Si tienes una tabla de `usuarios` y siempre que buscas por `email` quieres mostr
 ```
 https://medium.com/@moinullabaig/part-1-unlocking-postgresql-performance-with-index-only-scans-6b3639cea96e
 
+https://dlt.github.io/blog/posts/introduction-to-postgresql-indexes/
+
 https://www.postgresql.org/docs/current/indexes-types.html
 https://medium.com/@jramcloud1/reindexing-in-postgresql-17-the-complete-dba-guide-to-keeping-your-indexes-healthy-20d0cd8e828f
 
