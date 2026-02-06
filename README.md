@@ -97,6 +97,7 @@ https://www.tigerdata.com/blog
 https://kmoppel.github.io/
 https://justatheory.com/
 https://www.data-bene.io/en/#blog
+https://justatheory.com/
 
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
