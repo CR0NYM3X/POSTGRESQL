@@ -144,6 +144,7 @@ https://dbdb.io/browse
  
 ----- Conferencias :
 https://www.youtube.com/watch?v=cBLExRgIUA0&list=PLWW0CjV-Tafa2jvcjihXwSvZZKsLAsb9Y
+https://www.youtube.com/@pgeu/videos
 
 --------------  HOSTINGs para tu BASE de DATOS sin pagar nada --------------
 
