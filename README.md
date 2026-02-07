@@ -69,6 +69,7 @@ https://www.enterprisedb.com/blog
 https://www.crunchydata.com/blog
 https://www.crunchydata.com/postgres-tips
 https://www.crunchydata.com/developers/tutorials
+https://hexacluster.ai/blog
 https://www.percona.com/blog/category/postgresql/
 https://www.cybertec-postgresql.com/en/postgresql-blog/
 https://www.postgresql.fastware.com/blog
@@ -106,7 +107,6 @@ https://scalegrid.io/blog/
 https://www.datasunrise.com/es/informacion-profesional/
 https://www.mydbops.com/blog
 https://blog.unixpad.com/
-https://hexacluster.ai/blog
 https://www.sqlservercentral.com/articles
 https://dba.stackexchange.com/?tags=postgresql
 medium.com
