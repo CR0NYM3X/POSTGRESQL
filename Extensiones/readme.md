@@ -612,6 +612,8 @@ PostgreSQL: ¡La inyección de dependencia definitiva! -> https://medium.com/@sb
 Software Catalogue - Product Categories  https://www.postgresql.org/download/product-categories/
 ---- https://www.postgresql.org/ftp/projects/ 
 
+https://wener.me/notes/db/relational/postgresql/extension
+
 https://www.timescale.com/blog/top-8-postgresql-extensions/
 
 --- Extensiones
