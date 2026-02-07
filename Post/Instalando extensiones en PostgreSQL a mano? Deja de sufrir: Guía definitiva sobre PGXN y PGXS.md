@@ -81,6 +81,70 @@ Si eres un administrador de bases de datos (DBA) o desarrollador:
 2. **Instalas** con el cliente de PGXN (que usa **PGXS** por debajo).
 3. **Habilitas** en la base de datos con el comando SQL `CREATE EXTENSION`.
 
+
+
+## Diferencia de **make USE_PGXS=1** y **pgxn install**
+
+### La respuesta corta:
+
+Ambas formas hacen **exactamente lo mismo**, pero una es automática (PGXN) y la otra es manual (usando directamente PGXS).
+
+
+### 1. El camino automático: `sudo pgxn install pair`
+
+Cuando escribes esto, el cliente de PGXN hace todo el trabajo de oficina por ti:
+
+1. Va a internet y baja el código.
+2. Entra a la carpeta.
+3. **Él mismo ejecuta** el `make USE_PGXS=1` por debajo sin que tú lo veas.
+4. Mueve los archivos a su lugar.
+
+Es como pedir comida por una App: tú solo das la orden y la comida llega a tu mesa.
+
+### 2. El camino manual: `make USE_PGXS=1`
+
+Aquí es donde tú eres el chef. Se hace así cuando:
+
+* Bajaste el código de **GitHub** manualmente (y no desde el repositorio de PGXN).
+* Estás desarrollando tu propia extensión.
+* El servidor no tiene acceso a internet para que el cliente de PGXN descargue cosas.
+
+#### ¿Por qué hay que escribir `USE_PGXS=1`?
+
+Este es el "secreto" técnico. Muchas extensiones de PostgreSQL pueden vivir de dos formas:
+
+1. **Dentro del código fuente de Postgres** (como si fueran parte del motor oficial).
+2. **Fuera del código fuente** (como un accesorio externo).
+
+Al escribir `USE_PGXS=1`, le estás gritando al archivo Makefile: *"¡Oye! No estoy dentro de la carpeta donde se programó Postgres. Búscame las herramientas de ayuda (PGXS) en el sistema porque soy un invitado externo"*.
+
+
+
+### ¿Cuál poner en tu post?
+
+Para tu post, lo ideal es mostrar **el contraste**. Aquí tienes una estructura ganadora:
+
+* **El Vago Inteligente (PGXN):** `pgxn install pgaudit`. Rápido, limpio, sin errores.
+* **El Artesano del Código (Manual):**
+```bash
+git clone https://github.com/pgaudit/pgaudit.git
+cd pgaudit
+make USE_PGXS=1        # Aquí compilas el metal
+sudo make install      # Aquí lo encajas en el motor
+
+```
+
+
+
+> **Dato de experto para tu post:** Si alguien escribe `make` y recibe un error de "missing separator" o "pg_config not found", es porque no tiene instalado el paquete `postgresql-server-dev`. ¡Ese es el error #1 en todos los foros!
+
+
+### ¿Cómo se conectan en la realidad?
+
+Imagina que PGXS es el **lenguaje** (las reglas de cómo se construye) y PGXN es el **mensajero**. El mensajero sabe hablar el lenguaje, pero si el mensajero no está, te toca a ti hablarlo directamente usando el comando `make USE_PGXS=1`.
+
+
+
 ---
 
 Para que lo veas cristalino, vamos a simular que necesitas instalar **`pair`**, una extensión muy popular en PostgreSQL que permite manejar tipos de datos en parejas (como llave-valor).
