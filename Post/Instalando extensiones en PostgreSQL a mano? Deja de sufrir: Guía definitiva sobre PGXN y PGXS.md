@@ -83,7 +83,7 @@ Si eres un administrador de bases de datos (DBA) o desarrollador:
 
 
 
-## Diferencia de **make USE_PGXS=1** y **pgxn install**
+## Diferencia de **`make USE_PGXS=1`** y **`pgxn install`**
 
 ### La respuesta corta:
 
