@@ -142,7 +142,8 @@ https://www.docs4dev.com/docs/en/postgre-sql/10.7/reference/pgarchivecleanup.htm
 https://dbdb.io/browse
 
  
-
+----- Conferencias :
+https://www.youtube.com/watch?v=cBLExRgIUA0&list=PLWW0CjV-Tafa2jvcjihXwSvZZKsLAsb9Y
 
 --------------  HOSTINGs para tu BASE de DATOS sin pagar nada --------------
 
