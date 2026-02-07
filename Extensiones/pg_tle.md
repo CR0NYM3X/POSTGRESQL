@@ -320,5 +320,5 @@ https://supabase.com/blog/pg-tle
 https://pages.awscloud.com/rs/112-TZM-766/images/2023_0210-VW-DAT_Slide-Deck.pdf
 
 https://github.com/taminomara/psql-hooks?tab=readme-ov-file#security-hooks
-
+https://github.com/aws/pg_tle/tree/main/docs
 ```
