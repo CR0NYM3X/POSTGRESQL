@@ -176,7 +176,7 @@ Los más comunes que puedes practicar son:
 
 ---
 
-
+# Dónde se especifica el hook?
  
 PostgreSQL es como un edificio con muchas puertas. Cada puerta es un **Hook**.
 
@@ -231,12 +231,90 @@ Para que lo veas con tus propios ojos en tu base de datos, ejecuta esto:
 SELECT * FROM pgtle.feature_info;
 
 ```
+
+
+---
+
+# Tipos de Hooks
+
+Para ser un experto en `pg_tle`, debes saber que aunque PostgreSQL tiene cientos de hooks internos, **`pg_tle`** ha seleccionado y "expuesto" los más útiles y seguros para que podamos usarlos desde SQL.
+
+Aquí tienes el top de los hooks más utilizados, ordenados por su impacto en la seguridad y administración de la base de datos:
+
  
 
+### 1. `passcheck` (Password Check Hook)
 
+Es el "rey" de los hooks en `pg_tle`. Se dispara cada vez que ejecutas `CREATE ROLE` o `ALTER ROLE` con una contraseña.
+
+* **¿Para qué sirve?**: Forzar políticas de complejidad (longitud, caracteres especiales), evitar que usen su nombre de usuario en la clave, o comparar la contraseña contra una "lista negra" de claves comunes.
+* **Firma esperada**:
+```sql
+check_func(username text, password text, password_type pgtle.password_types, valid_until timestamptz, valid_now boolean)
+
+```
+
+
+
+### 2. `clientauth` (Client Authentication Hook)
+
+Este es extremadamente potente. Se ejecuta **antes** de que PostgreSQL permita que una conexión se establezca completamente.
+
+* **¿Para qué sirve?**:
+* Bloquear conexiones por horario (ej. nadie entra los domingos).
+* Limitar conexiones simultáneas por usuario de forma dinámica.
+* Auditar quién intenta entrar y desde qué IP (logging avanzado).
+
+
+* **Firma esperada**:
+```sql
+auth_func(port pgtle.clientauth_port_details)
+
+```
+
+
+*(Nota: El objeto `port` contiene la IP, la base de datos a la que quiere entrar, el usuario, etc.)*
+
+### 3. Hooks de Tipos de Datos (Custom Data Types)
+
+Aunque no es un "hook" de evento único como los anteriores, `pg_tle` te permite crear tipos de datos base.
+
+* **¿Para qué sirve?**: Definir cómo se almacena y se lee un dato que no existe en Postgres (ej. un tipo `Distancia` que acepte "10km" y lo convierta internamente).
+* **Funciones necesarias**: Debes registrar funciones de entrada (`in`) y salida (`out`).
+
+ 
+### Tabla Comparativa: ¿Cuál usar?
+
+| Hook | Nombre en `register_feature` | Cuándo se dispara | Nivel de Riesgo |
+| --- | --- | --- | --- |
+| **Password** | `'passcheck'` | Al cambiar/crear claves. | **Bajo** (Solo afecta comandos de usuario). |
+| **Autenticación** | `'clientauth'` | En cada intento de login. | **Alto** (Un error aquí bloquea todo el acceso). |
+
+ 
+
+### Cómo ver cuáles tienes disponibles en tu versión
+
+Como experto, siempre debes verificar qué "puertas" tiene abiertas tu versión de `pg_tle`, ya que AWS y la comunidad añaden nuevos constantemente. Ejecuta esto:
+
+```sql
+-- Consultar los "slots" disponibles para hooks
+SELECT * FROM pgtle.available_features();
+
+-- Consultar qué funciones tienes "colgadas" actualmente
+SELECT * FROM pgtle.feature_info;
+
+```
+
+### Un pequeño "Tip" Pro:
+
+Si vas a practicar con `clientauth`, **¡ten mucho cuidado!**. Si escribes una función que da error (`RAISE EXCEPTION`), podrías quedarte fuera de tu propia base de datos. Asegúrate siempre de tener una sesión de superusuario abierta en una terminal aparte antes de activar un hook de autenticación.
+
+ 
 ```SQL
 https://hey-dba.com/articles/trusted-language-extensions-pgtle-setup-the-quick-reference-guide/
 https://medium.com/@mbrqttm/how-to-create-a-password-policy-in-amazon-rds-for-postgresql-cb7e70b2e1ed
+https://repost.aws/knowledge-center/rds-postgresql-password-policy
+https://docs.aws.amazon.com/es_es/AmazonRDS/latest/AuroraUserGuide/PostgreSQL_trusted_language_extension.overview.tles-and-hooks.html
 https://www.youtube.com/watch?v=UJQQdSGK5ZY
 https://supabase.com/blog/pg-tle
 https://pages.awscloud.com/rs/112-TZM-766/images/2023_0210-VW-DAT_Slide-Deck.pdf
