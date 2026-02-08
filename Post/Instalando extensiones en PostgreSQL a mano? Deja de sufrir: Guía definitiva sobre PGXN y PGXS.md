@@ -345,3 +345,131 @@ Porque demuestra la diferencia de niveles:
 ### La conclusión "técnica" para tu audiencia:
 
 Instalar artesanalmente no es solo "copiar archivos", es **asegurar que el software sea nativo a tu hardware**. PGXS y PGXN existen para que no tengas que ser un experto en compiladores cada vez que quieras un backup decente.
+
+
+
+---
+
+
+# Cosas importantes 
+
+### 1. El concepto del "Lado del Servidor" (Server-side) vs "Lado del Cliente"
+
+Mucha gente cree que instalar una extensión es como instalar un plugin en el navegador, pero en Postgres es distinto.
+
+* **Punto clave para tu post:** Las extensiones instaladas con PGXS/PGXN **viven en el servidor**. Si instalas `pgaudit` en tu servidor de base de datos, no necesitas instalar nada en tu laptop.
+* **El error común:** Intentar usar una extensión en un servicio de base de datos administrado (como **AWS RDS** o **Google Cloud SQL**) usando estos comandos.
+* *Spoiler:* **No puedes.** En la nube, tú no tienes acceso al sistema de archivos para ejecutar `make` o `pgxn`. Tienes que usar solo las extensiones que el proveedor ya pre-instaló.
+
+
+
+### 2. El comando `pg_config`: El GPS de la instalación
+
+Si vas a hablar de `USE_PGXS=1`, **tienes** que mencionar a `pg_config`.
+
+Cuando ejecutas el `make`, el sistema busca un binario llamado `pg_config`. Si tienes instaladas varias versiones de Postgres (ejemplo: la 14 y la 16), el comando `make` podría intentar instalar la extensión en la versión equivocada.
+
+> **Tip de Pro para el post:** "Si tienes varias versiones de Postgres, puedes forzar la instalación en una específica así:"
+> `make PG_CONFIG=/usr/lib/postgresql/16/bin/pg_config USE_PGXS=1`
+
+### 3. La diferencia entre "Instalar" y "Cargar" (Shared Preload Libraries)
+
+Este es el "boss final" de las extensiones.
+
+* Extensiones simples (como `pair` o `citext`) se activan con `CREATE EXTENSION`.
+* Extensiones complejas (como **`pgaudit`** o **`timescaledb`**) necesitan que Postgres las cargue **antes** de arrancar.
+
+Si solo haces el `make install` y el `CREATE EXTENSION`, te dará un error. Tienes que editar el archivo `postgresql.conf`:
+
+```ini
+shared_preload_libraries = 'pgaudit, timescaledb'
+
+```
+
+*Y luego reiniciar el servicio.* Si pones esto en tu post, demostrarás que realmente sabes cómo funciona el motor por dentro.
+
+ 
+
+### Resumen para cerrar tu post con autoridad:
+
+Podrías terminar con una sección de **"Checklist de Supervivencia"**:
+
+1. ¿Tengo los *headers* de desarrollo instalados? (`postgresql-server-dev-XX`)
+2. ¿El comando `pg_config` apunta a la versión correcta?
+3. ¿La extensión requiere `shared_preload_libraries`?
+4. ¿Tengo permisos de `sudo` para mover los archivos a las carpetas del sistema?
+
+--- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Paquetes necesarios 
+ 
+
+## Lista A: Para instalar CON PGXS (El modo estándar)
+
+Este es el escenario donde tienes un `Makefile` y usas `USE_PGXS=1`. Lo que instalas aquí son las herramientas para que tu servidor sepa "construir" la extensión.
+
+1. **`build-essential`**: Incluye `gcc` (el compilador de C) y `make`. Sin esto, no puedes ni empezar.
+2. **`postgresql-server-dev-all`**: Este es el paquete mágico. Contiene los "headers" (archivos `.h`) de PostgreSQL y, lo más importante, contiene la infraestructura **PGXS**.
+* *Nota:* Si sabes tu versión exacta, puedes usar `postgresql-server-dev-16` (o la que tengas).
+
+
+3. **`libreadline-dev` y `zlib1g-dev**`: Son dependencias base que casi todas las extensiones piden para manejar la entrada de texto y la compresión.
+
+**Comando rápido en Ubuntu:**
+
+```bash
+sudo apt update
+sudo apt install build-essential postgresql-server-dev-all libreadline-dev zlib1g-dev
+
+```
+ 
+
+## Lista B: Para instalar SIN PGXS (El modo "A Pulmón")
+
+Si decides no usar PGXS, significa que vas a compilar la extensión como si fuera un programa de C cualquiera y tú mismo vas a buscar dónde encajarlo en el motor de Postgres. Es **mucho más difícil**.
+
+1. **`gcc` y `binutils**`: Necesitas el compilador puro.
+2. **El Código Fuente de PostgreSQL completo**: ¡Ojo aquí! Como no usas PGXS (que ya sabe dónde están las cosas), muchas veces necesitas descargar el código fuente de **todo** PostgreSQL (varios cientos de MB) para poder referenciar las librerías internas (`/src/include`).
+3. **Localización manual de `pg_config**`: No es un paquete, pero tienes que saber dónde está para extraer las rutas manualmente.
+4. **Dependencias específicas de la extensión**: Si instalas algo como `pgxml`, necesitarás `libxml2-dev` instalado por tu cuenta.
+
+**¿Por qué nadie elige la Lista B?**
+Porque sin PGXS, tendrías que pasarle al compilador rutas larguísimas como esta:
+`-I/usr/include/postgresql/16/server -I/usr/include/postgresql/internal`
+Si te equivocas en una letra, la extensión no se compilará o causará un "Crash" en la base de datos.
+
+ 
+
+## Resumen para tu Post (La tabla de ingredientes)
+
+| Necesidad | Con PGXS (Recomendado) | Sin PGXS (Manual extremo) |
+| --- | --- | --- |
+| **Herramientas** | `build-essential` | `gcc`, `ld` |
+| **Headers de Postgres** | `postgresql-server-dev-XX` | Código fuente completo de Postgres |
+| **Dificultad** | ⭐ (Fácil) | ⭐⭐⭐⭐⭐ (Nivel Dios) |
+| **Riesgo** | Bajo (Postgres guía el proceso) | Alto (Puedes romper el motor) |
+
+ 
+
+### Un último consejo:
+
+Menciona que para usar **PGXN**, además de la **Lista A**, necesitan instalar el cliente con Python:
+
+```bash
+sudo apt install python3-pip
+pip install pgxnclient
+
+```
+ 
