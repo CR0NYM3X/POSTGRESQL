@@ -108,7 +108,7 @@ SET auto_explain.log_analyze = on;            -- Incluye tiempos reales
 SET auto_explain.log_buffers = on;            -- Incluye uso de buffers
 SET auto_explain.log_verbose = on;            -- Muestra detalles adicionales
 SET auto_explain.log_timing = on;
-SET auto_explain.log_nested_statements = on;  -- Incluye funciones y subconsultas
+SET auto_explain.log_nested_statements = on;  -- Incluye todo lo que se ejecuta en  funciones y subconsultas
 
 
 -- Ver los parametros que se pueden configurar
