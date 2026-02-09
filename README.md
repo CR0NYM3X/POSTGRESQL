@@ -150,7 +150,8 @@ https://www.youtube.com/@pgeu/videos
 
 ---- Personas profesionales en PostgreSQL ---
 Laetitia Avrot -> https://mydbanotebook.org/posts/
-
+Richard Yen -> https://richyen.com/
+https://databaserookies.wordpress.com/about-deepakmahto/
 
 --------------  HOSTINGs para tu BASE de DATOS sin pagar nada --------------
 
