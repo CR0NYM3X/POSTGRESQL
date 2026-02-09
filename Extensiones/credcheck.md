@@ -8,7 +8,6 @@ ejemplos: https://github.com/MigOpsRepos/credcheck/tree/master/test/expected
 
 https://stackoverflow.com/questions/68400120/how-to-generate-scram-sha-256-to-create-postgres-13-user
 
-
  
 
 1. **credcheck.auth_delay_ms**: Establece un retraso en milisegundos antes de informar un fallo de autenticación. Esto dificulta los ataques de fuerza bruta.
@@ -44,5 +43,26 @@ https://stackoverflow.com/questions/68400120/how-to-generate-scram-sha-256-to-cr
 31. **credcheck.username_not_contain**: Define los caracteres que no deben estar presentes en el nombre de usuario.
 32. **credcheck.whitelist**: Permite especificar una lista de usuarios que están exentos de ciertas verificaciones de credenciales.
  
+
+user_test@postgres# \dx+ credcheck
+                    Objects in extension "credcheck"
++-----------------------------------------------------------------------+
+|                          Object description                           |
++-----------------------------------------------------------------------+
+| function pg_banned_role()                                             |
+| function pg_banned_role_reset()                                       |
+| function pg_banned_role_reset(name)                                   |
+| function pg_password_history()                                        |
+| function pg_password_history_reset()                                  |
+| function pg_password_history_reset(name)                              |
+| function pg_password_history_timestamp(name,timestamp with time zone) |
+| schema credcheck                                                      |
+| view pg_banned_role                                                   |
+| view pg_password_history                                              |
++-----------------------------------------------------------------------+
+(10 rows)
+
+
+
 
 ```
