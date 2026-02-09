@@ -350,18 +350,38 @@ password_encryption = scram-sha-256	# scram-sha-256 or md5 # cambia el metodo cr
 scram_iterations = 10000 # hace que la autenticación sea más lenta., pero en un escenario donde se expusieron las contraseñas de los usuarios login, Esto significa que los atacantes necesitarían mucho más tiempo y recursos computacionales para descifrar las contraseñas de los usuarios, lo que reduce en gran medida la probabilidad de éxito de un ataque
 
 
-client_connection_check_interval = 10
-**Escenario crítico donde se debe usar client_connection_check_interval:**
-Imagina una aplicación en la que la disponibilidad y la confiabilidad son críticas. una conexión persistente
-con la base de datos PostgreSQL para operar. Es esencial que la aplicación detecte y maneje rápidamente las
-desconexiones o fallas en las conexiones con la base de datos para evitar pérdidas de datos o interrupciones
- del servicio. Esto asegura que el servidor PostgreSQL verifique regularmente el estado de las conexiones de
- los clientes y tome medidas rápidas si se detecta una desconexión o fallo. 
+client_connection_check_interval = 5
+(introducido en Postgres 14) 
+
+ el problema de las **conexiones "fantasma"** o abandonadas. Normalmente, cuando un cliente (como una aplicación o un servidor web) se desconecta inesperadamente mientras el motor de Postgres está ejecutando una consulta larga, Postgres no se entera inmediatamente. Sigue trabajando, consumiendo CPU y memoria, y manteniendo bloqueos (*locks*) en las tablas para una sesión que ya no tiene a nadie escuchando al otro lado.
+
+* **¿Para qué sirve?** Para que PostgreSQL verifique si el cliente sigue conectado **mientras** se ejecuta una consulta. Si el cliente se desconecta, Postgres detiene el trabajo inmediatamente.
+* **¿Cuál es su ventaja?** Ahorra recursos (CPU/RAM) y, lo más importante, **libera bloqueos (*locks*)** de tablas al instante, evitando que consultas "muertas" detengan el resto de tu base de datos.
+* **¿Cuándo usarlo?** Cuando tienes consultas que tardan varios segundos o minutos, o cuando tu red es inestable y las aplicaciones suelen desconectarse antes de que la base de datos termine su tarea.
+Configuración recomendada: Por defecto viene en 0 (desactivado). El autor sugiere activarlo (por ejemplo, a 1s o 5s) en sistemas donde hay consultas largas o redes inestables para evitar la acumulación de procesos inútiles.
 
 **Escenario donde no es necesario usar client_connection_check_interval:**
 En entornos donde la aplicación no requiere una conexión persistente con la base de datos o donde las desconexiones
  de los clientes no representan un riesgo crítico para la integridad de los datos o la disponibilidad del servicio
 
+**Escenario donde sí  es necesario usar client_connection_check_interval:**
+
+### 1. Entornos con Consultas Pesadas (Reportes y BI)
+Si tu base de datos genera reportes complejos que tardan **10 segundos, un minuto o más**, es vital. Si el usuario se desespera y cierra la pestaña del navegador, sin este parámetro, Postgres seguirá procesando ese reporte gigante "para nadie" hasta terminarlo.
+
+### 2. Redes Inestables o Conexiones Móviles
+En aplicaciones donde los usuarios se conectan desde redes Wi-Fi débiles o datos móviles (donde la conexión se corta con frecuencia), este ajuste ayuda a que el servidor limpie rápidamente los procesos que quedaron colgados por la caída del internet.
+
+### 3. Sistemas con Alta Concurrencia y Bloqueos
+Si usas muchas transacciones que bloquean tablas (como procesos de actualización masiva), es fundamental. Evita que una conexión perdida mantenga un bloqueo eterno que impida a otros usuarios escribir en la base de datos.
+
+### 4. Microservicios y Balanceadores de Carga
+Cuando usas herramientas como *Kubernetes* o balanceadores que cortan conexiones por "timeout", Postgres a veces no se entera del corte. Este parámetro sincroniza al motor de la base de datos con esos cortes externos.
+ 
+### Resumen de recomendación técnica:
+* **NO se recomienda:** En aplicaciones de altísimo tráfico con consultas ultrarrápidas (milisegundos), porque el chequeo constante podría añadir una carga mínima innecesaria.
+* **SÍ se recomienda:** Configurarlo entre **500ms y 2s** en la mayoría de servidores de aplicaciones generales.
+https://ardentperf.com/2026/02/04/postgres-client_connection_check_interval/
 
 ```
 
