@@ -101,6 +101,7 @@ https://www.data-bene.io/en/#blog
 https://justatheory.com/
 https://hey-dba.com/category/articles/security/
 https://postgrespro.com/blog
+https://hackorum.dev/
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
 https://scalegrid.io/blog/
