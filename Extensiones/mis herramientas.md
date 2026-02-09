@@ -1,6 +1,10 @@
 
 # Script Terminados 
-[pgTLSCheck](https://github.com/CR0NYM3X/pgTLSCheck) :  Bash diseñada para realizar pentesting específico sobre la capa TLS/SSL de servidores PostgreSQL. Perfecta para administradores, auditores de seguridad, equipos DevSecOps y profesionales que buscan reforzar la postura criptográfica de su infraestructura de datos. Permite detectar configuraciones inseguras, cipher suites vulnerables, conexiones cifradas,
+
+
+[pg_scram_sha256_generate](https://github.com/CR0NYM3X/pg_scram_sha256_generate) : Genera hashes y componentes SCRAM-SHA-256 compatibles con el motor de autenticación de PostgreSQL mediante pgcrypto.
+
+[pgTLSCheck](https://github.com/CR0NYM3X/pgTLSCheck) :  Bash diseñada para realizar pentesting específico sobre la capa TLS/SSL de servidores PostgreSQL. Perfecta para administradores, auditores de seguridad, equipos DevSecOps y profesionales que buscan reforzar la postura criptográfica de su infraestructura de datos. Permite detectar configuraciones inseguras, cipher suites vulnerables, conexiones cifradas
 
 
 [pgTLSinfo](https://github.com/CR0NYM3X/pgTLSinfo) :  función de PostgreSQL diseñada para inspeccionar certificados X.509 y servidores PostgreSQL con SSL/TLS habilitado, obteniendo información técnica completa del entorno de seguridad y conexión.
