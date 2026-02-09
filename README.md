@@ -149,7 +149,7 @@ https://www.youtube.com/@pgeu/videos
 
 
 ---- Personas profesionales en PostgreSQL ---
-https://mydbanotebook.org/posts/
+Laetitia Avrot -> https://mydbanotebook.org/posts/
 
 
 --------------  HOSTINGs para tu BASE de DATOS sin pagar nada --------------
