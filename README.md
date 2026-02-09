@@ -147,6 +147,11 @@ https://dbdb.io/browse
 https://www.youtube.com/watch?v=cBLExRgIUA0&list=PLWW0CjV-Tafa2jvcjihXwSvZZKsLAsb9Y
 https://www.youtube.com/@pgeu/videos
 
+
+---- Personas profesionales en PostgreSQL ---
+https://mydbanotebook.org/posts/
+
+
 --------------  HOSTINGs para tu BASE de DATOS sin pagar nada --------------
 
 NEON TECH
