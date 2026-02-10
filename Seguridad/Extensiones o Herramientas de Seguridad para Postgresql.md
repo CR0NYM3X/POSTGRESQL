@@ -49,6 +49,8 @@ Esta guía consolida las herramientas esenciales para blindar PostgreSQL, organi
 
 ### 🛂 Control de Privilegios (Least Privilege)
 
+* **[set_user](https://github.com/pgaudit/set_user):**  Permite que un usuario cambie su identidad a otro rol (incluso a superusuario) pero con tres condiciones críticas que no tiene el comando SET ROLE estándar
+block copy program
 * **[Supautils](https://github.com/supabase/supautils):** Permite tareas administrativas a roles no-superusuarios de forma segura.
 * **[Aiven PG Security](https://github.com/Aiven-Open/aiven-pg-security):** Filtro que previene escalada de privilegios durante la creación de extensiones.
 * **[pgextwlist](https://github.com/dimitri/pgextwlist):** Whitelist de extensiones permitidas para usuarios regulares.
@@ -107,8 +109,10 @@ Esta guía consolida las herramientas esenciales para blindar PostgreSQL, organi
 * **[ESLint Plugin PostgreSQL](https://github.com/baseballyama/eslint-plugin-postgresql):** Análisis de consultas SQL en código JavaScript.
 * **[pg_gather](https://github.com/jobinau/pg_gather):** Recolección de estado de seguridad y roles sin agentes.
 * **[PostgreSQL Security Toolkit](https://github.com/sendtoshailesh/postgresql-security-toolkit):** Scripts de auditoría rápida para red y cifrado.
-* **[PostgreSQL Penetration Testing Guide](https://github.com/JFR-C/Database-Security-Audit/blob/master/PostgreSQL%20database%20penetration%20testing):** Guía metodológica de Pentesting.
 
+* **[PostgreSQL Penetration Testing Guide](https://github.com/JFR-C/Database-Security-Audit/blob/master/PostgreSQL%20database%20penetration%20testing):** Guía metodológica de Pentesting .
+* **[PostgreSQL SQL Injection]( https://github.com/b4rdia/HackTricks/tree/master/pentesting-web/sql-injection/postgresql-injection#postgresql-injection ):** Guía metodológica de SQL Injection #1.
+* **[PostgreSQL SQL Injection]( https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/SQL%20Injection ):** Guía metodológica de SQL Injection #2.
 ---
 
 ## 6. Hardening y Cumplimiento (Compliance as Code)
