@@ -170,9 +170,9 @@ Neon recomienda no quedarse solo con la generación de logs, sino:
 # Links
 ```
 pgaudit -> https://github.com/pgaudit/pgaudit
-pgauditlogtofile -> https://github.com/df7cb/pgauditlogtofile
+pgauditlogtofile -> https://github.com/fmbiete/pgauditlogtofile
 https://github.com/pgaudit/pgaudit_analyze
-
+https://hey-dba.com/articles/implementing-pgaudit-in-postgresql-your-databases-all-seeing-eye/
 https://supabase.com/docs/guides/database/extensions/pgaudit
 
 
