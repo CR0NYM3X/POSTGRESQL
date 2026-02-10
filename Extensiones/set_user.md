@@ -97,6 +97,23 @@ Si estás trabajando en una terminal y te levantas de tu lugar, o si alguien má
 2. Si alguien intenta salir del modo superusuario con un simple `SELECT reset_user();`, PostgreSQL lanzará un **ERROR** diciendo: *"Para resetear el usuario, debes proveer el token correcto"*.
 
 > **En resumen:** El token sirve para asegurar que **la misma persona (o proceso) que subió de nivel, sea la única que pueda bajar de nivel.** Es como una pulsera de seguridad en un club: solo sales si traes la pulsera que te pusieron al entrar.
+
+
+---
+
+ 
+# ¿existe una extensión que bloquee a TODOS (incluyendo superusuarios reales)?
+
+Si tu objetivo es prohibir el `COPY PROGRAM` a **cualquier usuario** que entre al sistema, incluso al superusuario que se conecta directamente, `set_user` por sí solo no es la solución completa, pero hay un camino:
+
+#### 1. La estrategia de "Desactivar el Login de Superusuario"
+
+Esta es la recomendación oficial de los expertos en seguridad de PostgreSQL:
+
+* Creas usuarios normales para tus administradores.
+* Instalas `set_user`.
+* Configuras el usuario `postgres` original como `NOLOGIN` (para que nadie pueda entrar directamente como él).
+* **Resultado:** La ÚNICA forma de ser superusuario es entrando como usuario normal y usando `set_user_u()`. Al hacer esto, la extensión toma el control y **el bloqueo de COPY PROGRAM se vuelve universal** porque todos pasan por su filtro.
  
 
 # Links
