@@ -473,3 +473,189 @@ pip install pgxnclient
 
 ```
  
+
+
+--- 
+
+# Actualización de extension 
+
+### Escenario A: Instalación Manual (Compilando desde Código Fuente)
+
+Cuando compilas, básicamente estás reemplazando los archivos `.so` (shared objects) en el directorio de librerías de PostgreSQL.
+
+1. **Descarga el nuevo código:**
+Ve a la ruta donde descargas tus fuentes y obtén la versión 4.5.
+```bash
+git clone https://github.com/MigOpsRepos/credcheck.git
+cd credcheck
+git checkout tags/v4.5  # Si usas tags específicos
+
+```
+
+
+2. **Configura el entorno:**
+Asegúrate de que `pg_config` esté en tu PATH para que el compilador sepa dónde está instalado PostgreSQL 17.
+```bash
+export PATH=/usr/pgsql-17/bin:$PATH
+
+```
+
+
+3. **Compila e Instala:**
+```bash
+make clean        # Limpia residuos de versiones anteriores
+make              # Compila o Construyes los nuevos binarios de la nueva versión
+sudo make install # Copia los binarios recién creados  a las carpetas de PostgreSQL
+
+```
+
+4. **Actualización en la DB:**
+Si ya tenías la extensión creada en la base de datos, entra a `psql` y ejecuta:
+```sql
+ALTER EXTENSION credcheck UPDATE TO '4.5';
+
+```
+ 
+### Escenario B: Usando PGXN (PostgreSQL Extension Network)
+
+PGXN es el "pip" o "npm" de PostgreSQL. Es mucho más automatizado que la compilación manual.
+
+1. **Actualizar el paquete:**
+El comando `install` con PGXN bajará la versión más reciente disponible en la red y la compilará por ti.
+```bash
+sudo pgxn install credcheck
+
+```
+ 
+*Nota: Si necesitas una versión específica, puedes usar `pgxn install credcheck=4.5`.*
+2. **Cargar los cambios:**
+Al igual que en el método manual, PGXN solo instala los archivos en el sistema de archivos. Debes ir a la consola de PostgreSQL y ejecutar el `ALTER EXTENSION` mencionado arriba.
+
+
+
+### Resumen de Diferencias
+
+| Método | Comando Principal | Ventaja | Riesgo |
+| --- | --- | --- | --- |
+| **DNF (RPM)** | `dnf upgrade` | Manejo automático de dependencias. | Dependes de que el repo esté actualizado. |
+| **Manual** | `make && make install` | Control total sobre el código. | Debes tener instalados `gcc` y `postgresql17-devel`. |
+| **PGXN** | `pgxn install` | Fácil de usar, descarga automática. | Requiere el cliente `pgxnclient` instalado. |
+
+### ⚠️ Importante para ambos métodos:
+
+Como `credcheck` se carga generalmente en el parámetro `shared_preload_libraries` del archivo `postgresql.conf`, **siempre** es recomendable reiniciar el servicio de PostgreSQL después de instalar los nuevos binarios:
+
+```bash
+sudo systemctl restart postgresql-17
+
+```
+
+
+### ¿Qué hace exactamente `git checkout tags/v4.5`?
+
+Cuando ejecutas ese comando, le estás diciendo a Git:
+
+> "Saca mis archivos de la línea de tiempo actual y ponlos exactamente como estaban cuando el autor creó la etiqueta v4.5".
+
+**Esto es vital por lo siguiente:**
+
+* **Evitas sorpresas:** Si solo haces `git clone` sin especificar versión, podrías estar bajando la versión 4.6-beta (que quizás aún no funciona bien) solo porque es la más reciente en la rama principal.
+* **Compatibilidad:** Como administrador de sistemas, necesitas que la versión del código fuente coincida exactamente con la versión que quieres instalar (en tu caso, la 4.5).
+
+
+
+### ¿Cómo saber qué tags existen?
+
+Si estás dentro de la carpeta del repositorio, puedes listar todas las versiones disponibles con:
+
+```bash
+git tag
+
+```
+ 
+ 
+### ¿Qué hace exactamente `make clean`?
+
+1. **Borra basura previa:** Elimina todos los archivos binarios y objetos (`.o`) que se generaron en la última compilación.
+2. **Previene conflictos:** Evita que el compilador intente "reciclar" partes de la versión 3.0 para armar la 4.5. Mezclar piezas de versiones distintas es la causa #1 de errores extraños como `Segmentation Fault` (cuando el programa se rompe de la nada).
+3. **Fuerza una compilación total:** Al no haber archivos previos, obligas a `make` a compilar absolutamente todo desde cero con el código nuevo.
+
+ 
+ 
+Todo está definido en un archivo llamado `Makefile` que viene dentro de la carpeta del código. El autor del software escribe una sección ahí llamada `clean` que lista todos los archivos que deben ser eliminados.
+ 
+
+--- 
+
+# Makefile
+
+Un **Makefile** es, en esencia, un **archivo de recetas o instrucciones** que le dice a la herramienta `make` cómo compilar y organizar un programa.
+
+En el mundo de Linux y RHEL, cuando descargas código fuente (como el de `credcheck`), no descargas un ejecutable ya listo; descargas archivos de texto con código. El Makefile es el manual que explica cómo convertir ese texto en un programa funcional.
+ 
+ 
+### ¿Para qué sirve exactamente?
+
+#### 1. Automatización del proceso (No escribes comandos largos)
+
+Compilar un programa a mano puede requerir comandos de GCC larguísimos, incluyendo rutas de librerías de PostgreSQL, banderas de optimización y dependencias.
+
+* **Sin Makefile:** Tendrías que escribir comandos de 3 líneas de largo.
+* **Con Makefile:** Solo escribes `make`.
+
+#### 2. Compilación Inteligente (Eficiencia)
+
+Si un proyecto tiene 100 archivos y tú solo cambiaste uno, el Makefile es lo suficientemente inteligente para saber que **solo debe recompilar ese archivo** y no los otros 99. Esto ahorra muchísimo tiempo en proyectos grandes.
+
+#### 3. Estandarización
+
+Permite que cualquier administrador de sistemas use los mismos comandos universales:
+
+* `make`: Compila.
+* `make install`: Instala.
+* `make clean`: Limpia.
+* `make uninstall`: Borra lo instalado.
+
+ 
+
+### ¿Cómo se ve por dentro?
+
+Un Makefile de credcheck:
+
+```makefile
+EXTENSION = credcheck
+EXTVERSION = $(shell grep default_version $(EXTENSION).control | \
+	       sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
+
+# Uncomment the following two lines to enable cracklib support, adapt the path
+# to the cracklib dictionary following your distribution
+#PG_CPPFLAGS = -DUSE_CRACKLIB '-DCRACKLIB_DICTPATH="/usr/lib/cracklib_dict"'
+#SHLIB_LINK = -lcrack
+
+PG_CPPFLAGS += -Wno-ignored-attributes -flto
+
+MODULE_big = credcheck
+OBJS = credcheck.o $(WIN32RES)
+PGFILEDESC = "credcheck - postgresql credential checker"
+
+DATA = $(wildcard updates/*--*.sql) sql/$(EXTENSION)--$(EXTVERSION).sql
+
+REGRESS_OPTS  = --inputdir=test --load-extension=credcheck
+TESTS = 01_username 02_password 03_rename 04_alter_pwd \
+	05_reuse_history 06_reuse_interval 07_valid_until \
+	08_first_login
+
+REGRESS = $(patsubst test/sql/%.sql,%,$(TESTS))
+
+PG_CONFIG = pg_config
+PGXS := $(shell $(PG_CONFIG) --pgxs)
+include $(PGXS)
+```
+
+* **Objetivo (Target):** Qué quieres construir (ej. `credcheck.so`).
+* **Dependencias:** Qué archivos se necesitan para construirlo.
+* **Comando:** La instrucción real (siempre precedida por un **Tabulador**, una regla estricta de Makefile).
+
+
+
+
