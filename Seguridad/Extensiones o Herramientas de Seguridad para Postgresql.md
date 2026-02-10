@@ -56,7 +56,7 @@ block copy program
 * **[pgextwlist](https://github.com/dimitri/pgextwlist):** Whitelist de extensiones permitidas para usuarios regulares.
 * **[pg_permissions](https://github.com/markokortelainen/pg_permissions):** Vistas simplificadas para auditar la matriz de privilegios.
 * **[monitoring_role](https://github.com/frost242/monitoring_role):** Roles de solo lectura para herramientas de monitoreo en versiones legacy.
-
+* **[disable_copy](https://github.com/geocompass/disable_copy/tree/master)** : Permite bloquear el copy a todos los usuarios 
 ---
 
 ## 3. Protección de Datos (Data Protection)
