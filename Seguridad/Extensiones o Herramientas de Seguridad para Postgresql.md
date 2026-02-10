@@ -86,7 +86,7 @@ Esta guía consolida las herramientas esenciales para blindar PostgreSQL, organi
 
 * **[pgaudit](https://github.com/pgaudit/pgaudit):** Estándar de oro para auditoría detallada (cumplimiento SOC2/HIPAA).
 * **[pgaudit_analyze](https://github.com/pgaudit/pgaudit_analyze):** Analizador de logs de pgAudit para inserción en DB.
-* **[pgauditlogtofile](https://github.com/df7cb/pgauditlogtofile):** Redirección de logs de auditoría a archivos dedicados.
+* **[pgauditlogtofile](https://github.com/fmbiete/pgauditlogtofile):** Redirección de logs de auditoría a archivos dedicados.
 * **[ELK Stack](https://www.elastic.co/elastic-stack):** Centralización y visualización avanzada de logs.
 
 ### 🔎 Integridad y Análisis Forense
