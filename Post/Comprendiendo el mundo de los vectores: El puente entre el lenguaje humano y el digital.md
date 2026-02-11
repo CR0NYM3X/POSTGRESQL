@@ -206,7 +206,109 @@ Los embeddings son geniales para el significado general, pero pésimos para deta
 | **Multimodalidad:** Puedes comparar un texto con una imagen si usas el mismo espacio vectorial. | **Alucinaciones:** Un vector cercano no siempre significa una respuesta correcta, solo una relación estadística. |
 | **Reducción de Ambigüedad:** Diferencia entre "Banco" (asiento) y "Banco" (dinero) según el contexto. | **Dependencia del Modelo:** Si cambias tu modelo de embedding, tienes que re-generar TODA tu base de datos de vectores. |
 
+---
 
+
+
+## 1. ¿Cómo se asigna el ID a un Token?
+
+Antes de llegar a los vectores (embeddings), pasamos por la **tokenización**. No hay "magia" ni un significado intrínseco aquí; es puramente administrativo.
+
+* **El Vocabulario:** Cuando se entrena un modelo (como GPT o BERT), se crea un diccionario gigante de todas las palabras o sub-palabras que el modelo conoce.
+* **Asignación Arbitraria:** A cada palabra se le asigna un número entero basado simplemente en su posición en ese diccionario.
+* `perro` -> ID 452
+* `pitbull` -> ID 8901
+* `gato` -> ID 453
+
+
+
+Este ID es solo una **etiqueta**. En este punto, el modelo no sabe qué significa "perro", solo sabe que es el concepto número 452.
+
+
+## 2. ¿Cómo sabe que "perro" está cerca de "pitbull"?
+
+Aquí es donde entran los **Embeddings** y el entrenamiento. La cercanía no se define manualmente, se **aprende** mediante el contexto.
+
+### La Hipótesis Distribucional
+
+La clave es una frase famosa en lingüística: *"Conocerás a una palabra por las compañías que mantiene"*.
+
+1. **Contexto:** Durante el entrenamiento, el modelo lee billones de frases. Nota que "perro" y "pitbull" suelen aparecer rodeados de palabras similares como: *ladrar, veterinario, correa, mascota, pasear*.
+2. **Ajuste Matemático:** Al principio, los vectores de todas las palabras apuntan a direcciones aleatorias en un espacio de cientos de dimensiones.
+3. **Optimización:** Si el modelo ve que "pitbull" aparece en contextos donde usualmente aparece "perro", el algoritmo ajusta sus coordenadas matemáticas para que sus vectores apunten en direcciones similares.
+
+### La cercanía matemática
+
+Para la IA, la "cercanía" es la **Similitud de Coseno**. No es que el modelo "entienda" qué es un animal, es que matemáticamente sus coordenadas en el espacio multidimensional son casi las mismas.
+
+Si usamos una fórmula simplificada de similitud:
+
+
+Donde si el resultado es cercano a **1**, significa que las palabras son semánticamente similares porque comparten "vecindario" estadístico.
+
+
+## Resumen rápido
+
+* **El ID:** Es una placa de identificación (como el DNI o CURP) asignada al azar al inicio.
+* **La cercanía:** Es el resultado de haber leído todo internet y darse cuenta de que esas dos palabras "se juntan con la misma gente".
+
+
+---
+---
+
+
+
+# Embeddings
+
+Si el **Token** es el "nombre" o "ID" de una palabra, el **Embedding** es su "personalidad" o "significado" convertido en números.
+
+En términos simples: **Un embedding es una representación numérica de un concepto en un espacio de muchas dimensiones.**
+
+
+ 
+## 1. El concepto: ¿Cómo cuantificar un significado?
+
+Imagina que quieres describir una fruta usando solo números. Podrías crear "dimensiones" como:
+
+* ¿Qué tan **dulce** es?
+* ¿Qué tan **grande** es?
+* ¿Qué tan **roja** es?
+
+Entonces, una **Manzana** podría ser un vector como: `[0.9, 0.2, 0.8]`.
+Mientras que un **Limón** sería: `[0.1, 0.1, 0.1]`.
+
+En la IA, no usamos 3 dimensiones, sino cientos (como 768 o 1536). El modelo no decide "esta dimensión es para el color", sino que mediante el entrenamiento descubre patrones complejos que los humanos ni siquiera podemos nombrar.
+ 
+
+## 2. La diferencia entre el ID y el Embedding
+
+Es común confundirlos, pero son procesos distintos:
+
+* **El Token (ID):** Es como el número de asiento en un estadio. El asiento 452 y el 453 están juntos, pero las personas sentadas ahí pueden no conocerse de nada. Es solo una **posición**.
+* **El Embedding (Vector):** Es como un perfil psicológico. Personas con gustos similares (vectores similares) se agrupan en el mismo sector del estadio, sin importar qué número de asiento tengan.
+ 
+
+## 3. ¿Para qué sirven? (El superpoder de la IA)
+
+Gracias a los embeddings, las computadoras pueden hacer "matemáticas de palabras". El ejemplo clásico es:
+
+$$Vector(\text{"Rey"}) - Vector(\text{"Hombre"}) + Vector(\text{"Mujer"}) \approx Vector(\text{"Reina"})$$
+
+Esto es posible porque el embedding capturó la esencia de "realeza", "género masculino" y "género femenino" como coordenadas geográficas.
+
+
+
+## 4. ¿Cómo se usan en  PostgreSQL?
+
+Cuando guardas un embedding en `pgvector`, estás guardando ese "perfil numérico". Cuando un usuario busca "comida rápida", la base de datos no busca la palabra exacta, busca qué vectores están "cerca" del vector de esa frase. Por eso encuentra "hamburguesa" aunque la palabra "comida" no esté en el texto.
+
+### En resumen:
+
+* **Input:** "Perro"
+* **Tokenización:** ID 452.
+* **Embedding:** `[0.12, -0.59, 0.88, ...]` (un vector de 1536 números).
+* **Resultado:** Ahora la máquina puede comparar ese vector contra otros y saber que "Pitbull" está a milímetros de distancia.
+ 
 
 
 
