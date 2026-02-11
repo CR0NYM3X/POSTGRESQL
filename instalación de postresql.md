@@ -634,6 +634,19 @@ Una medida de seguridad fundamental de PostgreSQL. **Nunca** se permite iniciali
 Este usuario será el propietario del binario y del directorio de datos:
 
 ```bash
+#### En caso de que ya existe el usuario postgresql y no se asigno un home 
+
+-- 1 .- Cambiar la ruta en el sistema
+sudo usermod -d /home/postgres -m postgres
+
+-d: Define la nueva ruta.
+-m: Mueve el contenido del home actual al nuevo (si es que había algo).
+
+-- 2.- Crear la carpeta manualmente (si no existe) 
+sudo mkdir -p /var/lib/postgresql
+sudo chown postgres:postgres /var/lib/postgresql
+
+
 
 ------------------ [Opcion #1 ]  ------------------
 
