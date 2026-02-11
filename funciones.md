@@ -945,12 +945,14 @@ select * from mi_funcion_ejemplo();
  
 
 
-#  FOR UPDATE y SKIP LOCKED
+#  FOR UPDATE y SKIP LOCKED - Control de Concurrencia Basado en Bloqueos
+(Lock-based Concurrency Control),
 Combinación de cola poderosa para manejar escenarios de concurrencia en bases de datos, permitiendo que múltiples transacciones trabajen en paralelo sin interferir entre sí. [[1]](https://medium.com/@oscarfpires/postgresql-as-a-message-broker-pgqueue-1eda6ca7c954)
 ```
 FOR UPDATE: Bloquea la fila seleccionada para que otras transacciones no puedan modificarla hasta que la transacción actual termine.
 
-SKIP LOCKED: Si la fila que se intenta bloquear ya está bloqueada por otra transacción, simplemente la omite y no la selecciona.
+FOR UPDATE SKIP LOCKED:  Si la fila que se intenta bloquear ya está bloqueada por otra transacción, Salta los registros bloqueados y me da el siguiente libre.
+FOR UPDATE NOWAIT:   Si la fila que se intenta bloquear ya está bloqueada por otra transacción, Lanza un error instantáneo si el registro está ocupado. "ERROR: could not obtain lock on row in relation "facturas""
 
 -- Ejemplo : 
 SELECT "id", "channel", "message", "created_at", "created_at"
