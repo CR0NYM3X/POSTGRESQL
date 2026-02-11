@@ -808,10 +808,25 @@ grant test_role to USER_TEST WITH ADMIN OPTION; --- ES COMO EL WITH GRANT OPTION
 ### Ver los miembros de un grupo específico:
 La tabla pg_auth_members sirve para mostrar si un usuario esta en un grupo o rol
 ```sql
-select  roleid::regrole AS group_name, member::regrole AS member_name,grantor::regrole   FROM pg_auth_members WHERE roleid = 'mi_grupo';
+select  roleid::regrole AS group_name, member::regrole AS member_name,grantor::regrole   FROM pg_auth_members
+-- WHERE roleid::regrole::text  = 'pg_monitor'
+order by member;
 
-select usename, rolname from pg_user join pg_auth_members on (pg_user.usesysid=pg_auth_members.member) 
-join pg_roles on (pg_roles.oid=pg_auth_members.roleid) 
+SELECT 
+    r.rolname AS nombre_grupo, 
+    m.rolname AS nombre_miembro,
+    CASE 
+        WHEN m.rolcanlogin THEN 'Usuario' 
+        ELSE 'Grupo/Rol' 
+    END AS tipo_miembro
+	,grantor::regrole 
+	, am.admin_option
+	, am.inherit_option
+	, am.set_option
+FROM pg_authid r
+JOIN pg_auth_members am ON r.oid = am.roleid
+JOIN pg_authid m ON am.member = m.oid
+ORDER BY nombre_miembro, nombre_grupo  ;
 ```
 
 
