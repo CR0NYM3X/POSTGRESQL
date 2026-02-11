@@ -46,6 +46,8 @@ Esta guía consolida las herramientas esenciales para blindar PostgreSQL, organi
 * **[passwordpolicy](https://github.com/eendroroy/passwordpolicy):** Extensión para forzar expiración y robustez de contraseñas.
 * **[passwordcheck](https://www.postgresql.org/docs/current/passwordcheck.html):** Módulo nativo para validación de fuerza de claves.
 * **[session_exec](https://github.com/okbob/session_exec):** Ejecución de funciones al inicio de sesión para validaciones extra.
+* **Hashcat:** Para un ataque de fuerza bruta o de diccionario sobre SCRAM:  La herramienta más rápida que utiliza la potencia de la GPU.
+* **John the Ripper (JtR):** Para un ataque de fuerza bruta o de diccionario sobre SCRAM:  Muy flexible para reglas personalizadas.
 
 ### 🛂 Control de Privilegios (Least Privilege)
 
@@ -110,9 +112,6 @@ block copy program
 * **[pg_gather](https://github.com/jobinau/pg_gather):** Recolección de estado de seguridad y roles sin agentes.
 * **[PostgreSQL Security Toolkit](https://github.com/sendtoshailesh/postgresql-security-toolkit):** Scripts de auditoría rápida para red y cifrado.
 
-* **[PostgreSQL Penetration Testing Guide](https://github.com/JFR-C/Database-Security-Audit/blob/master/PostgreSQL%20database%20penetration%20testing):** Guía metodológica de Pentesting .
-* **[PostgreSQL SQL Injection]( https://github.com/b4rdia/HackTricks/tree/master/pentesting-web/sql-injection/postgresql-injection#postgresql-injection ):** Guía metodológica de SQL Injection #1.
-* **[PostgreSQL SQL Injection]( https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/SQL%20Injection ):** Guía metodológica de SQL Injection #2.
 ---
 
 ## 6. Hardening y Cumplimiento (Compliance as Code)
@@ -160,3 +159,19 @@ block copy program
 ### 🔍 Evaluación de Configuración y SO
 
 * **Lynis (PostgreSQL Audit Module):** Escáner de seguridad para sistemas Unix que audita la configuración del sistema operativo, permisos de archivos de datos y parámetros de red específicos para nodos de base de datos.
+
+---
+
+# Herramientas o Guias para Pentesting en PostgreSQL  
+
+## Test de pentesting - Manuales 
+* **[PostgreSQL Penetration Testing Guide](https://github.com/JFR-C/Database-Security-Audit/blob/master/PostgreSQL%20database%20penetration%20testing):** Guía metodológica de Pentesting .
+* **[PostgreSQL SQL Injection]( https://github.com/b4rdia/HackTricks/tree/master/pentesting-web/sql-injection/postgresql-injection#postgresql-injection ):** Guía metodológica de SQL Injection #1.
+* **[PostgreSQL SQL Injection]( https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/SQL%20Injection ):** Guía metodológica de SQL Injection #2.
+
+### 📜 Políticas de Contraseñas y Ejecución
+
+* **Hashcat:** Para un ataque de fuerza bruta o de diccionario sobre SCRAM:  La herramienta más rápida que utiliza la potencia de la GPU.
+* **John the Ripper (JtR):** Para un ataque de fuerza bruta o de diccionario sobre SCRAM:  Muy flexible para reglas personalizadas.
+
+
