@@ -313,4 +313,8 @@ Cuando guardas un embedding en `pgvector`, estás guardando ese "perfil numéric
 
 
 
-**Links y recursos:** `https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pgvector.md`
+**Links y recursos:** 
+```
+https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pgvector.md
+https://github.com/CR0NYM3X/POSTGRESQL/blob/main/B%C3%BAsqueda%20de%20Texto%20avanzado.md
+```
