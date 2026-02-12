@@ -1,4 +1,4 @@
-# El fantasma de los permisos y auditores (INHERIT y SET ROLE):  ¿Por qué tus usuarios tienen permisos que no deberían (o al revés)?
+# El fantasma de los permisos y auditores (INHERIT y SET ROLE):  ¿Por qué tus usuarios tienen permisos que no deberían?
 
 
 ## **¿Qué significa "Herencia" en Postgres?**
