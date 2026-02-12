@@ -622,7 +622,28 @@ PostgreSQL no borrará esos archivos de 16 MB hasta que:
 2. **El servidor secundario confirme que ya los recibió** (si usas **Replication Slots**).
 
 > **Ojo:** Si el secundario se desconecta y usas un Slot de replicación, el primario seguirá guardando archivos de 16 MB indefinidamente hasta llenar el disco. ¡Ten cuidado con eso!
- 
+
+
+---
+
+
+# Restringe las escritura y trabaja de solo lectura 
+Solo lectura: Puedes hacer SELECT.
+Prohibido modificar: Si intentas hacer un INSERT, UPDATE, DELETE o DROP, la base de datos te lanzará un error inmediatamente.
+Protección de sesión: Se aplica a todas las transacciones de la sesión a menos que se cambie manualmente.
+
+Error que manda si quieres hacer alguna modificacion 
+**ERROR:  cannot execute DELETE in a read-only transaction**
+```
+
+SET default_transaction_read_only = on;
+ALTER DATABASE mi_base_de_datos SET default_transaction_read_only = on;
+
+-- en replica es diferente 
+El modo "Hot Standby" manda
+Cuando configuras una réplica, activas el parámetro hot_standby = on. En el momento en que el servidor arranca como réplica, PostgreSQL pone internamente todas las sesiones en modo lectura.
+Si tú intentas consultar el valor de default_transaction_read_only en la réplica, verás que está en on, aunque tú no lo hayas escrito en el archivo de configuración.
+```
 
 ## Bibliografía 
 ```
