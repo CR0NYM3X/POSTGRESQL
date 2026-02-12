@@ -1,5 +1,5 @@
 
- 
+
 ## 🎯 ¿Para qué sirve hacer réplicas en PostgreSQL?
 Las réplicas pueden ser sincrónicas (alta disponibilidad) o asincrónicas (recuperación ante desastres).
 
