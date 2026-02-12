@@ -128,11 +128,11 @@ CREATE ROLE rol_set_true;
 CREATE ROLE rol_set_false;
 
 -- Crear usuarios
-CREATE ROLE usuario_inherit LOGIN INHERIT;
-CREATE ROLE usuario_noinherit LOGIN NOINHERIT;
-CREATE ROLE usuario_inherit_false LOGIN NOINHERIT;
-CREATE ROLE usuario_set_true LOGIN NOINHERIT;
-CREATE ROLE usuario_set_false LOGIN NOINHERIT;
+CREATE USER usuario_inherit LOGIN INHERIT;
+CREATE USER usuario_noinherit LOGIN NOINHERIT;
+CREATE USER usuario_inherit_false LOGIN NOINHERIT;
+CREATE USER usuario_set_true LOGIN NOINHERIT;
+CREATE USER usuario_set_false LOGIN NOINHERIT;
 
 
 ### Paso 3: Otorgar permisos y roles
