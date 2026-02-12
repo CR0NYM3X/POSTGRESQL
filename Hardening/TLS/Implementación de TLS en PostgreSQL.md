@@ -538,7 +538,7 @@ sslkey -> Clave privada que acompaña al sslcert para probar que el cliente es e
 
 El modo define el nivel de seguridad y verificación de certificados durante la conexión SSL/TLS.
 
-### **Diagrama de Seguridad**
+### **Diagrama de Seguridad de sslmode**
 
 	Seguridad Baja → Alta
 	disable → allow → prefer → require → verify-ca → verify-full
