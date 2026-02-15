@@ -424,5 +424,5 @@ Si decides filtrar y solo enviar ciertas tablas, no olvides que cada tabla debe 
 # Links
 ```
 https://github.com/xataio/pgstream
-
+https://xata.io/blog/pgstream-v100-stateless-schema-change-replication
 ```
