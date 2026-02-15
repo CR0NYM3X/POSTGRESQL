@@ -315,6 +315,8 @@ https://www.cybertec-postgresql.com/en/never-lose-a-postgresql-transaction-with-
 
 - **wal2json:** Genera datos en formato JSON a partir de los registros de WAL (Write-Ahead Logging), útil para replicación lógica y para aplicaciones que necesitan consumir los cambios en un formato legible.  https://github.com/eulerto/wal2json
 
+**pgstream**  herramienta de captura de datos de cambios (CDC) de código abierto, Su función principal es "escuchar" los cambios que ocurren en tu base de datos (INSERTs, UPDATEs, DELETEs) y transmitirlos en tiempo real a otros destinos.
+
 
 PGProfiler: es una extensión para PostgreSQL que ayuda a identificar las actividades más intensivas en recursos dentro de tus bases de datos rea un repositorio histórico en tu base de datos que almacena "muestras" de estadísticas, permitiéndote analizar el rendimiento y los problemas de carga en períodos específicos2. Es útil para monitorear y resolver problemas de rendimiento.
 
