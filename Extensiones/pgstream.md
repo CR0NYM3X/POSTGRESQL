@@ -177,3 +177,9 @@ UPDATE productos SET stock = 50 WHERE id = 1;
 1. **Desacoplamiento:** Si OpenSearch (`10.0.1.30`) cae, pgstream mantiene el puntero en Postgres y reanuda cuando el servicio vuelve, sin perder datos.
 2. **Transformación:** Podrías añadir un flag `--transform` para que los precios se conviertan de USD a EUR antes de llegar al buscador.
 3. **Mantenimiento:** No tienes que recrear suscripciones manualmente cada vez que haces un cambio en el DDL de la tabla.
+
+# Links
+```
+https://github.com/xataio/pgstream
+
+```
