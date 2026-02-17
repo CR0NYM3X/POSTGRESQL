@@ -152,6 +152,7 @@ https://www.youtube.com/@pgeu/videos
 Laetitia Avrot -> https://mydbanotebook.org/posts/
 Richard Yen -> https://richyen.com/
 https://databaserookies.wordpress.com/about-deepakmahto/
+https://shaneborden.com/
 
 --------------  HOSTINGs para tu BASE de DATOS sin pagar nada --------------
 
