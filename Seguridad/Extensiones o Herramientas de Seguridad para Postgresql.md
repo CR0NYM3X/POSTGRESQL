@@ -12,6 +12,7 @@ Esta guía consolida las herramientas esenciales para blindar PostgreSQL, organi
 
 ### 🛡️ IPS/IDS y Protección contra Ataques
 
+* **[auth_delay](https://www.postgresql.org/docs/current/auth-delay.html)** : Mitigar los ataques de fuerza bruta aumentanto el tiempo de respuesta a un error de autenticacion
 * **[Fail2Ban](https://github.com/fail2ban/fail2ban):** Bloqueo automático de IPs tras múltiples intentos fallidos de login.
 * **[CrowdSec](https://github.com/crowdsecurity/crowdsec):** Detección colaborativa de comportamientos maliciosos a nivel de red.
 * **[pg_snakeoil](https://github.com/df7cb/pg_snakeoil):** Escaneo de firmas de malware directamente dentro de las tablas (el "antivirus" de Postgres).
@@ -96,6 +97,7 @@ block copy program
 
 ### 🔎 Integridad y Análisis Forense
 
+* **[noset](https://gitlab.com/ongresinc/extensions/noset)**
 * **[pg_track_settings](https://github.com/voppman/pg_track_settings):** Histórico de cambios en la configuración del servidor.
 * **[config_log](https://github.com/ibarwick/config_log):** Registro de cambios de parámetros en tablas internas.
 * **[pg_filedump](https://github.com/df7cb/pg_filedump):** Herramienta de bajo nivel para examinar archivos de datos (forense).
@@ -175,4 +177,13 @@ block copy program
 * **Hashcat:** Para un ataque de fuerza bruta o de diccionario sobre SCRAM:  La herramienta más rápida que utiliza la potencia de la GPU.
 * **John the Ripper (JtR):** Para un ataque de fuerza bruta o de diccionario sobre SCRAM:  Muy flexible para reglas personalizadas.
 
+
+
+
+
+
+# Links
+```
+https://ext.pigsty.io/list/cate/#sec
+```
 
