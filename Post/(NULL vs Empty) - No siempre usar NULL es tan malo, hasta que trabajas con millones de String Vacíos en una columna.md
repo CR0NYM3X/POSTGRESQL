@@ -1,5 +1,5 @@
 
-# (NULL vs Empty) - No siempre usar NULL es tan malo, hasta que encuentras con millones de String Vacíos en una columna
+# (NULL vs Empty) - No siempre usar NULL es tan malo, hasta que trabajas con millones de String Vacíos en una columna
 
 Imaginemos una arquitectura en la nube de alta disponibilidad, donde cada gigabyte de almacenamiento SSD provisionado cuesta dinero real. Tienes un pipeline de datos agresivo: 500 servidores disparando logs concurrentes, generando **millones de inserts cada hora**.
 
