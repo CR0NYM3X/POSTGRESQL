@@ -67,6 +67,7 @@ block copy program
 
 ### 🔒 Cifrado (Encryption)
 
+* **[pg_strict](https://github.com/spa5k/pg_strict)** : Previene deletes o update sin where 
 * **[pg_tde](https://github.com/cybertec-postgresql/pg_tde):** Cifrado de datos transparente (TDE) a nivel de archivos de disco.
 * **[pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html):** Funciones core para hashing y cifrado de columnas mediante SQL.
 * **[pgsodium](https://github.com/michelp/pgsodium):** Criptografía moderna basada en libsodium (firmas y sellado).
