@@ -338,6 +338,63 @@ Como mencionaste, cada empresa quiere que su "restaurante" sea el mejor:
 
 
  
+---
+
+# Búsqueda Híbrida
+
+conceptos pilares de lo que hoy conocemos como **Búsqueda Híbrida (Hybrid Search)**. Es la técnica que utilizan los sistemas de IA más avanzados (como los sistemas RAG) para encontrar la información más precisa.
+
+Aquí te explico cada uno y cómo trabajan juntos:
+
+
+### 1. BM25 (Best Matching 25)
+
+Es la evolución moderna de la búsqueda por palabras clave. Es un algoritmo estadístico que mide qué tan relevante es un documento para una consulta basándose en las palabras exactas.
+
+* **Cómo funciona:** Si buscas "receta de paella", BM25 buscará documentos donde esas palabras aparezcan con frecuencia, pero penalizará palabras muy comunes como "de" o "la".
+* **Fortaleza:** Es excelente encontrando **nombres propios, códigos de error o términos técnicos específicos**.
+* **Debilidad:** No entiende el significado. Si buscas "felino", BM25 no encontrará un documento que solo diga "gato".
+
+### 2. Vector (Búsqueda Semántica)
+
+Aquí es donde entra la IA. Los textos se convierten en listas de números (vectores) que representan su significado en un espacio multidimensional.
+
+* **Cómo funciona:** Calcula la "distancia" entre el concepto de tu pregunta y los conceptos en tu base de datos.
+* **Fortaleza:** Entiende el **contexto y los sinónimos**. Si buscas "remedio para el dolor de cabeza", encontrará documentos sobre "aspirinas" o "migrañas" aunque no compartan palabras exactas.
+* **Debilidad:** A veces es "demasiado difuso" y puede ignorar términos exactos importantes (como un número de modelo de pieza).
+
+### 3. RRF (Reciprocal Rank Fusion)
+
+Aquí está el "pegamento". RRF es un algoritmo matemático que **combina los resultados** de BM25 y de la Búsqueda Vectorial en una sola lista final.
+
+* **Por qué es necesario:** BM25 te da una puntuación (ej. 15.2) y los Vectores otra muy distinta (ej. 0.98). No puedes sumarlas porque son escalas diferentes.
+* **Cómo funciona:** RRF mira la **posición** (el ranking). Si un documento quedó en el puesto #1 en BM25 y en el #3 en Vectores, RRF le da una puntuación combinada alta.
+* **La fórmula simple:**  (donde  es la posición en el ranking y  es una constante, usualmente 60).
+
+ 
+
+### Caso de Uso Real: Un Buscador de Manuales Técnicos
+
+Imagina que trabajas en el soporte técnico de una fábrica y escribes: **"Error A15 en motor Siemens"**.
+
+1. **BM25:** Encontrará perfectamente el código **"A15"** y la marca **"Siemens"**. (Filtro de precisión).
+2. **Vector:** Entenderá que un "error" en un "motor" se refiere a una **"falla mecánica"** o **"sobrecalentamiento"**, buscando manuales relacionados semánticamente. (Filtro de contexto).
+3. **RRF:** Unirá ambas listas. El documento que mencione específicamente el "Error A15" y además trate sobre "fallas de motores" subirá al primer lugar.
+
+ 
+
+### Ejemplo rápido de cómo se ve el RRF:
+
+Si tenemos el "Documento A":
+
+* En **BM25** quedó en el lugar **2**.
+* En **Vector** quedó en el lugar **5**.
+
+Su puntaje RRF (usando ) sería:
+
+
+El documento con el puntaje final más alto es el que se le muestra al usuario o a la IA (como ChatGPT) para que genere la respuesta.
+ 
 
 
 
