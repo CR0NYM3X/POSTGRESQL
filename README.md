@@ -148,11 +148,12 @@ https://www.youtube.com/watch?v=cBLExRgIUA0&list=PLWW0CjV-Tafa2jvcjihXwSvZZKsLAs
 https://www.youtube.com/@pgeu/videos
 
 
----- Personas profesionales en PostgreSQL ---
+---- Personas profesionales y sus blogs de PostgreSQL ---
 Laetitia Avrot -> https://mydbanotebook.org/posts/
 Richard Yen -> https://richyen.com/
 https://databaserookies.wordpress.com/about-deepakmahto/
 https://shaneborden.com/
+https://hdombrovskaya.wordpress.com/
 
 --------------  HOSTINGs para tu BASE de DATOS sin pagar nada --------------
 
