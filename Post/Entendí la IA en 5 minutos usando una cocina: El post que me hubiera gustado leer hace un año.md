@@ -321,7 +321,23 @@ Como mencionaste, cada empresa quiere que su "restaurante" sea el mejor:
 3. **Copilot Agents (Microsoft):** Son "Oficinistas". Su fuerte es que tienen las llaves de tu oficina (Excel, Word, Outlook) y pueden mover archivos por ti.
 4. **Agentes Autónomos:** Son sistemas que "viven" fuera de un chat. No esperan a que les hables; tú les das una meta y ellos trabajan mientras duermes.
 
+---
 
+### Lo que falta para que seas un experto:
+
+1. **Context Window (La Mesa de Trabajo):** Imagina que el chef tiene una mesa para preparar los platos. Si la mesa es pequeña, solo puede picar una cebolla a la vez. Si es gigante, puede tener 10 libros abiertos y 50 ingredientes listos.
+* **En IA:** Es cuánta información puede "leer y recordar" la IA en una sola sesión. Gemini, por ejemplo, tiene una mesa (ventana de contexto) gigante donde caben libros enteros o videos largos.
+
+
+2. **Orquestadores (El Director de Orquesta):** A veces un solo agente no basta. Necesitas un sistema que diga: "Agente A, busca los datos; Agente B, analízalos; Agente C, redacta el informe".
+* **Herramientas:** Proyectos como **LangChain** o **CrewAI** sirven para que varios agentes trabajen en equipo como una brigada de cocina.
+
+
+3. **Human-in-the-loop (El Control de Calidad Humano):** Es el botón de pánico. Antes de que el Agente mande un correo a tu jefe, se detiene y te pregunta: "¿Está bien esto?".
+* **Importancia:** Evita que la IA tome decisiones costosas o erróneas sin supervisión humana.
+
+
+ 
 
 
 
