@@ -344,7 +344,18 @@ Como mencionaste, cada empresa quiere que su "restaurante" sea el mejor:
 # Links
 ```
 
+https://skills.sh/
+https://agents.md/
+https://agentskills.io
+
 https://www.aitmpl.com/skills
 https://github.com/jeffallan/claude-skills
+
+----------
+
+
+https://cursor.com/es/docs/context/skills
+https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview
+https://developers.openai.com/codex/skills/
 
 ```
