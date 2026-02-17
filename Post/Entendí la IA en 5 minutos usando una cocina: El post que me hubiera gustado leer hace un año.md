@@ -350,7 +350,7 @@ https://agentskills.io
 
 https://www.aitmpl.com/skills
 https://github.com/jeffallan/claude-skills
-
+https://modelcontextprotocol.io/docs/getting-started/intro
 ----------
 
 
