@@ -97,7 +97,7 @@ block copy program
 
 ### 🔎 Integridad y Análisis Forense
 
-* **[noset](https://gitlab.com/ongresinc/extensions/noset)**
+* **[noset](https://gitlab.com/ongresinc/extensions/noset):** Te permite deshabilitar parametros SET que no ocupan de superuser, estos on importantes para la integridad
 * **[pg_track_settings](https://github.com/voppman/pg_track_settings):** Histórico de cambios en la configuración del servidor.
 * **[config_log](https://github.com/ibarwick/config_log):** Registro de cambios de parámetros en tablas internas.
 * **[pg_filedump](https://github.com/df7cb/pg_filedump):** Herramienta de bajo nivel para examinar archivos de datos (forense).
