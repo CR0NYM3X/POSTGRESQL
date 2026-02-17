@@ -252,3 +252,83 @@ Porque antes, si querías que tu IA hiciera algo, tenías que programarlo "a man
 **Instrucciones:** Sé elegante, no recomiendes vinos de más de $100 a menos que te lo pidan.
 
  ```
+
+
+
+---
+
+# **IA Tradicional** e **IA Generativa**
+
+Para completar tu mapa mental de este nuevo mundo, vamos a integrar los conceptos de **IA Tradicional** e **IA Generativa** en nuestro restaurante. Con esto, entenderás por qué el cambio que estamos viviendo es tan grande.
+
+## 1. IA Tradicional vs. IA Generativa
+
+### IA Tradicional (El Sistema de Inventario y Caja)
+
+Antes de que llegaran los "Chefs Inteligentes" (LLMs), los restaurantes ya usaban tecnología. Pero esa tecnología no "creaba" nada, solo **clasificaba o predecía**.
+
+* **¿Qué hace?** Analiza datos para decirte qué va a pasar o para organizar lo que ya tienes.
+* **La Analogía:** Es el **Software de la Caja Registradora**.
+* Si le das mil facturas, te dice cuánto ganaste (Clasificación).
+* Si ve que los viernes vendes mucha pasta, te avisa que compres más harina (Predicción).
+* **Pero nunca**, por más datos que tenga, la caja registradora va a inventar una nueva receta de pasta.
+
+
+
+### IA Generativa (El Chef Creativo)
+
+Aquí es donde entran Gemini, ChatGPT y Claude. La gran diferencia es que esta IA **crea contenido nuevo** (texto, imágenes, código, música) basándose en lo que aprendió.
+
+* **¿Qué hace?** No solo analiza, sino que "genera" algo que no existía hace un segundo.
+* **La Analogía:** Es el **Chef que diseña el menú**.
+* Tú le das los ingredientes (los datos) y él te crea un platillo original. No está solo sumando números, está "imaginando" una respuesta.
+
+
+
+
+## 2. El "Motor" de la IA Generativa: El Transformer
+
+Si escuchas la palabra **"Transformer"**, no pienses en robots que se vuelven autos. Es la arquitectura (el invento de Google en 2017) que hizo que la IA diera el salto.
+
+* **La Analogía:** Imagina que el chef antiguo leía las recetas palabra por palabra (muy lento). El **Transformer** le permite al chef mirar **toda la receta de un solo vistazo** y entender qué palabra es más importante.
+* Si la frase es: *"El chef cortó la cebolla porque estaba muy grande"*, el Transformer sabe que "estaba" se refiere a la **cebolla** y no al **chef**. Ese entendimiento del contexto es lo que la hace parecer humana.
+
+
+ 
+## 3. ¿Qué más falta? Conceptos que verás pronto
+
+### Multimodalidad (El Chef con todos los sentidos)
+
+Antes, los modelos solo leían texto. Ahora son **multimodales**.
+
+* **La Analogía:** El chef no solo lee la orden, también puede **ver** una foto de un platillo y decirte qué ingredientes tiene, o **escuchar** tu crítica por voz y responderte.
+* **En la vida real:** Es cuando le subes una foto a ChatGPT o Gemini y le pides que te explique qué hay en ella.
+
+### Fine-tuning (Especialidad de la casa)
+
+Ya dijimos que el **Entrenamiento** es la escuela de cocina general. El **Fine-tuning** es cuando ese chef ya graduado toma un curso de 3 meses específicamente sobre "Comida Tailandesa Picante".
+
+* **En la IA:** Tomas un modelo que ya sabe hablar (como GPT-4) y lo entrenas un poco más con datos específicos de leyes o de medicina para que sea un experto en esa área.
+
+ 
+
+## El Mapa Final de Herramientas (Gems, GPTs y Agentes)
+
+Como mencionaste, cada empresa quiere que su "restaurante" sea el mejor:
+
+1. **Gems (Google/Gemini):** Son "Personalidades". Ideales para tener un chef que siempre te responda como un tutor de matemáticas o un escritor de correos.
+2. **GPTs (OpenAI/ChatGPT):** Muy parecidos a los Gems, pero con una tienda (GPT Store) donde puedes usar los "Chefs" que otras personas ya entrenaron.
+3. **Copilot Agents (Microsoft):** Son "Oficinistas". Su fuerte es que tienen las llaves de tu oficina (Excel, Word, Outlook) y pueden mover archivos por ti.
+4. **Agentes Autónomos:** Son sistemas que "viven" fuera de un chat. No esperan a que les hables; tú les das una meta y ellos trabajan mientras duermes.
+
+
+
+
+
+# Links
+```
+
+https://www.aitmpl.com/skills
+https://github.com/jeffallan/claude-skills
+
+```
