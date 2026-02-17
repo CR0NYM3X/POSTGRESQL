@@ -47,6 +47,7 @@ Esta guía consolida las herramientas esenciales para blindar PostgreSQL, organi
 * **[passwordpolicy](https://github.com/eendroroy/passwordpolicy):** Extensión para forzar expiración y robustez de contraseñas.
 * **[passwordcheck](https://www.postgresql.org/docs/current/passwordcheck.html):** Módulo nativo para validación de fuerza de claves.
 * **[session_exec](https://github.com/okbob/session_exec):** Ejecución de funciones al inicio de sesión para validaciones extra.
+* **[login_hook](https://github.com/splendiddata/login_hook):**  permite ejecutar funciones personalizadas justo en el momento en que un usuario inicia sesión en la base de datos.
 * **Hashcat:** Para un ataque de fuerza bruta o de diccionario sobre SCRAM:  La herramienta más rápida que utiliza la potencia de la GPU.
 * **John the Ripper (JtR):** Para un ataque de fuerza bruta o de diccionario sobre SCRAM:  Muy flexible para reglas personalizadas.
 
@@ -72,6 +73,7 @@ block copy program
 * **[pg_tde](https://github.com/cybertec-postgresql/pg_tde):** Cifrado de datos transparente (TDE) a nivel de archivos de disco.
 * **[pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html):** Funciones core para hashing y cifrado de columnas mediante SQL.
 * **[pgsodium](https://github.com/michelp/pgsodium):** Criptografía moderna basada en libsodium (firmas y sellado).
+* **pg_pwhash](https://github.com/cybertec-postgresql/pg_pwhash):** Proporciona algoritmos de hash de contraseñas de última generación
 * **[Let's Encrypt](https://letsencrypt.org/):** Certificados SSL/TLS gratuitos para cifrado en tránsito.
 * **[sslutils](https://github.com/shuber2/sslutils):** Herramientas para gestión de certificados y CRLs dentro del motor.
 
