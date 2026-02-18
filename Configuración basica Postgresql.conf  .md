@@ -1171,24 +1171,27 @@ archivos importantes :
 
 ls -lhtra /home/postgres
 
-.bash_profile # guardar las variables de entorno persistentes 
+
+.bash_profile # Este archivo se lee una sola vez: justo cuando metes tu usuario y contraseña para entrar al servidor (login).
+.bashrc       # Este archivo se lee cada vez que abres una nueva ventana de terminal (o pestaña) estando ya dentro del servidor.
 .psql_history # historial de comandos de postgresql 
 .bash_history # historial de comandos de bash de linux
 
 
-# bash_profile Ejemplo de variables de entorno , cambiar rutas 
+# bashrc Ejemplo de variables de entorno , cambiar rutas 
 
-LD_LIBRARY_PATH=/usr/pgsql-17/lib:$LD_LIBRARY_PATH
-export PATH=/usr/pgsql-16/bin:$PATH
+LD_LIBRARY_PATH=/usr/pgsql-17/lib:$LD_LIBRARY_PATH  # Le dice al sistema dónde buscar las librerías compartidas (archivos que terminan en .so en Linux).
+export PATH=/usr/pgsql-17/bin:$PATH  # Le dice al sistema dónde buscar los ejecutables (los programas como psql, pg_ctl, ls, etc.).
 
 export PGPORT=5432
 export PGDATA=/sysx/data
-export pg_config=/usr/local/pgsql/bin/pg_config
-export MANPATH=$MANPATH:/usr/local/pgsql/man
+export PGBIN=/usr/pgsql-17/bin
+export MANPATH=$MANPATH:/usr/pgsql-17/share/man
 export PGDATABASE=postgres
 export PGUSER=postgres
-export PGLOG=/pglog
+export PGLOG=/pg_log
 export LD_LIBRARY_PATH
+
 
 https://www.postgresql.org/docs/11/libpq-envars.html
 1. PGHOST: Especifica el nombre de host de la máquina donde se ejecuta el servidor de PostgreSQL.
@@ -1202,8 +1205,8 @@ https://www.postgresql.org/docs/11/libpq-envars.html
 
 
 /************ RECARGAR EL ARCHIVO SIN NECESIDAD DE CERRAR LA TERMINAL ***********\
-source ~/.bash_profile
-. ~/.bash_profile
+source ~/.bashrc
+. ~/.bashrc
 
 ******************************************************************
 vim .vimrc
@@ -1215,7 +1218,7 @@ set ignorecase
 
 ******************************************************************
  
-source ~/.bash_profile
+source ~/.bashrc
 
 
 # https://robotmoon.com/bash-prompt-generator/
