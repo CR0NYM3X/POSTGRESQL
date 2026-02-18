@@ -28,6 +28,8 @@
 
 # Scripts en DESARROLLO
 ```
+pg_dblinkv2        -> Te permitira elegir entre (exec o consulta - (fetch o all) )  y un id de usuario que este cifrado. mejorando la experiencia.
+
 pg_appkiller       -> https://github.com/CR0NYM3X/pg_appkiller
 pg_privileges      -> https://github.com/CR0NYM3X/pg_privileges
 pg_prttb           -> https://github.com/CR0NYM3X/pg_prttb
