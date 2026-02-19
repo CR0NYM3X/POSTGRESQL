@@ -1166,6 +1166,17 @@ Pagina 71 -> https://www.cherrycreekeducation.com/bbk/b/Apress_PostgreSQL_Config
 
 
 ## Configuracion de archivos   variables de entorno
+
+Cuando usas un comando como `su - postgres` o inicias sesión por SSH, Bash busca los archivos en este orden de prioridad:
+
+1. `/etc/profile` (Configuración global).
+2. `~/.bash_profile`
+3. `~/.bash_login`
+4. `~/.profile`
+
+**El detalle:** Si existe el archivo `~/.bash_profile`, Bash **no lee** automáticamente el `.bashrc` a menos que se lo indiques explícitamente dentro de él.
+
+
 ```sql
 archivos importantes :
 
@@ -1178,9 +1189,18 @@ ls -lhtra /home/postgres
 .bash_history # historial de comandos de bash de linux
 
 
-# bashrc Ejemplo de variables de entorno , cambiar rutas 
+# configurar .bash_profile Ejemplo de variables de entorno , cambiar rutas 
 
-LD_LIBRARY_PATH=/usr/pgsql-17/lib:$LD_LIBRARY_PATH  # Le dice al sistema dónde buscar las librerías compartidas (archivos que terminan en .so en Linux).
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+clear
+export PS1="\[\e[38;5;196m\]\u\[\e[38;5;202m\]@\[\e[38;5;208m\]\h \[\e[38;5;220m\]\w \[\033[0m\]$ "
+
+export LD_LIBRARY_PATH=/usr/pgsql-17/lib:$LD_LIBRARY_PATH  # Le dice al sistema dónde buscar las librerías compartidas (archivos que terminan en .so en Linux).
 export PATH=/usr/pgsql-17/bin:$PATH  # Le dice al sistema dónde buscar los ejecutables (los programas como psql, pg_ctl, ls, etc.).
 
 export PGPORT=5432
@@ -1190,7 +1210,7 @@ export MANPATH=$MANPATH:/usr/pgsql-17/share/man
 export PGDATABASE=postgres
 export PGUSER=postgres
 export PGLOG=/pg_log
-export LD_LIBRARY_PATH
+
 
 
 https://www.postgresql.org/docs/11/libpq-envars.html
@@ -1205,8 +1225,8 @@ https://www.postgresql.org/docs/11/libpq-envars.html
 
 
 /************ RECARGAR EL ARCHIVO SIN NECESIDAD DE CERRAR LA TERMINAL ***********\
-source ~/.bashrc
-. ~/.bashrc
+source ~/.bash_profile
+. ~/.bash_profile
 
 ******************************************************************
 vim .vimrc
@@ -1216,9 +1236,9 @@ highlight Comment ctermfg=blue
 set ignorecase
 
 
-******************************************************************
+****************************************************************** Agrega formato a la terminal 
  
-source ~/.bashrc
+source ~/.bash_profile
 
 
 # https://robotmoon.com/bash-prompt-generator/
