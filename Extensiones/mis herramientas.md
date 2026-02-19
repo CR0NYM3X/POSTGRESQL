@@ -4,6 +4,8 @@
 
 [pg_hash_generate](https://github.com/CR0NYM3X/pg_hash_generate) : Verifica y Genera hashes SCRAM-SHA-256 y MD5  compatibles con el motor de autenticación de PostgreSQL mediante pgcrypto.
 
+[pg_auto_hardening](https://github.com/CR0NYM3X/pg_auto_hardening) : Funcion anonima para hardenizar el servidor de manera automatica modificando el postgresql.conf .
+
 [pgTLSCheck](https://github.com/CR0NYM3X/pgTLSCheck) :  Bash diseñada para realizar pentesting específico sobre la capa TLS/SSL de servidores PostgreSQL. Perfecta para administradores, auditores de seguridad, equipos DevSecOps y profesionales que buscan reforzar la postura criptográfica de su infraestructura de datos. Permite detectar configuraciones inseguras, cipher suites vulnerables, conexiones cifradas
 
 
