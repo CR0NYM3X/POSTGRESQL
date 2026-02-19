@@ -212,6 +212,8 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    mv client.crt postgresql.crt
    mv client.key postgresql.key
 
+
+	# Nota a los certificados no le puedes dar otro permiso mayor a 600 ya que postgresql por seguridad no los usara y marcara error
    	sudo chown postgres:postgres  postgresql.crt
 	sudo chown postgres:postgres  postgresql.key
 	sudo chmod 600 postgresql.key
