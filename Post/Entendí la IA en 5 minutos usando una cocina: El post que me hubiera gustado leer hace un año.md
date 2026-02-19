@@ -410,6 +410,10 @@ https://github.com/jeffallan/claude-skills
 https://modelcontextprotocol.io/docs/getting-started/intro
 ----------
 
+-- Saber la cantidad de tockens y ID
+https://www.testingdocs.com/openai-tokenizer-tool/
+https://cobusgreyling.medium.com/openai-string-tokenisation-explained-31a7b06203c0
+
 
 https://cursor.com/es/docs/context/skills
 https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview
