@@ -213,7 +213,12 @@ De forma predeterminada, PostgreSQL no realizará ninguna verificación del cert
    mv client.key postgresql.key
 
 
-	# Nota a los certificados no le puedes dar otro permiso mayor a 600 ya que postgresql por seguridad no los usara y marcara error
+	# Nota a los certificados no le puedes dar otro permiso mayor a 600 ya que postgresql por seguridad no los usara y marcara error : 
+	 	<2026-02-18 18:06:01 CST     314037 699653e9.4cab5 >DETAIL:  File must have permissions u=rw (0600) or less if owned by the database user, or permissions u=rw,g=r (0640) or less if owned by root.
+		<2026-02-18 18:06:01 CST     314037 699653e9.4cab5 >LOG:  database system is shut down
+ 			stopped waiting
+		pg_ctl: could not start server
+
    	sudo chown postgres:postgres  postgresql.crt
 	sudo chown postgres:postgres  postgresql.key
 	sudo chmod 600 postgresql.key
