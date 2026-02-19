@@ -55,7 +55,16 @@ file  /usr/local/pgsql/bin/pg_dump
 readelf /usr/local/pgsql/bin/pg_dump
 
 locate postgres -- con esto encuentras todos los archivos que digan ese postgres
-which postgres  -- encontraras la ruta binario 
+which postgres  -- encontraras la ruta binario
+
+pwdx <PID> 				# Busca directorio de trabajo desde el cual se lanzó el programa:
+ls -l /proc/<PID>/exe 	# Busca el PID del proceso
+
+type -a <nombre>		# Es más completo; te dice si es un alias, una función del shell o un archivo en el disco.
+which <nombre>			# Te da la ruta absoluta del binario que se ejecutaría.
+
+whereis <nombre> 		# Busca el binario, las fuentes y las páginas del manual.
+locate <nombre> 		# Busca en una base de datos de todo el sistema el archivo o binario
 
 ```
 
