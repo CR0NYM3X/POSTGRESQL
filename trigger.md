@@ -358,13 +358,17 @@ postgres@postgres#
 
 
 ### Bibliografías: 
-https://www.postgresql.org/docs/current/plpgsql-trigger.html <br>
+ --- Event Trigger Functions  https://www.postgresql.org/docs/current/functions-event-triggers.html
+ ```
+https://www.postgresql.org/docs/current/event-triggers.html
+https://www.postgresql.org/docs/current/plpgsql-trigger.html
 Libro PDF de Postgresql tambien viene sobre los triggers: https://www.postgresql.org/files/documentation/pdf/15/postgresql-15-A4.pdf <br>
-Lista de comandos soportados Event trigger:   https://www.postgresql.org/docs/current/event-trigger-matrix.html <br>
+Lista de comandos soportados Event trigger:   https://www.postgresql.org/docs/17/event-trigger-matrix.html 
 
 Trigger Before, after  https://www.postgresql.org/docs/current/sql-createtrigger.html <br> 
 
 How to Use Event Triggers in PostgreSQL:  https://www.enterprisedb.com/postgres-tutorials/how-use-event-triggers-postgresql <br>
 
-
+ --- Event Trigger Functions  https://www.postgresql.org/docs/current/functions-event-triggers.html
+ ```
  
