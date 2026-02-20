@@ -400,6 +400,8 @@ El documento con el puntaje final más alto es el que se le muestra al usuario o
 
 # Links
 ```
+RAG, MCP, Habilidades Postgresql ->  
+https://www.dbi-services.com/blog/rag-mcp-skills-three-paradigms-for-llms-talking-to-your-database-and-why-governance-changes-everything/
 
 https://skills.sh/
 https://agents.md/
