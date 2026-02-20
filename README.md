@@ -156,6 +156,10 @@ https://shaneborden.com/
 https://hdombrovskaya.wordpress.com/
 saybackend.com
 
+
+---- Herramientas online ------
+https://explain-postgresql.com/beautifier/
+
 --------------  HOSTINGs para tu BASE de DATOS sin pagar nada --------------
 
 NEON TECH
