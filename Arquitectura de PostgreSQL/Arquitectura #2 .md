@@ -7,7 +7,7 @@
   - 5. Procesos
   - 6. Logs
   - 7. Wals
-  - 8. 
+  - 8. conexiones : (aproximadamente 10MB por proceso).
 
 
 ```
