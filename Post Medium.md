@@ -181,6 +181,8 @@ https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-po
 
 # Performance
 ```
+ características de PostgreSQL 17 están transformando el rendimiento de las bases de datos a escala - https://medium.com/@DevBoostLab/postgresql-17-performance-upgrade-2026-f4222e71f577
+
 PostgreSQL Memory Optimization & Performance Tuning  -> https://medium.com/@kunwarishan/postgresql-memory-optimization-performance-tuning-playbook-for-cloud-and-self-managed-fdf43095f6e4
 
 PostgreSQL Just Got Its Biggest Upgrade That Will Change Database Performance in 2026 -> https://medium.com/@DevBoostLab/postgresql-17-performance-upgrade-2026-f4222e71f577
