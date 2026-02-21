@@ -499,6 +499,8 @@ pg_comparator \
 - **IPC**: Esperas de comunicación entre procesos.
 - **Timeout**: Esperas relacionadas con tiempos de espera configurados.
  
+------ ETL 
+PeerDB   -  fue adquirida por ClickHouse Sirve para extraer información de una base de datos PostgreSQL grandes como Terabytes  o peta y llevarla a otros destinos (Data Warehouses, colas de mensajes o sistemas de almacenamiento) casi en tiempo real o otro postgresql 
 
 
 
@@ -529,6 +531,10 @@ CREATE FOREIGN TABLE nombre_tabla (
 
 shared_preload_libraries = 'cstore_fdw'
 https://github.com/citusdata/cstore_fdw
+
+
+
+
 
 
 ```
