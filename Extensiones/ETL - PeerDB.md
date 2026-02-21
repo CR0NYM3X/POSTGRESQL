@@ -33,4 +33,6 @@ Imagina que tienes que mudar **un millón de cajas** de un edificio viejo (Postg
 # Links
 ```
 https://clickhouse.com/blog/practical-postgres-migrations-at-scale-peerdb
+https://github.com/PeerDB-io/peerdb?tab=readme-ov-file#get-started
+
 ```
