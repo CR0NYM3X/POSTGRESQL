@@ -31,6 +31,65 @@ Imagina que tienes que mudar **un millón de cajas** de un edificio viejo (Postg
 **En resumen:** PeerDB es mejor porque sabe "picar" una sola tabla gigante en pedazos físicos y procesarlos todos a la vez sin perder la coherencia de los datos.
 
 
+ 
+### El Flujo de Migración (Paso a Paso)
+
+#### 1. La Fase de "Rebanado" (Logical Partitioning)
+
+En lugar de usar particiones de tabla tradicionales (que tú tendrías que haber creado manualmente), PeerDB hace una **partición lógica sobre la marcha** usando el **CTID**.
+El CTID es un identificador físico: `(ID_de_página, ID_de_fila)`.
+
+PeerDB lanza una consulta rápida para ver cuántas páginas físicas tiene la tabla y calcula rangos. Por ejemplo:
+
+* **Rebanada 1:** Filas en las páginas 0 a 5000.
+* **Rebanada 2:** Filas en las páginas 5001 a 10000.
+* ...y así sucesivamente.
+
+#### 2. Sincronización del "Tiempo"
+
+Como aprendiste, PeerDB ejecuta el `pg_export_snapshot()`. Esto garantiza que todas las rebanadas que vamos a cortar pertenezcan al mismo pastel, evitando que una rebanada sea de "vainilla" y otra de "chocolate" porque alguien cambió los datos en medio del proceso.
+
+#### 3. El Despliegue de "Trabajadores" (Instancias de lectura)
+
+PeerDB levanta múltiples hilos o conexiones (workers). Cada trabajador toma una rebanada (un rango de CTID) y ejecuta una consulta optimizada:
+
+```sql
+SELECT * FROM mi_tabla 
+WHERE ctid >= '(0,0)' AND ctid < '(5000,0)';
+
+```
+
+#### 4. Transmisión Binaria (Directo al grano)
+
+Aquí no hay archivos intermedios `CSV` o `JSON`. PeerDB abre un túnel directo:
+
+* **Origen:** `COPY (SELECT ...) TO STDOUT BINARY`
+* **Destino:** `COPY destino FROM STDIN BINARY`
+
+Los datos viajan en el lenguaje nativo de Postgres, lo que ahorra al CPU el trabajo de "traducir" los datos.
+
+#### 5. El "Pase de Estafeta" al CDC (Tiempo Real)
+
+Mientras los trabajadores terminan de mover el "pasado" (la tabla de 1TB), PeerDB ya está escuchando el "presente" a través de un **Replication Slot**.
+
+* Los cambios nuevos (INSERT/UPDATE) se guardan en una cola temporal.
+* En cuanto termina la carga inicial, PeerDB aplica esos cambios acumulados.
+
+
+
+### Resumen del flujo en una imagen mental:
+
+Imagina que tienes que vaciar una piscina olímpica (la tabla de 1TB):
+
+1. **Instancia/Partición:** En lugar de una sola manguera, pones **16 bombas de extracción** en diferentes puntos de la piscina.
+2. **CTID:** Cada bomba tiene asignado un sector exacto de profundidad y área para no estorbarse.
+3. **Snapshot:** Pones una lona sobre la piscina para que no le caiga agua de lluvia (nuevos datos) mientras vacías, pero recolectas esa lluvia en un barril aparte (**CDC**) para echarla al final en el nuevo contenedor.
+
+### ¿Por qué esto es mejor que el método normal?
+
+Si una de las 16 bombas falla (error de red), PeerDB solo tiene que reiniciar **esa rebanada**, no tiene que volver a empezar la mudanza del Terabyte completo. Es resiliente y extremadamente rápido.
+ 
+
 ---
 
 # pg_export_snapshot()
