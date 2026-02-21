@@ -177,6 +177,9 @@
 
 # Links
 ```
+
+peerdb -> https://clickhouse.com/blog/practical-postgres-migrations-at-scale-peerdb
+
 15 Best Postgres Database Migration Tools in 2025 -> https://www.matillion.com/learn/blog/postgres-database-migration-platforms
 7 Best Postgres Migration Tools in 2025 for Reliable Database Transfers -> https://estuary.dev/blog/postgres-migration-tools/
 7 Best PostgreSQL Database Migration Tools in 2025 -> https://www.ispirer.com/postgresql-database-migration-tools
