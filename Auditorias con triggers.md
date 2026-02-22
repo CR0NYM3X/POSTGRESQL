@@ -1,3 +1,6 @@
+PostgreSQL no soporta triggers sobre SELECT. Los triggers solo existen para INSERT/UPDATE/DELETE/TRUNCATE (y “event triggers” solo para DDL). No hay forma de crear un CREATE TRIGGER ... ON SELECT sobre una tabla.
+
+
 1. **Crear el esquema `cdc`**:
    ```sql
    create schema cdc ;
