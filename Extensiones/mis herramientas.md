@@ -6,7 +6,7 @@
 
 [pg_auto_hardening](https://github.com/CR0NYM3X/pg_auto_hardening) : Funcion anonima para hardenizar el servidor de manera automatica modificando el postgresql.conf .
 
-[pgAuditSimple](https://github.com/CR0NYM3X/pgAuditSimple): Te permite hacer auditorias DML y DDL  de forma rapida y sencilla con solo dos lines.
+[pgAuditSimple](https://github.com/CR0NYM3X/pgAuditSimple): Te permite hacer auditorias DML y DDL  de forma rapida y sencilla con una línea.
 
 [pgTLSCheck](https://github.com/CR0NYM3X/pgTLSCheck) :  Bash diseñada para realizar pentesting específico sobre la capa TLS/SSL de servidores PostgreSQL. Perfecta para administradores, auditores de seguridad, equipos DevSecOps y profesionales que buscan reforzar la postura criptográfica de su infraestructura de datos. Permite detectar configuraciones inseguras, cipher suites vulnerables, conexiones cifradas
 
