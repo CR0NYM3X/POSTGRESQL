@@ -32,7 +32,12 @@
 
 # Scripts en DESARROLLO
 ```
-pg_dblinkv2        -> Te permitira elegir entre (exec o consulta - (fetch o all) )  y un id de usuario que este cifrado. mejorando la experiencia.
+pg_dblinkv2        ->
+  Tabla donde guardara -  usuario y contraseña cifrado
+  Tabla donde guardara - ip_servidor , port y base de datos
+  Tabla donde guardara la query y la forma de que se ejecuta, configuraciones  (fetch limite row o all)  , exec o consulta
+en el dblink ejecutaras el id de usuarios y contraseña , id del servidor, id de la query 
+
 
 pg_appkiller       -> https://github.com/CR0NYM3X/pg_appkiller
 pg_privileges      -> https://github.com/CR0NYM3X/pg_privileges
