@@ -32,19 +32,24 @@
 
 # Scripts en DESARROLLO
 ```
+pg_background_mgr  -> https://github.com/CR0NYM3X/pg_background_mgr
+
 pg_dblinkv2        ->
   Tabla donde guardara -  usuario y contraseña cifrado
   Tabla donde guardara - ip_servidor , port y base de datos
   Tabla donde guardara la query y la forma de que se ejecuta, configuraciones  (fetch limite row o all)  , exec o consulta
 en el dblink ejecutaras el id de usuarios y contraseña , id del servidor, id de la query 
 
+pg_setting_visual -> plataforma que te permitirá aprender para que sirve cada parámetro, te mostrará sus dependencias con otros parametros con efecto desbanecido con los que no son dependientes, los clasificará (Seguridad, optimiazacion, rendimiento, escritura, lectura, disco, replicas) , Te dirá los paraemtros que dependen de configuraciones del S.O , Te dará una descripción corta , te dirá casos de usos, cuando usarlo, ventajas y desventajas Y recomendaciones
+
+pg_architecture_game ->  Algo que nos permita estudiar la arquitectura de PostgreSQL de forma de juego te enseña las cosas mas importantes.
 
 pg_appkiller       -> https://github.com/CR0NYM3X/pg_appkiller
 pg_privileges      -> https://github.com/CR0NYM3X/pg_privileges
 pg_prttb           -> https://github.com/CR0NYM3X/pg_prttb
 
 pg_partition_logic -> https://github.com/CR0NYM3X/pg_partition_logic
-pg_background_mgr  -> https://github.com/CR0NYM3X/pg_background_mgr
+
 pgVaultLog         -> https://github.com/CR0NYM3X/pgVaultLog
 SQLMeta-Tracker    -> https://github.com/CR0NYM3X/SQLMeta-Tracker
 ```
