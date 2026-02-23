@@ -2476,6 +2476,17 @@ CREATE OPERATOR public.%+ (
 SELECT 15 %+ 7 AS resultado; -->   2 
 ```
 
+
+
+# GUC
+Variables de Configuración en Memoria (GUC - Grand Unified Configuration). Estas variables viven solo durante la sesión o transacción actual.
+
+```
+select set_config('esquema.variable', 'texto perron', false);
+
+select current_setting('esquema.variable', true);
+```
+
 # Control de errores en scripts de PostgreSQL con ON_ERROR_STOP
 
 ```sql
