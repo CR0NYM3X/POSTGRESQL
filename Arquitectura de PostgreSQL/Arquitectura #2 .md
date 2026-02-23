@@ -11,6 +11,8 @@
 
 
 ```
+Hablaremos de Hardware y S.O , Almacenamientos 
+
 Vamos iniciar con Libpq realizando una consulta, update, delete, insert  y terminar  cuando retorne el resultado Entender toda la arquitectura de postgresql y como funciona .
 Vamos a trabajar con la instalacion, configuracion
 Tabajar con la HA DR
