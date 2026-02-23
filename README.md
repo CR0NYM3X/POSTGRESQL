@@ -155,6 +155,8 @@ https://databaserookies.wordpress.com/about-deepakmahto/
 https://shaneborden.com/
 https://hdombrovskaya.wordpress.com/
 saybackend.com
+https://www.softwareandbooz.com/
+https://vibhorkumar.wordpress.com/about/
 
 
 ---- Herramientas online ------
