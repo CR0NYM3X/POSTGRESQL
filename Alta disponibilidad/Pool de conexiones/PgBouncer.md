@@ -147,7 +147,7 @@ Al tener las conexiones "pre-abiertas" (`min_pool_size`), eliminas la latencia d
 
 ### Fase 2: La Acción del "Guardia" (`auth_user`)
 
-4. **PgBouncer:** Busca la contraseña del `pgbouncer_auth_user` en el `userlist.txt`, ojo la contraseña tiene que estar en texto plano en el usarlist.txt no en hash de lo contrario te marcara el siguiente errro `failed: FATAL:  server login failed: wrong password type`.
+4. **PgBouncer:** Busca la contraseña del `pgbouncer_auth_user` en el `userlist.txt`, ojo la contraseña tiene que estar en md5 en el usarlist.txt no en hash schram-sha-256 de lo contrario te marcara el siguiente error `failed: FATAL:  server login failed: wrong password type`.
 * **Resultado:** Éxito. PgBouncer ahora sabe su propia "identidad secreta".
 
 
