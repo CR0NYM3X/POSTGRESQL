@@ -1063,7 +1063,54 @@ Configura `work_mem = 64MB`. Esto garantiza que incluso en el peor escenario de 
 
 
 ---
+# Permisos 
+ 
+### 1. Ver permisos en formato de lista (Simbólico)
 
+Ejecuta el siguiente comando:
+
+```bash
+ls -l /etc/pgbouncer/userlist.txt
+
+```
+
+**Cómo interpretarlo:**
+
+* Si ves `-rw-------`, tiene **600** (Lectura/Escritura solo para el dueño).
+* Si ves `-rw-r--r--`, tiene **644** (Lectura para todos, lo cual es un riesgo si tienes la clave en texto plano).
+* Si ves `-r--------`, tiene **400** (Solo lectura para el dueño).
+
+### 2. Ver permisos en formato numérico (Octal)
+
+Este es el método más directo para confirmar si es **600** exactamente:
+
+```bash
+stat -c "%a %n" /etc/pgbouncer/userlist.txt
+
+ejemplo salida:
+600 /etc/pgbouncer/userlist.txt
+
+```
+
+* **Resultado esperado:** Debería devolverte algo como `600 /etc/pgbouncer/userlist.txt`.
+
+ 
+
+### 3. ¿Cómo corregirlos si son "más de 600"?
+
+Si el resultado fue mayor (por ejemplo, 644 o 755), significa que otros usuarios del servidor podrían leer tu archivo `userlist.txt` y ver la contraseña del `pgbouncer_auth_user`.
+
+Para dejarlo con la seguridad recomendada, ejecuta:
+
+```bash
+# Cambiar el dueño al usuario del servicio
+sudo chown pgbouncer:pgbouncer /etc/pgbouncer/userlist.txt
+
+# Restringir permisos a 600
+sudo chmod 600 /etc/pgbouncer/userlist.txt
+
+```
+ 
 
 # Bibliografías 
 
