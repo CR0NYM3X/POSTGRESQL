@@ -361,18 +361,7 @@ BEGIN
 	
 -- MANEJOR DE ERRORES
 EXCEPTION 
-	WHEN OTHERS THEN
-		GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
-                                ex_context = PG_EXCEPTION_CONTEXT,
-                                ex_detail = PG_EXCEPTION_DETAIL,
-                                ex_hint = PG_EXCEPTION_HINT;
-										
-		RAISE NOTICE '%
-		CONTEXT: %
-		DETAIL: %
-		HINT: %', ex_message, ex_context, ex_detail, ex_hint;	
-		EXECUTE FORMAT(v_insert_log, v_start_time , v_status , ex_message); 
-		
+	--- Siempre primero va el QUERY_CANCELED 
 	WHEN QUERY_CANCELED  THEN
 		GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
                                 ex_context = PG_EXCEPTION_CONTEXT,
@@ -383,6 +372,19 @@ EXCEPTION
 		CONTEXT: %
 		DETAIL: %
 		HINT: %', ex_message, ex_context, ex_detail, ex_hint;			
+		EXECUTE FORMAT(v_insert_log, v_start_time , v_status , ex_message); 
+
+
+	WHEN OTHERS THEN
+		GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
+                                ex_context = PG_EXCEPTION_CONTEXT,
+                                ex_detail = PG_EXCEPTION_DETAIL,
+                                ex_hint = PG_EXCEPTION_HINT;
+										
+		RAISE NOTICE '%
+		CONTEXT: %
+		DETAIL: %
+		HINT: %', ex_message, ex_context, ex_detail, ex_hint;	
 		EXECUTE FORMAT(v_insert_log, v_start_time , v_status , ex_message); 
 	
 END;
