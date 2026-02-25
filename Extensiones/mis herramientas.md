@@ -30,6 +30,9 @@
 
 [pg_progress](https://github.com/CR0NYM3X/pg_progress) :  funcion ligera para PostgreSQL escrita en PL/pgSQL que permite renderizar barras de progreso dinámicas, coloridas y personalizables directamente en la consola de psql
 
+[pg_logSearcher](https://github.com/CR0NYM3X/pg_logSearcher) :  Bash que te permite buscar actividad de un usuario en un log compreso de postgresql con una estructura especifica. 
+
+
 # Scripts en DESARROLLO
 ```
 pg_background_mgr  -> https://github.com/CR0NYM3X/pg_background_mgr
