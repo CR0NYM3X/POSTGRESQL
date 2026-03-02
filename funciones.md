@@ -965,6 +965,14 @@ ORDER BY id
 LIMIT 1
 FOR UPDATE  
 SKIP LOCKED;
+
+-------------
+
+FOR KEY SHARE: Permite que otros lean la fila y la actualicen, siempre y cuando no toquen la llave primaria (es el bloqueo que se usa automáticamente al validar una Foreign Key).
+FOR SHARE: Permite que otros lean la fila, pero impide que cualquiera la modifique hasta que tú termines.
+FOR NO KEY UPDATE: Te permite modificar la fila bloqueando a otros, pero permite que se inserten filas en otras tablas que referencien a esta (porque prometes no cambiar la llave).
+
+
 ```
 
 
