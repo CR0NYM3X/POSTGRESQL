@@ -395,7 +395,42 @@ Su puntaje RRF (usando ) sería:
 
 El documento con el puntaje final más alto es el que se le muestra al usuario o a la IA (como ChatGPT) para que genere la respuesta.
  
+---
+# La técnica de [**Zero-Shot**](https://www.aprendiendoia.co/p/zero-shot-prompting-cuando-le-pides-a-la-ia-que-te-lea-la-mente) (o aprendizaje de disparo cero)
+ es una capacidad asombrosa de la inteligencia artificial moderna, especialmente de los modelos de lenguaje como el que estás usando ahora.
 
+En términos sencillos: **es cuando una IA puede realizar una tarea para la cual nunca fue entrenada específicamente.**
+ 
+
+### ¿Cómo funciona?
+
+Imagina que aprendes a cocinar viendo solo conceptos generales sobre calor, química de alimentos y sabores, pero nunca has visto una receta de "Paella". Si alguien te pide que hagas una, usas tu **conocimiento general** y tu **razonamiento** para deducir cómo debería ser. Eso es Zero-Shot.
+
+En la IA, esto ocurre porque el modelo ha leído tanta información durante su entrenamiento que ha desarrollado una "comprensión" profunda de las relaciones entre conceptos.
+
+### Diferencias clave con otros métodos
+
+Para entenderlo mejor, comparémoslo con las formas tradicionales de "enseñar" a una IA:
+
+| Método | Cómo funciona | Ejemplo |
+| --- | --- | --- |
+| **Fine-tuning** | Se entrena al modelo con miles de ejemplos específicos. | Entrenar un modelo solo con reseñas de hoteles para que aprenda a clasificarlas. |
+| **Few-Shot** | Le das a la IA 2 o 3 ejemplos antes de pedirle el resultado. | "Hola = Hello; Perro = Dog; Gato = ?" |
+| **Zero-Shot** | No le das ejemplos, solo la instrucción directa. | "Traduce 'Gato' al inglés" (sin ejemplos previos). |
+
+ 
+
+### ¿Por qué es importante?
+
+1. **Flexibilidad:** No necesitas crear una base de datos gigante para cada tarea nueva.
+2. **Velocidad:** Puedes pedirle a la IA que clasifique sentimientos, resuma textos técnicos o escriba código de lenguajes raros al instante.
+3. **Generalización:** Demuestra que la IA no solo está "repitiendo como loro", sino que tiene una estructura lógica interna para conectar ideas.
+
+### Un ejemplo real que puedes probar ahora:
+
+Si yo nunca hubiera visto una clasificación de frutas por colores y tú me dices: *"Clasifica 'Sandía' según el color de su cáscara"*, y yo respondo *"Verde"*, estoy aplicando Zero-Shot. No necesité 100 fotos de sandías etiquetadas como "verdes" para darte la respuesta.
+
+ 
 
 
 # Links
