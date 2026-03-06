@@ -152,6 +152,7 @@ block copy program
 * **[edb_block_commands](https://github.com/vibhorkum/edb_block_commands):** Prevención de desastres bloqueando comandos como `DROP` o `TRUNCATE`.
 * **SE-PostgreSQL:** Políticas integradas con el Kernel de Linux para seguridad obligatoria.
 
+* **aide** es una herramienta externa. No está mirando todo el tiempo; solo cuando tú se lo pides (por ejemplo, una vez al día).
 * **Auditd (Linux Audit Framework):** Sistema de auditoría del kernel para rastrear accesos y modificaciones de archivos críticos (`pg_hba.conf`, `postgresql.conf`). Permite identificar el **AUID** (ID de usuario real) incluso tras una escalada de privilegios con `sudo`.
 * **AppArmor (PostgreSQL Profile):** Control de Acceso Obligatorio (MAC) basado en rutas para confinar el proceso de Postgres, limitando su capacidad de lectura/escritura únicamente a directorios autorizados por el perfil.
 * **SELinux (Postgres Policy):** Implementación de seguridad de grano fino mediante etiquetas de contexto, asegurando que solo procesos con el tipo `postgresql_t` puedan interactuar con los sockets y archivos de datos.
