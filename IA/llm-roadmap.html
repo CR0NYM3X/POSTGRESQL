@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Roadmap — De Cero a Experto</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent1: #00ffc8;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --accent4: #ef4444;
+    --accent5: #3b82f6;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --glow1: rgba(0,255,200,0.12);
+    --glow2: rgba(124,58,237,0.12);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* GRID BACKGROUND */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,200,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,200,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent1);
+    border: 1px solid var(--accent1);
+    padding: 6px 16px;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .hero-tag::before, .hero-tag::after {
+    content: '◆';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 6px;
+    color: var(--accent1);
+  }
+  .hero-tag::before { left: -14px; }
+  .hero-tag::after { right: -14px; }
+
+  h1 {
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+  }
+  h1 .line1 { display: block; color: var(--text); }
+  h1 .line2 {
+    display: block;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    color: var(--muted);
+    font-size: 1.05rem;
+    font-weight: 400;
+    max-width: 560px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 64px;
+  }
+  .progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .progress-track {
+    flex: 1;
+    max-width: 360px;
+    height: 3px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    width: 0%;
+    transition: width 0.6s ease;
+  }
+  .progress-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent1);
+    white-space: nowrap;
+  }
+
+  /* PHASE HEADERS */
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 64px 0 28px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .phase-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    min-width: 60px;
+  }
+  .phase-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .phase-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .phase-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .phase-toggle {
+    font-size: 18px;
+    color: var(--muted);
+    transition: transform 0.3s;
+    min-width: 20px;
+  }
+  .phase-header.collapsed .phase-toggle { transform: rotate(-90deg); }
+
+  /* CARDS GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .cards-grid.hidden { display: none; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-accent, var(--accent1));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .card:hover::before, .card.done::before { transform: scaleX(1); }
+  .card:hover {
+    border-color: var(--card-accent, var(--accent1));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .card.done {
+    border-color: rgba(0,255,200,0.3);
+    background: rgba(0,255,200,0.03);
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .card-icon {
+    font-size: 22px;
+    line-height: 1;
+  }
+  .card-check {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .card.done .card-check {
+    background: var(--accent1);
+    border-color: var(--accent1);
+    color: #000;
+  }
+  .card-check svg { display: none; }
+  .card.done .card-check svg { display: block; }
+
+  .card h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .card p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+    font-weight: 400;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .tag.highlight {
+    background: rgba(0,255,200,0.07);
+    border-color: rgba(0,255,200,0.2);
+    color: var(--accent1);
+  }
+
+  /* SPECIAL FULL-WIDTH CARDS */
+  .card.wide {
+    grid-column: 1 / -1;
+  }
+  .wide-inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .mini-item {
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+  }
+  .mini-item .mi-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .mini-item .mi-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ALERT BOX */
+  .alert-box {
+    border: 1px solid;
+    padding: 20px 24px;
+    margin: 48px 0;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .alert-body h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
+  .alert-body p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+  /* TIMELINE CONNECTOR */
+  .connector {
+    width: 1px;
+    height: 32px;
+    background: linear-gradient(var(--border), transparent);
+    margin: 0 auto;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* GLOW ORBS */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb1 {
+    width: 500px; height: 500px;
+    background: rgba(0,255,200,0.05);
+    top: -100px; right: -100px;
+  }
+  .orb2 {
+    width: 400px; height: 400px;
+    background: rgba(124,58,237,0.07);
+    bottom: 200px; left: -150px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card { animation: fadeUp 0.4s ease both; }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 2.4rem; }
+    .phase-title { font-size: 1.2rem; }
+    .wide-inner { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="container">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Roadmap Completo 2025</div>
+    <h1>
+      <span class="line1">Domina los</span>
+      <span class="line2">LLMs</span>
+    </h1>
+    <p class="hero-sub">
+      Desde los fundamentos matemáticos hasta el despliegue seguro en producción. 
+      Un camino estructurado, sin atajos, para convertirte en experto real.
+    </p>
+
+    <div class="progress-wrap">
+      <span class="progress-label">PROGRESO</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-count" id="progressCount">0 / 38</span>
+    </div>
+  </div>
+
+  <!-- ─────────────── FASE 0 ─────────────── -->
+  <div class="phase-header" data-phase="0" onclick="togglePhase(0)">
+    <span class="phase-number">FASE 00</span>
+    <h2 class="phase-title">Fundamentos</h2>
+    <div class="phase-line"></div>
+    <span class="phase-badge" style="color:#00ffc8;border-color:#00ffc8">Base</span>
+    <span class="phase-toggle">▾</span>
+  </div>
+  <div class="cards-grid" id="phase-0">
+    <div class="card" style="--card-accent:#00ffc8" onclick="toggleCard(this)" data-delay="0">
+      <div class="card-top">
+        <span class="card-icon">🧮</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Álgebra Lineal Esencial</h3>
+      <p>Vectores, matrices, multiplicación matricial, valores y vectores propios. Es el lenguaje nativo de las redes neuronales.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Must-have</span>
+        <span class="tag">3-4 semanas</span>
+        <span class="tag">3Blue1Brown</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#00ffc8" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">📊</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Cálculo & Optimización</h3>
+      <p>Derivadas parciales, regla de la cadena, gradiente descendente. Entender backpropagation a fondo cambia todo.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Must-have</span>
+        <span class="tag">2-3 semanas</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#00ffc8" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🎲</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Probabilidad & Estadística</h3>
+      <p>Distribuciones, Bayes, entropía, KL-divergencia, máxima verosimilitud. Los LLMs son modelos probabilísticos.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Must-have</span>
+        <span class="tag">2-3 semanas</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#00ffc8" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🐍</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Python para ML</h3>
+      <p>NumPy, Pandas, Matplotlib, Jupyter. Domina la manipulación vectorizada y las estructuras de datos eficientes.</p>
+      <div class="card-tags">
+        <span class="tag">2 semanas</span>
+        <span class="tag">NumPy</span>
+        <span class="tag">Pandas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── FASE 1 ─────────────── -->
+  <div class="phase-header" data-phase="1" onclick="togglePhase(1)">
+    <span class="phase-number">FASE 01</span>
+    <h2 class="phase-title">Deep Learning & Redes Neuronales</h2>
+    <div class="phase-line"></div>
+    <span class="phase-badge" style="color:#7c3aed;border-color:#7c3aed">Core</span>
+    <span class="phase-toggle">▾</span>
+  </div>
+  <div class="cards-grid" id="phase-1">
+    <div class="card" style="--card-accent:#7c3aed" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🧠</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Redes Neuronales desde cero</h3>
+      <p>Perceptrón, capas densas, activaciones (ReLU, GELU, Softmax), forward pass, backpropagation manual en NumPy.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Fundacional</span>
+        <span class="tag">Andrej Karpathy</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#7c3aed" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">⚡</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>PyTorch en profundidad</h3>
+      <p>Tensores, autograd, nn.Module, DataLoader, optimizadores, schedulers. Implementa redes desde cero con PyTorch.</p>
+      <div class="card-tags">
+        <span class="tag">PyTorch</span>
+        <span class="tag">Autograd</span>
+        <span class="tag">CUDA</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#7c3aed" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">📝</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>NLP Clásico</h3>
+      <p>Tokenización, embeddings (Word2Vec, GloVe), RNNs, LSTMs, GRUs. El camino histórico que condujo a los Transformers.</p>
+      <div class="card-tags">
+        <span class="tag">NLP</span>
+        <span class="tag">RNN / LSTM</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#7c3aed" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🔁</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Attention & Self-Attention</h3>
+      <p>Mecanismo de atención, multi-head attention, scaled dot-product. Lee "Attention is All You Need" hasta entenderlo completo.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Crítico</span>
+        <span class="tag">Paper 2017</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── FASE 2 ─────────────── -->
+  <div class="phase-header" data-phase="2" onclick="togglePhase(2)">
+    <span class="phase-number">FASE 02</span>
+    <h2 class="phase-title">Arquitectura Transformer & LLMs</h2>
+    <div class="phase-line"></div>
+    <span class="phase-badge" style="color:#f59e0b;border-color:#f59e0b">Avanzado</span>
+    <span class="phase-toggle">▾</span>
+  </div>
+  <div class="cards-grid" id="phase-2">
+    <div class="card" style="--card-accent:#f59e0b" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🏗️</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Transformer Completo</h3>
+      <p>Encoder-Decoder, positional encoding, layer norm, residual connections, MLP layers. Implementa un GPT-2 mini desde cero.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Core LLM</span>
+        <span class="tag">nanoGPT</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#f59e0b" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🔤</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Tokenización Avanzada</h3>
+      <p>BPE, WordPiece, SentencePiece, tiktoken. Vocabulario, tokens especiales, context window y sus implicaciones.</p>
+      <div class="card-tags">
+        <span class="tag">BPE</span>
+        <span class="tag">Tokenizers</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#f59e0b" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">📚</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Pre-entrenamiento</h3>
+      <p>Causal LM, masked LM, datos de entrenamiento masivo, data pipelines, deduplicación, filtrado de calidad.</p>
+      <div class="card-tags">
+        <span class="tag">The Pile</span>
+        <span class="tag">FineWeb</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#f59e0b" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">⚙️</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Variantes Modernas</h3>
+      <p>RoPE, ALiBi, GQA (Grouped Query Attention), Flash Attention, Mixture of Experts (MoE), arquitecturas recientes.</p>
+      <div class="card-tags">
+        <span class="tag">Llama 3</span>
+        <span class="tag">Mistral</span>
+        <span class="tag">Mixtral</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#f59e0b" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">📏</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Scaling Laws</h3>
+      <p>Leyes de Chinchilla, relación parámetros/datos/compute, por qué el tamaño importa y cuándo deja de importar.</p>
+      <div class="card-tags">
+        <span class="tag">Chinchilla</span>
+        <span class="tag">Kaplan et al.</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#f59e0b" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">📐</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Evaluación de LLMs</h3>
+      <p>Perplexidad, benchmarks (MMLU, HumanEval, HellaSwag), evaluación humana, LLM-as-judge, sesgos en métricas.</p>
+      <div class="card-tags">
+        <span class="tag">Benchmarks</span>
+        <span class="tag">MMLU</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── FASE 3 ─────────────── -->
+  <div class="phase-header" data-phase="3" onclick="togglePhase(3)">
+    <span class="phase-number">FASE 03</span>
+    <h2 class="phase-title">Fine-Tuning & Alineación</h2>
+    <div class="phase-line"></div>
+    <span class="phase-badge" style="color:#3b82f6;border-color:#3b82f6">Especialización</span>
+    <span class="phase-toggle">▾</span>
+  </div>
+  <div class="cards-grid" id="phase-3">
+    <div class="card" style="--card-accent:#3b82f6" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🎯</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Supervised Fine-Tuning (SFT)</h3>
+      <p>Preparación de datasets de instrucciones, formatos de chat (ChatML, Alpaca), entrenamiento con Hugging Face Trainer.</p>
+      <div class="card-tags">
+        <span class="tag">HuggingFace</span>
+        <span class="tag">TRL</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#3b82f6" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🪶</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>PEFT: LoRA & QLoRA</h3>
+      <p>Parameter-Efficient Fine-Tuning, rango bajo, adaptadores, cuantización 4-bit. Fine-tuning en hardware consumer.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Práctico</span>
+        <span class="tag">LoRA</span>
+        <span class="tag">bitsandbytes</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#3b82f6" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🏆</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>RLHF & DPO</h3>
+      <p>Reinforcement Learning from Human Feedback, reward models, PPO, Direct Preference Optimization. Cómo nació ChatGPT.</p>
+      <div class="card-tags">
+        <span class="tag">RLHF</span>
+        <span class="tag">DPO</span>
+        <span class="tag">PPO</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#3b82f6" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🗂️</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Construcción de Datasets</h3>
+      <p>Data collection, labeling, quality filtering, synthetic data generation, deduplicación, data flywheel.</p>
+      <div class="card-tags">
+        <span class="tag">Argilla</span>
+        <span class="tag">Label Studio</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── FASE 4 ─────────────── -->
+  <div class="phase-header" data-phase="4" onclick="togglePhase(4)">
+    <span class="phase-number">FASE 04</span>
+    <h2 class="phase-title">RAG & Sistemas de Producción</h2>
+    <div class="phase-line"></div>
+    <span class="phase-badge" style="color:#10b981;border-color:#10b981">Producción</span>
+    <span class="phase-toggle">▾</span>
+  </div>
+  <div class="cards-grid" id="phase-4">
+    <div class="card" style="--card-accent:#10b981" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🔍</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>RAG (Retrieval Augmented Generation)</h3>
+      <p>Vector databases, embeddings semánticos, chunking strategies, reranking, advanced RAG patterns (HyDE, RAPTOR).</p>
+      <div class="card-tags">
+        <span class="tag highlight">Muy usado</span>
+        <span class="tag">Chroma</span>
+        <span class="tag">Weaviate</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🤖</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Agentes & Tool Use</h3>
+      <p>Function calling, ReAct framework, AutoGen, LangGraph, agentes multi-paso, tool selection y ejecución autónoma.</p>
+      <div class="card-tags">
+        <span class="tag">LangGraph</span>
+        <span class="tag">Tool Calling</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🚀</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Inference Optimization</h3>
+      <p>vLLM, PagedAttention, speculative decoding, KV-cache, batching dinámico. Throughput vs latencia en producción.</p>
+      <div class="card-tags">
+        <span class="tag">vLLM</span>
+        <span class="tag">TGI</span>
+        <span class="tag">ONNX</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🗜️</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Cuantización & Compresión</h3>
+      <p>INT8, INT4, GPTQ, AWQ, GGUF/llama.cpp, knowledge distillation, pruning. Modelos grandes en hardware pequeño.</p>
+      <div class="card-tags">
+        <span class="tag">GPTQ</span>
+        <span class="tag">llama.cpp</span>
+        <span class="tag">AWQ</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">📡</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>APIs & MLOps</h3>
+      <p>FastAPI, streaming con SSE/WebSockets, Docker, Kubernetes para LLMs, CI/CD para modelos, model registry.</p>
+      <div class="card-tags">
+        <span class="tag">FastAPI</span>
+        <span class="tag">Docker</span>
+        <span class="tag">MLflow</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">📊</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Observabilidad & Monitoreo</h3>
+      <p>Logging de prompts y respuestas, trazado de llamadas LLM, detección de drift, latencia, costos, Langfuse/Phoenix.</p>
+      <div class="card-tags">
+        <span class="tag">Langfuse</span>
+        <span class="tag">Phoenix</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── FASE 5: SEGURIDAD ─────────────── -->
+  <div class="phase-header" data-phase="5" onclick="togglePhase(5)">
+    <span class="phase-number">FASE 05</span>
+    <h2 class="phase-title" style="color:#ef4444">Seguridad en LLMs</h2>
+    <div class="phase-line"></div>
+    <span class="phase-badge" style="color:#ef4444;border-color:#ef4444">⚠ Crítico</span>
+    <span class="phase-toggle">▾</span>
+  </div>
+
+  <div class="alert-box" style="border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.04)">
+    <span class="alert-icon">🛡️</span>
+    <div class="alert-body">
+      <h4 style="color:#ef4444">La seguridad NO es opcional</h4>
+      <p>Un LLM en producción sin medidas de seguridad es un vector de ataque activo. Esta fase es obligatoria antes de exponer cualquier modelo a usuarios reales.</p>
+    </div>
+  </div>
+
+  <div class="cards-grid" id="phase-5">
+    <div class="card" style="--card-accent:#ef4444" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">💉</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Prompt Injection</h3>
+      <p>Direct vs indirect injection, jailbreaking, goal hijacking. Aprende a atacar para aprender a defender. Red teaming manual.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Ataque #1</span>
+        <span class="tag">OWASP LLM Top 10</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#ef4444" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🚧</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Guardrails & Filtros</h3>
+      <p>Input validation, output filtering, NeMo Guardrails, LlamaGuard, Guardrails AI. Políticas de contenido y enforcement.</p>
+      <div class="card-tags">
+        <span class="tag">NeMo</span>
+        <span class="tag">LlamaGuard</span>
+        <span class="tag">Guardrails AI</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#ef4444" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🔐</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>PII & Privacidad</h3>
+      <p>Detección y redacción de PII (nombres, emails, DNI), differential privacy, memorización de datos de entrenamiento.</p>
+      <div class="card-tags">
+        <span class="tag">Presidio</span>
+        <span class="tag">GDPR</span>
+        <span class="tag">DP</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#ef4444" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">☠️</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Data Poisoning & Model Attacks</h3>
+      <p>Backdoor attacks, training data poisoning, adversarial examples, model extraction, membership inference attacks.</p>
+      <div class="card-tags">
+        <span class="tag">Backdoors</span>
+        <span class="tag">Adversarial ML</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#ef4444" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">📋</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Frameworks de Seguridad</h3>
+      <p>OWASP LLM Top 10, MITRE ATLAS, NIST AI RMF. Threat modeling para sistemas con IA, documentación de riesgos.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Estándar</span>
+        <span class="tag">OWASP</span>
+        <span class="tag">MITRE ATLAS</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#ef4444" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🔴</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Red Teaming Automatizado</h3>
+      <p>Garak, PyRIT, automated jailbreak testing, fuzzing de prompts, pipelines de evaluación de seguridad continua.</p>
+      <div class="card-tags">
+        <span class="tag">Garak</span>
+        <span class="tag">PyRIT</span>
+        <span class="tag">CI/CD</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── FASE 6 ─────────────── -->
+  <div class="phase-header" data-phase="6" onclick="togglePhase(6)">
+    <span class="phase-number">FASE 06</span>
+    <h2 class="phase-title">Ética, Sesgo & Gobernanza</h2>
+    <div class="phase-line"></div>
+    <span class="phase-badge" style="color:#ec4899;border-color:#ec4899">Ética</span>
+    <span class="phase-toggle">▾</span>
+  </div>
+  <div class="cards-grid" id="phase-6">
+    <div class="card" style="--card-accent:#ec4899" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">⚖️</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Bias & Fairness</h3>
+      <p>Tipos de sesgo (representativo, de medición, de agregación), métricas de fairness, mitigación, auditorías de modelos.</p>
+      <div class="card-tags">
+        <span class="tag">Fairlearn</span>
+        <span class="tag">AI Fairness 360</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#ec4899" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🪟</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Interpretabilidad & XAI</h3>
+      <p>SHAP, LIME, mechanistic interpretability, probing classifiers, saliency maps. Entender por qué el modelo decide algo.</p>
+      <div class="card-tags">
+        <span class="tag">SHAP</span>
+        <span class="tag">CircuitsScope</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#ec4899" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">📜</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Regulación & Compliance</h3>
+      <p>EU AI Act, GDPR en contexto de IA, sistemas de alto riesgo, model cards, datasheets, auditoría y documentación.</p>
+      <div class="card-tags">
+        <span class="tag">EU AI Act</span>
+        <span class="tag">Model Cards</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#ec4899" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🤝</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Constitutional AI & RLAIF</h3>
+      <p>Alineación mediante principios, AI feedback, Reinforcement Learning from AI Feedback, Constitutional AI de Anthropic.</p>
+      <div class="card-tags">
+        <span class="tag">Anthropic</span>
+        <span class="tag">Constitutional AI</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── FASE 7 ─────────────── -->
+  <div class="phase-header" data-phase="7" onclick="togglePhase(7)">
+    <span class="phase-number">FASE 07</span>
+    <h2 class="phase-title">Infraestructura & Escala</h2>
+    <div class="phase-line"></div>
+    <span class="phase-badge" style="color:#06b6d4;border-color:#06b6d4">Expert</span>
+    <span class="phase-toggle">▾</span>
+  </div>
+  <div class="cards-grid" id="phase-7">
+    <div class="card" style="--card-accent:#06b6d4" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🖥️</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Entrenamiento Distribuido</h3>
+      <p>Data parallelism, tensor parallelism, pipeline parallelism, FSDP, DeepSpeed ZeRO. Entrenamiento en clusters multi-GPU.</p>
+      <div class="card-tags">
+        <span class="tag">DeepSpeed</span>
+        <span class="tag">FSDP</span>
+        <span class="tag">Megatron</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#06b6d4" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">☁️</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Cloud & GPU Providers</h3>
+      <p>AWS SageMaker, GCP Vertex AI, Azure OpenAI, RunPod, Lambda Labs, Together AI. Costos, instancias, spot pricing.</p>
+      <div class="card-tags">
+        <span class="tag">AWS</span>
+        <span class="tag">GCP</span>
+        <span class="tag">RunPod</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#06b6d4" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">🔒</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>Seguridad de Infraestructura</h3>
+      <p>Secrets management, autenticación API (OAuth2, JWT), rate limiting, network isolation, VPC, audit logs, WAF.</p>
+      <div class="card-tags">
+        <span class="tag highlight">Infra Sec</span>
+        <span class="tag">Vault</span>
+        <span class="tag">IAM</span>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#06b6d4" onclick="toggleCard(this)">
+      <div class="card-top">
+        <span class="card-icon">💰</span>
+        <div class="card-check"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+      </div>
+      <h3>FinOps para LLMs</h3>
+      <p>Estimación de costos por token, caching de respuestas, modelos de distintos tamaños por tarea, prompt compression.</p>
+      <div class="card-tags">
+        <span class="tag">Caching</span>
+        <span class="tag">LLMLingua</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── RECURSOS ─────────────── -->
+  <div class="phase-header" data-phase="8" onclick="togglePhase(8)">
+    <span class="phase-number">RECURSOS</span>
+    <h2 class="phase-title">Materiales Recomendados</h2>
+    <div class="phase-line"></div>
+    <span class="phase-badge" style="color:#a3e635;border-color:#a3e635">Links</span>
+    <span class="phase-toggle">▾</span>
+  </div>
+  <div class="cards-grid" id="phase-8">
+    <div class="card wide" style="--card-accent:#a3e635">
+      <div class="card-top">
+        <span class="card-icon">📖</span>
+        <div class="card-check" style="display:none"></div>
+      </div>
+      <h3>Libros & Cursos Esenciales</h3>
+      <div class="wide-inner">
+        <div class="mini-item">
+          <div class="mi-title" style="color:#a3e635">Karpathy: Zero to Hero</div>
+          <div class="mi-desc">YouTube. El mejor punto de partida. Gratis.</div>
+        </div>
+        <div class="mini-item">
+          <div class="mi-title" style="color:#a3e635">fast.ai</div>
+          <div class="mi-desc">Practical Deep Learning. Top-down approach.</div>
+        </div>
+        <div class="mini-item">
+          <div class="mi-title" style="color:#a3e635">Hugging Face Course</div>
+          <div class="mi-desc">NLP con Transformers. Gratis y actualizado.</div>
+        </div>
+        <div class="mini-item">
+          <div class="mi-title" style="color:#a3e635">LLM University (Cohere)</div>
+          <div class="mi-desc">Fundamentos de LLMs y embeddings.</div>
+        </div>
+        <div class="mini-item">
+          <div class="mi-title" style="color:#a3e635">CS224N Stanford</div>
+          <div class="mi-desc">NLP con Deep Learning. Videos en YouTube.</div>
+        </div>
+        <div class="mini-item">
+          <div class="mi-title" style="color:#a3e635">OWASP LLM Top 10</div>
+          <div class="mi-desc">Referencia de seguridad para LLMs.</div>
+        </div>
+        <div class="mini-item">
+          <div class="mi-title" style="color:#a3e635">Alignment Forum</div>
+          <div class="mi-desc">Investigación en seguridad y alineación de IA.</div>
+        </div>
+        <div class="mini-item">
+          <div class="mi-title" style="color:#a3e635">Papers With Code</div>
+          <div class="mi-desc">Últimos papers con implementaciones.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div style="font-size:13px;font-family:'Syne',sans-serif;margin-bottom:8px">Haz clic en cada tarjeta para marcar tu progreso</div>
+    LLM Roadmap · 7 Fases · 38 Temas · Hecho con Claude
+  </footer>
+</div>
+
+<script>
+  const TOTAL = 38;
+
+  function getStorage() {
+    try {
+      const d = {};
+      document.querySelectorAll('.card[onclick*="toggleCard"]').forEach((c, i) => {
+        d[i] = c.classList.contains('done');
+      });
+      return d;
+    } catch(e) { return {}; }
+  }
+
+  function updateProgress() {
+    const done = document.querySelectorAll('.card.done').length;
+    const pct = Math.round((done / TOTAL) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressCount').textContent = done + ' / ' + TOTAL;
+  }
+
+  function toggleCard(el) {
+    if (el.classList.contains('wide')) return;
+    el.classList.toggle('done');
+    updateProgress();
+    // Save to sessionStorage
+    const cards = [...document.querySelectorAll('.card[onclick*="toggleCard"]:not(.wide)')];
+    const state = cards.map(c => c.classList.contains('done'));
+    try { sessionStorage.setItem('llm_progress', JSON.stringify(state)); } catch(e) {}
+  }
+
+  function togglePhase(id) {
+    const grid = document.getElementById('phase-' + id);
+    const header = document.querySelector(`[data-phase="${id}"]`);
+    if (!grid) return;
+    grid.classList.toggle('hidden');
+    header.classList.toggle('collapsed');
+  }
+
+  // Restore progress
+  window.addEventListener('DOMContentLoaded', () => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('llm_progress') || '[]');
+      const cards = [...document.querySelectorAll('.card[onclick*="toggleCard"]:not(.wide)')];
+      saved.forEach((done, i) => { if (done && cards[i]) cards[i].classList.add('done'); });
+    } catch(e) {}
+    updateProgress();
+
+    // Stagger animation
+    document.querySelectorAll('.card').forEach((c, i) => {
+      c.style.animationDelay = (i * 0.04) + 's';
+    });
+  });
+</script>
+</body>
+</html>
