@@ -563,6 +563,8 @@ https://www.postgresql.org/docs/current/ddl-priv.html#PRIVILEGE-ABBREVS-TABLE
 tu puedes decidir que permiso se otrogará mofidicando el grant  */
 ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuario;
 
+
+
 -- Este comando establece privilegios predeterminados para futuras tablas que se creen en el esquema public,
 -- específicamente cuando el rol user_jose las cree. El privilegio otorgado es SELECT sobre esas tablas, y se concede al rol user_desarrollo.
 ALTER DEFAULT PRIVILEGES FOR ROLE user_jose IN SCHEMA public GRANT SELECT ON TABLES TO user_desarrollo;
@@ -664,6 +666,13 @@ La base de datos se ejecuta como con COPY y otras funciones que permiten ejecuta
 
 
 ```sql
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE ALL ON TABLES FROM "user_test333";
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE ALL ON SEQUENCES FROM "user_test333";
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE ALL ON FUNCTIONS FROM "user_test333";
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE ALL ON TYPES FROM "user_test333";
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE ALL ON SCHEMAS FROM "user_test333";
+ALTER DEFAULT PRIVILEGES IN SCHEMA riesgos REVOKE ALL ON TABLES FROM "user_test333";
+
 Remove Owner Database
 REVOKE OWNERSHIP ON DATABASE 'mydbatest' FROM "testuserdba";
 
