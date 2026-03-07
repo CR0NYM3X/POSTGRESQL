@@ -566,8 +566,10 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA mi_esquema GRANT SELECT ON TABLES TO mi_usuar
 
 
 -- Este comando establece privilegios predeterminados para futuras tablas que se creen en el esquema public,
--- específicamente cuando el rol user_jose las cree. El privilegio otorgado es SELECT sobre esas tablas, y se concede al rol user_desarrollo.
+-- específicamente cuando el rol user_jose las cree. El privilegio otorgado es SELECT sobre esas tablas que crea el usuario  user_jose
+-- , y se concede al rol user_desarrollo de manera automatica, tambien puedes quitar el FOR ROLE y ese se va proporcionar .
 ALTER DEFAULT PRIVILEGES FOR ROLE user_jose IN SCHEMA public GRANT SELECT ON TABLES TO user_desarrollo;
+
 
 # VER LOS DEFAULT 
 	SELECT
