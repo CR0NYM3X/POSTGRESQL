@@ -495,3 +495,86 @@ No te confíes. En cuanto el servicio esté arriba, debes liberar espacio real:
 
 
 
+--- 
+
+# Error 7 :   `ERROR:  cache lookup failed for user mapping 9338042 `
+
+ 
+## Cómo se crean los huérfanos en `pg_shdepend`
+
+Cuando se ejecuta el comando `CREATE USER MAPPING`, PostgreSQL realiza **dos acciones atómicas** en el catálogo del sistema:
+
+1. **Inserción en `pg_user_mapping**`: Se registra la relación usuario/servidor.
+2. **Inserción en `pg_shdepend**`: Se registra la dependencia de seguridad (`classid=1418`, `objid=OID` del mapping).
+
+El problema de los "objetos fantasma" ocurre cuando el `DROP USER MAPPING` no se procesa íntegramente, eliminando el registro en la tabla de mapeo pero dejando la referencia de dependencia en `pg_shdepend`.
+
+### Causas más comunes
+
+#### 1. Drop incompleto o interrumpido
+
+Ocurre cuando la ejecución del comando es terminada abruptamente antes de finalizar la limpieza de los catálogos compartidos.
+
+```sql
+-- Si el comando se interrumpe por corte de conexión, crash o timeout:
+DROP USER MAPPING FOR "user_test333" SERVER foreign_historicocajas;
+-- La transacción podría quedar en un estado inconsistente en el catálogo.
+
+```
+
+#### 2. Borrado manual directo en el catálogo (Altamente desaconsejado)
+
+Es la causa principal en entornos donde se intenta "arreglar" problemas mediante DML directo sobre tablas de sistema.
+
+```sql
+-- El borrado manual NO dispara los triggers internos de limpieza:
+DELETE FROM pg_user_mapping WHERE umuser = 12345;
+-- Esto NO limpia pg_shdepend automáticamente.
+
+```
+
+#### 3. Restore parcial o `pg_restore` inconsistente
+
+Si se realiza una restauración desde un respaldo que ya presentaba inconsistencias lógicas entre el catálogo local (`pg_user_mapping`) y el catálogo compartido (`pg_shdepend`).
+
+#### 4. Bugs en versiones específicas
+
+Ciertas versiones de `postgres_fdw` presentan comportamientos documentados donde las operaciones de `DROP` en cascada no barren correctamente todas las referencias en los catálogos globales del clúster.
+ 
+
+```
+SELECT 
+    objid, 
+    classid::regclass AS object_class, 
+    CASE 
+        WHEN classid = 'pg_class'::regclass THEN objid::regclass::text
+        WHEN classid = 'pg_type'::regclass THEN objid::regtype::text
+        WHEN classid = 'pg_namespace'::regclass THEN (SELECT nspname FROM pg_namespace WHERE oid = objid)
+        ELSE objid::text
+    END AS object_name,
+    deptype
+FROM pg_shdepend 
+WHERE refclassid = 'pg_authid'::regclass 
+AND refobjid = (SELECT oid FROM pg_roles WHERE rolname = 'user_test333');
+
+
+
+-- Confirmar que efectivamente no existen
+SELECT oid FROM pg_user_mapping WHERE oid IN (9338042, 9338043, 9338044);
+-- Debe retornar 0 rows
+
+-- Confirmar que siguen en pg_shdepend
+SELECT * FROM pg_shdepend
+WHERE refobjid = (SELECT oid FROM pg_roles WHERE rolname = 'user_test333');
+
+-- Estando en la base 'riesgos'
+SET session_replication_role = 'replica';
+
+DELETE FROM pg_shdepend
+WHERE refobjid = (SELECT oid FROM pg_roles WHERE rolname = 'user_test333')
+AND classid = 1418;  -- 1418 = pg_user_mapping
+
+SET session_replication_role = 'DEFAULT';
+
+
+```
