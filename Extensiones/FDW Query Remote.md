@@ -342,6 +342,7 @@ select * from logs_files_local;
 	DROP EXTENSION IF EXISTS user_local CASCADE; 
 	DROP USER MAPPING FOR user_local SERVER "Server_de_logs";
   	REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM "user_local";
+	REVOKE ALL PRIVILEGES ON FOREIGN DATA WRAPPER postgres_fdw FROM "sys91795877" ;
 	DROP user user_local;
 	DROP FOREIGN TABLE logs_files_local;
     
