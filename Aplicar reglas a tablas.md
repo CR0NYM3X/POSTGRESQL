@@ -211,9 +211,9 @@ SELECT * FROM pg_catalog.pg_rules;
 
 # aplicando RLS Row-Level Security (RLS)
 ```sql
-USING: Controla qué puedes ver (filas existentes).
+USING: Se aplica a las filas que ya están en la base de datos. Determina qué registros son "visibles" para ti. Es como un filtro de búsqueda automático. Si la condición no se cumple, la fila es invisible para ti, como si no existiera.
 
-WITH CHECK: Controla qué puedes hacer (nuevos datos).
+WITH CHECK: Se aplica a las filas que estás intentando insertar o modificar. Determina qué datos tienes permitido "escribir". Es una regla de validación. Si intentas guardar algo que no cumple la condición (por ejemplo, poner tu nombre en una venta que no es tuya), la base de datos detiene la operación y lanza un error.
 
 
 SELECT 
