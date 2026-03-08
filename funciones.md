@@ -1085,3 +1085,63 @@ Para que estas funciones funcionen, necesitas definir la "ventana" usando tres c
  
 
 
+---
+
+# Variables de sesion
+
+### 1. Variables de Sesión (Configuración personalizada)
+
+Es lo más parecido a una "variable global" temporal. Puedes definir un parámetro propio y consultarlo en cualquier momento mientras tu conexión esté abierta.
+
+* **Para guardar:** `SET my.usuario_id = '123';`
+* **Para leer:** `SELECT current_setting('my.usuario_id');`
+
+> **Ojo:** PostgreSQL requiere que el nombre tenga un prefijo y un punto (como `app.variable`) para no confundirse con sus configuraciones internas.
+
+---
+
+### 2. Variables en Bloques Anónimos (`DO`)
+
+Si estás escribiendo un script y necesitas lógica (como un `IF` o un `LOOP`), usas un bloque `DO`. Estas variables solo viven mientras se ejecuta ese bloque.
+
+```sql
+DO $$
+DECLARE
+    minimo_ventas CONSTANT integer := 100;
+    total_actual integer;
+BEGIN
+    SELECT count(*) INTO total_actual FROM sales_data;
+    
+    IF total_actual < minimo_ventas THEN
+        RAISE NOTICE 'Faltan ventas. Solo hay %', total_actual;
+    END IF;
+END $$;
+
+```
+
+---
+
+### 3. La cláusula `WITH` (Common Table Expressions)
+
+No es una variable técnica, pero en la práctica funciona igual para guardar un valor o un resultado de una consulta y reutilizarlo en el resto de tu `SELECT`.
+
+```sql
+WITH constantes AS (
+   SELECT 0.16 AS iva, 0.05 AS descuento
+)
+SELECT price * iva FROM sales_data, constantes;
+
+```
+
+---
+
+### Resumen rápido
+
+| Tipo | Duración | Uso principal |
+| --- | --- | --- |
+| **`SET`** | Toda la sesión | Guardar IDs de usuario o flags de auditoría. |
+| **`DECLARE`** | Solo la ejecución | Lógica compleja o cálculos intermedios. |
+| **`WITH`** | Solo esa consulta | Limpiar código y reutilizar valores. |
+
+
+
