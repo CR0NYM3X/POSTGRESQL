@@ -210,7 +210,12 @@ SELECT * FROM pg_catalog.pg_rules;
 
 
 # aplicando RLS Row-Level Security (RLS)
-```sql 
+```sql
+USING: Controla qué puedes ver (filas existentes).
+
+WITH CHECK: Controla qué puedes hacer (nuevos datos).
+
+
 SELECT 
   relname AS table_name,
   relrowsecurity AS row_security_enabled,
@@ -238,7 +243,9 @@ ALTER TABLE empleados ENABLE ROW LEVEL SECURITY;
 -- drop  POLICY ver_empleados_departamento on empleados; 
 CREATE POLICY ver_empleados_departamento ON empleados
     FOR SELECT
-    --TO gerentes -- esto si quieres pasarle un usuario 
+	-- FOL ALL -- LE indicas que va ser para select, update, delete y insert 
+    --TO gerentes -- esto si quieres pasarle un usuario
+	-- TO public -- le indicas Indica que la política se aplica a todos los roles (usuarios) de la base de datos.
     USING (nombre = current_user);
 
 
