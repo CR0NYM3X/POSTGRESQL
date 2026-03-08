@@ -568,6 +568,10 @@ https://www.postgresql.org/docs/current/contrib-dblink-function.html
 
 ### BIBLIOGRAFIAS:
 ```
+
+-> Postgresql_fdw Authentication cert Postgresql_fdw Authentication Changes in PostgreSQL 13
+
+
 [Documentación Oficial FDW](https://www.postgresql.org/docs/current/sql-createforeigndatawrapper.html)  
 https://www.postgresql.fastware.com/postgresql-insider-fdw-ove  
 [FDW English #1](https://dbsguru.com/steps-to-setup-a-foreign-data-wrapperpostgres_fdw-in-postgresql) 
