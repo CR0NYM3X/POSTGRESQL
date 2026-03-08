@@ -55,6 +55,8 @@ Migración de bases de datos grandes de Azure PostgreSQL -> https://medium.com/@
 
 #  Semantica 
 ```
+El rendimiento de caché que estás buscando -> https://mydbanotebook.org/posts/pax-the-cache-performance-youre-looking-for/
+
 Explicación de la ruta de escritura en PostgreSQL: fsync, WAL, COPY y tablas sin registro -> https://medium.com/@ariyanwaliya/postgresql-write-path-explained-fsync-wal-copy-and-unlogged-tables-8f4243e42292
 
 
