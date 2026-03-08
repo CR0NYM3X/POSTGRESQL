@@ -510,6 +510,8 @@ SELECT * FROM v WHERE slow_func(id) = 0;
 
 # Temas  Importantes : 
 ```
+https://hexacluster.ai/blog/row-level-and-column-level-security-oracle-vs-postgresql
+
 Abusing SECURITY DEFINER functions in PostgreSQL : https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
 security_invoker Vistas  : https://www.cybertec-postgresql.com/en/view-permissions-and-row-level-security-in-postgresql/
 Abusing PostgreSQL as an SQL beautifier : https://www.cybertec-postgresql.com/en/abusing-postgresql-as-an-sql-beautifier/
