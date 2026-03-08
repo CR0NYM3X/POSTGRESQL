@@ -94,6 +94,12 @@ ACID in Action -> https://rizqimulki.com/acid-in-action-transactions-concurrency
 
 PostgreSQL Transaction IDs (XIDs) Explained -> https://medium.com/@youssefshibl000/postgresql-transaction-ids-xids-explained-ca655f0e79f9
 
+Bloat Is a Feature, Not a Bug -> https://rogerwelin.github.io/2026/02/11/postgresql-bloat-is-a-feature-not-a-bug/
+
+MERISE Y El MCD MODELADO DE DATOS -> https://mydbanotebook.org/posts/the-mcd-your-rosetta-stone-for-turning-we-need-a-database-into-actual-requirements/
+
+Datasets -> https://www.kaggle.com/datasets
+
 ```
 
 
