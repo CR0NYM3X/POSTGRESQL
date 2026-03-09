@@ -540,6 +540,9 @@ Postgres Security 101: PostgreSQL Settings (6/8) -> https://ozwizard.medium.com/
 
 http://github.com/google/security-research/security/advisories/GHSA-468r-mhwc-vxjc
 
+https://medium.com/@muhammet.kurtoglu/open-source-data-masking-with-postgresql-99eec468c914
+https://docs.yugabyte.com/stable/additional-features/pg-extensions/extension-pganon/
+
 ```
 
 
