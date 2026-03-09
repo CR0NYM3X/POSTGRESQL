@@ -73,7 +73,7 @@ block copy program
 * **[pg_tde](https://github.com/cybertec-postgresql/pg_tde):** Cifrado de datos transparente (TDE) a nivel de archivos de disco.
 * **[pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html):** Funciones core para hashing y cifrado de columnas mediante SQL.
 * **[pgsodium](https://github.com/michelp/pgsodium):** Criptografía moderna basada en libsodium (firmas y sellado).
-* **pg_pwhash](https://github.com/cybertec-postgresql/pg_pwhash):** Proporciona algoritmos de hash de contraseñas de última generación
+* **[pg_pwhash](https://github.com/cybertec-postgresql/pg_pwhash):** Proporciona algoritmos de hash de contraseñas de última generación
 * **[Let's Encrypt](https://letsencrypt.org/):** Certificados SSL/TLS gratuitos para cifrado en tránsito.
 * **[sslutils](https://github.com/shuber2/sslutils):** Herramientas para gestión de certificados y CRLs dentro del motor.
 
