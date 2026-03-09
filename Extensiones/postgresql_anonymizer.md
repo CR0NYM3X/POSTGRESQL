@@ -1,4 +1,5 @@
-PostgreSQL Anonymizer es una extensión diseñada para ocultar o reemplazar información personalmente identificable (PII) o datos sensibles en una base de datos PostgreSQL. Esto es crucial para garantizar la privacidad de los datos y cumplir con regulaciones como GDPR.  
+# PostgreSQL Anonymizer
+Es una extensión diseñada para ocultar o reemplazar información personalmente identificable (PII) o datos sensibles en una base de datos PostgreSQL. Esto es crucial para garantizar la privacidad de los datos y cumplir con regulaciones como GDPR.  
 
 ### ¿Para qué sirve PostgreSQL Anonymizer?
 
@@ -12,24 +13,61 @@ PostgreSQL Anonymizer es una extensión diseñada para ocultar o reemplazar info
 3. **Pruebas y Desarrollo**:
    - Facilita la creación de entornos de prueba y desarrollo con datos realistas pero anonimizados, evitando el uso de datos sensibles en estos entornos.
 
+# 6 métodos  diferentes:
 
 
-### Enmascaramiento Dinámico
-El enmascaramiento dinámico oculta datos sensibles en tiempo real cuando se accede a ellos desde la base de datos. Los datos originales permanecen intactos, pero los public.usuarios ven versiones enmascaradas o alteradas según sus permisos.
+### 1. Anonymous Dumps (Exportación Anónima)
 
-#### Casos de uso:
-1. **Acceso controlado**: Permite a los public.usuarios acceder a datos sin revelar información sensible, ideal para entornos donde diferentes roles necesitan ver diferentes niveles de detalle.
-2. **Seguridad en tiempo real**: Protege los datos sensibles de accesos no autorizados sin necesidad de modificar los datos originales.
+Es como sacar una fotocopia de toda la oficina, pero la fotocopiadora **tacha automáticamente** los nombres antes de que el papel salga por la bandeja.
+
+* **Para qué sirve:** Cuando necesitas enviarle la base de datos a un proveedor externo o a un analista para que trabaje en su propia computadora.
+* **Resultado:** Un archivo `.sql` que ya nace "limpio".
+
+### 2. Static Masking (Enmascaramiento Estático)
+
+Aquí no hay copias. Entras a la bóveda original y **borras permanentemente** los datos reales con un marcador negro.
+
+* **Para qué sirve:** Ideal para preparar entornos de **Pre-producción o QA**. Clonas tu base de producción, ejecutas el enmascaramiento estático y listo: ese entorno ya no tiene datos reales que puedan filtrarse.
+* **Riesgo:** ¡Cuidado! Si lo haces en producción, pierdes los datos originales para siempre.
+
+### 3. Dynamic Masking (Enmascaramiento Dinámico)
+
+Es un **filtro mágico** en los ojos del usuario. Si un administrador mira la tabla, ve todo. Si un usuario "marcado" mira la misma tabla, el motor de base de datos le muestra asteriscos o nombres falsos en tiempo real.
+
+* **Para qué sirve:** Para que los empleados de soporte vean los datos suficientes para trabajar, pero no la tarjeta de crédito del cliente, **dentro de la misma base de datos activa**.
+
+### 4. Replica Masking (Réplica Anónima)
+
+Imagina que tienes una base de datos secundaria que se sincroniza con la principal. Este método hace que, mientras los datos viajan de la principal a la secundaria, **se transformen** por el camino.
+
+* **Para qué sirve:** Tener un servidor de reportes o "espejo" donde los datos siempre están actualizados pero son 100% anónimos.
+
+### 5. Masking Views (Vistas de Enmascaramiento)
+
+En lugar de tocar las tablas, creas "ventanas" (vistas) especiales. Si miras por la ventana `usuarios_publicos`, ves datos falsos; si miras por la ventana `usuarios_root`, ves los reales.
+
+* **Para qué sirve:** Es una forma ligera y estándar de SQL para exponer datos a aplicaciones sin darles acceso a las tablas base.
+
+### 6. Masking Data Wrappers (Enmascaramiento de Datos Externos)
+
+PostgreSQL puede conectarse a otras bases de datos (Oracle, MySQL, archivos CSV) mediante *Foreign Data Wrappers*. Este método aplica las reglas de anonimato a esos datos que **ni siquiera están en Postgres**.
+
+* **Para qué sirve:** Para consultar una fuente externa (un Excel o un servidor viejo) y asegurarte de que lo que importas ya venga anonimizado desde la conexión.
 
 
-### Enmascaramiento Estático
-El enmascaramiento estático reemplaza datos  sensibles reales  con información falsa, Este proceso ocurre una vez y   se utilizan para pruebas, desarrollo y análisis.
 
-#### Casos de uso:
-1. **Pruebas y desarrollo**: Permite a los desarrolladores y testers trabajar con datos que parecen reales sin comprometer la privacidad.
-2. **Compartir datos**: Facilita compartir datos con proveedores, socios y equipos offshore sin exponer información sensible.
+### Resumen para tu examen o práctica:
 
+| Método | ¿Cambia los datos originales? | ¿Dónde se usa? |
+| --- | --- | --- |
+| **Anonymous Dump** | No | Para compartir archivos `.sql`. |
+| **Static** | **SÍ** | En bases de datos de prueba/QA. |
+| **Dynamic** | No | En producción, según el rol del usuario. |
+| **Replica** | No (en la fuente) | En servidores de backup o lectura. |
+| **Views** | No | Para capas de abstracción en apps. |
 
+ 
+ 
 
 ---
 
