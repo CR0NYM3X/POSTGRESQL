@@ -641,62 +641,58 @@ INSERT INTO clientes VALUES (1, 'Juan Pérez', 'juan@mail.com', '555-1234');
 
 Cuando la tabla ya tiene datos, el proceso de etiquetar es idéntico, pero debes tener cuidado con **3 puntos clave**:
 
-#### 1. Las etiquetas se aplican igual (sin diferencia de sintaxis)
-```sql
--- Tabla que ya existe con datos reales
-SECURITY LABEL FOR anon ON COLUMN empleados.nombre
-    IS 'MASKED WITH FUNCTION anon.fake_first_name()';
-
-SECURITY LABEL FOR anon ON COLUMN empleados.salario
-    IS 'MASKED WITH VALUE 0';
-
-SECURITY LABEL FOR anon ON COLUMN empleados.dni
-    IS 'MASKED WITH FUNCTION anon.partial(dni, 2, ''****'', 0)';
-```
-
-#### 2. Debes inicializar la extensión correctamente
-```sql
--- Esto es crítico y a veces se omite en labs
-SELECT anon.init();
-
--- Activar anonimización dinámica
-SELECT anon.start_dynamic_masking();
-```
-
-#### 3. Los datos originales NO se tocan automáticamente
-La extensión tiene **3 modos** — esto es lo que más confunde:
-
-| Modo | ¿Toca datos originales? | Uso ideal |
-|------|------------------------|-----------|
-| **Dynamic Masking** | ❌ No, crea vistas enmascaradas | Usuarios con rol `masked` ven datos falsos |
-| **Static Masking** | ✅ Sí, sobreescribe la tabla | Anonimizar antes de entregar dump |
-| **Anonymized Dump** | Genera dump anonimizado | Exportar sin tocar producción |
-
----
 
 ## Flujo completo para tabla existente
 
 ```sql
+-- 1. Crear tabla
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT,
+    email TEXT,
+    telefono TEXT
+);
+
+
+-- 3. Insertar datos
+INSERT INTO clientes VALUES (1, 'Juan Pérez', 'juan@mail.com', '555-1234');
+
 -- 1. Instalar (si no está)
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.init();
 
 -- 2. Etiquetar columnas de tu tabla existente
-SECURITY LABEL FOR anon ON COLUMN empleados.nombre
+--  Las etiquetas son **metadata** — no modifican ningún dato, solo describen reglas.
+SECURITY LABEL FOR anon ON COLUMN clientes.nombre
     IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
-SECURITY LABEL FOR anon ON COLUMN empleados.email
+SECURITY LABEL FOR anon ON COLUMN clientes.email
     IS 'MASKED WITH FUNCTION anon.fake_email()';
 
 -- 3A. OPCIÓN: Enmascaramiento dinámico
 -- Crear un rol que solo vea datos enmascarados
 CREATE ROLE analista LOGIN PASSWORD 'pass';
+
+-- Marcar ese rol como "enmascarado"
 SECURITY LABEL FOR anon ON ROLE analista IS 'MASKED';
+
+-- — Activar el enmascaramiento dinámico
+--  En este momento la extensión crea el schema `mask` y las vistas automáticamente.
 SELECT anon.start_dynamic_masking();
--- El analista conectado verá datos falsos, tú sigues viendo los reales
+
+
+
+
+select usename,useconfig from pg_shadow where usename = 'analista';
++----------+------------------------------+
+| usename  |          useconfig           |
++----------+------------------------------+
+| analista | {"search_path=mask, public"} |
++----------+------------------------------+
+
 
 -- 3B. OPCIÓN: Enmascaramiento estático (¡IRREVERSIBLE!)
--- Reemplaza los datos reales permanentemente
+-- Reemplaza los datos reales permanentemente esto solo se usa para entornos de desarrollo.
 SELECT anon.anonymize_table('empleados');
 -- ó para toda la base:
 SELECT anon.anonymize_database();
@@ -704,18 +700,36 @@ SELECT anon.anonymize_database();
 -- 3C. OPCIÓN: Dump anonimizado (recomendado para producción)
 -- Desde terminal:
 -- pg_dump_anon -h localhost -U postgres mi_base > dump_anonimizado.sql
+
+
+-- El analista conectado verá datos falsos, tú sigues viendo los reales
+postgres@anon_test# \c - analista
+psql (17.9, server 16.13)
+You are now connected to database "anon_test" as user "analista".
+
+analista@anon_test> \dt
+Did not find any relations.
+
+analista@anon_test> select * from clientes;
++----+--------+----------------------+----------+
+| id | nombre |        email         | telefono |
++----+--------+----------------------+----------+
+|  1 | Macias | daniel42@example.net | 555-1234 |
++----+--------+----------------------+----------+
+(1 row)
+Time: 1.964 ms
+
+
+analista@anon_test> select * from public.clientes;
+ERROR:  permission denied for table clientes
+Time: 0.384 ms
+
+
+
 ```
 
----
-
-## 🔑 Resumen de diferencias prácticas
-
-| Aspecto | Tabla Nueva | Tabla Existente |
-|---|---|---|
-| Sintaxis `SECURITY LABEL` | Igual | **Igual** |
-| Datos existentes en riesgo | No aplica | ⚠️ Cuidado con modo estático |
-| `anon.init()` necesario | Sí | Sí |
-| Verificar tipos de dato | No crítico | **Importante** — función debe coincidir con tipo |
+ 
+ 
 
 ---
 
@@ -732,193 +746,6 @@ SECURITY LABEL FOR anon ON COLUMN empleados.edad
 -- o:
     IS 'MASKED WITH FUNCTION anon.random_int_between(20,65)';
 ```
-
----
-
-¿Quieres que profundice en alguno de los 3 modos, o tienes una estructura de tabla específica con la que estás trabajando?
-
-
-........................................................................................................................................
-
-
-
-
-
-
-
-
-# Enmascaramiento Dinámico — Tus datos originales 100% seguros
-
-
-
-Este es exactamente el modo que necesitas: **Dynamic Masking**. Los datos reales **nunca se tocan**.
-
-
-
----
-
-
-
-## ¿Qué hace internamente la extensión?
-
-
-
-```
-
-┌─────────────────────────────────────────────────────────┐
-
-│ BASE DE DATOS │
-
-│ │
-
-│ tabla: empleados (datos REALES, intactos) │
-
-│ ┌─────────────────────────────────────────┐ │
-
-│ │ id │ nombre │ email │ │
-
-│ │ 1 │ Juan Pérez │ juan@empresa.com │ │
-
-│ │ 2 │ Ana García │ ana@empresa.com │ │
-
-│ └─────────────────────────────────────────┘ │
-
-│ │ │
-
-│ │ La extensión crea automáticamente │
-
-│ ▼ │
-
-│ vista: mask.empleados (datos FALSOS) │
-
-│ ┌─────────────────────────────────────────┐ │
-
-│ │ id │ nombre │ email │ │
-
-│ │ 1 │ Robert Fox │ fake@example.org │ │
-
-│ │ 2 │ Lisa Moore │ other@sample.net │ │
-
-│ └─────────────────────────────────────────┘ │
-
-│ │
-
-│ Usuario ROL NORMAL → ve tabla real │
-
-│ Usuario ROL MASKED → ve solo la vista enmascarada │
-
-└─────────────────────────────────────────────────────────┘
-
-```
-
-
-
----
-
-
-
-## Flujo de trabajo completo paso a paso
-
-
-
-### PASO 1 — Preparar la extensión
-
-```sql
-
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-
-SELECT anon.init(); -- Carga los datos falsos (nombres, emails, etc.)
-
-```
-
-
-
-### PASO 2 — Etiquetar las columnas sensibles de tu tabla existente
-
-```sql
-
--- Tu tabla "empleados" ya existe con datos reales, solo agregas etiquetas
-
-SECURITY LABEL FOR anon ON COLUMN empleados.nombre
-
-    IS 'MASKED WITH FUNCTION anon.fake_first_name()';
-
-
-
-SECURITY LABEL FOR anon ON COLUMN empleados.email
-
-    IS 'MASKED WITH FUNCTION anon.fake_email()';
-
-
-
-SECURITY LABEL FOR anon ON COLUMN empleados.salario
-
-    IS 'MASKED WITH VALUE 0';
-
-```
-
-> Las etiquetas son **metadata** — no modifican ningún dato, solo describen reglas.
-
-
-
-### PASO 3 — Crear el rol que verá los datos enmascarados
-
-```sql
-
-CREATE ROLE analista LOGIN PASSWORD 'password_seguro';
-
-
-
--- Marcar ese rol como "enmascarado"
-
-SECURITY LABEL FOR anon ON ROLE analista IS 'MASKED';
-
-
-
--- Darle acceso a la tabla
-
-GRANT SELECT ON empleados TO analista;
-
-```
-
-
-
-### PASO 4 — Activar el enmascaramiento dinámico
-
-```sql
-
-SELECT anon.start_dynamic_masking();
-
-```
-
-> En este momento la extensión crea el schema `mask` y las vistas automáticamente.
-
-
-
-### PASO 5 — Verificar que todo funciona
-
-```sql
-
--- Conéctate como superusuario → ves datos REALES
-
-SELECT nombre, email FROM empleados;
-
--- Resultado: Juan Pérez | juan@empresa.com ✅ real
-
-
-
--- Conéctate como "analista" → ves datos FALSOS
-
-SELECT nombre, email FROM empleados;
-
--- Resultado: Robert Fox | fake@example.org ✅ enmascarado
-
-```
-
-
-
----
-
 
 
 ## Lo que ocurre internamente cuando ejecutas `start_dynamic_masking()`
@@ -971,16 +798,7 @@ SELECT nombre, email FROM empleados;
 
 ---
 
-
-
-## ¿Se necesita algo especial para tablas existentes?
-
-
-
-**No.** El proceso es idéntico. Las `SECURITY LABEL` son solo anotaciones que PostgreSQL almacena en el catálogo del sistema. No importa si la tabla tiene 0 o 10 millones de filas — los datos nunca se leen ni modifican al etiquetar.
-
-
-
+  
 ---
 
 
@@ -1021,41 +839,12 @@ SELECT anon.stop_dynamic_masking();
 
 
 
----
-
-
-
-## Garantía de seguridad de tus datos
-
-
-
-| Acción | ¿Toca datos originales? |
-
-|---|---|
-
-| `SECURITY LABEL` | ❌ Nunca |
-
-| `anon.init()` | ❌ Nunca |
-
-| `start_dynamic_masking()` | ❌ Nunca |
-
-| Rol `analista` hace SELECT | ❌ Solo lee la vista |
-
-| Tú (superuser) haces SELECT | ✅ Ves datos reales |
-
-
-
-¿Tienes ya definida la estructura de tu tabla? Si me la compartes te genero el script exacto listo para ejecutar.
-
-
 
 ...................................................................................................................................
 
 
 
 
-
-# ¿Cómo redirige y qué ve el superusuario?
 
 
 
@@ -1073,12 +862,9 @@ Cuando "analista" se conecta, la extensión le asigna:
 
 search_path = mask, public
 
-
-
 Entonces cuando ejecuta:
 
 SELECT * FROM empleados;
-
 
 
 PostgreSQL busca "empleados" en este orden:
@@ -1099,32 +885,6 @@ Internamente la extensión hace esto al activar el rol enmascarado:
 
 
 
-```sql
-
--- Lo que anon hace automáticamente al rol "analista"
-
-ALTER ROLE analista SET search_path = mask, public;
-
-
-
--- Por eso cuando analista escribe esto:
-
-SELECT * FROM empleados;
-
-
-
--- PostgreSQL en realidad ejecuta esto:
-
-SELECT * FROM mask.empleados; -- la vista con datos falsos
-
-```
-
-
-
----
-
-
-
 ## ¿Qué pasa si el analista intenta saltarse la redirección?
 
 
@@ -1134,7 +894,6 @@ SELECT * FROM mask.empleados; -- la vista con datos falsos
 -- Analista intenta acceder directo a la tabla real
 
 SELECT * FROM public.empleados;
-
 
 
 -- Resultado: ERROR — permiso denegado
@@ -1147,178 +906,6 @@ SELECT * FROM public.empleados;
 
 
 
----
-
-
-
-## ¿Qué ve el Superusuario?
-
-
-
-Aquí viene algo **muy importante** que mucha gente no sabe:
-
-
-
-```
-
-┌─────────────────────────────────────────────────┐
-
-│ SUPERUSUARIO │
-
-│ │
-
-│ Su search_path es el normal: │
-
-│ search_path = public │
-
-│ │
-
-│ SELECT * FROM empleados; │
-
-│ └→ busca en public.empleados │
-
-│ └→ ve los datos REALES siempre │
-
-│ │
-
-│ El superusuario NUNCA es redirigido │
-
-│ aunque tenga SECURITY LABEL de MASKED │
-
-└─────────────────────────────────────────────────┘
-
-```
-
-
-
-```sql
-
--- Como superusuario siempre ves esto:
-
-SELECT nombre, email FROM empleados;
-
-
-
--- nombre | email
-
--- ------------|------------------
-
--- Juan Pérez | juan@empresa.com ← REAL
-
--- Ana García | ana@empresa.com ← REAL
-
-
-
--- Incluso si quisieras ver la vista enmascarada,
-
--- tendrías que ser explícito:
-
-SELECT nombre, email FROM mask.empleados;
-
-
-
--- nombre | email
-
--- ------------|------------------
-
--- Robert Fox | fake@example.org ← FALSO
-
-```
-
-
-
----
-
-
-
-## Resumen visual del flujo completo
-
-
-
-```
-
-┌──────────────┐ search_path = mask, public
-
-│ analista │──────→ SELECT * FROM empleados
-
-└──────────────┘ │
-
-                                ▼
-
-                    Encuentra mask.empleados primero
-
-                                │
-
-                                ▼
-
-                    ┌─────────────────────┐
-
-                    │ Vista enmascarada │ ← datos falsos
-
-                    └─────────────────────┘
-
-                                │
-
-                    (internamente lee public.empleados
-
-                     y aplica las funciones anon.*)
-
-                                │
-
-                                ▼
-
-                    Retorna datos falsos al analista
-
-
-
-
-
-┌──────────────┐ search_path = public
-
-│ superusuario│──────→ SELECT * FROM empleados
-
-└──────────────┘ │
-
-                                ▼
-
-                    Encuentra public.empleados directo
-
-                                │
-
-                                ▼
-
-                    ┌─────────────────────┐
-
-                    │ Tabla original │ ← datos reales
-
-                    └─────────────────────┘
-
-```
-
-
-
----
-
-
-
-## Punto clave de seguridad
-
-
-
-| Usuario | search_path | Ve |
-
-|---|---|---|
-
-| `analista` (MASKED) | `mask, public` | Datos falsos |
-
-| `superusuario` | `public` | Datos reales |
-
-| Otro rol sin MASKED | `public` | Datos reales (o error si no tiene GRANT) |
-
-
 
 > El enmascaramiento dinámico **no protege contra el superusuario** — es por diseño. Si necesitas ocultar datos incluso al DBA, la solución es **cifrado a nivel de columna**, que es otro tema.
 
-
-
-¿Te queda alguna duda sobre el flujo o quieres saber cómo manejar roles intermedios que no son super pero tampoco son masked?
