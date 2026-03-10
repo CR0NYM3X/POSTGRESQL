@@ -67,6 +67,20 @@ PostgreSQL puede conectarse a otras bases de datos (Oracle, MySQL, archivos CSV)
 | **Views** | No | Para capas de abstracción en apps. |
 
  
+---
+
+  
+### 1. El Flujo de Trabajo: ¿Dónde ocurre la "magia"?
+
+`anon` utiliza una característica nativa de PostgreSQL llamada **Dynamic Masking** basada en el motor de **Vistas (Views)** y el **Search Path**. No es un proxy (como un servidor intermedio), sino que vive dentro del proceso de la base de datos.
+
+#### El "Engaño" del Search Path:
+
+Cuando activas `anon.start()`, la extensión hace lo siguiente:
+
+1. **Crea un esquema oculto** (llamado `mask`) que contiene "vistas" con el mismo nombre que tus tablas originales.
+2. **Modifica el `search_path**` del usuario. Normalmente, tú buscas en `public`. Al activar `anon`, el sistema te obliga a mirar primero en el esquema `mask`.
+3. **Resultado:** Cuando escribes `SELECT * FROM empleado`, no estás consultando la tabla real; estás consultando una **Vista de Enmascaramiento** que `anon` generó automáticamente.
  
 
 ---
