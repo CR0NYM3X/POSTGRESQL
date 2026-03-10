@@ -33,6 +33,8 @@
 [pg_logSearcher](https://github.com/CR0NYM3X/pg_logSearcher) :  Bash que te permite buscar actividad de un usuario en un log compreso de postgresql con una estructura especifica. 
 
 
+[pg_bruteforce](https://github.com/CR0NYM3X/pg_bruteforce) :  es un script ligero en Bash diseñado para realizar pruebas de fuerza bruta sobre PostgreSQL.
+
 # Scripts en DESARROLLO
 ```
 pg_background_mgr  -> https://github.com/CR0NYM3X/pg_background_mgr
