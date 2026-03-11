@@ -417,8 +417,37 @@ SECURITY LABEL FOR devtests ON COLUMN player.name IS 'MASKED WITH FUNCTION anon.
 ```
 
 
-### Funciones que pueden servir 
-``` 
+### Funciones y  tablas que pueden servir 
+```
+ select proname from pg_proc JOIN pg_namespace ON pg_proc.pronamespace = pg_namespace.oid WHERE nspname = 'anon';
+
+-------- Tablas para preparar tus entornos con tus idiomas
+postgres@test_mask# \dt anon.*
+                 List of relations
++--------+----------------------+-------+----------+
+| Schema |         Name         | Type  |  Owner   |
++--------+----------------------+-------+----------+
+| anon   | address              | table | postgres |
+| anon   | city                 | table | postgres |
+| anon   | company              | table | postgres |
+| anon   | country              | table | postgres |
+| anon   | email                | table | postgres |
+| anon   | first_name           | table | postgres |
+| anon   | iban                 | table | postgres |
+| anon   | identifier           | table | postgres |
+| anon   | identifiers_category | table | postgres |
+| anon   | last_name            | table | postgres |
+| anon   | lorem_ipsum          | table | postgres |
+| anon   | postcode             | table | postgres |
+| anon   | siret                | table | postgres |
++--------+----------------------+-------+----------+
+
+truncate table anon.first_name RESTART IDENTITY ;
+insert into anon.first_name(val) select 'jose';
+insert into anon.first_name(val) select 'pedro';
+SELECT anon.fake_first_name();
+
+
 postgres@mi_base_de_datos# select proname from pg_proc JOIN pg_namespace ON pg_proc.pronamespace = pg_namespace.oid WHERE nspname = 'anon' and  proname ilike '%fake%';
 +------------------------+
 |        proname         |
@@ -496,7 +525,31 @@ postgres@mi_base_de_datos# select table_type,table_schema,table_name from inform
 (16 rows)
 
 
--- Las funciones "pseudo" se utiliza para generar datos ficticias pero deterministas. para un mismo valor de entrada, siempre se generará el mismo valor de salida. 
+-- Las funciones "pseudo" se utiliza para generar datos ficticias pero deterministas. para un mismo valor de entrada, siempre se generará el mismo valor de salida.
+
+ 1. ¿Para qué sirve anon.salt?  
+
+Imagina que tienes dos usuarios con el mismo correo: juan@gmail.com.
+
+Si la función de anonimización fuera simple, siempre convertiría juan@gmail.com en, por ejemplo, abc@ejemplo.com. Si un hacker sabe que abc@ejemplo.com es Juan, podrá identificar a Juan en cualquier base de datos que use la misma fórmula.
+
+Aquí entra el **SALT** (que significa "sal" en inglés):
+
+* **Sin Salt:** La receta siempre sabe igual. Correo A -> Resultado X.
+* **Con Salt:** Es un ingrediente secreto que se mezcla con el correo antes de transformarlo.
+* **Para qué sirve:** Si tú usas el salt "mi-llave-123" y otra empresa usa "secreto-456", el mismo correo (juan@gmail.com) dará resultados **completamente diferentes** en cada base de datos.
+
+**En resumen:** El anon.salt asegura que nadie pueda adivinar el dato original usando "tablas de traducción" comunes. Es tu toque secreto para que la pseudonimización sea única en tu servidor.
+ 
+Tip de experto: El "Salt"
+Para que pseudo_email sea realmente seguro, debes configurar un Salt (una semilla secreta). Si no lo haces, alguien con una tabla de hashes conocida podría revertir el proceso.
+
+-- Cambia esto por una frase secreta larga
+ALTER DATABASE tu_base_datos SET anon.salt = 'mi_frase_secreta_super_segura';
+SET anon.salt = 'otra_fase_segura';
+
+
+
 postgres@mi_base_de_datos# select proname from pg_proc  JOIN pg_namespace ON pg_proc.pronamespace = pg_namespace.oid WHERE nspname = 'anon' and  proname ilike '%pseudo%';
 +-------------------+
 |      proname      |
@@ -514,7 +567,7 @@ postgres@mi_base_de_datos# select proname from pg_proc  JOIN pg_namespace ON pg_
 +-------------------+
 (10 rows)
 
-postgres@mi_base_de_datos# SELECT anon.pseudo_email('example@example.com');
+postgres@mi_base_de_datos#  SELECT anon.pseudo_email('example@example.com'::TEXT); 
 +------------------------------+
 |         pseudo_email         |
 +------------------------------+
@@ -523,11 +576,6 @@ postgres@mi_base_de_datos# SELECT anon.pseudo_email('example@example.com');
 (1 row)
 
 
-Tip de experto: El "Salt"
-Para que pseudo_email sea realmente seguro, debes configurar un Salt (una semilla secreta). Si no lo haces, alguien con una tabla de hashes conocida podría revertir el proceso.
-
--- Cambia esto por una frase secreta larga
-ALTER DATABASE tu_base_datos SET anon.salt = 'mi_frase_secreta_super_segura';
 
 
 
