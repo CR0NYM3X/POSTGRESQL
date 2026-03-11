@@ -523,7 +523,15 @@ postgres@mi_base_de_datos# SELECT anon.pseudo_email('example@example.com');
 (1 row)
 
 
+Tip de experto: El "Salt"
+Para que pseudo_email sea realmente seguro, debes configurar un Salt (una semilla secreta). Si no lo haces, alguien con una tabla de hashes conocida podría revertir el proceso.
 
+-- Cambia esto por una frase secreta larga
+ALTER DATABASE tu_base_datos SET anon.salt = 'mi_frase_secreta_super_segura';
+
+
+
+------------------------------------------------------------------------
  
 ### Uso de la función partial(ov , prefix ,  padding , suffix )
 - **anon.partial_***: Estas funciones permiten enmascarar parcialmente los datos, por ejemplo, mostrando solo una parte de un número de teléfono o una dirección de correo electrónico  
