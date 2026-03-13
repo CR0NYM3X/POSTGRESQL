@@ -148,3 +148,77 @@ Imagina que tenemos un rack de servidores frente a nosotros. Vamos a ver qué pa
 | **ClickHouse** | Los escribe en archivos temporales y luego los une (Extremadamente rápido). | Si no tienes réplica configurada, pierdes acceso a esa parte de los datos. |
 | **Hadoop** | Los pica en bloques y los manda a través de la red (Lento, orientado a volumen). | El NameNode replica los bloques perdidos en otros nodos. |
 
+
+ --- 
+
+## 1. Elasticsearch: El Motor de Búsqueda (Casi-OLTP / Search Engine)
+
+**Tipo:** Motor de búsqueda y analítica distribuido (basado en Lucene). Aunque puede funcionar como OLTP para logs, su fuerte es la **Búsqueda Full-Text**.
+**Particularidad:** Es extremadamente rápido para encontrar una aguja en un pajar de petabytes de texto.
+
+### **Arquitectura y Flujo de Datos:**
+
+* **Documentos y Shards:** No guarda filas, guarda **Documentos JSON**. Al crear un "Índice", Elasticsearch lo divide en **Shards** (fragmentos).
+* **Inversión de Índice:** Su magia es el "Índice Invertido". Imagina un libro: en lugar de leer página por página (escaneo), vas al índice al final para ver en qué páginas aparece la palabra "Error".
+
+### **Laboratorio: Ingesta y Fallo**
+
+1. **Carga:** Envías 1,000 logs de un servidor. El **Master Node** decide que el *Shard 1* va al Nodo A y su réplica al Nodo B.
+2. **Escritura:** El dato se escribe primero en un buffer en memoria y luego en un "Translog" (para no perderlo si hay un apagón).
+3. **Simulación de Fallo:** Apagamos el **Nodo A**.
+* **Comportamiento:** El cluster detecta que el *Shard 1* (Primario) no está. Automáticamente, el **Nodo B** (que tenía la réplica) se "promociona" a Primario.
+* **Resultado:** No hay pérdida de datos y las búsquedas siguen funcionando. Elasticsearch empezará a crear una nueva réplica en un tercer nodo (Nodo C) para recuperar la redundancia.
+
+ 
+
+## 2. Snowflake: El Almacén de Datos en la Nube (OLAP puro)
+
+**Tipo:** Data Warehouse como Servicio (SaaS).
+**Particularidad:** Separa totalmente el **Cómputo** del **Almacenamiento**. Puedes apagar el cómputo y tus datos siguen ahí, sin costarte un centavo de procesamiento.
+
+### **Arquitectura: "Multi-cluster Shared Data"**
+
+* **Capa de Almacenamiento:** Usa S3 (AWS) o Azure Blob Storage. Los datos se guardan en micro-particiones comprimidas.
+* **Capa de Cómputo (Virtual Warehouses):** Son clusters de máquinas que "despiertan" solo cuando lanzas un query.
+
+### **Laboratorio: Escalabilidad Masiva**
+
+1. **Carga:** Tienes un reporte que tarda 2 horas.
+2. **Acción de Especialista:** En Snowflake, cambias el tamaño de tu "Warehouse" de *Small* a *4X-Large* con un clic.
+3. **Comportamiento:** Snowflake levanta instantáneamente decenas de servidores que leen los mismos archivos del almacenamiento central. El reporte ahora tarda 2 minutos.
+4. **Respaldo (Time Travel):** ¿Borraste una tabla por error? Snowflake te permite hacer un `SELECT` de la tabla "como estaba hace 24 horas" (o hasta 90 días) porque mantiene versiones de las micro-particiones. No necesitas restaurar un backup tradicional.
+ 
+
+## 3. Databricks: El Lago de Datos Inteligente (Lakehouse)
+
+**Tipo:** Plataforma de Datos y AI (Lakehouse).
+**Particularidad:** Inventaron el concepto de **Lakehouse**. Combina la flexibilidad de un Data Lake (archivos baratos) con la estructura y transacciones de un Data Warehouse (SQL/ACID).
+
+### **Arquitectura: El motor Spark y Delta Lake**
+
+* **Delta Lake:** Es una capa de almacenamiento que le da "superpoderes" a tus archivos (Parquet). Permite que varias personas escriban y lean al mismo tiempo sin corromper los datos.
+* **Clusters:** Usa **Apache Spark** para procesar datos en paralelo usando memoria RAM (mucho más rápido que el viejo Hadoop).
+
+### **Laboratorio: Procesamiento en Tiempo Real**
+
+1. **Flujo:** Estás recibiendo millones de señales de sensores de telemetría.
+2. **Carga (Streaming):** Databricks usa "Structured Streaming". Los datos entran al cluster de Spark, se procesan en la RAM y se guardan en la "Capa Bronce" (datos crudos), luego se limpian a "Plata" y se resumen en "Oro" para los analistas.
+3. **Simulación de "Spot Instances":** Databricks suele usar máquinas baratas de la nube que pueden desaparecer.
+* **Comportamiento:** Si un nodo del cluster Spark muere, el **Driver** (jefe del cluster) simplemente reasigna la tarea a otro nodo. Como los datos están en el Data Lake (S3/ADLS), no se pierde nada.
+
+
+ 
+
+## Resumen de Uso (Cuándo elegir cuál)
+
+| Herramienta | ¿Para qué sirve? | Flujo Principal | ¿Por qué la aman? |
+| --- | --- | --- | --- |
+| **Elasticsearch** | Buscar texto, errores en logs. | Ingesta continua -> Índice Invertido. | Búsquedas de milisegundos en texto. |
+| **Snowflake** | Reportes de negocio (Business Intelligence). | Carga Batch -> Micro-particiones. | Cero mantenimiento; escala en segundos. |
+| **Databricks** | Ciencia de Datos, ML y ETL pesado. | Archivos -> Spark RAM -> Delta Lake. | Puedes usar Python, SQL y R en un mismo lugar. |
+
+**Dato de Especialista:** Databricks y Snowflake hoy son competencia directa. Snowflake está metiendo Python (Snowpark) y Databricks está mejorando su SQL (Serverless SQL). 
+
+
+
+
