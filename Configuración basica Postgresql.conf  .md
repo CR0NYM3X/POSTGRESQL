@@ -334,7 +334,7 @@ Si la red es **estable** y el usuario simplemente ejecutó una consulta (`SELECT
    - Si la conexión estuviera en riesgo de **desconectarse por problemas de red**, estos parámetros podrían ayudar a mantener la sesión activa.
    - También son útiles en **conexiones remotas o inestables**, donde puede haber cortes sin que PostgreSQL lo detecte inmediatamente y los cierra.
  
-
+https://mydbanotebook.org/posts/mostly-dead-is-slightly-alive-killing-zombie-sessions/
 ```
 
 
