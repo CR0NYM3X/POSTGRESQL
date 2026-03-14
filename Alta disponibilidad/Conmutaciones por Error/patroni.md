@@ -905,6 +905,8 @@ Si ya tienes replicación configurada, puedes:
 
 ## Links
 ```conf
+https://www.pgedge.com/blog/how-patroni-brings-high-availability-to-postgres
+
 Setting up High Availability PostgreSQL Cluster using Patroni, PGBouncer, Docker, Consul and HAProxy -> https://medium.com/@nicola.vitaly/setting-up-high-availability-postgresql-cluster-using-patroni-pgbouncer-docker-consul-and-95c70445b1b1
 PostgreSQL High Availability in Action Patroni -> https://medium.com/@mehmanjafarov1905/postgresql-high-availability-in-action-49aadf181549
 PostgreSQL High Availability in Production (Patroni + etcd + HAProxy + Keepalived — A DBA Best Practices Guide) -> https://brkylmzco.medium.com/postgresql-high-availability-in-production-patroni-etcd-haproxy-keepalived-a-dba-best-eb0a973930d0
