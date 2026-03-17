@@ -158,6 +158,7 @@ saybackend.com
 https://www.softwareandbooz.com/
 https://vibhorkumar.wordpress.com/about/
 https://hakibenita.com/
+https://momjian.us/main/blogs/pgblog/2026.html
 
 ---- Herramientas online ------
 https://explain-postgresql.com/beautifier/
