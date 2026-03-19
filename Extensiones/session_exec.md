@@ -368,6 +368,8 @@ La extensión `session_exec` Te permite ejecutar una funcion al iniciar una sess
 
 ### Info Extra
 ```sh
+
+
     En caso de que quieras tener un monitoreo en tiempo real, puedes utilizar la extension postgres_fdw
     para mandar la información de manera inmediata a un servidor central y detectar al instante los
      usuarios que estan intentando logearse con aplicaciones restringidas  
@@ -384,6 +386,7 @@ https://www.dbi-services.com/blog/postgresql-17-login-event-triggers/
 https://www.postgresql.org/docs/current/event-trigger-database-login-example.html
 https://stackoverflow.com/questions/48104368/postgresql-trigger-on-user-logon
 
+https://raghavt.blog/after-logonoracle-trigger-in-postgresql-with-extension-login_hook/
 
 ```
 
