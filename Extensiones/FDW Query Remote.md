@@ -242,12 +242,20 @@ Info Extra
 Performance Tips for Postgres FDW
 -- Por default FDW usa fetch para recorrer en lineas de 100, modificamos las lineas recorridas y mejoramos el tiempo 
 
-ALTER SERVER server_de_logs  OPTIONS (SET fetch_size '20000');
+ALTER SERVER server_de_logs  OPTIONS (SET fetch_size '20000'); --- nivel de Servidor (Foreign Server) para que funcione, tuviste que agregar "fetch_size" en el comando  "CREATE SERVER"
+ALTER USER MAPPING FOR actual_user  SERVER servidor_remoto  OPTIONS (SET fetch_size '1000'); -- nivel de Usuario (User Mapping) 
+ALTER FOREIGN TABLE  f_tables.customers OPTIONS ( fetch_size '10000' ); --  A nivel de Tabla Foránea (Foreign Table)
+
 ALTER SERVER server_de_logs  OPTIONS (SET connect_timeout '10000'); -- establece el tiempo de espera para la conexion 
 
 https://www.ongres.com/blog/boost-query-performance-using-fdw-with-minimal-changes/
 https://www.crunchydata.com/blog/performance-tips-for-postgres-fdw#increasing-fetch-count
 
+
+
+
+
+---------------
 
 /****************** SI COLOCAS FALSE EN LA PASSWORD DEL USER MAPPING ********************/
 ---> TE VA SOLICITAR QUE EL USER_LOCAL SEA SUPERUSER YA QUE TE VA SALIR ESTE ERROR 
