@@ -905,6 +905,14 @@ Si ya tienes replicación configurada, puedes:
 
 ## Links
 ```conf
+
+
+https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-clusterpart-1-etcd
+https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-clusterpart-2-postgres-and-patroni
+https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-clusterpart-3-haproxy
+
+
+
 https://www.pgedge.com/blog/how-patroni-brings-high-availability-to-postgres
 
 Setting up High Availability PostgreSQL Cluster using Patroni, PGBouncer, Docker, Consul and HAProxy -> https://medium.com/@nicola.vitaly/setting-up-high-availability-postgresql-cluster-using-patroni-pgbouncer-docker-consul-and-95c70445b1b1
