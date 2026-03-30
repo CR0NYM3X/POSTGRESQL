@@ -209,7 +209,7 @@ SE-PostgreSQL: Implementa políticas de seguridad obligatoria (MAC) basadas en S
 
 
 ************ MONITOREO DE LOGS ************
-
+pg_profile --  herramienta de monitoreo histórico que toma capturas (snapshots) de las estadísticas de PostgreSQL para identificar consultas lentas y cuellos de botella mediante reportes HTML detallados. Es el equivalente de código abierto al AWR de Oracle, permitiéndote analizar qué causó lentitud en el servidor en momentos específicos del pasado.
 pg_proctab ---> consultar información del sistema operativo directamente mediante comandos SQL, sin necesidad de salir de la terminal de Postgres  https://github.com/markwkm/pg_proctab/tree/main
 OPM -> https://opm.readthedocs.io/index.html
 temboard  -> es una herramienta de código abierto y gratuita para monitorear, Alertas y notificaciones y administrar instancias de PostgreSQL  https://github.com/dalibo/temboard/?tab=readme-ov-file
