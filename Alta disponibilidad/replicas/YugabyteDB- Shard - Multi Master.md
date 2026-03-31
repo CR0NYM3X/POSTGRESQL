@@ -89,4 +89,46 @@ Si añades un **Nodo 4**, YugabyteDB se da cuenta de que los otros 3 nodos está
 ### En resumen
 
 YugabyteDB no copia "nodos enteros", copia **tablets individuales**. Esto permite que, si un nodo falla, el trabajo de recuperar los datos se reparta entre todos los nodos restantes del clúster, haciendo que la recuperación sea muchísimo más rápida que en sistemas tradicionales.
+
+
+--- 
+
+ 
+
+## 🛡️ YugabyteDB: Seguridad Nativa de Punta a Punta
+
+YugabyteDB no depende de la infraestructura externa para proteger los datos; integra el cifrado en su propia arquitectura de base de datos distribuida.
+
+### 1. Cifrado en Tránsito (Protección del Movimiento)
+* **Comunicación Interna (Nodo-a-Nodo):** Cifra el tráfico de replicación (Raft) nativamente. Si alguien intercepta la red interna, no verá nada.
+* **Conexión Externa (Cliente-a-Nodo):** Compatible con **TLS/SSL** para APIs de Postgres (YSQL) y Cassandra (YCQL).
+* **Autenticación Mutua (mTLS):** El servidor también valida la identidad del cliente mediante certificados.
+* **Zero-Downtime:** Rotación de certificados sin necesidad de reiniciar el clúster.
+
+ 
+
+### 2. Cifrado en Reposo (Protección del Almacenamiento)
+* **A nivel de Archivo (Granular):** Cifra directamente los archivos de datos (SSTables) y logs (WAL) usando **AES-256**.
+* **Independencia del Disco:** Los datos están protegidos aunque se extraiga el disco físico o se mueva el archivo entre nubes (AWS/GCP/Azure).
+* **Jerarquía de Claves (KMS):** Integración nativa con **AWS KMS, Azure Vault, Google KMS y HashiCorp Vault**. Una *Master Key* protege las llaves internas del clúster.
+* **Rotación en un clic:** Cambia las llaves desde la consola o API de forma asíncrona y sin afectar el rendimiento.
+
+
+ 
+
+### 3. Integración y Acceso (Ecosistema)
+* **Herencia SQL/NoSQL:** Usa drivers y métodos estándar como **LDAP, GSSAPI y SCRAM-SHA-256**.
+* **RBAC Nativo:** Control de acceso granular basado en roles directamente en el motor.
+* **Cumplimiento Facilitado:** Diseño alineado con **Zero Trust**, ideal para normativas **PCI-DSS, HIPAA y GDPR**.
+
+ 
+### 🚀 ¿Por qué es diferente a las demás?
+
+| Característica | Ventaja Clave |
+| :--- | :--- |
+| **Rendimiento** | Impacto mínimo (< 5%) gracias a optimización por hardware (**AES-NI**). |
+| **Escalabilidad** | El cifrado acompaña al dato mientras este se fragmenta (sharding) por el clúster. |
+| **Facilidad** | Todo es nativo; no requiere software de terceros ni expertos en criptografía. |
+
+**En conclusión:** Es una fortaleza digital donde el dato nace, viaja y descansa bajo llave de forma automática y transparente.
  
