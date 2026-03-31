@@ -131,4 +131,8 @@ YugabyteDB no depende de la infraestructura externa para proteger los datos; int
 | **Facilidad** | Todo es nativo; no requiere software de terceros ni expertos en criptografía. |
 
 **En conclusión:** Es una fortaleza digital donde el dato nace, viaja y descansa bajo llave de forma automática y transparente.
- 
+
+## Links
+```
+https://docs.yugabyte.com/stable/architecture/docdb-replication/
+```
