@@ -745,7 +745,12 @@ Cuando haces una búsqueda de texto completo con `to_tsvector` y `to_tsquery`, p
 
 ### Bibliografía
 ```
-https://www.tigerdata.com/blog/pg-textsearch-bm25-full-text-search-postgres
+
+pg_textsearch  -> https://www.tigerdata.com/blog/pg-textsearch-bm25-full-text-search-postgres
+pg_search      -> https://github.com/paradedb/paradedb/tree/main/pg_search
+pg_rum
+
+
 https://www.paradedb.com/blog/personalized-search-in-postgresql
 https://medium.com/the-table-sql-and-devtalk/mastering-postgresql-full-text-search-a-definitive-guide-a794b47dfcbf
 pgvector -> https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Extensiones/pgvector.md
