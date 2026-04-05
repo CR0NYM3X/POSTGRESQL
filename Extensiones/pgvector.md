@@ -243,5 +243,15 @@ SELECT * FROM frutas WHERE vector @> '[7,5,3]';  -- Solo coincidencias exactas
  
 Referencias: 
 ```sql
+
+pgvectorscale -> https://github.com/timescale/pgvectorscale
+
+https://docs.vectorchord.ai/getting-started/overview.html
+
+https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Post/Comprendiendo%20el%20mundo%20de%20los%20vectores%3A%20El%20puente%20entre%20el%20lenguaje%20humano%20y%20el%20digital.md
+
+- vectorchord 
+- pg_vectorize -> para la inteligencia y contexto, asegurándonos de que ningún reporte importante se pierda solo porque el doctor usó un sinónimo o un término técnico diferente.
+
 https://www.mongodb.com/es/resources/basics/databases/vector-databases/vector-databases
 ```
