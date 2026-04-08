@@ -131,6 +131,41 @@ YugabyteDB no depende de la infraestructura externa para proteger los datos; int
 | **Facilidad** | Todo es nativo; no requiere software de terceros ni expertos en criptografía. |
 
 **En conclusión:** Es una fortaleza digital donde el dato nace, viaja y descansa bajo llave de forma automática y transparente.
+---
+
+ 
+### 1. El Formato por Defecto: Almacenamiento de Filas
+YugabyteDB almacena los datos en un motor llamado **DocDB** (basado en RocksDB). A diferencia de las bases de datos de columnas (como ClickHouse), YugabyteDB está optimizado para **OLTP**, lo que significa que prioriza el acceso rápido a registros completos.
+
+* **Lógica de almacenamiento:** Cada fila de una tabla SQL se convierte en un "documento" dentro de DocDB.
+* **Estructura Key-Value:** Internamente, cada columna de una fila solía almacenarse como un par clave-valor independiente, pero esto ha evolucionado.
+
+### 2. Evolución: "Packed Rows" (Filas Empaquetadas)
+Para mejorar el rendimiento (que es la debilidad típica de los sistemas distribuidos), YugabyteDB introdujo una optimización llamada **Packed Rows**, que ahora es el estándar:
+
+* **Antes:** Una fila con 10 columnas se guardaba como 10 entradas distintas en el motor de almacenamiento.
+* **Ahora (Default):** Toda la fila se "empaqueta" en un **solo par clave-valor**. Esto reduce drásticamente el espacio en disco y acelera las lecturas de registros completos, ya que solo se necesita una operación de búsqueda para recuperar toda la fila.
+
+### 3. Comparativa de Almacenamiento
+
+
+| Característica | YugabyteDB (Por defecto) | Bases de Datos Columnares (OLAP) |
+| :--- | :--- | :--- |
+| **Tipo** | **Orientado a Filas** (Optimizado) | Orientado a Columnas |
+| **Estructura** | DocDB / LSM-Tree | Archivos Parquet / Columnar |
+| **Punto fuerte** | Inserciones y lecturas de filas individuales (Updates/Inserts rápidos). | Agregaciones masivas (SUM, AVG) sobre una sola columna en millones de filas. |
+| **Caso de uso** | Aplicaciones transaccionales, apps móviles, banca. | Business Intelligence y Data Warehousing. |
+
+### 4. ¿Existe opción de columnas?
+Actualmente, YugabyteDB **no ofrece un motor columnar nativo** por defecto para su almacenamiento principal. Sin embargo, permite:
+* **Índices cubrientes:** Puedes crear índices que incluyan ciertas columnas para simular la velocidad de lectura de un motor columnar en consultas específicas.
+* **Integración con OLAP:** Se recomienda usar conectores para exportar datos a sistemas como Snowflake o ClickHouse si el análisis columnar es el objetivo principal.
+ 
+**Conclusión oficial:** YugabyteDB utiliza un almacenamiento **orientado a filas empaquetadas** por defecto para maximizar la eficiencia en cargas de trabajo transaccionales y de alta concurrencia.
+
+ 
+
+
 
 ## Links
 ```
