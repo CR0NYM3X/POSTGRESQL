@@ -1,4 +1,9 @@
 
+# PostgreSQL Multifuncional:
+```
+https://www.tigerdata.com/blog/its-2026-just-use-postgres
+```
+
 
 # Post Medium
 Aquí encontraras los links gratis de Medium que te ayudaran adquirir más conocimientos del funcionamiento de postgresql
