@@ -132,14 +132,11 @@ EXECUTE FUNCTION  trigger_auditoria_usuarios();
 ALTER TABLE nombre_tabla DISABLE TRIGGER ALL;
 ALTER TABLE nombre_tabla DISABLE TRIGGER nombre_trigger;
 
-
-ALTER TABLE nombre_tabla ENABLE TRIGGER ALL;
-ALTER TABLE nombre_tabla ENABLE TRIGGER nombre_trigger;
-
  
  --- Indica que el trigger se ejecutará sin importar el rol de la sesión actual. session_replication_role
  alter event trigger my_login_trg enable always;
 
+-- Para desactivar los trigger en todo el cluster
  alter system set event_triggers TO off;
  select pg_reload_conf();
  
@@ -148,7 +145,6 @@ ALTER EVENT TRIGGER my_login_trg DISABLE;
 
 -- Para volverlo a activar
 ALTER EVENT TRIGGER my_login_trg ENABLE;
-
 
 
  SET session_replication_role = replica;
