@@ -513,6 +513,12 @@ openssl s_client -connect 192.168.1.100:5416 -starttls postgres 2>/dev/null | op
 ``` 
 
 
+## **Verificar certificado en texto plano en Servidor remoto**
+``` 
+openssl s_client -connect dominio.com:443 -servername dominio.com 2>/dev/null | openssl x509 -noout -text 
+openssl s_client -connect 192.168.1.100:5416 -starttls postgres 2>/dev/null | openssl x509 -noout -text 
+``` 
+
 # Preguntas frecuentes 
 
 ¿Se puede invalidar todos los certificados emitidos por un intermediario , simplemente revocando el intermediario?
