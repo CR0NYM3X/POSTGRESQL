@@ -104,6 +104,17 @@ pg_ctl start -D /sysx/data16/DATANEW/test
 create user jose ;
 
 
+
+---------------
+revoke all privileges on table pg_catalog.pg_database FROM PUBLIC;
+-- grant SELECT on table pg_catalog.pg_database TO PUBLIC;
+
+-- Impedir que tengan acceso a la definicion de las funciones 
+select 'GRANT SELECT (' || string_agg(column_name,',')  || ')' || ' on table pg_catalog.pg_proc to PUBLIC;'
+from information_schema.columns where table_name = 'pg_proc' and column_name != 'prosrc' group by table_schema,table_name;
+revoke all privileges on table pg_catalog.pg_proc FROM PUBLIC;
+
+
 ------ Quitar permisos a esquemas ----- 
 REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
 REVOKE ALL PRIVILEGES ON SCHEMA pg_catalog FROM PUBLIC; 
