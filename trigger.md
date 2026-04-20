@@ -149,6 +149,22 @@ ALTER EVENT TRIGGER my_login_trg ENABLE;
 
  SET session_replication_role = replica;
 
+-- show session_replication_role;
+-- select * from pg_settings where name = 'session_replication_role';
+-- ALTER TABLE esquema.tu_tabla ENABLE ALWAYS TRIGGER trg_audit_dml_tu_tabla;
+
+  select tgname AS trigger_name,
+    CASE tgenabled
+        WHEN 'O' THEN 'Activado'    -- (Origin) Solo se activa en operaciones locales (No se activa en réplicas).
+        WHEN 'D' THEN 'Desactivado' -- (Disabled) El trigger está Desactivado.
+        WHEN 'R' THEN 'Replica'     -- (Replica) Solo se activa si la sesión está en modo réplica.
+        WHEN 'A' THEN 'Always'      -- (Always) Se activa siempre, sin importar si es origen o réplica.
+        ELSE tgenabled::text
+    END AS status from pg_trigger  where tgname ilike 'trg_audit_dml_%' OR tgname ilike 'trg_audit_trunc_%';
+
+
+
+
 ```
  
  ### 🧠 Valores session_replication_role
