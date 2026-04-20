@@ -409,7 +409,7 @@ SELECT 'Inserts are not allowed' AS message;
 
 
 
-DO ALSO 			--> Realiza una operación adicional además de la operación original.
+DO ALSO 			--> Realiza una operación adicional y  operación original.
 
 CREATE RULE example_rule AS
 ON UPDATE TO example_table
