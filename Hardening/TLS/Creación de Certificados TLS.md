@@ -500,23 +500,23 @@ SSL-Session:
 
  
 
-## **Verificar la fecha de expiración de un certificado**
+## **Verificar la fecha de expiración de un archivo .crt (certificado)**
 ``` 
 openssl x509 -in /tmp/pki/certs/server.crt -noout -dates  #  Salida esperada:   notBefore=Fecha y hora de inicio  , notAfter=Fecha y hora de expiración
 openssl x509 -in /tmp/pki/certs/server.crt -noout -enddate  #  Salida esperada: `notAfter=Dec 31 23:59:59 2025 GMT`
 ``` 
 	
-## **Verificar la fecha de expiración de un certificado Servidor remoto**
+## **Verificar la fecha de expiración de un certificado en Servidor remoto**
 ``` 
-openssl s_client -connect dominio.com:443 -servername dominio.com 2>/dev/null | openssl x509 -noout -dates 
-openssl s_client -connect 192.168.1.100:5416 -starttls postgres 2>/dev/null | openssl x509 -noout -dates 
+echo | openssl s_client -connect dominio.com:443 -servername dominio.com 2>/dev/null | openssl x509 -noout -dates 
+echo | openssl s_client -connect 192.168.1.100:5416 -starttls postgres 2>/dev/null | openssl x509 -noout -dates 
 ``` 
 
 
 ## **Verificar certificado en texto plano en Servidor remoto**
 ``` 
-openssl s_client -connect dominio.com:443 -servername dominio.com 2>/dev/null | openssl x509 -noout -text 
-openssl s_client -connect 192.168.1.100:5416 -starttls postgres 2>/dev/null | openssl x509 -noout -text 
+echo | openssl s_client -connect dominio.com:443 -servername dominio.com 2>/dev/null | openssl x509 -noout -text 
+echo | openssl s_client -connect 192.168.1.100:5416 -starttls postgres 2>/dev/null | openssl x509 -noout -text 
 ``` 
 
 # Preguntas frecuentes 
