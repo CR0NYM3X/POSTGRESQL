@@ -3,6 +3,14 @@
 **Patroni** es una herramienta de **orquestación de alta disponibilidad** para PostgreSQL. Utiliza un sistema de consenso distribuido (como **Etcd**, **Consul** o **ZooKeeper**) para coordinar qué nodo debe ser el **líder (primary)** y cuáles deben ser los **replicas (standby)**.
 
 
+##  ¿Qué es etcd?
+es una base de datos de tipo clave-valor (key-value store) distribuida, diseñada para ser extremadamente confiable y rápida en lecturas. Su función principal no es guardar tus datos de negocio, sino guardar el estado y la configuración de tu infraestructura.
+
+
+- Consenso (Algoritmo Raft): utiliza un protocolo llamado Raft para asegurar que todos los nodos estén de acuerdo. Si tienes 3 nodos de etcd, al menos 2 deben estar vivos para tomar una decisión. Esto evita el Split-Brain (que dos servidores de Postgres crean que son el Master al mismo tiempo).
+
+- TTL (Time To Live): Patroni escribe una "llave" en etcd que dice "Yo soy el líder" y le pone un tiempo de vida (por ejemplo, 10 segundos). Patroni debe estar renovando esa llave constantemente. Si el servidor de Postgres explota, la llave expira en etcd y el sistema sabe inmediatamente que debe elegir un nuevo líder.
+
 ## ✅ 4. Ventajas de usar Patroni
 
 | Ventaja                            | Descripción                                                                     |
@@ -64,7 +72,7 @@
 | Patroni + PostgreSQL  | ✅ Sí                                   | Patroni necesita acceso directo al PostgreSQL local para controlarlo.                           |
 | Patroni + etcd        | ⚠️ Solo en entornos pequeños o pruebas | En producción, etcd debe estar separado para evitar que un fallo en Patroni afecte el consenso. |
 | etcd + etcd (clúster) | ✅ Sí                                   | etcd debe estar en al menos 3 nodos distintos para lograr consenso.                             |
-| PostgreSQL + etcd     | ❌ No recomendado                       | Si el nodo cae, se pierde tanto la base de datos como el consenso.                              |
+| PostgreSQL + etcd     | ❌ No recomendado                       | Si el nodo cae, se pierde tanto la base de datos como el consenso. también porque competiran por recursos de CPU y RAM                              |
 | Patroni + HAProxy     | ✅ Sí                                   | Patroni puede convivir con balanceadores si el servidor tiene recursos suficientes.             |
 
 ***
@@ -231,7 +239,7 @@ sudo hostnamectl set-hostname etcd-node1
 ***
 
 #### 🔹 Instalación de etcd en clúster (en etcd1, etcd2, etcd3)
-
+[Doc Oficial](https://github.com/etcd-io/etcd)
 ```bash
 sudo apt update
 sudo apt install -y etcd
@@ -901,6 +909,39 @@ Si ya tienes replicación configurada, puedes:
    - Configurar correctamente la sección `clone:` si quieres que Patroni gestione la clonación.
 3. **Iniciar Patroni en cada esclavo.**
 4. Patroni detectará el maestro y sincronizará los esclavos automáticamente.
+
+---
+
+
+ 
+### Tabla de Recomendación: etcd vs. Nodos de Base de Datos
+
+| Cantidad de Nodos Postgres (Patroni) | Nodos de etcd Recomendados | Tolerancia a Fallos en etcd | Nivel de Disponibilidad |
+| --- | --- | --- | --- |
+| **1 a 5 nodos** | **3** | 1 nodo | **Estándar:** Ideal para clusters pequeños o medianos. |
+| **6 a 20 nodos** | **3 o 5** | 1 o 2 nodos | **Alta:** 5 nodos si el tráfico de failover es crítico. |
+| **21 a 100 nodos** | **5** | 2 nodos | **Crítica:** Para arquitecturas masivas o muy distribuidas. |
+| **Más de 100 nodos** | **5 o 7** | 2 o 3 nodos | **Extrema:** Muy raro ver más de 7 por la latencia de red. |
+
+ 
+
+### ¿Por qué siempre números impares?
+
+Como te mencionaba, etcd se basa en el **quórum** (mayoría simple: $n/2 + 1$). Mira lo que pasa si eliges números pares:
+
+* **Si tienes 2 nodos:** Necesitas 2 para tener mayoría. Si falla 1, el cluster se detiene. Tienes la misma tolerancia que con 1 solo nodo, pero con el doble de costo.
+* **Si tienes 4 nodos:** Necesitas 3 para tener mayoría. Si fallan 2, el cluster se detiene. Tienes la misma tolerancia que con 3 nodos, pero con más gasto y más latencia de red.
+
+ 
+### Recomendaciones de Hardware para esos nodos de etcd
+
+Como etcd es el que decide quién es el "Rey" (Master) en tu cluster , si etcd se pone lento, Patroni podría pensar que el Master murió por error (falso positivo). Para tus réplicas, estos 3 nodos de etcd deberían tener:
+
+1. **Discos SSD/NVMe:** Es lo más importante. etcd escribe constantemente en el log (WAL) y necesita latencia bajísima.
+2. **Red Dedicada:** Si es posible, que la comunicación entre Patroni y etcd vaya por una red privada con poca latencia.
+3. **Recursos:** No necesitan mucha CPU ni mucha RAM. Para 10-20 réplicas, con **2 vCPUs y 4GB de RAM** por cada nodo de etcd suele ser más que suficiente.
+ 
+
 
 
 ## Links
