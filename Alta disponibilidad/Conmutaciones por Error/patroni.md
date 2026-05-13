@@ -351,7 +351,7 @@ CREATE USER replicator REPLICATION LOGIN ENCRYPTED PASSWORD 'replicatorpass';
 #### 🔹 Configuración de Patroni
 
 **Archivo `/etc/patroni.yml` en node1 (maestro)**
-
+[Link ejemplo](https://github.com/patroni/patroni/blob/master/postgres0.yml)
 ```yaml
 # Nombre del clúster y nodo
 scope: pg_cluster              # Identificador del clúster Patroni
