@@ -537,7 +537,42 @@ Puedes usar:
 ```bash
 curl http://localhost:8008
 ```
- 
+ ---
+
+# Verificaciones 
+```
+####################################### patroni #######################################
+
+# Verificar el binario:
+patroni --version
+
+
+# Verificar si el servicio está activo:
+systemctl status patroni
+
+# Verificar mediante procesos:
+ps aux | grep patroni
+
+# Muestrar una tabla con tus nodos de Postgres
+patronictl -c /etc/patroni.yml list
+
+####################################### ETCD #######################################
+
+# Verificar el cliente (etcdctl):
+etcdctl version
+
+# Verificar el servicio:
+systemctl status etcd
+
+# Verificar si está escuchando en su puerto (2379 por defecto)
+ss -tulpn | grep 2379
+
+
+curl http://10.0.0.110:2380/members
+
+```
+
+---
  
 
 ## 🧪 Validaciones importantes
