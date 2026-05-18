@@ -121,3 +121,34 @@ El "fraude interno" ocurre cuando **un empleado de la propia empresa utiliza sus
 * **El objetivo de la concientización:** No se trata solo de asumir que el DBA es "malo", sino de educarlo en que:
 1. **Todo lo que haga dejará huella:** Explicarles que habrá sistemas de monitoreo (como el DAM que menciona el documento) que graban cada tecla que presionen, por lo que cualquier intento de fraude será detectado inmediatamente.
 2. **Ingeniería Social:** Capacitarlos para que no caigan en trampas donde criminales externos intenten comprarlos, engañarlos o amenazarlos para que extraigan información del banco.
+
+---
+
+
+**SoD** son las siglas en inglés de **Segregation of Duties**, que en español traducimos como **Segregación de Funciones** (o Separación de Funciones).
+
+En el mundo de la tecnología, la auditoría y las finanzas, es uno de los principios de seguridad más antiguos y vitales que existen. Su regla de oro es muy simple: **ninguna persona debe tener el poder suficiente para cometer un fraude o un error grave y cubrir sus propios rastros.**
+
+Para entenderlo de forma entretenida, piensa en las películas de Hollywood donde, para lanzar un misil nuclear, dos oficiales distintos tienen que introducir dos llaves diferentes al mismo tiempo. Ninguno puede hacerlo solo. Eso es SoD en el mundo real.
+
+---
+
+### ¿Cómo se aplica SoD en las Bases de Datos de un Banco?
+
+Cuando llevamos este concepto a los Administradores de Bases de Datos (DBA), el principio dice que **las funciones técnicas deben estar separadas de las funciones de negocio y de control**.
+
+Aquí tienes los tres ejemplos más claros de cómo se rompe y cómo se debe aplicar la Segregación de Funciones:
+
+| ¿Cómo se rompe el SoD? (El peligro) | ¿Cómo se aplica correctamente el SoD? |
+| --- | --- |
+| **El DBA que ve saldos:** El administrador técnico entra a la base de datos para arreglar la velocidad del sistema, pero de paso se pone a revisar el saldo de la cuenta de su jefe o de una celebridad. | **Data Masking (Enmascaramiento):** El DBA puede ver que la tabla mide 50 gigabytes y que los índices están bien, pero los nombres y los saldos reales le aparecen como `XXXXX` o alterados con datos falsos. |
+| **El DBA "Súper Héroe":** El DBA modifica un dato (por ejemplo, se transfiere dinero a su cuenta) y luego entra al historial de actividad (logs) y borra el registro de lo que hizo para que nadie se entere. | **Separación de Logs:** El DBA tiene control del servidor, pero las bitácoras de lo que hace se envían en tiempo real a un servidor externo (SIEM) controlado por el equipo de **Seguridad de la Información**. El DBA no puede borrar su propio rastro. |
+| **El DBA que se autoevalúa:** El mismo DBA que escribe un código o un script para modificar la base de datos es el que se lo aprueba a sí mismo y lo mete a producción a mitad de la noche. | **Comité de Cambios (CAB):** El DBA propone el cambio técnico, pero un equipo ajeno (un comité o un gerente de operaciones) debe revisar el impacto y autorizar la aplicación de ese cambio. |
+
+---
+
+### ¿Por qué es tan crítico en ciberseguridad?
+
+Si una empresa ignora el SoD y le da "todos los accesos" a los DBA (el famoso usuario `root`, `sa` o `sysdba` sin control), está creando un **único punto de falla humano**. Si ese DBA se vuelve malintencionado, si es extorsionado por cibercriminales, o simplemente si comete un error de dedo catastrófico, no habrá ninguna línea de defensa que lo detenga.
+
+Por eso, normas como **ISO 27001** (seguridad), **PCI-DSS** (tarjetas de crédito) y las regulaciones bancarias locales exigen que el SoD esté documentado, automatizado y auditado estrictamente. Es la diferencia entre confiar a ciegas en las personas o confiar en un proceso seguro.
