@@ -765,9 +765,15 @@ La resiliencia se refiere a la capacidad de la base de datos para seguir funcion
 
 
 # DB  colocada y no colocada
-1. **Base de datos colocada**: Una base de datos colocada (también conocida como "on-premises") es aquella que se encuentra físicamente en las instalaciones de la organización. Esto significa que la organización es responsable de la gestión, mantenimiento y seguridad del hardware y software de la base de datos. Las ventajas incluyen un mayor control sobre los datos y la infraestructura, pero también implica mayores costos y responsabilidades de mantenimiento.
 
-2. **Base de datos no colocada**: Una base de datos no colocada (o "en la nube") es aquella que se aloja en servidores de terceros, generalmente proveedores de servicios en la nube como AWS, Azure o Google Cloud. En este caso, el proveedor de servicios se encarga de la gestión, mantenimiento y seguridad de la infraestructura. Las ventajas incluyen escalabilidad, reducción de costos de infraestructura y facilidad de acceso desde cualquier lugar, aunque puede haber preocupaciones sobre la seguridad y el control de los datos.
+
+1. **Base de datos Colocación a Nivel de Infraestructura (Data Center Colocation)**: Una base de datos colocada (también conocida como "on-premises") es aquella que se encuentra físicamente en las instalaciones de la organización. Esto significa que la organización es responsable de la gestión, mantenimiento y seguridad del hardware y software de la base de datos. Las ventajas incluyen un mayor control sobre los datos y la infraestructura, pero también implica mayores costos y responsabilidades de mantenimiento.
+
+2. **Base de datos Colocación a Nivel de Arquitectura (Table Colocation)**
+Si estás trabajando con bases de datos distribuidas o Big Data (como *Citrus Data*, *Cassandra*, *Google Spanner* o *Greenplum*), "colocar" los datos significa algo completamente diferente y muy poderoso para el rendimiento.
+Significa **guardar filas de diferentes tablas que están relacionadas entre sí en el mismo nodo físico o disco.**
+
+3. **Base de datos no colocada**: Una base de datos no colocada (o "en la nube") es aquella que se aloja en servidores de terceros, generalmente proveedores de servicios en la nube como AWS, Azure o Google Cloud. En este caso, el proveedor de servicios se encarga de la gestión, mantenimiento y seguridad de la infraestructura. Las ventajas incluyen escalabilidad, reducción de costos de infraestructura y facilidad de acceso desde cualquier lugar, aunque puede haber preocupaciones sobre la seguridad y el control de los datos.
 ---
 
 # Tipos de sistemas de procesamiento de datos
