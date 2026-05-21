@@ -143,7 +143,7 @@ Es la herramienta más completa. Al ser "Community Edition", permite conectar ca
 * **Oracle:** [ojdbc11.jar](https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html)
 * **MySQL:** [mysql-connector-j-8.3.0.jar](https://dev.mysql.com/downloads/connector/j/) (Seleccionar *Platform Independent*).
 * **MariaDB:** [mariadb-java-client-3.3.3.jar](https://mariadb.com/downloads/connectors/) (Seleccionar *Java 8+ Connect* / *Platform Independent*).
-
+* **sqlite:** [sqlite-jdbc-3.53.1.0-natives-all.jar](https://github.com/xerial/sqlite-jdbc/releases) 
 
  
 ### 2. DataGrip (Profesional / Paga)
