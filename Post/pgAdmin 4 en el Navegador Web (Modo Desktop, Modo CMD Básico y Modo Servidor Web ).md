@@ -4,6 +4,20 @@ Cuando instalamos pgAdmin 4 en  Windows, el instalador por defecto inicializa la
 
 Si analizamos detenidamente el código fuente de utilidades como `setup.py`, descubrimos que pgAdmin cuenta con una potente interfaz de línea de comandos (CLI) basada en la librería **Typer**. Esto nos permite abstraer por completo la interfaz gráfica de escritorio y desplegar pgAdmin como un servidor web tradicional y persistente.
 
+
+### El secreto del archivo `pgadmin4.exe`
+
+Cuando abres `pgAdmin4.exe` desde tu escritorio, no estás abriendo un programa tradicional de Windows. En realidad, estás detonando tres pasos automáticos en cadena:
+
+1. **Enciende un servidor oculto:** El `.exe` arranca un servidor web interno en tu computadora ejecutando silenciosamente el código de Python que está en tu carpeta `AppData` (`pgAdmin4.py`).
+2. **Carga el motor de base de datos:** Ese servidor de Python activa de inmediato las librerías nativas en lenguaje **C** (como `libpq.dll`) para quedar listo y poder conectar tus servidores de PostgreSQL.
+3. **Abre un navegador disfrazado:** Finalmente, el `.exe` abre una ventana gráfica flotante (llamada *NW.js* o *Electron*). Esta ventana no es un programa, es un navegador web recortado y programado en HTML/Javascript que apunta en secreto a la dirección local de tu servidor de Python (`http://127.0.0.1`).
+
+ 
+ 
+
+
+
 Si prefieres usar tu navegador favorito (Chrome, Edge, Firefox) por comodidad o rendimiento, existen tres métodos infalibles para lograrlo. ¡Aquí te enseñamos cómo!
 
 ---
