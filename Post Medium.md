@@ -112,6 +112,8 @@ Datasets -> https://www.kaggle.com/datasets
 
 # High Availability  
 ```
+Building HA Zabbix 7.4 Monitoring Stack with PostgreSQL, Patroni, Keepalived (VIP), HAProxy, etcd, and Grafana. -> https://cmakkaya.medium.com/building-ha-zabbix-7-4-monitoring-stack-with-postgresql-patroni-keepalived-vip-haproxy-etcd-cd1aff5153c6
+
 Configuration the PostgreSQL database for metadata using PGPool on lab environment -> https://awslife.medium.com/configuration-the-postgresql-database-for-metadata-using-pgpool-on-lab-environment-f30367562916
 Beyond HA: A Battle-Tested PostgreSQL Architecture for Mission-Critical Workloads -> https://medium.com/@ukhore/beyond-ha-a-battle-tested-postgresql-architecture-for-mission-critical-workloads-1d517d15b22a
 
