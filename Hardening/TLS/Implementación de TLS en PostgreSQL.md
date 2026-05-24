@@ -710,3 +710,7 @@ En caso de que la llave privada este protegida con una contraseña , es necesari
 <2025-07-07 14:19:12 MST 127.0.0.1(3152) [unknown] [unknown] [unknown] 1778672 686c39d0.1b23f0 >LOG:  could not accept SSL connection: no shared cipher
 ```
 
+### Links
+```
+https://stormatics.tech/blogs/ssl-in-postgresql
+```
