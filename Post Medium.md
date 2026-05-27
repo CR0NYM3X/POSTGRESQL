@@ -136,7 +136,7 @@ Patroni PostgreSQL High Availability with pgBackRest -> https://medium.com/@dick
 
 Una guía práctica para la replicación de PostgreSQL con servidores en espera asincrónicos y sincrónicos -> https://www.percona.com/blog/guide-to-postgresql-replication-with-both-asynchronous-and-synchronous-standbys/
 
-
+Migrating PostgreSQL from single-replica to HA with CloudNativePG -> https://chocopy.medium.com/migrating-postgresql-from-single-replica-to-ha-with-cloudnativepg-c534c6d64be4
 
 Step-by-Step Guide to PostgreSQL Streaming Replication using RepMgr  -> https://shridharkhanal.medium.com/step-by-step-guide-to-postgresql-streaming-replication-using-repmgr-5f620727dbc4
 
