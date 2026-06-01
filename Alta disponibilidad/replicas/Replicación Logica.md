@@ -467,25 +467,55 @@ SELECT slot_name, pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),restart_ls
 
 ### Extra 
 ```
-CREATE USER migration_admin PASSWORD 'DMS_1s_cool!';
-ALTER DATABASE orders OWNER TO migration_admin;
-ALTER ROLE migration_admin WITH REPLICATION;
+-- ==============================================================================
+-- 1. PERMISOS A NIVEL DE ESQUEMA (Contenedor principal)
+-- ==============================================================================
 
-
+-- USAGE: Permite al usuario entrar al esquema y "ver" que los objetos existen.
 GRANT USAGE ON SCHEMA pglogical TO migration_admin;
+
+-- ALL: Da control total sobre el esquema (crear tablas, alterarlo, etc.) para que la extensión opere.
 GRANT ALL ON SCHEMA pglogical TO migration_admin;
 
+
+-- ==============================================================================
+-- 2. PERMISOS DE LECTURA (SELECT) EN METADATOS Y MONITOREO
+-- ==============================================================================
+
+-- pglogical.tables: Vista que lista todas las tablas configuradas para replicar en el sistema.
 GRANT SELECT ON pglogical.tables TO migration_admin;
+
+-- pglogical.depend: Rastrea dependencias internas para evitar borrar tablas activas en la réplica.
 GRANT SELECT ON pglogical.depend TO migration_admin;
-GRANT SELECT ON pglogical.local_node TO migration_admin;
+
+-- pglogical.local_node: Identifica la identidad y el rol de este servidor específico (si es proveedor o cliente).
 GRANT SELECT ON pglogical.local_sync_status TO migration_admin;
+
+-- pglogical.local_sync_status: Muestra el estado de sincronización en tiempo real de cada tabla (si está copiando o lista).
+GRANT SELECT ON pglogical.local_sync_status TO migration_admin;
+
+-- pglogical.node: Catálogo general que registra todos los servidores (nodos) involucrados en la red de replicación.
 GRANT SELECT ON pglogical.node TO migration_admin;
+
+-- pglogical.node_interface: Almacena las cadenas de conexión (IPs, puertos, usuarios) para comunicarse con otros nodos.
 GRANT SELECT ON pglogical.node_interface TO migration_admin;
+
+-- pglogical.queue: Cola de mensajes internos para enviar comandos especiales (como cambios de estructura DDL) a los destinos.
 GRANT SELECT ON pglogical.queue TO migration_admin;
+
+-- pglogical.replication_set: Lista los grupos lógicos de replicación creados (por ejemplo, el grupo 'default').
 GRANT SELECT ON pglogical.replication_set TO migration_admin;
+
+-- pglogical.replication_set_seq: Tabla intermedia que asocia qué secuencias (campos autoincrementables) van en cada grupo.
 GRANT SELECT ON pglogical.replication_set_seq TO migration_admin;
+
+-- pglogical.replication_set_table: Tabla intermedia que asocia exactamente qué tablas físicas pertenecen a qué grupo de réplica.
 GRANT SELECT ON pglogical.replication_set_table TO migration_admin;
+
+-- pglogical.sequence_state: Guarda el estado y el último valor numérico de las secuencias para que no se dupliquen IDs.
 GRANT SELECT ON pglogical.sequence_state TO migration_admin;
+
+-- pglogical.subscription: Registra los datos de las suscripciones activas (solo contiene datos si este nodo recibe información).
 GRANT SELECT ON pglogical.subscription TO migration_admin;
 
 ```
