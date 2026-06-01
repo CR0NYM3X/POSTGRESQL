@@ -609,7 +609,11 @@ ALTER DEFAULT PRIVILEGES FOR ROLE user_jose IN SCHEMA public GRANT SELECT ON TAB
 # SEQUENCES:
 GRANT select ON table my_seuencia_test TO my_user_test; -- versiones 8.0
   GRANT USAGE, SELECT,UPDATE ON SEQUENCE mi_secuencia TO testuserdba;
+			-- USAGE: Permite al usuario "utilizar" la secuencia para generar nuevos valores. para ejecutar la función nextval('mi_secuencia').
+            -- SELECT: Permite al usuario "mirar" el estado actual de la secuencia sin alterarlo. uso de las funciones currval('mi_secuencia') y lastval() . También permite hacer un SELECT * FROM mi_secuencia;
+            -- UPDATE: Permite modificar el estado interno o el "contador" de la secuencia de forma manual.  Habilita el uso de la función setval('mi_secuencia', valor)
 GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO "testuserdba";
+
 
 # SCHEMA:  [Nota] - el create te permite crear objetos dentro de un schema
   GRANT CREATE ON SCHEMA public TO mi_rol; ---  permite al usuario crear y modificar objetos en el esquema público
