@@ -55,6 +55,8 @@ Para solucionarlo de golpe, puedes inyectar la ruta del entorno (`PATH`) y ejecu
 ```cmd
 cmd /v:on /c "set PATH=%PATH%;C:\Users\TU_USUARIO_WINDOWS\AppData\Local\Programs\pgAdmin 4\runtime&& "C:\Users\TU_USUARIO_WINDOWS\AppData\Local\Programs\pgAdmin 4\python\python.exe" "C:\Users\TU_USUARIO_WINDOWS\AppData\Local\Programs\pgAdmin 4\web\pgAdmin4.py""
 
+# Este trae %USERNAME% 
+cmd /v:on /c "set PATH=%PATH%;C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\runtime&& "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\python\python.exe" "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\web\pgAdmin4.py""
 ```
 
 3. Deja la ventana negra de la consola abierta (es la que mantiene vivo el servidor).
