@@ -38,6 +38,11 @@ SELECT name, setting, short_desc FROM pg_settings WHERE name LIKE 'cron%' ORDER 
 date -u
 /usr/bin/timedatectl
 
+--- Obtener una zona horaria y su abreviacion
+select * from pg_timezone_names where abbrev = 'MST';
+select * from pg_timezone_names where abbrev ilike '%UTC%';
+
+
 ---- Ver la hora en posgresql
 SELECT current_timestamp AT TIME ZONE 'GMT';
 SELECT current_timestamp AT TIME ZONE 'UTC';
@@ -52,6 +57,7 @@ SELECT current_timestamp AT TIME ZONE 'MST'; --- este es mi estandar
 ,current_timestamp AT TIME ZONE 'GMT' as "hora Estandar GMT"
 , (current_timestamp AT TIME ZONE 'GMT'  ) - (current_timestamp AT TIME ZONE 'MST'  )  as "Diferencia de horas "
  ;
+
 
 
 
