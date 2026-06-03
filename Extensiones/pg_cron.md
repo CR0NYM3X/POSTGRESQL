@@ -44,9 +44,10 @@ select * from pg_timezone_names where abbrev ilike '%UTC%';
 
 
 ---- Ver la hora en posgresql
+SELECT current_timestamp AT TIME ZONE 'Mexico/General';
 SELECT current_timestamp AT TIME ZONE 'GMT';
 SELECT current_timestamp AT TIME ZONE 'UTC';
-SELECT current_timestamp AT TIME ZONE 'MST'; --- este es mi estandar  
+SELECT current_timestamp AT TIME ZONE 'MST'; --- este me sirve a mi
 
 --------- Convertir hora MST a GMT
   SELECT 
