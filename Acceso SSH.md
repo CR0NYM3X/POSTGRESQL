@@ -76,3 +76,177 @@ sudo systemctl restart ssh
 3. **Prueba la conexión**: No cierres tu sesión actual de SSH hasta que hayas comprobado en una ventana nueva que puedes entrar (y que el usuario restringido solo entra desde su IP).
 
  
+
+
+---
+
+
+# Manual Técnico: Configuración de Acceso SSH Automatizado y Buenas Prácticas de Hardening
+
+Este documento técnico describe el procedimiento estándar para configurar un acceso seguro y automatizado mediante SSH desde un **Servidor A (Origen)** hacia un **Servidor B (Destino)** sin el uso de contraseñas interactivas, mitigando los riesgos asociados mediante directivas de endurecimiento (*hardening*).
+
+---
+
+## 1. Fundamentos Tecnológicos (¿Qué hace cada cosa?)
+
+La autenticación se basa en criptografía de llave pública (asimétrica), eliminando la necesidad de transmitir contraseñas por la red.
+
+```
++-------------------+                    +-------------------+
+|    SERVIDOR A     |                    |    SERVIDOR B     |
+|     (Origen)      |                    |     (Destino)     |
+|                   |                    |                   |
+|  [Llave Privada]  |-- (Desafío SSH) -->|  [Llave Pública]  |
+|   (id_ed25519)    |                    | (authorized_keys) |
++-------------------+                    +-------------------+
+
+```
+
+* **Llave Privada (`id_ed25519`):** Reside exclusivamente en el Servidor A. Funciona como la firma digital o llave maestra. **Nunca debe ser compartida ni movida de este servidor.**
+* **Llave Pública (`id_ed25519.pub`):** Es el "candado" que se instala en el Servidor B. No es secreta.
+* **Archivo `authorized_keys`:** Archivo en el Servidor B que almacena las llaves públicas autorizadas para tomar el control del usuario correspondiente.
+* **Algoritmo Ed25519:** Esquema de firma digital de curva elíptica. Ofrece mayor seguridad y rendimiento que el tradicional RSA con firmas más compactas.
+
+---
+
+## 2. Análisis de Riesgos y Beneficios
+
+Antes de la implementación, el equipo de seguridad debe considerar el siguiente balance de riesgos:
+
+### Ventajas
+
+* **Inmunidad a Fuerza Bruta:** Elimina la posibilidad de ataques de diccionario dirigidos a adivinar contraseñas.
+* **Automatización de Tareas:** Permite la ejecución autónoma de tareas programadas (CRON, CI/CD, respaldos).
+* **Auditoría unívoca:** Permite identificar exactamente qué llave (y por ende qué servidor/usuario) originó la conexión en los logs de auditoría (`/var/log/auth.log` o `secure`).
+
+### Riesgos y Desventajas
+
+* **Movimiento Lateral (Efecto Dominó):** Si un atacante compromete el Servidor A y obtiene la llave privada, comprometerá inmediatamente el Servidor B.
+* **Gestión de Ciclo de Vida:** La falta de rotación o depuración de llaves puede dejar accesos activos a sistemas o personal obsoleto.
+
+---
+
+## 3. Guía de Implementación Paso a Paso
+
+### Paso 1: Generación de Llaves en el Servidor A
+
+Acceda a la terminal del **Servidor A** con el usuario que ejecutará la automatización y genere el par de llaves:
+
+```bash
+ssh-keygen -t ed25519 -C "automatizacion_servidor_A"
+
+```
+
+> ⚠️ **Control de Seguridad:** Cuando el comando solicite una frase de contraseña (*passphrase*), **presione ENTER para dejarla en blanco**. Si introduce una contraseña, los scripts automáticos no podrán conectar sin intervención humana.
+
+### Paso 2: Transferencia de la Llave Pública al Servidor B
+
+Transfiera la llave pública hacia el **Servidor B**. Reemplace `usuario` por el usuario destino y la IP correspondiente:
+
+```bash
+ssh-copy-id usuario@IP_SERVIDOR_B
+
+```
+
+*(Deberá ingresar la contraseña del Servidor B por última vez para autorizar la copia).*
+
+### Paso 3: Verificación de Permisos Críticos (Servidor B)
+
+SSH rechazará llaves si los permisos de las carpetas son muy permisivos. Conéctese al **Servidor B** y aplique los permisos correctos:
+
+```bash
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+
+```
+
+### Paso 4: Prueba de Conectividad Inicial
+
+Desde el **Servidor A**, valide que el acceso se realice de manera directa y sin solicitud de credenciales:
+
+```bash
+ssh usuario@IP_SERVIDOR_B
+
+```
+
+---
+
+## 4. Endurecimiento de Seguridad (Hardening)
+
+Para mitigar el riesgo de movimiento lateral, aplique las siguientes directivas de control en el **Servidor B**.
+
+### Mitigación 1: Restricción de Origen (IP Binding) e Inyección de Comandos
+
+Edite el archivo `~/.ssh/authorized_keys` en el **Servidor B** y localice la línea de la llave añadida. Anteponga las directivas de restricción al inicio de la línea:
+
+```text
+from="IP_DEL_SERVIDOR_A",no-port-forwarding,no-X11-forwarding,no-pty ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...
+
+```
+
+* `from="IP_DEL_SERVIDOR_A"`: El Servidor B rechazará la llave si el atacante intenta usarla desde cualquier otra IP.
+* `no-pty`: Deshabilita la asignación de una terminal interactiva. Si alguien roba la llave, no podrá "escribir" comandos de forma libre en la consola.
+* `no-port-forwarding`: Evita que usen el túnel SSH para saltarse firewalls internos.
+
+### Mitigación 2: Principio de Menor Privilegio
+
+* **No use la cuenta `root`:** Cree siempre un usuario específico (ej: `usr-backup`) en el Servidor B con acceso restringido únicamente al directorio necesario para la tarea.
+
+### Mitigación 3: Desactivar Autenticación por Contraseña
+
+Una vez comprobado el funcionamiento de las llaves, se recomienda desactivar el acceso tradicional por contraseña en el archivo de configuración global de SSH del **Servidor B** (`/etc/ssh/sshd_config`):
+
+```text
+#Desactiva por completo la validación mediante contraseñas tradicionales de usuario.
+PasswordAuthentication no
+
+#Activa y autoriza explícitamente el uso de llaves criptográficas (públicas y privadas) para iniciar sesión.
+PubkeyAuthentication yes
+
+
+KbdInteractiveAuthentication no
+
+```
+
+*Aplique los cambios reiniciando el servicio:* `sudo systemctl restart sshd`
+
+---
+
+## 5. Matriz de Mantenimiento y Ciclo de Vida
+
+Para mantener el entorno seguro a lo largo del tiempo, la administración de sistemas debe auditar periódicamente lo siguiente:
+
+1. **Rotación de Llaves:** Se recomienda destruir y regenerar el par de llaves cada 12 meses.
+2. **Auditoría de Archivos:** Revisar mensualmente el archivo `authorized_keys` de los servidores críticos para verificar que no existan llaves residuales de antiguos administradores o servicios inactivos.
+
+
+
+
+
+
+
+
+
+## 2. ¿Es recomendado mantener las llaves públicas y privadas en cada servidor? ¿Cómo funciona la arquitectura correcta?
+
+**Respuesta corta:** **No.** Nunca debes duplicar ni pasear la **llave privada** por todos lados. La llave privada es personal e intransferible de cada servidor o usuario.
+
+Para entender cómo se distribuyen, imagina que las llaves son un candado (Llave Pública) y su llave física (Llave Privada).
+
+### El esquema correcto de distribución:
+
+* **En el Servidor A (Origen):** Aquí reside tu **Llave Privada** (`id_ed25519`). Solo el Servidor A debe conocerla. El Servidor A **no necesita** tener una llave privada del Servidor B para conectarse a él.
+* **En el Servidor B (Destino):** Aquí reside la **Llave Pública** del Servidor A (dentro del archivo `authorized_keys`). El Servidor B no necesita generar un par de llaves propio para recibir conexiones, solo necesita el "candado" del Servidor A para poder verificarlo.
+
+### ¿Por qué es un peligro clonar la misma llave en ambos?
+
+Si tú generas un par de llaves en el Servidor A, y luego copias **tanto la pública como la privada** al Servidor B para que "ambos tengan lo mismo", estás rompiendo la seguridad:
+
+1. Si hackean el Servidor B, obtendrán la llave privada del Servidor A, logrando acceso de regreso al Servidor A (un viaje de ida y vuelta para el atacante).
+2. Pierdes el control de identidad: ya no sabes si una conexión fue legítima del Servidor A o si alguien usó la copia del Servidor B.
+
+### Regla de oro en arquitectura de seguridad:
+
+> Las llaves **públicas** se distribuyen a los cuatro vientos (a cualquier servidor al que te quieras conectar). Las llaves **privadas** nacen, viven y mueren únicamente en el servidor/dispositivo donde fueron generadas.
+
+Si en un futuro quieres que el Servidor B se conecte al Servidor A de forma inversa, el procedimiento se repite al revés: generas un par de llaves *nuevo* en el Servidor B, y exportas *solo* su llave pública hacia el Servidor A.
