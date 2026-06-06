@@ -53,10 +53,16 @@ Para solucionarlo de golpe, puedes inyectar la ruta del entorno (`PATH`) y ejecu
 2. Copia y pega el siguiente comando unificado (asegúrate de reemplazar `TU_USUARIO_WINDOWS` por tu nombre de usuario real de Windows):
 
 ```cmd
-cmd /v:on /c "set PATH=%PATH%;C:\Users\TU_USUARIO_WINDOWS\AppData\Local\Programs\pgAdmin 4\runtime&& "C:\Users\TU_USUARIO_WINDOWS\AppData\Local\Programs\pgAdmin 4\python\python.exe" "C:\Users\TU_USUARIO_WINDOWS\AppData\Local\Programs\pgAdmin 4\web\pgAdmin4.py""
+
+# ejecutar scripts de Python en segundo plano con pythonw
+cmd /v:on /c "set PATH=%PATH%;C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\runtime&& start "" "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\python\pythonw.exe" "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\web\pgAdmin4.py""
+
 
 # Este trae %USERNAME% 
 cmd /v:on /c "set PATH=%PATH%;C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\runtime&& "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\python\python.exe" "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\web\pgAdmin4.py""
+
+# Este lo puedes ejecutar desde cmd y se ejecuta en segudno plano y seguiras interactuando con la terminal, pero no la puedes cerrar porque finaliza el servicio
+start /B "" cmd /v:on /c "set PATH=%PATH%;C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\runtime&& "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\python\python.exe" "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\web\pgAdmin4.py""
 ```
 
 3. Deja la ventana negra de la consola abierta (es la que mantiene vivo el servidor).
