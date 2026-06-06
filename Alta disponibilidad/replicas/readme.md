@@ -371,14 +371,14 @@ Aquí es donde entran las tres reglas del Teorema de CAP:
  
 
 ## La "C" de CAP: Consistencia (Consistency)
-
+`Todos los nodos ven los mismos datos al mismo tiempo.`
 En el contexto de sistemas distribuidos, la Consistencia significa **Consistencia de Réplica** (técnicamente llamada *Linealizabilidad*). Significa que todos los nodos del sistema ven exactamente la misma información al mismo tiempo, actuando como si fueran un solo servidor central.
 
 * **Llevado a tu ejemplo:** Si un usuario en Alemania se conecta al Servidor A y cambia su foto de perfil, esa actualización viaja inmediatamente por la red. Si un milisegundo después, otro usuario en Japón se conecta al Servidor E para ver ese perfil, el Servidor E **tiene la obligación de mostrarle la foto nueva**. No se permiten retrasos ni "datos viejos". O el sistema muestra la verdad absoluta y más reciente en todos lados, o prefiere no mostrar nada.
  
 
 ## La "A" de CAP: Disponibilidad (Availability)
-
+`Cada petición recibe una respuesta (éxito o fallo).`
 En los sistemas distribuidos, la Disponibilidad significa que **cualquier nodo del sistema que esté encendido y reciba una solicitud debe darte una respuesta válida (no un error), sin importar el estado del resto de los servidores.**
 
 * **Llevado a tu ejemplo:** Un usuario en Japón se conecta al Servidor E para leer un dato, mientras que el Servidor A en Alemania está saturado o incomunicado. Que el sistema sea "Disponible" significa que el Servidor E **tiene que responderle** al usuario de Japón inmediatamente. No se le permite decirle: *"Espera, no te puedo responder porque estoy bloqueado validando si Alemania tiene datos nuevos"*, ni tampoco arrojarle un error 500. El servidor responde con lo que tiene a la mano en ese instante.
@@ -387,7 +387,7 @@ En los sistemas distribuidos, la Disponibilidad significa que **cualquier nodo d
  
 
 ## La "P" de CAP: Tolerancia a Particiones (Partition Tolerance)
-
+`El sistema sigue funcionando aunque se rompa la comunicación entre servidores.`
 Aquí está el núcleo físico de todo. Una **Partición** es una forma elegante de decir: **"Se rompió el cable de red que unía a los servidores"**. Los servidores siguen vivos, encendidos y funcionando, pero ya no pueden hablar entre sí debido a un fallo en la comunicación.
 
 Que un sistema tenga Tolerancia a Particiones significa que **el sistema completo no se desmorona ni se apaga si la red falla entre algunos de sus nodos.** El servicio sigue operando aunque la red se rompa y los servidores queden divididos en "islas".
@@ -404,7 +404,7 @@ En el mundo real de las redes (internet, fibra óptica, satélites), los cables 
 Así que el dilema real en el día a día de un ingeniero de datos, cuando ocurre la inevitable partición ($P$), se reduce a una decisión binaria:
 
 * **¿Eliges Consistencia (CP)?:** Si el Servidor A y el Servidor E no pueden hablar por la falla de red, prefieres **bloquear o rechazar** las solicitudes en el Servidor E antes de arriesgarte a entregar un dato desactualizado. Sacrificas la Disponibilidad (el usuario verá un error) para asegurar que nadie lea mentiras.
-* **¿Eliges Disponibilidad (AP)?:** Prefieres que el Servidor E le responda al usuario con lo que tiene guardado en su memoria local (aunque sea un dato viejo), porque para tu negocio es peor mostrar una pantalla de error. Sacrificas la Consistencia en favor de mantener el sistema siempre andando.
+* **¿Eliges Disponibilidad (AP)?:** Prefieres que el Servidor E le responda al usuario con lo que tiene guardado en su memoria local (aunque sea un dato viejo), porque para tu negocio es peor mostrar una pantalla de error. Sacrificas la Consistencia en favor de mantener el sistema siempre andando.  lo que te lleva al mundo BASE
 
 📌 **Conclusión**  
 No es posible tener **las tres propiedades al mismo tiempo**. Cada sistema debe elegir entre **CP (consistencia y tolerancia a fallos)** o **AP (disponibilidad y tolerancia a fallos)** según sus necesidades.  
