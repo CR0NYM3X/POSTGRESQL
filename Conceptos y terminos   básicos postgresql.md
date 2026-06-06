@@ -1292,7 +1292,7 @@ Aunque "с" (cirílico) y "c" (latino) son caracteres completamente diferentes e
 
 
 
-# ¿Qué es ACID?
+# ¿Qué es ACID?  - Propiedades ACID (El Enfoque Tradicional)
 
 **ACID** es un acrónimo que representa cuatro propiedades fundamentales que deben cumplir las transacciones en una base de datos para garantizar su integridad y confiabilidad. Estas propiedades son:
 
@@ -1334,7 +1334,20 @@ El modelo ACID es crucial para mantener la integridad, consistencia y confiabili
 2. **Comercio Electrónico**: En plataformas de comercio electrónico, las operaciones de compra y actualización de inventario deben ser confiables y consistentes.
 3. **Sistemas de Gestión Empresarial (ERP)**: Las aplicaciones ERP utilizan ACID para manejar datos de múltiples departamentos, asegurando que las actualizaciones sean consistentes y no se interfieran entre sí
 
- 
+---
+##  +Qué es BASE? - Propiedades BASE (El Enfoque Moderno/NoSQL)
+
+Con la llegada de la Web 2.0 y empresas como Google, Amazon o Facebook, las bases de datos ACID se quedaron cortas para manejar volúmenes masivos de datos a nivel mundial. Así nació BASE, adoptado por bases de datos NoSQL (como Cassandra, MongoDB, DynamoDB). Aquí se prioriza la **disponibilidad y la escala** sobre la consistencia inmediata.
+
+* **BA - Básicamente Disponible (Basically Available):** El sistema garantiza que responderá a las peticiones, pero no asegura que los datos que te dé sean los más recientes. Prefiere dar un dato "viejo" a no responder nada.
+* **S - Estado Suave (Soft State):** El estado del sistema puede cambiar con el tiempo, incluso sin que un usuario interactúe, debido a que los datos se están copiando y sincronizando entre diferentes servidores.
+* **E - Consistencia Eventual (Eventual Consistency):** El sistema eventualmente estará actualizado y coordinado en todos sus servidores, pero puede tomar unos milisegundos (o segundos).
+
+> 💡 **Ideal para:** Redes sociales (no importa si tu amigo ve tu "Like" 2 segundos tarde), carritos de compra de Amazon, contadores de reproducciones en YouTube o feeds de noticias.
+
+
+
+---
 # Que es CI/CD 
 CI/CD significa Integración Continua (CI) y Entrega/Despliegue Continuo (CD). Es una práctica fundamental en el desarrollo moderno de software que automatiza y agiliza el proceso de construcción, prueba y despliegue de aplicaciones.
 
