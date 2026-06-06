@@ -175,7 +175,7 @@ https://github.com/pgaudit/pgaudit_analyze
 https://hey-dba.com/articles/implementing-pgaudit-in-postgresql-your-databases-all-seeing-eye/
 https://supabase.com/docs/guides/database/extensions/pgaudit
 
-
+https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Post/pg_audit%20vs%20log_statement%20%3D%20all%20.md
 https://neon.com/blog/postgres-logging-vs-pgaudit
 ```
 
