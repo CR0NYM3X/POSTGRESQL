@@ -248,7 +248,12 @@ pgvectorscale -> https://github.com/timescale/pgvectorscale
 
 https://docs.vectorchord.ai/getting-started/overview.html
 
+Comprendiendo el mundo de los vectores: El puente entre el lenguaje humano y el digital
 https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Post/Comprendiendo%20el%20mundo%20de%20los%20vectores%3A%20El%20puente%20entre%20el%20lenguaje%20humano%20y%20el%20digital.md
+
+Entendí la IA en 5 minutos usando una cocina: El post que me hubiera gustado leer hace un año
+https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Post/Entend%C3%AD%20la%20IA%20en%205%20minutos%20usando%20una%20cocina%3A%20El%20post%20que%20me%20hubiera%20gustado%20leer%20hace%20un%20a%C3%B1o.md
+
 
 - vectorchord 
 - pg_vectorize -> para la inteligencia y contexto, asegurándonos de que ningún reporte importante se pierda solo porque el doctor usó un sinónimo o un término técnico diferente.
