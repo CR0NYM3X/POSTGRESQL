@@ -248,6 +248,9 @@ pgvectorscale -> https://github.com/timescale/pgvectorscale
 
 https://docs.vectorchord.ai/getting-started/overview.html
 
+Búsqueda de Texto avanzado
+https://github.com/CR0NYM3X/POSTGRESQL/blob/main/B%C3%BAsqueda%20de%20Texto%20avanzado.md
+
 Comprendiendo el mundo de los vectores: El puente entre el lenguaje humano y el digital
 https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Post/Comprendiendo%20el%20mundo%20de%20los%20vectores%3A%20El%20puente%20entre%20el%20lenguaje%20humano%20y%20el%20digital.md
 
