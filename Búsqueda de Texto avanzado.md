@@ -743,6 +743,53 @@ Cuando haces una búsqueda de texto completo con `to_tsvector` y `to_tsquery`, p
 - Un documento que solo contiene una palabra buscada una vez puede ser menos relevante.
 
 
+---
+
+
+
+
+# La diferencia fundamental: Léxica vs. Semántica
+
+**1. Cómo funciona `to_tsvector` (Búsqueda Tradicional / Léxica)**
+
+Cuando usas `to_tsvector`, PostgreSQL toma un texto, le quita las palabras inútiles (como "el", "la", "y") y reduce las palabras a su raíz o "token" (ej. convierte "corriendo" o "correrá" en el token "corr").
+
+* **El problema:** Es un sistema "cuadrado". Si buscas la palabra "computadora", PostgreSQL buscará el token "computador". Si en tu texto dice "ordenador" o "laptop", **no lo encontrará** porque las letras no coinciden. No entiende qué son las cosas, solo hace coincidir caracteres.
+
+**2. Cómo funciona `gemini-embedding-001` (Búsqueda Vectorial / Semántica)**
+
+El modelo de Gemini no mira letras, **mira conceptos**. Cuando conviertes texto a embeddings, la IA sitúa el concepto en un espacio matemático multidimensional.
+
+* **La ventaja:** Entiende el lenguaje humano. Sabe que "computadora", "laptop" y "ordenador" son conceptualmente vecinos. Sabe que una "manzana" puede ser una fruta o una empresa dependiendo de si el resto del texto habla de "jugo" o de "celulares".
+ 
+
+### Ejemplo Claro de la Vida Real
+
+Imagina que tienes una tabla con reportes de soporte técnico de una aseguradora.
+
+* **Texto almacenado en la fila 1:** *"El vehículo colisionó contra el muro de contención debido a la lluvia."*
+
+Un analista busca en el sistema: **"Accidente de coche por mal clima"**
+
+* **Si usas `to_tsvector`:** Te devolverá **0 resultados**. ¿Por qué? Porque "accidente" no es "colisión", "coche" no es "vehículo" y "clima" no es "lluvia". Los tokens no hacen *match*.
+* **Si usas `gemini-embedding-001`:** Te devolverá la fila 1 como **Match Perfecto**. La IA entiende que "colisión" = "accidente", "vehículo" = "coche", y "lluvia" = "mal clima".
+ 
+
+### Diferenciación Crítica: ¿Cuándo usar cuál?
+
+Corrige tu enfoque de diseño: no es que uno sea mejor que el otro, sirven para casos de uso totalmente distintos.
+
+| Característica | `to_tsvector` (Full-Text Search nativo) | `gemini-embedding-001` (Vector Search / IA) |
+| --- | --- | --- |
+| **¿Qué busca?** | Coincidencia de raíces de palabras (Tokens/Lexemas). | Coincidencia de significado, contexto y sinónimos. |
+| **Ubicación y Cómputo** | Se procesa 100% dentro de tu instancia de AlloyDB. Consume tu CPU y memoria local. | Vive en **Vertex AI** (fuera de tu BD). AlloyDB debe conectarse por API a los servidores de Google. |
+| **Velocidad de Ingesta** | Altísima. Convertir texto a vector tradicional toma milisegundos y no tiene costo extra. | Más lenta. Tienes que llamar a una API externa, esperar la respuesta y pagas por cada token de IA generado. |
+| **Caso de Uso Ideal** | Buscar catálogos de productos ("Zapatos Nike Talla 9") o códigos de error exactos. | Chatbots, análisis de documentos legales, entender preguntas complejas de usuarios. |
+
+
+---
+
+
 ### Bibliografía
 ```
 
