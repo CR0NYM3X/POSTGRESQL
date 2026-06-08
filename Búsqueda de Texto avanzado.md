@@ -399,7 +399,7 @@ ORDER BY relevancia DESC;
  
   
 
-## 🔄 Flujo semántico de `to_tsvector` y `to_tsquery`
+## 🔄 Flujo de `to_tsvector` y `to_tsquery`
 
 ### 🔸 `to_tsvector('idioma', texto)`
 **¿Qué hace?**
@@ -648,7 +648,7 @@ LIMIT 5;
 |-------------------|-------------------------------------|-------------------------------------|-----------|-----------|-----------------------------------|
 | `pg_trgm`         | Búsqueda por similitud de texto     | Corrección ortográfica, sugerencias | Alta      | Muy alta  | Errores ortográficos, sugerencias |
 | `LIKE` / `ILIKE`  | Coincidencia exacta o parcial       | Búsqueda simple                     | Media     | Muy alta  | Filtros rápidos y directos        |
-| `tsvector`        | Indexación semántica                | Búsqueda contextual                 | Alta      | Alta      | Búsqueda semántica contextual     |
+| `tsvector`        | Indexación semántica                | Búsqueda contextual                 | Alta      | Alta      | Búsqueda Tradicional / Léxica     |
 | `tsquery`         | Consulta semántica avanzada         | Filtros por significado             | Alta      | Alta      | Búsqueda con operadores lógicos   |
 | `fuzzystrmatch`   | Comparación fonética                | Nombres mal escritos                | Media     | Media     | Comparación léxica y fonética     |
 
