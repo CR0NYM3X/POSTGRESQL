@@ -54,6 +54,11 @@ Para solucionarlo de golpe, puedes inyectar la ruta del entorno (`PATH`) y ejecu
 
 ```cmd
 
+
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------- CMD  --------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # ejecutar scripts de Python en segundo plano con pythonw
 cmd /v:on /c "set PATH=%PATH%;C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\runtime&& start "" "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\python\pythonw.exe" "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\web\pgAdmin4.py""
 
@@ -63,6 +68,15 @@ cmd /v:on /c "set PATH=%PATH%;C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin
 
 # Este lo puedes ejecutar desde cmd y se ejecuta en segudno plano y seguiras interactuando con la terminal, pero no la puedes cerrar porque finaliza el servicio
 start /B "" cmd /v:on /c "set PATH=%PATH%;C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\runtime&& "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\python\python.exe" "C:\Users\%USERNAME%\AppData\Local\Programs\pgAdmin 4\web\pgAdmin4.py""
+
+
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------ POWERSHELL      ----------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
+$argumentos = '/c set "PATH=%PATH%;C:\Users\francisco.rodriguezt\AppData\Local\Programs\pgAdmin 4\runtime" && "C:\Users\francisco.rodriguezt\AppData\Local\Programs\pgAdmin 4\python\python.exe" "C:\Users\francisco.rodriguezt\AppData\Local\Programs\pgAdmin 4\web\pgAdmin4.py"'
+Start-Process -FilePath "cmd.exe" -ArgumentList $argumentos -WindowStyle Hidden
+
+
 ```
 
 3. Deja la ventana negra de la consola abierta (es la que mantiene vivo el servidor).
