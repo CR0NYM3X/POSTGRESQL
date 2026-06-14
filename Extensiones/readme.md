@@ -218,7 +218,7 @@ pgAudit: Registra operaciones sensibles como DDL y DML.
 pganalyze-> Monitoreo de Rendimiento: ,Análisis de Consultas ,Asesor de Índices: ,Asesor de VACUUM ,Alertas y Notificaciones ,Visualización de Datos 
 pgDash -> es una solución de monitoreo integral diseñada específicamente para despliegues de PostgreSQL. (Monitoreo en Profundidad,Informes y Visualización ,Alertas ,Monitoreo de Replicación ,Integraciones)
 pgBadger -> es una herramienta de análisis de logs para PostgreSQL que genera informes detallados y gráficos a partir de los archivos de log de PostgreSQL
-pgweasel
+pgweasel -> te permite interrogar tus archivos de log mediante subcomandos específicos para auditar el rendimiento y la salud de tu base de datos
 Prometheus ->  Prometheus es una herramienta de monitoreo de código abierto que se centra en la recopilación y el análisis de datos basados en series de tiempo.
 Zabbix -> es una herramienta de monitoreo de código abierto que ofrece una amplia gama de características, incluyendo la supervisión de bases de datos PostgreSQL.
 Nagios -> Con plugins específicos para PostgreSQL, Nagios puede monitorear el rendimiento y la seguridad de tu base de datos
