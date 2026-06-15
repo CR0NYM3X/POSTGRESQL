@@ -1069,6 +1069,41 @@ De forma paralela a lo que le pasa a la base de datos, Patroni se asegura de que
 ---
 
 
+# **Patroni sí trabaja con quórum y algoritmos de consenso**
+pero no de la forma en que lo hace YugabyteDB. Hay una separación de tareas clave aquí:
+
+
+## El secreto: Patroni no implementa Raft, se apoya en un DCS
+
+Patroni por sí mismo no tiene un código interno de Raft. Lo que hace Patroni es apoyarse externamente en un **DCS**
+
+Los DCS más comunes que usa Patroni son **etcd** (que usa el algoritmo **Raft**) o **Consul** (que usa **Raft** también).
+
+Entonces, cuando tienes un clúster de PostgreSQL tradicional con Patroni, la arquitectura se divide en dos capas totalmente separadas:
+
+### Capa 1: El Quórum de Patroni / etcd (Para el "Control")
+
+Aquí es donde aplica lo que leíste. Si montas un clúster de **etcd** con 3 nodos para Patroni, ese clúster de etcd **sí requiere un Quórum basado en sus propios nodos ($N$)**.
+
+* **¿Para qué sirve este quórum?** Únicamente para decidir **quién tiene el derecho de ser el nodo Principal (Master)** de PostgreSQL. Patroni escribe una "llave" en etcd que dice: *"El Nodo 1 es el Master"*. Si el Nodo 1 muere, los nodos restantes de etcd usan Raft para ponerse de acuerdo y permitir que el Nodo 2 se convierta en el nuevo Master.
+
+### Capa 2: El Commit de PostgreSQL (Para los "Datos")
+
+Aquí es donde se cae la magia del quórum en los datos. Aunque Patroni use Raft para decidir quién es el jefe (Master), **PostgreSQL sigue siendo una base de datos tradicional por dentro**.
+
+* Cuando tu aplicación hace un `INSERT`, los datos **no se replican usando Raft**.
+* PostgreSQL usa su replicación clásica (asíncrona o síncrona). Como vimos antes, el Master escribe el dato y se lo envía a las réplicas por su cuenta.
+
+
+
+## La gran diferencia con YugabyteDB
+
+Para verlo con total claridad, mira dónde se aplica el algoritmo Raft en ambos mundos:
+
+* **En Patroni + Postgres:** Raft se usa **solo para elegir al líder de la infraestructura** (Capa de Control). Las escrituras y los `commits` de tus datos no saben qué es Raft; siguen las reglas tradicionales de Postgres. El quórum aquí es sobre los **Nodos del DCS ($N$)**.
+* **En YugabyteDB:** Raft está integrado en el corazón del motor de almacenamiento. Se usa **tanto para elegir líderes como para cada uno de los `commits` individuales de tus datos** (Capa de Datos). Cada modificación de fila pasa por un quórum de Raft a nivel de **Factor de Replicación ($RF$)**.
+
+Por eso, con Patroni logras que PostgreSQL sea tolerante a fallos en su infraestructura (si muere el master, se elige otro rápido gracias a etcd), pero la replicación de los datos en sí misma sigue careciendo del quórum transaccional nativo que sí tiene una base de datos distribuida como YugabyteDB.
 
 
 ## Links
