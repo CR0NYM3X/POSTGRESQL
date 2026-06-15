@@ -140,8 +140,8 @@ El **split-brain** es un problema que ocurre en sistemas de alta disponibilidad 
   
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-
+El Factor de Replicación (frecuentemente abreviado como RF, por sus siglas en inglés Replication Factor)
+es el número total de copias idénticas de tus datos que la base de datos distribuida va a mantener almacenadas a lo largo de tus diferentes nodos.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
