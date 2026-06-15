@@ -206,8 +206,8 @@ Ejemplo clásico: en un clúster de 3 nodos etcd, **se necesita al menos 2 funci
 - El **quórum se calcula sobre los nodos consenso como etcd**, **no sobre los servidores PostgreSQL**.
 - Siempre necesitas al menos **una mayoría de nodos etcd funcionales** para que Patroni pueda tomar decisiones críticas como un failover.
 - **Debe ser siempre un número impar** para facilitar la mayoría.
-- Fórmula: Para para saber cuantos nodos ocupo en total , para permitirme N cantidad nodos caidos, _f_ fallos → necesitas **2×f + 1** nodos etcd.
-- Fórmula: Para para saber cuantos nodos  pueden fallar  **(RF - 1 ) / 2**  RF = Factor de replicación
+- Fórmula: Para para saber cuantos nodos ocupo en total , para permitirme N cantidad de nodos caidos, _f_ fallos → necesitas **`2×f + 1`** nodos etcd.
+- Fórmula: Para para saber cuantos nodos  pueden fallar  **`(RF - 1 ) / 2`**  RF = Factor de replicación
 
 
 ### 🧠 ¿Por qué es tan importante?
