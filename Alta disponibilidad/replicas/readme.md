@@ -155,9 +155,13 @@ Un Data Warehouse es un sistema de almacenamiento y gestión de datos diseñado 
 ## **Raft** y **Paxos** 
  Raft y Paxos son algoritmos de *consenso distribuido*, diseñados para que múltiples nodos en un sistema lleguen a un acuerdo sobre un valor, incluso si algunos fallan o se desconectan. Son fundamentales en bases de datos distribuidas, sistemas de archivos y clústeres de alta disponibilidad.
 
+ 
+
 ## ¿Qué significa el consenso en términos generales?  
 es simplemente ponerse de acuerdo. En el mundo de los sistemas distribuidos, el consenso es el mecanismo (estrictamente matemático y algorítmico) mediante el cual un grupo de servidores independientes logra estar de acuerdo sobre una única verdad absoluta, incluso si la red falla, hay latencia o algunos de los servidores explotan literalmente. Se usa en algoritmos Como Raft, Paxos y Etcd, que permiten que los servidores acuerden quién es el líder.
 
+
+En sistemas distribuidos basados en consenso (como Raft), el Factor de Replicación siempre debe ser un número impar ($3, 5, 7...$) para evitar empates a la hora de votar por un líder. Por lo tanto, por ejemplo si tienes 6 nodos, lo correcto y óptimo es configurar tu clúster con un Factor de Replicación de 5 (RF=5), dejando el sexto nodo como reserva activa (hot spare) para absorber la carga si otro nodo muere.
 
 ###  **¿Qué es Paxos?**
 
@@ -202,7 +206,8 @@ Ejemplo clásico: en un clúster de 3 nodos etcd, **se necesita al menos 2 funci
 - El **quórum se calcula sobre los nodos consenso como etcd**, **no sobre los servidores PostgreSQL**.
 - Siempre necesitas al menos **una mayoría de nodos etcd funcionales** para que Patroni pueda tomar decisiones críticas como un failover.
 - **Debe ser siempre un número impar** para facilitar la mayoría.
-- Fórmula: Para tolerar _f_ fallos → necesitas **2×f + 1** nodos etcd.
+- Fórmula: Para para saber cuantos nodos ocupo en total , para permitirme N cantidad nodos caidos, _f_ fallos → necesitas **2×f + 1** nodos etcd.
+- Fórmula: Para para saber cuantos nodos  pueden fallar  **(RF - 1 ) / 2**  RF = Factor de replicación
 
 
 ### 🧠 ¿Por qué es tan importante?
