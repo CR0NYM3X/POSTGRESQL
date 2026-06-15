@@ -1110,7 +1110,208 @@ sudo chown pgbouncer:pgbouncer /etc/pgbouncer/userlist.txt
 sudo chmod 600 /etc/pgbouncer/userlist.txt
 
 ```
+---
+
+# Habilitar el rotado de log en PGBouncer
+
+### ¿Qué es y para qué sirve `/etc/logrotate.d`?
+
+En los sistemas operativos Linux, **`/etc/logrotate.d`** no es un archivo, sino un **directorio (una carpeta)**.
+
+Sirve para guardar las configuraciones individuales de rotación de logs para cada aplicación instalada en el servidor (como PgBouncer, Nginx, PostgreSQL, Apache, etc.).
+
+Para entenderlo de forma sencilla, imagínalo así:
+
+* **`logrotate`** es el "administrador general" de limpieza del sistema.
+* **`/etc/logrotate.conf`** es el archivo de configuración global (el jefe). Este archivo tiene una instrucción que dice: *"Ve a la carpeta `/etc/logrotate.d/` y ejecuta todas las reglas que encuentres ahí dentro"*.
+* Cada archivo dentro de `/etc/logrotate.d/` (como tu archivo `pgbouncer`) es una instrucción específica para que el administrador sepa exactamente qué hacer con los logs de esa aplicación.
+
  
+
+
+### En resumen
+
+Tú no tienes que activar un contador ni programar un validador. La directiva `rotate 15` es una orden directa para el binario de `logrotate`. Él mismo se encarga de contar los archivos existentes en la carpeta cada madrugada, borrar el número 16 si existe, y mantener tu disco limpio de forma automática. ¡Tú solo guardas el archivo de configuración y te olvidas del problema!
+
+
+### La solución estándar de la industria (Sin programar nada extra)
+
+No necesitas programar ningún script en Bash o Python. En el mundo de Linux (RedHat, Ubuntu, Debian, etc.), la forma nativa, limpia y estándar de resolver esto es usando **`logrotate`**. Ya viene instalado en el 99% de los servidores y se configura con un archivo de texto simple.
+
+Aquí tienes la configuración exacta que necesitas.
+
+#### 1. Configura la ruta en `pgbouncer.ini`
+
+Primero, asegúrate de que PgBouncer esté apuntando a la ruta específica que deseas:
+
+```ini
+[pgbouncer]
+logfile = /tu/ruta/especifica/pgbouncer.log
+pidfile = /var/run/postgresql/pgbouncer.pid
+
+```
+
+*(Nota: Asegúrate de que el usuario `postgres` o `pgbouncer` tenga permisos de escritura en `/tu/ruta/especifica/`).*
+
+#### 2. Crea el archivo de configuración para Logrotate
+
+Crea un archivo en el directorio de logrotate (por ejemplo, `/etc/logrotate.d/pgbouncer`) con el siguiente contenido:
+### Ejemplo - 1 
+```text
+/var/log/pgbouncer/pgbouncer.log {
+    missingok
+    copytruncate
+    compress
+    notifempty
+    sharedscripts
+    create 0640 pgbouncer pgbouncer
+    nodateext
+    daily
+    rotate 15
+    postrotate
+        /bin/kill -HUP `cat /var/run/pgbouncer/pgbouncer.pid  2>/dev/null` 2> /dev/null || true
+    endscript
+
+}
+```
+
+### Ejemplo - 2
+```text
+/var/log/pgbouncer/pgbouncer.log {
+    daily
+    rotate 15
+    missingok
+    notifempty
+    copytruncate
+    compress
+    dateext
+    dateformat -%Y%m%d
+    sharedscripts
+}
+```
+
+
+
+### ¿Qué hace exactamente esta configuración?
+ 
+
+### Explicación línea por línea
+
+* **`/var/log/pgbouncer/pgbouncer.log { ... }`**
+Le dice al sistema: *"Aplica todas estas reglas específicamente al archivo de log que está en esta ruta"*.
+* **`missingok`**
+Si por alguna razón el archivo `pgbouncer.log` no existe (por ejemplo, si alguien lo borró manualmente), **no lances un error** ni detengas el proceso. Simplemente pasa al siguiente log.
+* **`copytruncate`** *(¡Ojo con esta, es clave!)*
+Esta opción hace lo siguiente: en lugar de mover el archivo de log viejo y crear uno nuevo, **copia** todo el contenido actual a un archivo temporal (para luego comprimirlo) y luego **vacía (trunca a tamaño 0)** el archivo `pgbouncer.log` original.
+> **¿Por qué se usa?** Permite que PgBouncer siga escribiendo en el mismo archivo sin necesidad de cerrar y reabrir el descriptor del archivo.
+
+
+* **`compress`**
+La razón de tu tranquilidad: le dice al sistema que agarre el archivo copiado y lo comprima en un formato `.gz` para que ocupe hasta un 80% o 90% menos de espacio en disco.
+* **`notifempty`**
+Si es medianoche y el archivo `pgbouncer.log` mide 0 bytes (está vacío porque no hubo tráfico), **no lo rotes**. No tiene sentido crear un archivo comprimido vacío.
+* **`sharedscripts`**
+Asegura que el script de abajo (`postrotate`) se ejecute **una sola vez** por cada ciclo de rotación, y no una vez por cada archivo si tuvieras múltiples logs definidos con comodines (como `*.log`).
+* **`create 0640 pgbouncer pgbouncer`**
+Si se llega a crear un archivo nuevo, asígnale permisos `0640` (el dueño lee/escribe, el grupo lee, otros nada) y haz que el dueño sea el usuario y grupo `pgbouncer`. Aunque con `copytruncate` esta línea casi no se usa, es una excelente red de seguridad.
+* **`nodateext`**
+Le dice al sistema que NO use la fecha en el nombre del archivo (ej. `pgbouncer.log-20260615.gz`). En su lugar, prefiere usar números secuenciales, que es justo lo que viste en tu comando anterior: `.1.gz`, `.2.gz`, etc.
+* **`daily`**
+La periodicidad. El proceso se ejecutará una vez al día (normalmente de madrugada a través del cron del sistema).
+* **`rotate 15`**
+Tu límite de almacenamiento. Mantendrá un histórico de hasta 15 archivos comprimidos. Cuando se vaya a crear el número 16, el más antiguo se elimina de forma permanente.
+* **`postrotate ... endscript`**
+Este es el script que se ejecuta *después* de hacer la rotación. Envía una señal `HUP` (un reinicio ligero de configuración) al proceso de PgBouncer usando su número de ID (`pgbouncer.pid`).
+
+ 
+
+### Un detalle técnico (El "conflicto" inofensivo)
+
+Como experto, te apunto un detalle curioso en tu configuración: **Tienes `copytruncate` y `postrotate` con señal `HUP` al mismo tiempo.**
+
+Técnicamente, hacen un trabajo doble:
+
+1. Con **`copytruncate`**, el archivo se vacía en caliente, por lo que PgBouncer nunca se entera de que el archivo cambió y sigue escribiendo ahí felizmente.
+2. El script **`postrotate`** le avisa a PgBouncer que "reabra" los logs.
+
+**¿Hay algún problema?** Ninguno. No rompe nada ni degrada el rendimiento. Pero la realidad es que con `copytruncate` activo, la sección `postrotate` se vuelve prácticamente innecesaria porque el archivo original nunca se mueve de su lugar, solo se vacía.
+ 
+## rotación en hora especifica 
+
+Para que la rotación se ejecute a una hora específica (por ejemplo, exactamente a las 2:00 AM o a las 11:00 PM), el cambio ya no se hace dentro del archivo de `logrotate`, sino en la herramienta que lo despierta: **el sistema de tareas cron (`cron` o `anacron`) de tu servidor Linux.**
+
+Por defecto, Linux maneja la rotación a través de un script en `/etc/cron.daily/logrotate`, y el sistema decide la hora de forma un poco aleatoria (usualmente entre las 3:00 AM y las 4:00 AM).
+
+Si necesitas un control absoluto de la hora para que no interfiera con tus respaldos o picos de tráfico, tienes dos formas de configurarlo como experto:
+
+---
+
+### Opción 1: Cambiar la hora global de todas las tareas diarias (La más limpia)
+
+Si estás en un sistema basado en RedHat/CentOS/Rocky Linux (como parece por tu prompt anterior `[root@vm-...`), la hora de las tareas diarias se controla en el archivo `/etc/anacrontab`.
+
+1. Abre el archivo: `nano /etc/anacrontab`
+2. Busca una línea que se ve más o menos así:
+```text
+START_HOURS_RANGE=3-22
+
+```
+
+
+3. Si cambias ese rango (por ejemplo, `START_HOURS_RANGE=2-3`), obligas a que todas las tareas diarias (incluyendo tu logrotate) comiencen estrictamente a las 2:00 AM.
+
+ 
+
+### Opción 2: Crear un horario exclusivo para PgBouncer (La más recomendada)
+
+Si solo te interesa controlar la hora exacta para PgBouncer y no quieres alterar el resto del servidor, lo mejor es sacarlo del grupo general y darle su propio horario en el **Crontab del sistema**.
+
+Sigue estos 3 pasos:
+
+#### Paso 1: Mueve tu archivo a una ruta independiente
+
+Para que el sistema no intente rotarlo dos veces, saca la configuración de la carpeta diaria. Crea una nueva carpeta, por ejemplo:
+
+```bash
+mkdir -p /etc/logrotate.custom.d
+mv /etc/logrotate.d/pgbouncer /etc/logrotate.custom.d/
+
+```
+
+#### Paso 2: Agenda la hora exacta en el Cron
+
+Abre el editor de tareas del sistema como usuario root:
+
+```bash
+crontab -e
+
+```
+
+#### Paso 3: Añade la regla con el horario que deseas
+
+Agrega una línea al final del archivo. La sintaxis del cron es: `Minuto Hora * * *`.
+
+* **Ejemplo para que corra exactamente a las 2:00 AM:**
+```text
+0 2 * * * /usr/sbin/logrotate -f /etc/logrotate.custom.d/pgbouncer
+
+```
+
+
+* **Ejemplo para que corra exactamente a las 11:30 PM (23:30):**
+```text
+30 23 * * * /usr/sbin/logrotate -f /etc/logrotate.custom.d/pgbouncer
+
+```
+
+*(Nota: El parámetro `-f` le dice a logrotate "fuerza la rotación en este instante preciso", ignorando si el sistema cree que es muy temprano para hacerlo).*
+
+Con la **Opción 2**, tendrás la certeza absoluta de qué minuto y qué hora se congelará tu log de PgBouncer para convertirse en el archivo comprimido del día. ¿A qué hora te convendría más programarlo según la actividad de tu base de datos?
+
+
+
+
+---
 
 # Bibliografías 
 
