@@ -203,8 +203,103 @@ A YugabyteDB no le importa si tienes 6, 20 o 100 nodos en total; si le dijiste q
 1. **RF (Factor de Replicación):** Tú lo eliges a mano (impar: 3, 5, 7) según cuánta seguridad quieras pagar.
 2. **Quórum (Mínimo para Commit):** Se calcula automáticamente con la fórmula **$(\text{RF} / 2) + 1$**. Es el número de votos que el líder necesita de los nodos que guardan ese dato.
 
+---
+
+¡Excelente que me detengas ahí! Es el momento perfecto para corregir una confusión muy común con los términos. Vamos a aclarar exactamente qué es un **Tablet** en la jerarquía de YugabyteDB, porque **un Tablet NO es una sola fila**.
+
+Si un Tablet fuera una sola fila, la base de datos colapsaría al instante. Vamos a ordenarlo de mayor a menor para que veas dónde encaja cada pieza:
+
+---
+
+# La Jerarquía Real en YugabyteDB (De mayor a menor)
+
+1. **Base de Datos / Esquema:** El contenedor global de todo tu sistema.
+2. **Tabla:** La estructura lógica que tú conoces (ej. la tabla `usuarios`).
+3. **Tablet (O Shard / Fragmento):** Es un **contenedor físico de datos**. Un Tablet es como una "caja" o un mini-archivo de base de datos.
+4. **Fila (Row):** El registro individual de un usuario o configuración (ej. `id: 1, nombre: 'Efectivo'`). **Las filas viven DENTRO de los Tablets.**
+
+> 💡 **Regla de oro:** Un Tablet es el equivalente exacto a un **Shard**. Un Tablet contiene **muchas filas**, no una sola.
+ 
+
+## ¿Por qué dije entonces que "metes varias tablas dentro de un mismo Tablet"?
+
+Aquí es donde ocurre la magia de las **Tablas Coubicadas (Colocated Tables)**.
+
+Normalmente, YugabyteDB cumple la regla de: **Una Tabla se divide en sus propios Tablets exclusivos.** (Los Tablets de la tabla *A* solo tienen filas de la tabla *A*).
+
+Pero cuando activas la coubicación (`collocated = true`), YugabyteDB rompe esa regla por eficiencia y crea **un único Tablet "comunitario" o compartido** para toda la base de datos.
+
+Dentro de ese mismo y único Tablet físico (que es un solo motor RocksDB y un solo grupo de consenso Raft), YugabyteDB empieza a guardar las filas mezcladas de diferentes tablas, pero identificándolas con un prefijo oculto.
+
+Visualízalo así en el disco duro dentro de ese **único Tablet compartido**:
+
+* `[Tabla_Estados_Orden] - Fila 1: 'Buscando'`
+* `[Tabla_Estados_Orden] - Fila 2: 'En Camino'`
+* `[Tabla_Categorias_Producto] - Fila 1: 'Electrónica'`
+* `[Tabla_Categorias_Producto] - Fila 2: 'Ropa'`
+* `[Tabla_Paises] - Fila 1: 'México'`
+
+### La analogía del camión de mudanza
+
+* **Sin coubicación (Tradicional):** Contratas un camión entero (**un Tablet**) para llevar una sola caja de zapatos (la tabla pequeña `Paises`). El camión viaja vacío. Contratas otro camión entero para otra caja de zapatos. Es un desperdicio total de gasolina y dinero.
+* **Con coubicación:** Contratas **un solo camión grande (un solo Tablet)** y metes ahí adentro la caja de zapatos de `Paises`, la de `Estados_Orden` y la de `Categorias`. Todas viajan juntas en el mismo vehículo, ahorrando recursos.
 
 
+---
+
+¡Me encanta que me cuestiones eso! Es una excelente observación. Tienes toda la razón en dudar de dónde salen esos números mágicos de "300 o 400" y por qué estarían "vacíos".
+
+Vamos a abrir el capó de YugabyteDB para ver la matemática exacta de por qué ocurre este fenómeno. Todo se reduce a dos factores: el **Sharding por defecto** y el **Factor de Replicación**.
+
+---
+
+## 1. ¿De dónde sale la multiplicación? (La matemática de los Tablets)
+
+En YugabyteDB, cuando tú creas una tabla normal (sin coubicación), la base de datos no crea un solo Tablet. Por defecto, YugabyteDB aplica algo llamado ***Presharding***.
+
+El sistema asume que cualquier tabla va a crecer mucho, por lo que, de forma predeterminada, **divide cada tabla nueva en múltiples Tablets (usualmente de 8 a 16 Tablets por tabla)** para repartirlos entre los nodos del clúster desde el primer segundo.
+
+Hagamos la matemática con una configuración típica:
+
+* Imagina que YugabyteDB decide crear el mínimo de **4 Tablets (shards)** para una tabla nueva para poder distribuirla.
+* Si tu sistema tiene **100 tablas pequeñas** de configuración...
+
+$$100 \text{ tablas} \times 4 \text{ Tablets por tabla} = \mathbf{400 \text{ Tablets}}$$
+
+¡Ahí están los 400 Tablets! Cada tabla, por el simple hecho de existir, reclama sus propios 4 fragmentos independientes en el clúster.
+
+---
+
+## 2. ¿Por qué decimos que están "vacíos" o "casi vacíos"?
+
+Volvamos al ejemplo de la tabla `Tipos_De_Pago`, que solo tiene **3 filas** (Efectivo, Tarjeta, PayPal).
+
+Si YugabyteDB dividió esa tabla en 4 Tablets independientes para repartirlos en el clúster, ocurre lo siguiente por pura distribución física:
+
+* **Tablet 1:** Guarda la fila 'Efectivo'.
+* **Tablet 2:** Guarda la fila 'Tarjeta'.
+* **Tablet 3:** Guarda la fila 'PayPal'.
+* **Tablet 4:** **¡Se queda completamente VACÍO!** No hay una cuarta fila para meter ahí.
+
+Multiplica este escenario por 100 tablas de configuración que tienen apenas 3, 5 o 10 filas cada una. Vas a tener cientos de Tablets que físicamente solo guardan una o dos filas, y muchísimos otros que están **literalmente en 0 bytes de datos (vacíos)**.
+ 
+
+## El verdadero problema: El "Impuesto" de Raft
+
+Tener un Tablet vacío no sería un problema si no consumiera nada, pero en YugabyteDB **cada Tablet es un mini-sistema independiente**.
+
+Aunque un Tablet tenga **cero filas**, tiene que:
+
+1. Mantener su propio motor RocksDB abierto en memoria.
+2. Ejecutar el protocolo **Raft** de forma constante (el líder de ese Tablet vacío tiene que enviarle un mensaje de "Latido de corazón" o *Heartbeat* a sus seguidores cada pocos milisegundos para decirles *"sigo vivo, no elijan a otro"*).
+
+Si tu servidor tiene que procesar miles de "latidos de corazón" por segundo de 400 Tablets que no están guardando nada útil, la CPU de tus nodos se va a ir al 80% de uso **remedando tareas de mantenimiento vacías**. Tu clúster se vuelve lento por el puro peso de su propia estructura.
+ 
+
+## Conclusión
+
+Por eso, la función de **Tablas Coubicadas** es tan brillante:
+En lugar de pagar el costo de mantener 400 Tablets independientes (muchos de ellos vacíos) para esas 100 tablas pequeñas, metes las 100 tablas dentro de **1 solo Tablet**. Ese único Tablet tendrá unas 500 filas en total (todas las tablas juntas), generará un solo grupo Raft y consumirá una fracción mínima de CPU y memoria.
 
 ## Links
 ```
