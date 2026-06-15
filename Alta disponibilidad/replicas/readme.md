@@ -140,7 +140,9 @@ El **split-brain** es un problema que ocurre en sistemas de alta disponibilidad 
   
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-¿Qué significa el consenso en términos generales?  Es un acuerdo entre múltiples participantes → Un grupo debe tomar una decisión colectiva basada en reglas claras.  Evita que haya decisiones individuales incorrectas → Por ejemplo, en replicación de bases de datos, un nodo no puede decidir solo convertirse en primario sin confirmación de los demás.  Se usa en algoritmos de failover y gestión de sistemas distribuidos → Como Raft, Paxos y Etcd, que permiten que los servidores acuerden quién es el líder.
+
+
+
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 CAP Theorem → En bases de datos distribuidas, puedes tener Consistencia (C), Disponibilidad (A) o Tolerancia a Particiones (P), pero nunca las tres simultáneamente.
@@ -151,7 +153,10 @@ Un Data Warehouse es un sistema de almacenamiento y gestión de datos diseñado 
 ```
 
 ## **Raft** y **Paxos** 
- son algoritmos de *consenso distribuido*, diseñados para que múltiples nodos en un sistema lleguen a un acuerdo sobre un valor, incluso si algunos fallan o se desconectan. Son fundamentales en bases de datos distribuidas, sistemas de archivos y clústeres de alta disponibilidad.
+ Raft y Paxos son algoritmos de *consenso distribuido*, diseñados para que múltiples nodos en un sistema lleguen a un acuerdo sobre un valor, incluso si algunos fallan o se desconectan. Son fundamentales en bases de datos distribuidas, sistemas de archivos y clústeres de alta disponibilidad.
+
+## ¿Qué significa el consenso en términos generales?  
+es simplemente ponerse de acuerdo. En el mundo de los sistemas distribuidos, el consenso es el mecanismo (estrictamente matemático y algorítmico) mediante el cual un grupo de servidores independientes logra estar de acuerdo sobre una única verdad absoluta, incluso si la red falla, hay latencia o algunos de los servidores explotan literalmente. Se usa en algoritmos Como Raft, Paxos y Etcd, que permiten que los servidores acuerden quién es el líder.
 
 
 ###  **¿Qué es Paxos?**
@@ -183,9 +188,13 @@ Un Data Warehouse es un sistema de almacenamiento y gestión de datos diseñado 
 
 ---
 
-### 🔑 ¿Qué es el quórum?
+### 🔑 ¿Qué es el quórum (mayoría)?
 
 Es el número mínimo de nodos que deben estar de acuerdo para tomar decisiones.  (por ejemplo, etcd)**   deben estar **activos y en acuerdo** para que se puedan tomar decisiones críticas de manera segura.  
+La fórmula universal es *`(N / 2) + 1`*   para saber cual es el Quórum Requerido. la N = Nodo. 
+
+En el mundo de los sistemas distribuidos y la programación, esta fórmula utiliza división de números enteros. Esto significa que si el resultado de la división tiene un decimal (como 1.5), el sistema simplemente descarta el decimal (se queda con el 1) y luego le suma el 1 de la fórmula.
+
 Ejemplo clásico: en un clúster de 3 nodos etcd, **se necesita al menos 2 funcionando** para tener quórum. Herramientas como etcd exige quorum y si no hay mayoría (quorum) de nodos disponibles no aceptará escrituras ni permitirá elecciones de líder 
 
 ### 📌 Reglas clave:
