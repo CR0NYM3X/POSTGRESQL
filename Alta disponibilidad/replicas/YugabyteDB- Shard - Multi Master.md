@@ -164,6 +164,45 @@ Actualmente, YugabyteDB **no ofrece un motor columnar nativo** por defecto para 
 **Conclusión oficial:** YugabyteDB utiliza un almacenamiento **orientado a filas empaquetadas** por defecto para maximizar la eficiencia en cargas de trabajo transaccionales y de alta concurrencia.
 
  
+----
+
+ 
+
+# 1. El Factor de Replicación (RF) NO se calcula con una fórmula, TÚ lo eliges
+
+El **RF** es un número que tú, como administrador o arquitecto de la base de datos, decides por diseño. No nace de una fórmula matemática.
+
+Tú te sientas y dices: *"Para este proyecto financiero necesito máxima seguridad, así que configuraré un **RF = 5**"*, o *"Para este entorno de desarrollo me basta con un **RF = 3**"*.
+
+La única regla matemática para el RF es la que ya entendiste a la perfección: **Tiene que ser un número impar** ($3, 5, 7...$) para evitar empates en las votaciones de Raft.
+ 
+## 2. El Quórum SÍ se calcula con la fórmula $(RF / 2) + 1$
+
+El **Quórum** es el que sí depende de una fórmula matemática, y su resultado se calcula **a partir del RF que elegiste**, no del número total de nodos ($N$) de tu clúster.
+
+La fórmula exacta es:
+
+$$\text{Quórum} = \left( \frac{\text{RF}}{2} \right) + 1$$
+
+*(Y el resultado siempre se redondea hacia abajo al número entero, y luego se le suma 1).*
+
+### El peligro de confundir $N$ (Nodos) con $RF$ (Replicación)
+
+Mira por qué es peligroso usar el número total de nodos ($N$) en la fórmula en lugar del $RF$.
+
+Imagina tu caso anterior: **Tienes un clúster de 6 nodos ($N=6$) configurado con un $RF=5$.**
+
+* **Si usaras los Nodos ($N$):** $(6 / 2) + 1 = \mathbf{4}$. Pensarías que necesitas 4 nodos para el commit. **(Falso)**
+* **Si usas el RF (Lo correcto):** $(5 / 2) + 1 \rightarrow 2.5 \rightarrow 2 + 1 = \mathbf{3}$. YugabyteDB solo necesita 3 nodos para confirmar el commit. **(Verdadero)**
+
+A YugabyteDB no le importa si tienes 6, 20 o 100 nodos en total; si le dijiste que el $RF=5$, cada fragmento de dato solo existe en 5 nodos, por lo tanto, la mayoría de 5 siempre será 3.
+ 
+
+## Resumen para fijar el conocimiento:
+
+1. **RF (Factor de Replicación):** Tú lo eliges a mano (impar: 3, 5, 7) según cuánta seguridad quieras pagar.
+2. **Quórum (Mínimo para Commit):** Se calcula automáticamente con la fórmula **$(\text{RF} / 2) + 1$**. Es el número de votos que el líder necesita de los nodos que guardan ese dato.
+
 
 
 
