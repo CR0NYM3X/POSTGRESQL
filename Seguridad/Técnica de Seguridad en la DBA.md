@@ -1104,4 +1104,6 @@ https://github.com/sendtoshailesh/postgresql-security-toolkit
 
 trucos de pentesting en postgresql -> https://hackviser.com/tactics/pentesting/services/postgresql#pg_read_file-exploitation
 
+When is a function leakproof? -> https://www.cybertec-postgresql.com/en/when-is-a-function-leakproof/
+
 ```
