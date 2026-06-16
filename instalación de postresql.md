@@ -373,7 +373,9 @@ Cuando tienes una base de datos de alto rendimiento, el peor enemigo es la **lat
 | **1** | **Mínimo / Performance** | **Ideal para sistemas supercríticos.** Prioriza la memoria de los procesos sobre todo lo demás. |
 | **0** | **Peligroso** | Puede causar que el OOM Killer mate a Postgres incluso si hay Swap disponible. |
 
- 
+---
+
+
 
 ### El Riesgo Real: El OOM Killer 💀
 
@@ -1033,6 +1035,150 @@ huge_pages = on  # En lugar de 'try'
 
 
 ---
+
+ 
+# Archivos de configuracion linux
+
+### 1. La Válvula Principal (El Kernel de Linux)
+
+**Archivos:** `/etc/sysctl.conf` o `/etc/sysctl.d/99-max-files.conf`
+**Nivel de Prioridad: Altamente Recomendado (Requisito previo).** Debes hacerlo para asegurar que la máquina virtual, en su totalidad, tenga un "techo" lo suficientemente alto para soportar a todos los servicios juntos.
+
+Estos dos archivos pertenecen a la **misma capa**. Son la llave de paso principal de la calle que deja entrar el agua a todo el edificio.
+
+* **¿Qué hacen?** Le dicen al "cerebro" de Linux (el Kernel) cuál es el número máximo de archivos que puede abrir **toda la máquina en total**, sumando a todos los usuarios y todos los procesos.
+* **¿Por qué te mencioné los dos?** `/etc/sysctl.conf` es el archivo viejo y general. La buena práctica moderna es no tocar ese archivo y, en su lugar, crear un archivo nuevo dentro de la carpeta `/etc/sysctl.d/` (por eso le pusimos `99-max-files.conf`). Así, si actualizas tu sistema operativo, tus configuraciones personalizadas no se borran.
+* **En la analogía:** "El edificio completo solo puede consumir 1,000,000 de litros de agua al día. Ni una gota más".
+
+* **Número recomendado:** **1048576** (Un poco más de 1 millón).
+* **¿Por qué?** Es un estándar en servidores de bases de datos. Al darle un millón de capacidad total a la máquina virtual, te aseguras matemáticamente de que el sistema operativo en sí nunca será el cuello de botella, sin importar cuánto crezca el tráfico o cuántos servicios nuevos instales en el futuro.
+
+**Ejemplo de cómo se modifica:**
+Crea o edita el archivo de configuración personalizado:
+
+```bash
+sudo nano /etc/sysctl.d/99-max-files.conf
+
+```
+
+Agrega la siguiente línea con el límite global:
+
+```ini
+fs.file-max = 1000000
+
+```
+
+Aplica los cambios inmediatamente (sin necesidad de reiniciar el servidor):
+
+```bash
+sudo sysctl -p /etc/sysctl.d/99-max-files.conf
+
+```
+
+
+### 2. Las Reglas para los Inquilinos (Capa de Usuarios)
+
+**Archivo:** `/etc/security/limits.conf`
+**Nivel de Prioridad: Opcional (Buena Práctica Administrativa).** No afecta a los servicios automáticos, pero evitará que tus comandos manuales de mantenimiento (como hacer un backup masivo) fallen cuando te conectes al servidor por SSH.
+
+Una vez que el agua ya entró al edificio, tienes que ponerle reglas a los inquilinos para que uno solo no se gaste el agua de los demás.
+
+* **¿Qué hace?** Establece un límite individual por cada **usuario humano o de sistema** (ej. el usuario `postgres` o el usuario `root`). Estos límites solo aplican cuando un usuario inicia una sesión (por ejemplo, cuando entras por SSH o usas el comando `su - postgres`).
+* **En la analogía:** "El inquilino del apartamento 1 (el usuario `postgres`) solo puede consumir un máximo de 65,536 litros de agua por día".
+
+**Ejemplo de cómo se modifica:**
+Abre el archivo de límites de seguridad:
+
+```bash
+sudo nano /etc/security/limits.conf
+
+```
+
+* **Número recomendado:** **65536**
+* **¿Por qué?** Simplemente para mantener la simetría con los servicios. Si tus servicios tienen 65,536, tus usuarios de administración (`postgres`, `pgbouncer`) deben tener exactamente el mismo límite para que los comandos manuales de mantenimiento no fallen por falta de capacidad.
+
+Ve al final del documento y agrega los límites *soft* (blandos) y *hard* (duros) para los usuarios que necesites:
+
+```ini
+postgres   soft    nofile    65536
+postgres   hard    nofile    65536
+
+pgbouncer  soft    nofile    65536
+pgbouncer  hard    nofile    65536
+
+```
+
+*(Los cambios se aplican automáticamente la próxima vez que el usuario inicie sesión).*
+
+
+
+### 3. Las Reglas para las Máquinas Automáticas (Capa Systemd)
+
+**Archivo:** El que editamos con `systemctl edit <servicio>`
+**Nivel de Prioridad: ABSOLUTAMENTE OBLIGATORIO.** Si no configuras esta capa, no importa qué hayas puesto en las otras dos; tus servicios colapsarán bajo estrés porque recibirán el límite predeterminado del sistema (usualmente 1024).
+
+Aquí es donde la mayoría de los administradores fallan. En los Linux modernos, los servicios que arrancan solos en segundo plano (como PostgreSQL, Patroni o PgBouncer) **no inician sesión como un inquilino normal**, son como las bombas de agua automáticas en el sótano del edificio. Por lo tanto, **ignoran por completo el archivo `limits.conf**`.
+
+* **¿Qué hace?** Le dice al administrador de servicios (Systemd) qué límite específico tiene ese programa en particular cuando arranca automáticamente con el servidor.
+
+* **Número recomendado:** **65536**
+* **¿Por qué?** 65,536 (que es $2^{16}$) es el "número de oro" en infraestructura. Le permite a PgBouncer manejar miles de conexiones simultáneas y a PostgreSQL abrir miles de archivos de tablas/índices sin asfixiarse. Poner un número exageradamente más alto (como 1 millón por servicio) es una mala práctica porque obligaría al sistema operativo a reservar estructuras de memoria innecesarias para procesos que nunca usarán tantos archivos.
+
+
+**Ejemplo de cómo se modifica:**
+Utiliza el comando de edición de Systemd para crear una sobrescritura (override) segura para cada servicio (ej. PgBouncer):
+
+```bash
+sudo systemctl edit pgbouncer
+
+```
+
+Esto abrirá un editor. Debes agregar exactamente estas dos líneas en la parte superior:
+
+```ini
+[Service]
+LimitNOFILE=65536
+
+```
+
+Guarda y sal del editor. Luego, repite el proceso para los demás servicios (`sudo systemctl edit patroni`, `sudo systemctl edit etcd`).
+Finalmente, recarga Systemd y reinicia los servicios para aplicar el cambio:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart pgbouncer
+
+```
+ 
+###  Cómo comprobar que funcionó (Verificación)
+
+Como experto, nunca asumas que la configuración se aplicó. Siempre verifícalo.
+
+Una vez que los servicios estén corriendo, puedes mirar exactamente cuántos archivos tiene permitidos abrir el proceso. Busca el PID (ID del proceso) de PgBouncer o PostgreSQL y lee sus límites en caliente.
+
+Por ejemplo, para ver el límite real de PgBouncer:
+
+```bash
+# 1. Obtén el PID del proceso principal
+pgrep -x pgbouncer
+
+# 2. Lee los límites de ese proceso (reemplaza 12345 por el PID que te dio el comando anterior)
+cat /proc/12345/limits | grep "Max open files"
+
+```
+ 
+ 
+### Resumen Visual
+
+Para que lo tengas como guía de referencia rápida, así es como interactúan:
+
+| Archivo / Comando | ¿A quién controla? | ¿Cuándo aplica? | Prioridad | Límite Recomendado |
+| --- | --- | --- | --- | --- |
+| `/etc/sysctl.d/*.conf` | A **toda** la máquina (El límite global). | Siempre, desde que enciendes el servidor. | **Recomendado** | `1000000` |
+| `/etc/security/limits.conf` | A los **usuarios** (ej. `postgres`). | Cuando un usuario se loguea en la terminal. | **Opcional** | `65536` |
+| `systemctl edit <servicio>` | A los **servicios** (ej. `pgbouncer`). | Cuando el servicio arranca en segundo plano. | **Obligatorio** | `65536` |
+
+En conclusión: Necesitas configurar las tres capas porque si la válvula principal (sysctl) es muy pequeña, no importa qué le pongas a los usuarios; y si configuras a los usuarios (limits.conf) pero te olvidas de los servicios (systemd), tu base de datos colapsará de todos modos al arrancar. Cada archivo cubre un punto ciego diferente del sistema operativo.
 
 
 ### Links de referenicias 
