@@ -338,6 +338,42 @@ Esto trae tres ventajas gigantescas en el mundo real:
 Por eso, la función de **Tablas Coubicadas** es tan brillante:
 En lugar de pagar el costo de mantener 400 Tablets independientes (muchos de ellos vacíos) para esas 100 tablas pequeñas, metes las 100 tablas dentro de **1 solo Tablet**. Ese único Tablet tendrá unas 500 filas en total (todas las tablas juntas), generará un solo grupo Raft y consumirá una fracción mínima de CPU y memoria.
 
+---
+
+# YB-Master y YB-TServer
+
+### 1. YB-Master (El "Cerebro" o Gerente del clúster)
+
+El **YB-Master** es el servicio encargado de la **coordinación, el control y los metadatos**.
+
+**Sus funciones principales:**
+
+* **Guarda el Catálogo del Sistema:** Sabe qué bases de datos existen, cuáles son las tablas, qué usuarios tienen permisos y cómo están estructurados los esquemas.
+* **El Mapa del Tesoro:** Mantiene un registro de en qué nodo físico exacto (y en qué YB-TServer) vive cada uno de los *Tablets* (shards) de tus tablas.
+* **Monitoreo de Salud:** Vigila constantemente a los YB-TServers. Si detecta que un servidor físico murió, el YB-Master se da cuenta y coordina la reasignación de los tablets huérfanos a otros servidores vivos.
+* **Procesa los DDL:** Cuando tú lanzas un `CREATE TABLE` o un `ALTER TABLE`, es el YB-Master quien toma esa orden y estructura la nueva tabla.
+
+> ⚠️ **Dato clave:** El YB-Master **NO guarda datos de los usuarios**. Si tu aplicación hace un `INSERT` de un nuevo cliente, el YB-Master no toca ese dato en lo absoluto.
+ 
+
+### 2. YB-TServer (El "Músculo" o Trabajador)
+
+El **YB-TServer** (Yugabyte Tablet Server) es el nodo de datos real. Es el servicio que hace el trabajo pesado y con el que interactúa tu aplicación de forma constante (como vimos antes con las conexiones "sin estado").
+
+**Sus funciones principales:**
+
+* **Guarda tus datos:** Es el responsable físico de almacenar las filas reales de tus tablas en el disco duro (utilizando el motor interno DocDB basado en RocksDB).
+* **Procesa las consultas de la aplicación (DML):** Es quien recibe y ejecuta los `SELECT`, `INSERT`, `UPDATE` y `DELETE` que manda tu código.
+* **Ejecuta el protocolo Raft:** Cada YB-TServer se comunica con otros YB-TServers para hacer las réplicas síncronas de los datos, votar por los líderes de los tablets y mantener el *Leader Lease* del que hablamos antes.
+ 
+### Resumen con una analogía
+
+Imagina una gran biblioteca:
+
+* El **YB-Master** es el **Bibliotecario y el Fichero de índice**. Él no te lee el libro, pero sabe exactamente en qué pasillo, estante y repisa está el libro que buscas, y se asegura de que la biblioteca esté en orden.
+* El **YB-TServer** es la **Estantería física y el Ayudante** que corre a buscar el libro, te lo entrega en las manos, y recibe los libros nuevos para guardarlos en su lugar.
+
+
 ## Links
 ```
 https://docs.yugabyte.com/stable/architecture/docdb-replication/
