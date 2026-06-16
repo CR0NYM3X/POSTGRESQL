@@ -294,8 +294,45 @@ Aunque un Tablet tenga **cero filas**, tiene que:
 2. Ejecutar el protocolo **Raft** de forma constante (el líder de ese Tablet vacío tiene que enviarle un mensaje de "Latido de corazón" o *Heartbeat* a sus seguidores cada pocos milisegundos para decirles *"sigo vivo, no elijan a otro"*).
 
 Si tu servidor tiene que procesar miles de "latidos de corazón" por segundo de 400 Tablets que no están guardando nada útil, la CPU de tus nodos se va a ir al 80% de uso **remedando tareas de mantenimiento vacías**. Tu clúster se vuelve lento por el puro peso de su propia estructura.
+
+---
+
+# El Pasado: Cómo lo hace PostgreSQL tradicional (Con Estado / Stateful)
+
+En el PostgreSQL clásico, cada vez que tu aplicación abre una conexión a la base de datos (por ejemplo, cuando tu backend de Node.js, Java o Python se conecta), el servidor de Postgres **crea un proceso físico exclusivo en el sistema operativo (un proceso *backend* o *worker*) para atender a ese cliente específico.**
+
+* **El "Matrimonio" de la Conexión:** Ese proceso del sistema operativo se vuelve "esclavo" de tu conexión. Si tu aplicación se conecta y se queda sin hacer nada durante 3 horas (conexión inactiva), ese proceso de Postgres sigue vivo en el servidor, consumiendo RAM y recursos, esperando a ver si se te ocurre mandar un comando.
+* **El problema de la memoria:** Cada proceso en Postgres consume entre 10MB y 20MB de memoria RAM de forma nativa solo por existir. Si tienes 500 microservicios conectándose, ¡estás desperdiciando gigabytes de RAM solo en mantener las conexiones abiertas, sin contar los datos!
+* **Si el nodo muere, todo muere:** Como tu conexión está amarrada físicamente a la memoria y al proceso de *ese* servidor, si el servidor parpadea, tu transacción se destruye y la conexión se rompe por completo.
+
+ 
+## El Presente: Cómo lo hace YugabyteDB (Sin Estado / Stateless)
+
+YugabyteDB fue diseñado para la era de la nube, donde las aplicaciones abren miles de conexiones simultáneas. Aquí es donde entra el servicio **YB-TServer** (Yugabyte Tabular Server), que corre en cada nodo del clúster.
+
+En YugabyteDB, cuando tu aplicación se conecta a un nodo, **no se crea un proceso exclusivo en el sistema operativo para ti.** En su lugar, el **YB-TServer** funciona como un "conmutador telefónico" o una capa de hilos (*threads*) compartida y ligera:
+
+1. Tu aplicación se conecta al YB-TServer de cualquier nodo.
+2. Envías una consulta (un `SELECT` o `INSERT`).
+3. El YB-TServer toma tu consulta, la procesa usando un hilo libre de su piscina global, va a buscar los datos a los Tablets correspondientes (que pueden estar en ese nodo o en otro), te devuelve la respuesta y **el hilo se libera inmediatamente para atender a otro cliente**.
+
+### ¿Por qué se le llama "Sin Estado"?
+
+Porque el nodo que recibe tu conexión **no necesita guardar un estado interno pesado ni amarrarse a ti**. Para el nodo, tú eres solo un flujo de peticiones de red.
+
+Esto trae tres ventajas gigantescas en el mundo real:
+
+* **Soporta miles de conexiones con poca RAM:** Como no hay procesos dedicados consumiendo 20MB por cada cliente, un solo nodo de YugabyteDB puede mantener abiertas 10,000 o 20,000 conexiones simultáneas sin despeinarse y sin agotar la memoria RAM del servidor.
+* **Cualquier nodo te sirve:** Como la conexión no tiene estado interno amarrado al hardware, tú puedes conectarte al Nodo 1, mandar una consulta, y si pones un balanceador de carga, la siguiente consulta puede ir al Nodo 3. A la base de datos no le importa, porque cualquier **YB-TServer** del clúster puede entender y procesar tu petición de forma transparente.
+* **Resiliencia extrema:** Si estás ejecutando consultas y el nodo al que estás conectado físicamente se apaga, un balanceador de carga inteligente redirige tu tráfico a otro nodo vivo del clúster. La base de datos sigue procesando tus consultas como si nada hubiera pasado.
  
 
+## La analogía del Restaurante
+
+* **PostgreSQL tradicional es un restaurante con "Mesero Exclusivo":** Llegas y te asignan un mesero solo para ti. Si te sientas a leer el menú por 2 horas sin pedir nada, el mesero se queda parado al lado de tu mesa mirándote. No puede atender a nadie más. Si vienen 100 clientes, el restaurante necesita contratar 100 meseros (Postgres colapsa por falta de memoria).
+* **YugabyteDB es un "Restaurante de Comida Rápida (Buffet/Barra)":** Hay 3 cajeros (**YB-TServers**). Tú te acercas a la barra, pides una hamburguesa, te la dan y te vas a sentar. El cajero de inmediato atiende al siguiente de la fila. No importa qué cajero te atienda, todos tienen acceso a la misma cocina (los *Tablets*). El sistema es fluido, eficiente y no necesita un empleado por cada cliente.
+
+ 
 ## Conclusión
 
 Por eso, la función de **Tablas Coubicadas** es tan brillante:
