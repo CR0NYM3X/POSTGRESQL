@@ -1106,6 +1106,11 @@ Para verlo con total claridad, mira dónde se aplica el algoritmo Raft en ambos 
 Por eso, con Patroni logras que PostgreSQL sea tolerante a fallos en su infraestructura (si muere el master, se elige otro rápido gracias a etcd), pero la replicación de los datos en sí misma sigue careciendo del quórum transaccional nativo que sí tiene una base de datos distribuida como YugabyteDB.
 
 
+---
+
+
+
+
 ## Links
 ```conf
 
@@ -1114,6 +1119,10 @@ https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-c
 https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-clusterpart-2-postgres-and-patroni
 https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-clusterpart-3-haproxy
 
+Replication modes -> https://patroni.readthedocs.io/en/latest/replication_modes.html
+Replication modes -> https://github.com/patroni/patroni/blob/master/docs/replication_modes.rst
+Probando el modo síncrono estricto de Patroni 👉🏻 debes manejar el commit invisible y leer el split brain -> https://dev.to/yugabyte/testing-patroni-strict-synchronous-mode-you-must-handle-invisible-commit-and-read-split-brain-5bgk
+PostgreSQL and Patroni Synchronous Replication Parameters -> https://medium.com/@yaseminbsra.sergen/postgresql-and-patroni-synchronous-replication-parameters-48c6190ed347
 
 
 https://www.pgedge.com/blog/how-patroni-brings-high-availability-to-postgres
