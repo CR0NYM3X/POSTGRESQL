@@ -71,6 +71,7 @@ https://www.crunchydata.com/postgres-tips
 https://www.crunchydata.com/developers/tutorials
 https://hexacluster.ai/blog
 https://www.percona.com/blog/category/postgresql/
+https://percona.community/blog/
 https://www.cybertec-postgresql.com/en/postgresql-blog/
 
 -- Fujitsu PostgreSQL blog
