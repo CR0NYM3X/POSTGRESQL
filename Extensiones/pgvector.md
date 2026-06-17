@@ -244,6 +244,13 @@ SELECT * FROM frutas WHERE vector @> '[7,5,3]';  -- Solo coincidencias exactas
 Referencias: 
 ```sql
 
+
+Creación de una búsqueda semántica inteligente utilizando PostgreSQL y pgvector. Caso práctico - Parte 1 - IntroduccióN
+https://percona.community/blog/2026/05/29/semantic-search-on-postgresql-part-1/
+https://percona.community/blog/2026/05/31/semantic-search-on-postgresql-part-2/
+
+
+
 pgvectorscale -> https://github.com/timescale/pgvectorscale
 
 https://docs.vectorchord.ai/getting-started/overview.html
