@@ -470,8 +470,16 @@ fi
 
 ```
 
+# Monitoreo de red 
+```
 
+-- Monitorea la tarjeta de red cualquier paquete sync desde tcp
+tcpdump -i any "port 5432 and (tcp[tcpflags] & tcp-syn != 0)" -n | grep -Ei "10.10.1.100|10.10.1.101|10.10.1.102"
 
+-- Te indica IP:puertos  origen y destino, tambien te dice que programa lo esta usando y su PID
+watch -n 1 "ss -tnp | grep :5432 | grep 10.10.1.100"
+
+```
 
 ###  **1. Ver idioma del sistema **
 
