@@ -507,9 +507,12 @@ limitado por `max_parallel_workers`
                                         #   open_sync
 
 
-max_wal_size = 2GB  # Tamaño máximo de WAL antes de forzar checkpoint.
+max_wal_size = 2GB  #  cuánto espacio en disco pueden ocupar los archivos WAL en el directorio pg_wal antes de que el motor de PostgreSQL sea forzado a ejecutar un Checkpoint
 min_wal_size = 1GB
 
+wal_keep_size -> specifica la cantidad mínima de archivos WAL pasados que el servidor Maestro está obligado a retener en su disco, sin importar si ya les hizo un Checkpoint y ya no los necesita para su propia recuperación. (Nota: En versiones anteriores a PostgreSQL 13, este parámetro se llamaba wal_keep_segments). el Maestro jamás borrará los últimos 5 GB de transacciones de su carpeta pg_wal, incluso si max_wal_size es menor.
+
+max_slot_wal_keep_size -> Este parámetro define el tamaño máximo de WALs que un Slot de replicación puede retener. 
 
 checkpoint_timeout = 20min		# aseguran que los datos en memoria se escriban en disco
 checkpoint_completion_target = 0.9
