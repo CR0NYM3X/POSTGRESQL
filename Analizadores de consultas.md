@@ -7,7 +7,9 @@
 * [Descargar aquí](https://www.pgadmin.org/download/)
 
 
-* **psql (Terminal):** La herramienta interactiva de consola que viene instalada con el motor.
+* **psql (Terminal) | Binarios :** La herramienta interactiva de consola que viene instalada con el motor.
+* [Descargar aquí](https://www.enterprisedb.com/download-postgresql-binaries)
+
 * **PostgreSQL extension para VS Code:** Muy popular para desarrollo rápido.
 * [Ver en Marketplace](https://marketplace.visualstudio.com/items?itemName=ckolkman.vscode-postgres)
 
@@ -59,6 +61,8 @@ Microsoft tiene herramientas para cada perfil de usuario.
 * **SQL Server Management Studio - SSMS (Escritorio - Pro):** Para administración total.
 * [Descargar aquí](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms)
 
+* **SQLcmd :** Utilidades de línea de comandos de Microsoft
+* [Descargar aquí](https://learn.microsoft.com/es-es/sql/tools/sqlcmd/sqlcmd-download-install?view=sql-server-ver17&tabs=windows)
 
 * **Azure Data Studio (Ligero/Moderno):** Multiplataforma (Win, Mac, Linux) y basado en VS Code.
 * [Descargar aquí](https://www.google.com/search?q=https://learn.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio)
