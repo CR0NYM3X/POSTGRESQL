@@ -44,6 +44,7 @@ Esta guía consolida las herramientas esenciales para blindar PostgreSQL, organi
 ### 📜 Políticas de Contraseñas y Ejecución
 
 * **[credcheck](https://github.com/MigOpsRepos/credcheck):** Definición de políticas de complejidad y reutilización de claves.
+* **[plpgsql_wrap](https://github.com/HexaCluster/plpgsql_wrap)** diseñada para ofuscar y cifrar el código fuente de los procedimientos almacenados (stored procedures) y funciones escritas en PL/pgSQL
 * **[passwordpolicy](https://github.com/eendroroy/passwordpolicy):** Extensión para forzar expiración y robustez de contraseñas.
 * **[passwordcheck](https://www.postgresql.org/docs/current/passwordcheck.html):** Módulo nativo para validación de fuerza de claves.
 * **[session_exec](https://github.com/okbob/session_exec):** Ejecución de funciones al inicio de sesión para validaciones extra.
