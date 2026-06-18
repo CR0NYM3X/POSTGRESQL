@@ -367,6 +367,10 @@ etcdctl --endpoints=https://10.10.20.11:2379,https://10.10.20.12:2379,https://10
   --cacert=/etc/etcd/pki/ca.crt --cert=/etc/etcd/pki/etcd01-client.crt --key=/etc/etcd/pki/etcd01-client.key \
   member list -w table
 # Debe listar etcd01, etcd02, etcd03, con isLeader=true en exactamente UNO de ellos
+
+
+etcdctl endpoint status --cluster -w table
+
 ```
 
 ### 4.7 Checklist de aceptación del DCS antes de continuar
