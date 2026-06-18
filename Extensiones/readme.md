@@ -390,6 +390,12 @@ pgtune ->  calcula valores basados en reglas fijas de hardware y Ajusta parametr
 pg_tuner ->es una herramienta de optimización automática de parámetros de PostgreSQL que utiliza técnicas de Optimización Bayesiana a través de la librería Optuna  https://github.com/s-hironobu/pg_tuner
 
  pgbench : herramienta de benchmarking para probar el rendimiento de PostgreSQL. Ejecuta una serie de comandos SQL repetidamente en múltiples sesiones concurrentes y calcula la tasa promedio de transacciones (transacciones por segundo).
+
+
+tpcc ->  para medir el rendimiento de sistemas OLTP (Procesamiento de Transacciones en Línea). Simula el entorno de una empresa mayorista con varios almacenes y distritos https://github.com/yugabyte/tpcc
+oltpbenchmark -> Es una plataforma extensible construida en Java que permite ejecutar múltiples tipos de pruebas estandarizadas contra una inmensa variedad de motores de bases de datos (PostgreSQL, MySQL, Oracle, SQL Server, CockroachDB, etc.). https://github.com/oltpbenchmark/oltpbench
+
+
  pgingester : herramienta de benchmarking para evaluar diferentes métodos de ingestión de datos en lotes en PostgreSQL2. Mide el rendimiento de métodos como INSERT, COPY, Binary COPY, y UNNEST en términos de filas por segundo y duración de la ingestión.
 - ** pg_partman:** Gestiona la partición de tablas de forma automática, lo cual es fundamental para mejorar el rendimiento en bases de datos con grandes volúmenes de datos, especialmente en tablas de series temporales.
 
