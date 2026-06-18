@@ -1119,6 +1119,8 @@ https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-c
 https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-clusterpart-2-postgres-and-patroni
 https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-clusterpart-3-haproxy
 
+
+https://github.com/waqastarar883/postgresql-ha-patroni-etcd/tree/main
 Replication modes -> https://patroni.readthedocs.io/en/latest/replication_modes.html
 Replication modes -> https://github.com/patroni/patroni/blob/master/docs/replication_modes.rst
 Probando el modo síncrono estricto de Patroni 👉🏻 debes manejar el commit invisible y leer el split brain -> https://dev.to/yugabyte/testing-patroni-strict-synchronous-mode-you-must-handle-invisible-commit-and-read-split-brain-5bgk
