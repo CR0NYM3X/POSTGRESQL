@@ -16,10 +16,14 @@ sirve para  Detectar corrupción a tiempo y puede salvarte de un desastre. Postg
 
 # el servidor debe estar apagado completamente, ya que necesita acceso exclusivo a los archivos de datos para usar la herramienta pg_checksums.
  $PGBIN16/pg_ctl stop -D /sysx/data16/DATANEW/data_maestro
- 
 
-# Verificar integridad
+
+
+########  Formas de revisar si el Checksums esta activo ########
+
+# para usar pg_checksums el servidor debe estar apagado 
 $PGBIN16/pg_checksums -D /sysx/data16/DATANEW/data_maestro --check --progress
+  - pg_checksums: error: data checksums are not enabled in cluster
 
 45/45 MB (100%) computed
 Checksum operation completed
@@ -27,6 +31,22 @@ Files scanned:   1857
 Blocks scanned:  5826
 Bad checksums:  0
 Data checksum version: 1
+
+
+/usr/pgsql-14/bin/pg_controldata -D $PGDATA14 | grep "checksum"
+ - Si está activo verás: Data page checksum version: 1
+ - Si está desactivado verás: Data page checksum version: 0
+
+
+psql -c "SHOW data_checksums;"
+
+
+########  ver si hay problemas de checksum ########
+select datname,
+       checksum_failures, --  El número total de fallos de checksum que ha detectado PostgreSQL al intentar leer bloques del disco para esa base de datos.
+       checksum_last_failure  -- La fecha y hora exacta en la que ocurrió el último fallo de checksum. Si nunca ha fallado, este campo aparecerá vacío (NULL).
+from pg_stat_database;
+
 
 # Activar o desactivar checksum
 $PGBIN16/pg_checksums -D /sysx/data16/DATANEW/data_esclavo62 --enable --progress 
