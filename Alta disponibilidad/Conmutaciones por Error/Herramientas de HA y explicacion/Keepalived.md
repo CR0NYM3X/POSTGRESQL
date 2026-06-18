@@ -159,3 +159,59 @@ Es importante aclarar: **Keepalived NO enruta tráfico en Capa 7**. No lee cabec
 En resumen: Keepalived usa la **Capa 3** para hablar con sus compañeros (VRRP), la **Capa 2** para robarse la IP (ARP) cuando el maestro falla, y la **Capa 4** para balancear el tráfico TCP/UDP hacia otros servidores.
 
 
+---
+
+
+# riesgos
+
+Desde la perspectiva de la ciberseguridad, **Keepalived introduce riesgos específicos** porque maneja el enrutamiento de red y, por defecto, se ejecuta con privilegios altos en el kernel. Si un atacante logra inyectar paquetes VRRP o manipular el servicio, puede secuestrar el tráfico de toda tu aplicación (haciendo un *Man-in-the-Middle* o una Denegación de Servicio).
+
+Aquí tienes las mejores prácticas y controles de seguridad para implementarlo de forma blindada.
+
+ 
+
+### Aislamiento de Red (El control más crítico)
+
+El protocolo VRRP confía ciegamente en quien envía los paquetes en la red local. Si no controlas el medio físico o virtual, estás expuesto.
+
+* **VLAN Dedicada:** Nunca envíes el tráfico de "latidos" (heartbeats) de Keepalived por la misma red por donde viaja el tráfico público de los usuarios. Usa una interfaz física o VLAN exclusiva (Red de Gestión o Heartbeat) solo para la comunicación entre los nodos.
+* **Filtrado Estricto (Firewall):** Configura `iptables`, `nftables` o tu firewall perimetral para aceptar paquetes del protocolo VRRP (Protocolo IP número **112**) única y exclusivamente desde la dirección IP exacta de tu nodo compañero.
+* **Bloqueo Multicast Innecesario:** Si no necesitas usar Multicast (224.0.0.18), configura Keepalived en modo **Unicast** (`unicast_src_ip` y `unicast_peer`). Esto dirige el tráfico directamente al otro servidor, reduciendo la superficie de exposición en la red local.
+ 
+
+### Autenticación VRRP (Conociendo sus límites)
+
+Keepalived permite configurar un bloque de autenticación (`auth_type PASS` o `AH`), pero hay una verdad incómoda en ciberseguridad sobre esto:
+
+* **Es Texto Plano:** La opción más común (`PASS`) envía la contraseña en texto plano. No cifra el tráfico de red, solo sirve para evitar que otro servidor mal configurado por accidente en la misma red robe la IP virtual.
+* **Práctica Recomendada:** Usa una contraseña fuerte en `auth_pass` (máximo 8 caracteres por limitaciones del estándar), pero **no confíes en esto como tu línea de defensa principal**. El aislamiento de red mencionado arriba es tu verdadera barrera de seguridad.
+ 
+### Seguridad de los Scripts (`vrrp_script`)
+
+Keepalived a menudo necesita ejecutar scripts externos (bash, python) para comprobar si Nginx o MySQL están funcionando. Este es el **vector de ataque número uno** para escalar privilegios.
+
+* **Privilegio Mínimo:** Por defecto, estos scripts se ejecutan como `root`. Modifica la configuración usando la directiva `user` dentro del bloque `vrrp_script` para que el script se ejecute con un usuario sin privilegios (ej. un usuario `keepalived_check`).
+* **Permisos Inmutables:** El archivo del script debe pertenecer a `root`, tener permisos estrictos (`chmod 700`) y estar en un directorio seguro. Si un atacante compromete el servidor web con un usuario de bajos privilegios y logra modificar este script, Keepalived lo ejecutará como root en el siguiente ciclo, dándole al atacante control total del servidor.
+ 
+### Monitoreo y SIEM
+
+Un atacante o un fallo de red pueden causar un *Flapping* constante (la IP virtual saltando del Maestro al Respaldo repetidamente), causando caídas de servicio.
+
+* **Centralización de Logs:** Envía los registros de Keepalived (generalmente en syslog o `/var/log/messages`) a un SIEM (Splunk, Wazuh, ELK).
+* **Alertas de Transición:** Configura alertas críticas cada vez que leas el mensaje `Transition to MASTER STATE` o `Transition to BACKUP STATE`. En un entorno estable, esto no debería ocurrir casi nunca.
+
+ 
+### Resumen de Controles de Seguridad
+
+| Capa de Seguridad | Control Implementado | Objetivo del Control |
+| --- | --- | --- |
+| **Red** | Unicast / VLAN Dedicada / Firewall (Regla IP 112) | Prevenir inyección de paquetes VRRP o secuestro de VIP (Spoofing). |
+| **Configuración** | `auth_type PASS` con clave única | Evitar conflictos accidentales o nodos "rogue" básicos en la subred. |
+| **Sistema Operativo** | `chmod 700` y ejecución sin privilegios en scripts | Prevenir la escalada de privilegios al usuario `root` vía `vrrp_script`. |
+| **Monitoreo** | Integración con SIEM y Alertas de Flapping | Detectar intentos de DoS o inestabilidad en la topología de red. |
+
+ 
+Para poder darte una recomendación más ajustada a tu escenario: ¿En qué tipo de infraestructura estás planeando desplegar este clúster (por ejemplo, servidores físicos en tu propio datacenter, máquinas virtuales en VMware, o alguna solución híbrida)?
+
+
+
