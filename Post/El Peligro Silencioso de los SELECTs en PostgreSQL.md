@@ -149,12 +149,4 @@ Si el clúster de tu cliente tiene configurado el parámetro `wal_log_hints = on
 2. **El efecto cascada:** Si tu cliente ejecuta un `SELECT` gigante que escanea una tabla inmensa que recientemente recibió datos pero no ha sido leída o procesada por un `VACUUM`, ese `SELECT` va a actualizar millones de Hint Bits de golpe.
 3. **El colapso de la réplica:** Esto genera súbitamente gigabytes de registros WAL (Full Page Writes). El proceso `walsender` del maestro intentará empujar todo este volumen de WALs por la red hacia las dos réplicas. El ancho de banda se satura y el proceso de la réplica no da abasto para procesar tal cantidad de bloques de 8KB, causando que la replicación se retrase drásticamente.
 
-
-
-### Resumen del comportamiento
-
-Tu `SELECT` pesado no bloquea el WAL por bloqueos transaccionales; lo bloquea porque **convierte una operación de lectura en una operación masiva de escritura de WAL en segundo plano**, saturando los recursos de red y de CPU de las réplicas.
-
-Para confirmar si esta es la causa raíz matemática y estructural que está tumbando el clúster de tu cliente: **¿Podrías revisar y confirmarme si en su `postgresql.conf` tienen el parámetro `wal_log_hints` configurado en `on` o si el clúster se inicializó con checksums (`data_checksums`)?**
-
-
+ 
