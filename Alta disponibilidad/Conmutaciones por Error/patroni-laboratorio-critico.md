@@ -445,6 +445,8 @@ sudo chmod 700 /data/postgresql/16/main     # PostgreSQL exige 0700 en PGDATA, o
 
 > **Importante sobre roles:** en Patroni **ningún nodo se marca como "primary" de forma estática** en el YAML. El rol es dinámico: Patroni elige al líder vía el lock en etcd. El archivo siguiente corresponde al nodo que se usará para el **bootstrap inicial** del clúster (es decir, el primer nodo que se levanta y que inicializa la base de datos); tras el primer arranque, cualquier nodo puede terminar siendo primary tras un failover. La diferencia real entre nodos está en los **tags** (ver 5.7 y 5.8) que determinan si un nodo es candidato síncrono, asíncrono, o excluido de balanceo.
 
+API REST de Patroni (puerto 8008) se utiliza para que los nodos se comuniquen entre sí, para que ejecutes comandos con patronictl, y para que balanceadores como HAProxy verifiquen quién es el nodo primario. Si no la proteges, cualquiera en la red podría consultar o alterar el estado del clúster.
+
 Archivo: `/etc/patroni/patroni.yml` en **`pg-pri01`** (10.10.10.11):
 
 ```yaml
@@ -455,6 +457,11 @@ scope: pgha-prod                            # Nombre del clúster PostgreSQL. To
 restapi:
   listen: 10.10.10.11:8008                  # Interfaz donde Patroni expone su REST API (usada por HAProxy para health-checks y por patronictl)
   connect_address: 10.10.10.11:8008
+  # Autenticación (Usuario y contraseña)
+  # Nota: Al habilitar esto, cuando uses la consola de patronictl o HAProxy, deberás pasarles el usuario, contraseña y aceptar el certificado.
+  authentication:
+    username: patroni_admin
+    password: tu_contraseña_segura
   # En entorno financiero, habilitar TLS también en la REST API:
   certfile: /etc/patroni/pki/pg-pri01.crt
   keyfile: /etc/patroni/pki/pg-pri01.key
