@@ -683,7 +683,7 @@ Vamos a destripar cada uno con precisión de cirujano.
 
 ---
  
-### Todas las variantes de configuración (De menor a mayor seguridad)
+### Todas las variantes de configuración synchronous_commit  (De menor a mayor seguridad)
 
 Aquí tienes la matriz completa de comportamiento si tienes réplicas síncronas activas:
 
