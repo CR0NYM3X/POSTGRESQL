@@ -1,11 +1,11 @@
 
-# 🐘 PostgreSQL Hijacking, `SECURITY DEFINER` y el peligro oculto de `search_path`
+# 🐘 Ataque de Search Path Hijacking o Trojan Object, `SECURITY DEFINER` y el peligro oculto de `search_path`
  
 > En PostgreSQL, **no calificar esquemas** + usar `SECURITY DEFINER` + dejar el `search_path` por default **abre la puerta a hijacking**, permitiendo que un usuario redireccione una función privilegiada a objetos maliciosos (especialmente temporales) **sin modificar el código**.
 
 
 
-## 📌 ¿Qué es Hijacking en PostgreSQL?
+## 📌 ¿Qué es el Search Path Hijacking en PostgreSQL?
 
 En PostgreSQL, **hijacking** ocurre cuando un usuario logra que una consulta, función o proceso utilice **un objeto distinto al que el desarrollador esperaba**, **sin cambiar el SQL original**.
 
@@ -114,26 +114,7 @@ PostgreSQL busca así:
 
 🔴 **El primer objeto encontrado detiene la búsqueda.**
 
-
-
-## 🧪 DEMO REAL: Hijacking completo paso a paso
-
-### 1️⃣ Crear usuario y esquema
-
-```sql
-CREATE USER user_hijacking WITH SUPERUSER PASSWORD '123123';
-CREATE SCHEMA IF NOT EXISTS user_hijacking;
-```
-
-
-
-### 2️⃣ Conectarse como el atacante
-
-```bash
-psql -U user_hijacking -d postgres
-```
-
-
+# Comportamiento del parámetro search_path
 
 ### 3️⃣ Crear tablas `pwds` en TODOS los esquemas
 
@@ -300,7 +281,7 @@ GRANT  EXECUTE ON FUNCTION auth.fn_sensitive(...) TO app_role;
 
 
 
-### 5️⃣ **Limita o elimina CREATE TEMP TABLE**
+### 5️⃣ **Revoka el permiso para crear objetos temporales **
 
 Si el usuario no necesita tablas temporales, **revoca el permiso**.
 
@@ -375,7 +356,7 @@ Este laboratorio demuestra cómo, a pesar de esa justificación legítima, **det
  
 ## 📦 Preparación del entorno
 
-> Puedes correrlo en `psql` paso a paso. Ajusta puertos/rutas según tu servidor.
+> Puedes correrlo en `psql` paso a paso.  
 
 ```sql
  
@@ -816,6 +797,7 @@ https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
 https://github.com/timescale/pgspot/blob/main/REFERENCE.md
 https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0011_function_search_path_mutable
 https://dba.stackexchange.com/questions/211055/how-could-a-security-definer-function-in-pg-be-insecure-with-an-improper-searc
+Referencia: https://www.enterprisedb.com/blog/new-public-schema-permissions-postgresql-15
 ```
 
   
