@@ -379,7 +379,8 @@ max_standby_streaming_delay: -1  --> Si se establece en -1, la réplica nunca ca
 wal_keep_size
 wal_log_hints: Este parámetro es requerido para que el servicio pg_rewind sea capaz de sincronizar con el servidor primario.
 wal_level: Establece el nivel de registro WAL necesario  y se utiliza este parámetro para habilitar la réplica streaming. Los posibles valores son “minimal”, “logical” o “replica”.
-max_wal_size: Es usado para especificar el tamaño máximo del archivo WAL.
+max_wal_size:  #  cuánto espacio en disco pueden ocupar los archivos WAL en el directorio pg_wal antes de que el motor de PostgreSQL sea forzado a ejecutar un Checkpoint
+min_wal_size = 1GB
  
     
 
