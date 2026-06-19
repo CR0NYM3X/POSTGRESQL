@@ -516,3 +516,57 @@ pg_current_wal_flush_lsn() te muestra hasta dónde esos datos ya están escritos
 
 
 
+---
+
+ 
+
+# El Checklist de PostgreSQL para la eliminación de un WAL
+
+Para que un archivo WAL individual sea candidato a eliminación, el motor calcula el **LSN mínimo requerido** por todo el sistema. Evaluará los siguientes componentes en este orden estricto de dependencias:
+
+### Paso 1: El Punto de Redo (Checkpoint)
+
+PostgreSQL localiza la ubicación de Redo del último Checkpoint completado con éxito.
+
+* **La regla:** Cualquier WAL que contenga transacciones *posteriores* al punto de Redo no se puede tocar, ya que es necesario para la recuperación en caso de un fallo de energía (*Crash Recovery*). Los WALs *anteriores* califican para pasar al siguiente filtro.
+
+### Paso 2: El Estado del Archivado (`archive_command` / `archive_library`)
+
+Si el parámetro `archive_mode` está en `on` u `always`, entra en juego el proceso `archiver`.
+
+* **La regla:** El motor revisa el directorio `pg_wal/archive_status/`. Si un WAL tiene un archivo asociado con extensión `.ready`, significa que aún no se ha ejecutado con éxito el `archive_command`.
+* **El freno:** PostgreSQL **jamás** borrará un WAL en estado `.ready`. El archivo debe cambiar a estado `.done` (confirmación de que el script de archivado devolvió un código `0`). Si tu almacenamiento NFS/S3 de backups se cae, los WALs se congelan aquí.
+
+### Paso 3: Las Réplicas Activas (`Replication Slots`)
+
+Si utilizas *Replication Slots* para tus nodos secundarios (lo cual es mandatorio en Fintech para evitar pérdida de datos):
+
+* **La regla:** El motor consulta la vista `pg_replication_slots` y busca el `restart_lsn` más antiguo entre todos los slots activos. El primario debe conservar todos los WALs desde ese LSN hacia adelante.
+* **La excepción crítica:** Aquí es donde entra tu parámetro anterior: si el atraso de una réplica supera los límites físicos configurados en `max_slot_wal_keep_size`, PostgreSQL "invalida" ese slot deliberadamente, liberando la protección sobre esos WALs para salvar al nodo primario.
+
+### Paso 4: La Reserva Mínima de Seguridad (`wal_keep_size`)
+
+Una vez superadas las limitantes de Checkpoints, Archivados y Slots, el motor aplica una última regla de colchón por configuración:
+
+* **La regla:** PostgreSQL mantendrá en el directorio `pg_wal` la cantidad de archivos necesarios para cubrir el tamaño estipulado en `wal_keep_size` (en tu caso, 128MB). Esto sirve como salvavidas para réplicas tradicionales que no usan slots y sufren desconexiones cortas.
+
+ 
+
+## La Decisión Final: ¿Eliminar o Reciclar?
+
+Una vez que un grupo de archivos WAL ha superado con éxito los 4 filtros anteriores, PostgreSQL determina que ya no son necesarios. Sin embargo, no los borra del disco inmediatamente. Aplica la siguiente lógica de optimización de I/O:
+
+```
+¿El número de WALs actuales en pg_wal es MENOR que min_wal_size?
+       |
+       +---> SÍ: El archivo se RECICLA (Se le cambia el nombre al formato del siguiente WAL futuro).
+       |         Esto evita el overhead de crear archivos a nivel de sistema operativo.
+       |
+       +---> NO: ¿Supera la estimación de max_wal_size para el próximo ciclo?
+                  |
+                  +---> SÍ: El archivo se ELIMINA físicamente del disco (os_unlink).
+ 
+
+### Resumen para Operaciones Bancarias
+
+Si tu `archive_command` falla, o si una réplica con un slot configurado con `max_slot_wal_keep_size = -1` se congela, el flujo se detiene por completo en el **Paso 2** o **Paso 3**. PostgreSQL ignorará por completo el límite de tu `max_wal_size (256GB)` y seguirá acumulando archivos hasta agotar el almacenamiento, priorizando la integridad de los datos sobre la disponibilidad del sistema.
