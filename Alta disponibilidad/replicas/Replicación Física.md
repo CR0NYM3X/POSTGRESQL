@@ -63,8 +63,55 @@ hot_standby = off  #  OFF = PRINCIPAL y ON  = SOPORTE
 
 # En caso de querer configurar una Replicación sincrónica  ocupas configurar estos parámetros
 # synchronous_commit = on 
-# synchronous_standby_names = 'app_replicador' # Puedes colocar * para decirle que todas las application_name de las replicas sean syncronas o especificar el application_name 
+# synchronous_standby_names = 'app_replicador' # Puedes colocar * para decirle que todas las application_name de las replicas sean syncronas o especificar el application_name , diferentes formas de usar synchronous_standby_names = 'FIRST 1 (nodo_replica_1, nodo_replica_2)'
 ```
+
+## Casos de uso synchronous_standby_names
+
+### 1. Esquema de Prioridad (`FIRST N`)
+
+**Sintaxis:** `synchronous_standby_names = 'FIRST 2 (replica_a, replica_b, replica_c)'`
+
+* **¿Para qué sirve?:** Garantiza que la transacción se guarde en las primeras `N` réplicas disponibles, siguiendo el **orden estricto de izquierda a derecha** en el que fueron escritas.
+* **¿Dónde se recomienda usar?:** En infraestructuras con topología local o híbrida donde tienes nodos secundarios "VIP" (mejor hardware, cableado directo, menor latencia) y otros de reserva en un segundo plano.
+* **¿Cuándo se usa?:** Cuando el orden de un posible *failover* (promoción a primario) está predefinido por diseño y necesitas que la réplica con mejor hardware esté siempre 100% al día.
+* **¿Cuándo NO se usa?:** Cuando tus réplicas tienen latencias de red inestables. Si la primera réplica (`replica_a`) se ralentiza por un proceso interno, ralentizará todos los *commits* del primario, aunque las demás estén libres.
+
+ 
+### 2. Esquema de Quórum (`ANY N`)
+
+**Sintaxis:** `synchronous_standby_names = 'ANY 2 (replica_a, replica_b, replica_c)'`
+
+* **¿Para qué sirve?:** Libera la transacción en cuanto **cualesquiera** `N` réplicas de la lista respondan. Es una democracia: las réplicas más rápidas en ese milisegundo ganan.
+* **¿Dónde se recomienda usar?:** En despliegues en la nube (AWS, GCP, Azure) distribuidos en múltiples Zonas de Disponibilidad (AZ) o Multi-región.
+* **¿Cuándo se usa?:** Cuando buscas **Alta Disponibilidad sin cuellos de botella**. Si una réplica sufre un pico de red o está ocupada, no frena al primario porque otra réplica absorberá el *commit*.
+* **¿Cuándo NO se usa?:** Cuando tienes réplicas con hardware asimétrico o en geografías lejanas y necesitas asegurar por ley o cumplimiento que los datos se escribieron en un servidor específico (ej. "obligatorio que se guarde en la réplica de Europa por GDPR").
+
+ 
+### 3. Sintaxis Implícita (Legacy / Clásica)
+
+**Sintaxis:** `synchronous_standby_names = 'replica_a, replica_b'`
+
+* **¿Para qué sirve?:** Es un atajo heredado de versiones viejas de Postgres. Funciona exactamente igual que un `FIRST 1 (replica_a, replica_b)`.
+* **¿Dónde se recomienda usar?:** Únicamente en entornos heredados (PostgreSQL 9.5 o inferior) o scripts de automatización antiguos que no toleren la sintaxis moderna.
+* **¿Cuándo se usa?:** En arquitecturas ultra-simples de **un solo primario y una sola réplica síncrona** donde no hay complejidad arquitectónica.
+* **¿Cuándo NO se usa?:** En cualquier base de datos moderna (Postgres 10 en adelante). Es una mala práctica de legibilidad; confunde a otros administradores de bases de datos (DBAs) que hereden tu configuración.
+
+ 
+
+### 4. El Comodín (`*`)
+
+**Sintaxis:** `synchronous_standby_names = 'ANY 2 (*)'` o `'FIRST 1 (*)'`
+
+* **¿Para qué sirve?:** Aplica la regla síncrona a **cualquier nodo secundario** que logre conectarse al primario, ignorando por completo el nombre de la aplicación (`application_name`).
+* **¿Dónde se recomienda usar?:** En entornos hiperdinámicos y contenerizados, específicamente orquestados por **Kubernetes** (usando operadores como Zalando PGO, CloudNativePG o Crunchy Data).
+* **¿Cuándo se usa?:** Cuando los nodos secundarios nacen, mueren y escalan automáticamente (Auto-scaling), lo que provoca que sus IPs y nombres cambien constantemente y sea imposible listarlos a mano.
+* **¿Cuándo NO se usa?:** Cuando mezclas réplicas de propósito general con réplicas para reportes analíticos (BI). Si el comodín atrapa a una réplica analítica lenta, destruirá el rendimiento transaccional de tu base de datos principal.
+
+---
+
+
+
 
 ### Iniciar el serivico
 ```SQL
