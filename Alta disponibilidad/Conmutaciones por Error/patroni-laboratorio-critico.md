@@ -1,7 +1,7 @@
 # Laboratorio de Referencia — Clúster PostgreSQL 16 de Alta Disponibilidad
 ## Patroni + etcd + HAProxy/Keepalived + pgBackRest
 
-### pendiente pgAudit y PgBouncer
+### pendiente pgAudit, PgBouncer y Watchdog
 
 ### Manual de implementación para entornos críticos financieros
 
