@@ -1,7 +1,21 @@
 
 # Puntos importantes que debes revisar y planear cuando se usan replicas sincronas
 
- 
+
+
+### Todas las variantes de configuración  synchronous_commit  (De menor a mayor seguridad)
+
+Aquí tienes la matriz completa de comportamiento si tienes réplicas síncronas activas:
+
+| Valor | ¿Qué hace exactamente? | Riesgo / Rendimiento | ¿Cuándo usarlo? |
+| --- | --- | --- | --- |
+| **`off`** | **Asíncrono puro.** Postgres da el "OK" al cliente en cuanto la transacción se procesa en la memoria caché (búfer), sin esperar a que se escriba en el disco del maestro ni de las réplicas. | **Máximo rendimiento.** Riesgo de perder los últimos milisegundos de datos si el maestro sufre un apagón repentino. | Logs de auditoría no críticos, métricas, ingesta masiva de datos (IoT). |
+| **`local`** | El cliente recibe el "OK" solo cuando los datos se han escrito y **flusado a los discos locales del Maestro**. Ignora por completo lo que pase en las réplicas. | **Rendimiento medio-alto.** Los datos están seguros en el servidor principal, pero si este explota físicamente antes de replicar, los perderás en el failover. | Operaciones del sistema, cachés internas de la app, datos que puedes regenerar. |
+| **`remote_write`** | El maestro escribe en su disco y espera a que la réplica confirme que **recibió el WAL y lo guardó en su memoria interna (OS caché)**, pero la réplica aún no lo escribe en su disco duro. | **Seguridad intermedia.** Si el proceso de Postgres en la réplica se cae, los datos no se pierden. Si todo el servidor de la réplica se apaga de golpe por falta de luz, podrías perder datos. | Sistemas que necesitan buena velocidad pero toleran fallos catastróficos muy raros en las réplicas. |
+| **`on`** |  *(Por defecto)* El maestro escribe en su disco y espera a que la réplica confirme que **recibió el WAL y lo flusó físicamente a su disco duro**. | **Alta seguridad, latencia estándar.** Los datos están protegidos contra caídas de energía en ambos servidores. | El estándar para transacciones comerciales habituales, perfiles de usuario, etc. |
+| **`remote_apply`** | El nivel militar. El maestro espera a que la réplica no solo guarde el WAL en disco, sino que **aplique los cambios en su base de datos**. | **Máxima seguridad, mayor latencia.** Garantiza consistencia de lectura inmediata (*Read-After-Write Consistency*) en las réplicas. | Transferencias bancarias, pasarelas de pago, o si tu app escribe en el maestro y lee de la réplica inmediatamente después. |
+
+ ---
 
 ## 1. `off` vs `local`: La diferencia entre la vida y la muerte de tus datos [Link](https://www.postgresql.org/docs/current/runtime-config-wal.html#GUC-SYNCHRONOUS-COMMIT)
 
@@ -64,21 +78,6 @@ Si configuras `synchronous_commit = remote_apply`:
 
 Úsalo **únicamente** cuando tu aplicación necesite una arquitectura de "Lectura después de Escritura" (*Read-After-Write Consistency*) inmediata en sistemas financieros, pasarelas de pago o inventarios críticos (donde comprar un producto debe verse reflejado en todas las pantallas del mundo al mismo milisegundo). Para todo lo demás, `on` es más que suficiente y no penaliza la latencia de tu Maestro.
 
----
-
-### Todas las variantes de configuración (De menor a mayor seguridad)
-
-Aquí tienes la matriz completa de comportamiento si tienes réplicas síncronas activas:
-
-| Valor | ¿Qué hace exactamente? | Riesgo / Rendimiento | ¿Cuándo usarlo? |
-| --- | --- | --- | --- |
-| **`off`** | **Asíncrono puro.** Postgres da el "OK" al cliente en cuanto la transacción se procesa en la memoria caché (búfer), sin esperar a que se escriba en el disco del maestro ni de las réplicas. | **Máximo rendimiento.** Riesgo de perder los últimos milisegundos de datos si el maestro sufre un apagón repentino. | Logs de auditoría no críticos, métricas, ingesta masiva de datos (IoT). |
-| **`local`** | El cliente recibe el "OK" solo cuando los datos se han escrito y **flusado a los discos locales del Maestro**. Ignora por completo lo que pase en las réplicas. | **Rendimiento medio-alto.** Los datos están seguros en el servidor principal, pero si este explota físicamente antes de replicar, los perderás en el failover. | Operaciones del sistema, cachés internas de la app, datos que puedes regenerar. |
-| **`remote_write`** | El maestro escribe en su disco y espera a que la réplica confirme que **recibió el WAL y lo guardó en su memoria interna (OS caché)**, pero la réplica aún no lo escribe en su disco duro. | **Seguridad intermedia.** Si el proceso de Postgres en la réplica se cae, los datos no se pierden. Si todo el servidor de la réplica se apaga de golpe por falta de luz, podrías perder datos. | Sistemas que necesitan buena velocidad pero toleran fallos catastróficos muy raros en las réplicas. |
-| **`on`**<br>
-
-<br>*(Por defecto)* | El maestro escribe en su disco y espera a que la réplica confirme que **recibió el WAL y lo flusó físicamente a su disco duro**. | **Alta seguridad, latencia estándar.** Los datos están protegidos contra caídas de energía en ambos servidores. | El estándar para transacciones comerciales habituales, perfiles de usuario, etc. |
-| **`remote_apply`** | El nivel militar. El maestro espera a que la réplica no solo guarde el WAL en disco, sino que **aplique los cambios en su base de datos**. | **Máxima seguridad, mayor latencia.** Garantiza consistencia de lectura inmediata (*Read-After-Write Consistency*) en las réplicas. | Transferencias bancarias, pasarelas de pago, o si tu app escribe en el maestro y lee de la réplica inmediatamente después. |
 
 
 ---
