@@ -673,7 +673,42 @@ max_slot_wal_keep_size = '50GB'
 3. **Slot:** Es el "ancla". Mientras el secundario esté apagado, el ancla no se mueve y los archivos en `pg_wal` crecen indefinidamente.
 
  
+---
 
+
+¡Excelente! Aquí entramos en aguas de arquitectura avanzada. Estos dos parámetros controlan los dos pilares más críticos de un clúster: la **consistencia entre replicación lógica y física**, y el **balance entre rendimiento y seguridad de tus transacciones**.
+
+Vamos a destripar cada uno con precisión de cirujano.
+
+---
+ 
+### Todas las variantes de configuración (De menor a mayor seguridad)
+
+Aquí tienes la matriz completa de comportamiento si tienes réplicas síncronas activas:
+
+| Valor | ¿Qué hace exactamente? | Riesgo / Rendimiento | ¿Cuándo usarlo? |
+| --- | --- | --- | --- |
+| **`off`** | **Asíncrono puro.** Postgres da el "OK" al cliente en cuanto la transacción se procesa en la memoria caché (búfer), sin esperar a que se escriba en el disco del maestro ni de las réplicas. | **Máximo rendimiento.** Riesgo de perder los últimos milisegundos de datos si el maestro sufre un apagón repentino. | Logs de auditoría no críticos, métricas, ingesta masiva de datos (IoT). |
+| **`local`** | El cliente recibe el "OK" solo cuando los datos se han escrito y **flusado a los discos locales del Maestro**. Ignora por completo lo que pase en las réplicas. | **Rendimiento medio-alto.** Los datos están seguros en el servidor principal, pero si este explota físicamente antes de replicar, los perderás en el failover. | Operaciones del sistema, cachés internas de la app, datos que puedes regenerar. |
+| **`remote_write`** | El maestro escribe en su disco y espera a que la réplica confirme que **recibió el WAL y lo guardó en su memoria interna (OS caché)**, pero la réplica aún no lo escribe en su disco duro. | **Seguridad intermedia.** Si el proceso de Postgres en la réplica se cae, los datos no se pierden. Si todo el servidor de la réplica se apaga de golpe por falta de luz, podrías perder datos. | Sistemas que necesitan buena velocidad pero toleran fallos catastróficos muy raros en las réplicas. |
+| **`on`**<br>
+
+<br>*(Por defecto)* | El maestro escribe en su disco y espera a que la réplica confirme que **recibió el WAL y lo flusó físicamente a su disco duro**. | **Alta seguridad, latencia estándar.** Los datos están protegidos contra caídas de energía en ambos servidores. | El estándar para transacciones comerciales habituales, perfiles de usuario, etc. |
+| **`remote_apply`** | El nivel militar. El maestro espera a que la réplica no solo guarde el WAL en disco, sino que **aplique los cambios en su base de datos**. | **Máxima seguridad, mayor latencia.** Garantiza consistencia de lectura inmediata (*Read-After-Write Consistency*) en las réplicas. | Transferencias bancarias, pasarelas de pago, o si tu app escribe en el maestro y lee de la réplica inmediatamente después. |
+
+---
+
+> 💡 **Tip de DBA Experto:** > En un mismo sistema financiero, puedes dejar el parámetro en `on` por defecto para toda la aplicación, pero para el proceso que calcula los reportes masivos nocturnos puedes abrir una conexión y ejecutar `SET synchronous_commit = off`. Así, tu reporte correrá 10 veces más rápido sin poner en riesgo la integridad del núcleo bancario.
+
+
+
+
+
+
+
+
+
+----
 
 
 **BIBLIOGRAFIAS**
