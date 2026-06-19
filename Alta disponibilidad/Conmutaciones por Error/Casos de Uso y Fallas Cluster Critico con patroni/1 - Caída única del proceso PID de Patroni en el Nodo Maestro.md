@@ -4,8 +4,6 @@
 * **Condición inicial:** El sistema operativo, la interfaz de red y el proceso nativo de PostgreSQL en el nodo Maestro **siguen en ejecución**. Únicamente el demonio/proceso de Patroni se detiene de forma abrupta.
 
 
-Como especialista en sistemas distribuidos, alta disponibilidad (HA) y ciberseguridad en entornos críticos (Fintech/Banca), entiendo perfectamente la criticidad de tu consulta. En un sistema donde el "Downtime" no es una opción, cada componente debe fallar de forma segura (*fail-safe*).
-
 Si **únicamente el proceso PID de Patroni** muere en el nodo Maestro (Primary), pero el sistema operativo y el proceso de PostgreSQL siguen vivos, se desencadena una secuencia de eventos automatizada en cuestión de segundos.
 
 A continuación, te detallo el comportamiento cronológico del clúster y el impacto en cada una de las tecnologías de tu stack:
