@@ -1920,4 +1920,18 @@ Si haces un `ps -fea | grep postgres` en tu versión 17, verás que el proceso p
 * **v16 y v17:** Ya no crean el acceso directo; esperan que uses directamente el binario `postgres`.
 * **Funcionalidad:** Es idéntica. El binario `postgres` de la versión 17 hace el mismo trabajo de "postmaster" que hacía el de la versión 11.
 
+ ---
+
  
+
+## 3. ¿Qué es OpenShift y qué es Bare-metal?
+
+Son dos extremos del espectro de la infraestructura:
+
+### OpenShift (La Capa de Software)
+
+Es una distribución empresarial de Kubernetes creada por **Red Hat**. Si Kubernetes estándar es un auto de carreras que tú mismo tienes que armar pieza por pieza, OpenShift es un auto de lujo blindado con chofer incluido. Trae herramientas de seguridad bancaria preconfiguradas, monitoreo avanzado y soporte corporativo estricto. Es el estándar de facto en la banca tradicional para correr contenedores.
+
+### Bare-metal (El Hardware Puro)
+
+Traducido literalmente como "metal desnudo", significa instalar tu sistema operativo (como Red Hat Linux o Ubuntu) **directamente sobre los componentes físicos del servidor** (el procesador Intel/AMD, las tarjetas de memoria RAM, etc.), eliminando por completo cualquier capa de virtualización intermedia (sin VMware, sin Hyper-V, sin instancias de AWS).
