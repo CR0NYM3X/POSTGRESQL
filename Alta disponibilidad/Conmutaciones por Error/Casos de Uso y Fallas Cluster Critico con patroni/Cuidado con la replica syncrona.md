@@ -150,3 +150,39 @@ tags:
 * **¿Dónde se recomienda usar?:** Únicamente en entornos obsoletos (PostgreSQL 9.5 o inferior) que no reconozcan la sintaxis declarativa moderna.
 * **¿Por qué evitarla hoy?:** En versiones modernas (Postgres 10 en adelante) es considerada una **mala práctica de legibilidad**. Al no especificar explícitamente las palabras `FIRST` o `ANY`, confunde a otros ingenieros o DBAs que hereden la infraestructura, quienes podrían asumir erróneamente que ambas réplicas son síncronas al mismo tiempo cuando en realidad solo una lo es.
   
+
+---
+
+
+# Saber si es sync o async
+Para saber con total certeza sync o async  el estado de tus réplicas, debes conectarte al **nodo Primario** y ejecutar una consulta a la vista del sistema **`pg_stat_replication`**.
+ 
+
+```sql
+SELECT 
+    application_name AS replica_nodo,
+    client_addr AS ip_replica,
+    state AS estado_conexion,
+    sync_state AS tipo_sincronia,
+    sync_priority AS prioridad
+FROM pg_stat_replication;
+
+```
+ 
+
+## Cómo interpretar el resultado
+
+La columna clave que define todo es **`sync_state`**. Esto es lo que significa cada valor que te devuelva Postgres:
+
+| Valor en `sync_state` | ¿Qué es realmente? | Comportamiento con el Primario |
+| --- | --- | --- |
+| **`sync`** | **Síncrono Activo** | El primario está congelando tus transacciones hasta que este nodo confirme recibido. (Aparece con `FIRST N`). |
+| **`quorum`** | **Síncrono por Quórum** | Es síncrono. Está participando activamente en la votación para liberar la transacción. (Aparece con `ANY N`). |
+| **`potential`** | **Asíncrono de Reserva** | **Hoy opera como asíncrono** (el primario no lo espera), pero si un nodo `sync` muere, Postgres lo promoverá automáticamente a síncrono. |
+| **`async`** | **Asíncrono Puro** | Nunca esperará por él. Está totalmente fuera de la lista de `synchronous_standby_names`. Es seguro para reportes o Disaster Recovery geográfico. |
+
+> 💡 **Nota del Experto:** Si la consulta no devuelve ninguna fila, significa que tus réplicas no están conectadas al primario, o que estás ejecutando el comando en el nodo equivocado (en una réplica en lugar del primario).
+
+
+
+
