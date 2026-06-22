@@ -70,6 +70,18 @@ La **Infraestructura de Clave Pública (PKI)**  es un sistema completo que inclu
 6. **Software de Gestión Centralizada**:
    - Herramientas que permiten a las organizaciones gestionar sus claves criptográficas y certificados digitales de manera eficiente .
 
+---
+
+### Los 4 pilares que forman una PKI
+
+Para que este ecosistema funcione y podamos confiar en él, requiere de componentes específicos trabajando en equipo:
+
+* **Autoridad Certificadora (CA - Certificate Authority):** Es el corazón y el jefe absoluto del sistema. Es la entidad criptográfica que firma y emite los certificados. Es la raíz de la confianza; si un hacker logra vulnerar a la CA, todos los certificados que haya emitido pierden su validez.
+* **Autoridad de Registro (RA - Registration Authority):** Es el "filtro" o la ventanilla de atención. Se encarga de verificar la identidad real de la persona, computadora o servidor que está solicitando un certificado. Una vez que comprueba que eres quien dices ser, le da luz verde a la CA para que emita tu certificado.
+* **Sistemas de Revocación (CRL y OCSP):** Es la "lista negra" o el sistema de reportes. Si a un empleado le roban su laptop o una página web es hackeada, su certificado se debe invalidar de inmediato. Estos sistemas le avisan a todo internet qué certificados deben ser rechazados porque fueron comprometidos, aunque su fecha de caducidad aún no haya llegado.
+* **El Repositorio (Base de Datos):** Es el lugar donde se almacenan y publican los certificados válidos y las políticas de seguridad (las reglas exactas sobre cómo opera esa PKI en particular).
+
+---
 
 
 
