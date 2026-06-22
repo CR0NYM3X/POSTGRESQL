@@ -82,6 +82,21 @@ Los certificados son esenciales para:
    - **Uso**: Protegen direcciones IP Publicas en lugar de nombres de dominio.
    - **Ejemplo**: Útiles para servidores que se acceden directamente por IP y no por un dominio.
 
+----
+
+###  Otros tipos de certificados y claves en Seguridad General
+
+Si salimos de TLS y miramos la "tecnología y seguridad" en general, X.509 compite con muchos otros formatos de identidad y cifrado:
+
+* **Claves y Certificados PGP/GPG:** Se utilizan principalmente para cifrar correos electrónicos y firmar código fuente. A diferencia de X.509, que usa un modelo jerárquico (Autoridades Certificadoras centralizadas), PGP utiliza una "Red de Confianza" (Web of Trust) descentralizada.
+* **Certificados SSH:** El protocolo SSH (usado para administrar servidores remotos) no usa X.509. Tiene su propio sistema de claves públicas/privadas y su propio formato ligero de certificados (OpenSSH Certificates) para autenticar usuarios y servidores.
+* **Tickets de Kerberos:** En redes corporativas (como Microsoft Active Directory), en lugar de certificados X.509, los usuarios se autentican y aseguran sus comunicaciones internas utilizando "tickets" criptográficos.
+* **Credenciales Verificables (Verifiable Credentials / DIDs):** Es un estándar moderno de la W3C para la identidad descentralizada (Web3 y blockchain). Funciona con Identificadores Descentralizados en lugar del modelo tradicional de X.509.
+
+**En resumen:** X.509 es el "rey" indiscutible de la seguridad web y de la infraestructura de clave pública (PKI) tradicional corporativa, pero la criptografía y la ciberseguridad tienen un ecosistema mucho más amplio adaptado a diferentes necesidades (como IoT, servidores internos o identidades descentralizadas).
+
+
+
  
 ## 📜 Certificados X.509
 
