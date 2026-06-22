@@ -356,6 +356,10 @@ En una cola de mensajes (como una tabla que almacena trabajos o eventos pendient
 ---
 ## Bibliografías
 ```
+Dominando la concurrencia: Cómo usar pg_advisory_lock sin colapsar tu sistema
+https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Post/Dominando%20la%20concurrencia%3A%20C%C3%B3mo%20usar%20pg_advisory_lock%20sin%20colapsar%20tu%20sistema.md
+
+ Dominando el Rate Limiting en PostgreSQL: Guía de Implementación Profesional -> https://github.com/CR0NYM3X/POSTGRESQL/blob/cb80dfbcabc5007a078086ea4ed031925e28d365/Post/%F0%9F%9B%A1%EF%B8%8F%20Dominando%20el%20Rate%20Limiting%20en%20PostgreSQL%3A%20Gu%C3%ADa%20de%20Implementaci%C3%B3n%20Profesional.md
 
 The Strange Case of PostgreSQL Advisory Locks -> https://medium.com/@lsampath210/the-strange-case-of-postgresql-advisory-locks-bc6be6190788
 Postgres Locks — A Deep Dive : https://medium.com/@hnasr/postgres-locks-a-deep-dive-9fc158a5641c
