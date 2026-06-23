@@ -195,3 +195,82 @@
 * **[12ft Ladder](https://www.google.com/search?q=https://12ft.io)**
 * **¿Para qué sirve?** Intenta saltarse los muros de pago (*paywalls*) de los periódicos y sitios de noticias para dejarte leer el artículo gratis.
 * **¿Nota de seguridad/ética? / Caso de uso:** Esta no es una herramienta de seguridad, sino de evasión. Se usa para saltar restricciones de lectura mostrando la versión de la página optimizada para el robot de indexación de Google (Googlebot). *Nota actual: Muchos medios grandes ya han bloqueado este truco, por lo que su efectividad es variable.*
+
+ 
+
+¡Oído cocina! Aquí tienes la versión rápida, al grano y sin rodeos:
+
+### 🛒 Detección de Estafas
+
+* **[desenmascara.me](https://desenmascara.me/)**: Sirve para comprobar si una tienda online es **falsa o un fraude** antes de comprar.
+
+ 
+
+### 📧 Listas Negras (Si tus correos rebotan o van a Spam)
+
+* **[blacklistalert.org](https://www.blacklistalert.org/)**: Revisa rápido si la IP de tu servidor está marcada como **emisora de correo no deseado**.
+* **[blacklistmaster.com](https://www.blacklistmaster.com/)**: Lo mismo que la anterior, pero optimizado para revisar **muchas IPs a la vez**.
+* **[mxtoolbox.com](https://mxtoolbox.com/blacklists.aspx)**: La más profesional. Te dice si estás bloqueado y **cómo salir de la lista negra**.
+ 
+
+### 🛡️ Ciberseguridad y Hackeos
+
+* **[pentester.com](https://pentester.com/)**: Busca **fallos de seguridad** en páginas web y revisa si tus correos o contraseñas se han **filtrado en internet**.
+
+
+---
+
+
+Aquí tienes la lista explicada de forma rápida y directa. Todas estas herramientas son motores de búsqueda de **ciberinteligencia (OSINT)**, diseñados para escanear internet y encontrar dispositivos expuestos o amenazas:
+
+### 🌐 Buscadores de Dispositivos e Infraestructura (Estilo "Shodan")
+
+* **[zoomeye.org](https://www.zoomeye.org/)**: Busca cámaras, routers, servidores y dispositivos IoT conectados a internet, detallando sus fallos de seguridad.
+* **[search.censys.io](https://search.censys.io/) / [platform.censys.io**](https://platform.censys.io/home): Analiza y encuentra servidores, redes y certificados SSL de todo el mundo para evaluar su nivel de exposición.
+* **[criminalip.io](https://www.criminalip.io/en)**: Rastrea direcciones IP y dominios para detectar reputación fraudulenta, phishing y ciberamenazas en tiempo real.
+* **[onyphe.io](https://www.onyphe.io)**: Escanea internet constantemente para recopilar datos sobre servidores expuestos y ayudar a empresas a ver qué información suya es pública.
+* **[scans.io](https://www.scans.io)**: Un repositorio histórico de datos que almacena los resultados de escaneos masivos de internet (muy usado por investigadores).
+
+ **[netlas.io](https://netlas.io/)**: Es otro motor de búsqueda de ciberinteligencia (OSINT), muy similar a Shodan o Censys.
+
+
+### 🛡️ Detección de Amenazas y Especializados
+
+* **[ismalicious.com](https://ismalicious.com/)**: Una herramienta rápida para comprobar si una página web o un dominio es **malicioso, fraudulento o tiene virus**.
+* **[mrlooquer.com](https://www.mrlooquer.com/)**: Un buscador de ciberinteligencia especializado exclusivamente en descubrir y analizar dispositivos que utilizan el protocolo de internet **IPv6**.
+ 
+
+
+
+---
+ 
+### 🌐 Motores de Búsqueda de Ciberespacio
+
+* **[FOFA](https://fofa.info)**: Clon y alternativa masiva a Shodan enfocada en componentes web.
+* **[Hunter.how](https://hunter.how)**: Buscador rápido de activos globales y mapeo de certificados.
+* **[Quake](https://quake.360.net)**: Mapeo de ciberespacio y topología de red global.
+* **[Odin](https://odin.io)**: Descubrimiento de activos y gestión de superficie de ataque.
+
+ 
+### 🛡️ Vulnerabilidades y Tráfico
+
+* **[LeakIX](https://leakix.net)**: Rastreador de malas configuraciones y bases de datos expuestas.
+* **[GreyNoise](https://greynoise.io)**: Analizador del ruido de fondo e IPs que escanean internet.
+* **[BinaryEdge](https://binaryedge.io)**: Escáner de puertos y servicios críticos expuestos.
+ 
+
+### 🗺️ DNS e Infraestructura
+
+* **[SecurityTrails](https://securitytrails.com)**: Archivo histórico de registros DNS e IPs reales tras Cloudflare.
+* **[FullHunt](https://fullhunt.io)**: Monitoreo y descubrimiento de la superficie de ataque en tiempo real.
+
+
+
+```
+-- Paginas para ver si son debiles mis contraseñas
+https://haveibeenpwned.com/passwords
+https://password.kaspersky.com/es/
+https://ciberprotector.com/comprobador-de-contrase%C3%B1as/
+
+
+```
