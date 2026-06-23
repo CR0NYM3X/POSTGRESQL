@@ -1028,7 +1028,7 @@ select U&'_0020_0048_0065_006c_006c_006f_0020_0057_006f_0072_0064_0020' UESCAPE 
 
 
 --- Query para ofuscar el texto ---
-SELECT 'U&"'||regexp_replace(encode(convert_to('proname', 'UTF8'), 'hex'), '([0-9a-f]{2})', '_00\1', 'g')  || '" UESCAPE ''_'''AS modified_hex;
+SELECT E'SELECT U&\''||regexp_replace(encode(convert_to(' HOLA ESTE TEXTO ESTA OFUSCADO JAJAJAJAJAJ ', 'UTF8'), 'hex'), '([0-9a-f]{2})', '_00\1', 'g')  || E'\' UESCAPE ''_'';' AS modified_hex;
 
 --- consulta original ---
 select 
@@ -1039,6 +1039,7 @@ where proname is not null
 	limit 1;
 
 --- consulta ya ofuscada ---
+--- SI SON COLUMNAS O TABLAS SE ENCIERRAN EN COMILLAS DOBLES " , SI SON DATOS QUE QUIERS IMPRIMIR SOLO SE ENCIERRA EN COMILLA SIMPLES
 select 
 	U&"_0070_0072_006f_006e_0061_006d_0065" UESCAPE '_'    -- proname
 	,U&"_0070_0072_006f_0073_0072_0063" UESCAPE '_'        -- prosrc 
