@@ -5,6 +5,8 @@
 
 Imagina que tienes una mesa muy grande llena de papeles. Si necesitas encontrar un papel específico, puede ser muy difícil y tardado buscar en toda la mesa. Ahora, si divides esa mesa en varias secciones más pequeñas y organizas los papeles por secciones, encontrar lo que buscas será mucho más fácil y rápido. Eso es básicamente lo que hace la partición de tablas en PostgreSQL.
 
+Recomendado usar esta herramienta [pg_kpart](https://hexacluster.ai/blog/pg-kpart-postgresql-extension) y su objetivo es bloquear y rechazar automáticamente cualquier consulta que intente escanear todas las particiones de una tabla por haber olvidado incluir la llave de partición (partition key) en la cláusula WHERE o en un JOIN.
+
 
 ### Objetivo
 
