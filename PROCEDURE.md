@@ -4,6 +4,16 @@
 Los procedimientos almacenados son muy útiles para realizar tareas complejas, actualizar datos, o realizar cualquier operación que requiera una secuencia de comandos SQL.<br>
 Los procedimientos almacenados no devuelven valores directamente; en cambio, pueden realizar operaciones de actualización, inserción, eliminación, etc.
 
+
+
+La documentación de Postgres dicta una ley inquebrantable: 'Si se adjunta una cláusula SET a un procedimiento, dicho procedimiento asume un contexto de ejecución encapsulado y se le prohíbe estrictamente ejecutar comandos de control de transacciones (COMMIT o ROLLBACK) en su interior.'
+
+En el mundo de PostgreSQL (a partir de la versión 11), existe una diferencia abismal entre una Función (FUNCTION) y un Procedimiento Almacenado (PROCEDURE). Todo se reduce a una sola palabra: Transaccionalidad.
+
+En PostgreSQL, una FUNCTION ejecuta absolutamente todo su contenido dentro de una única transacción indivisible. Es decir, el motor toma una "fotografía" de la base de datos al inicio de la función y no guarda ningún cambio en el disco físico hasta que la función termina por completo. Una función tiene estrictamente prohibido usar la instrucción COMMIT.
+
+
+
 # Ejemplos de uso:
 
 ### Ver el contenido de la funcion junto con el create
