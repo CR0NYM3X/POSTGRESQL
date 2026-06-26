@@ -325,10 +325,61 @@ ALTER TABLE clientes ALTER COLUMN nombre SET COMPRESSION pglz;
 ```
 
 
+## 2. ¿Cómo decide Postgres qué comprimir?
 
---- 
+El motor no comprime toda la fila junta. En su lugar, analiza las columnas una por una basándose en su **estrategia de almacenamiento** (*Storage Strategy*).
+
+Solo los tipos de datos de longitud variable (como `text`, `varchar`, `bytea`, `jsonb`) son candidatos a la compresión. Cada columna tiene una de estas cuatro estrategias:
+
+| Estrategia | ¿Se comprime? | ¿Se almacena fuera de la tabla principal? | Tipos de datos comunes |
+| --- | --- | --- | --- |
+| **`EXTENDED`** | **Sí** (Intenta primero) | **Sí** (Si sigue siendo muy grande) | `text`, `varchar`, `jsonb` (Por defecto) |
+| **`MAIN`** | **Sí** (Intenta primero) | No (Se queda en la tabla principal) | Columnas de texto que prefieres no mover |
+| **`EXTERNAL`** | No | **Sí** (Sin comprimir) | Raro de usar, evita el gasto de CPU de comprimir |
+| **`PLAIN`** | No | No | Tipos fijos (`integer`, `boolean`, `timestamp`, `uuid`) |
+
+> 💡 **Conclusión clave:** Si tu fila está llena de enteros (`integer`), fechas (`timestamp`) o textos muy cortos (como un código de estado `"ACT"`), **esa fila no se va a comprimir en absoluto**, porque su estrategia es `PLAIN`.
 
 
+ 
+
+## 3. El proceso paso a paso (El algoritmo de TOAST)
+
+Cuando una fila supera los 2 KB, Postgres sigue este orden estricto hasta que la fila baje de ese tamaño:
+
+1. **Paso 1:** Busca las columnas con estrategia `EXTENDED` o `MAIN` de mayor a menor tamaño y **las comprime** (usando el algoritmo *pglz* por defecto, o *lz4* si se configuró en versiones recientes).
+2. **Paso 2:** Si después de comprimir la fila *sigue* midiendo más de 2 KB, Postgres saca el valor comprimido de la tabla principal y lo guarda en una tabla oculta llamada **Tabla TOAST**, dejando solo un puntero de 18 bytes en la fila original.
+
+ 
+### Ver si mi tabla tiene TOAST
+
+```sql
+SELECT 
+    pg_size_pretty(pg_relation_size('nombre_de_tu_tabla')) AS tabla_principal,
+    pg_size_pretty(pg_toast_relation_size('nombre_de_tu_tabla')) AS datos_toast_comprimidos;
+
+
+SELECT 
+    c.relname AS tabla_principal,
+    CASE 
+        WHEN c.reltoastrelid = 0 THEN 'No tiene TOAST'
+        ELSE 'pg_toast.pg_toast_' || c.reltoastrelid::text
+    END AS nombre_tabla_toast,
+    pg_size_pretty(pg_relation_size(c.oid)) AS tamano_tabla,
+    pg_size_pretty(pg_toast_relation_size(c.oid)) AS tamano_toast
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE c.relname = 'nombre_de_tu_tabla' 
+  AND n.nspname = 'public'; -- Cambia 'public' si tu esquema es diferente
+
+```
+
+ 
+
+
+
+
+----
 
 # Aumentar el tamaño de las páginas 
 Las páginas gigantes son una técnica de administración de memoria utilizada por el sistema operativo (principalmente en Linux) para trabajar con bloques de memoria más grandes que el tamaño de página predeterminado (que suele ser de 4 KB). afectan principalmente a la memoria RAM (memoria física). 💾
