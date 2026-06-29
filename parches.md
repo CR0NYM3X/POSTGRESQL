@@ -149,3 +149,32 @@ https://git.postgresql.org/gitweb/
 https://git.postgresql.org/cgit
 https://www.postgresql.org/docs/devel/installation.html
 ```
+
+
+---
+
+Ver los paquetes
+
+```
+
+-- version de S.O
+cat /etc/os-release
+cat /etc/redhat-release
+hostnamectl
+uname -r
+
+-- Revisa tu versión exacta de RPM
+rpm -q openssl
+
+-- Interroga el registro de cambios (Changelog)
+rpm -q --changelog openssl | grep -i "CVE-AÑO-NUMERO"
+
+-- Aquí puedes buscar el CVE exacto y ver cómo afecta 
+access.redhat.com/security/security-updates/cve
+
+-- Aquí publican las versiones exactas de los RPM que corrigen los fallosclear
+access.redhat.com/errata
+
+```
+
+
