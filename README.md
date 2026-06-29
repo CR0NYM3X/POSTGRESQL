@@ -152,6 +152,7 @@ https://dbdb.io/browse
 ----- Conferencias :
 https://www.youtube.com/watch?v=cBLExRgIUA0&list=PLWW0CjV-Tafa2jvcjihXwSvZZKsLAsb9Y
 https://www.youtube.com/@pgeu/videos
+https://www.youtube.com/watch?v=E2s9Prs7PFc&list=PLOBORF8Y_l8g&index=1
 
 
 ---- Personas profesionales y sus blogs de PostgreSQL ---
