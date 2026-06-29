@@ -1986,3 +1986,54 @@ Es una distribución empresarial de Kubernetes creada por **Red Hat**. Si Kubern
 ### Bare-metal (El Hardware Puro)
 
 Traducido literalmente como "metal desnudo", significa instalar tu sistema operativo (como Red Hat Linux o Ubuntu) **directamente sobre los componentes físicos del servidor** (el procesador Intel/AMD, las tarjetas de memoria RAM, etc.), eliminando por completo cualquier capa de virtualización intermedia (sin VMware, sin Hyper-V, sin instancias de AWS).
+
+
+---
+
+
+
+
+
+ 
+
+## 1. ¿Qué es la Concurrencia?
+
+La **concurrencia** es la capacidad de un sistema para procesar o avanzar en múltiples tareas de manera simultánea o intercalada en el tiempo.
+
+* **En la teoría:** No significa necesariamente que las tareas se ejecuten *exactamente al mismo milisegundo* (eso sería **paralelismo** puro), sino que el sistema gestiona el inicio, progreso y finalización de varias tareas en ventanas de tiempo compartidas. El sistema operativo va alternando entre tareas tan rápido que da la ilusión de simultaneidad.
+* **El objetivo:** Maximizar el uso de los recursos de la máquina (CPU, memoria, disco). Mientras una tarea espera a que se descargue un archivo de internet (bloqueo por I/O), la CPU aprovecha para procesar los datos de otra tarea.
+
+> 💡 **Analogía:** Imagina a un chef en una cocina. Tiene que hacer una salsa, picar cebolla y hornear un pastel. El chef es un solo procesador, pero actúa de forma **concurrente**: pone el pastel al horno, y mientras se hornea (espera), pica la cebolla, y a la vez vigila que la salsa no se queme.
+
+---
+
+## 2. ¿Qué es la Contención?
+
+La **contención** (o contención de recursos) ocurre cuando **múltiples tareas concurrentes intentan acceder al mismo recurso compartido al mismo tiempo**, pero ese recurso solo puede atender a una tarea a la vez o tiene una capacidad limitada.
+
+Cuando hay contención, el rendimiento del sistema cae en picado porque los hilos de ejecución (*threads*) o procesos tienen que detenerse y ponerse en fila (hacer *espera activa* o bloquearse) hasta que el recurso quede libre.
+
+* **Recursos típicos que sufren contención:**
+* **Locks / Cerrojos:** Un hilo bloquea una variable para que nadie más la modifique.
+* **Bases de datos:** Dos transacciones intentan actualizar la misma fila de una tabla al mismo tiempo.
+* **Hardware:** Múltiples núcleos de CPU intentando escribir en la misma línea de la memoria caché, o saturando el ancho de banda del disco duro.
+
+
+
+> 💡 **Analogía:** Siguiendo con la cocina, ahora imagina que hay 5 chefs (un procesador de 5 núcleos) trabajando de forma concurrente. Todos avanzan rápido, pero la cocina **solo tiene un cuchillo** (el recurso compartido). Cuando los 5 chefs necesitan picar vegetales a la vez, 4 de ellos tienen que cruzarse de brazos a esperar. La velocidad de la cocina se reduce drásticamente debido a la **contención** por el cuchillo.
+
+---
+
+## Resumen de Diferencias y Relación
+
+| Característica | Concurrencia | Contención |
+| --- | --- | --- |
+| **Definición** | Ejecución/gestión de múltiples tareas a la vez. | Conflicto por el acceso a un recurso limitado. |
+| **Naturaleza** | Es un **diseño** o una propiedad deseable del software. | Es un **problema** o un cuello de botella de rendimiento. |
+| **Impacto** | Mejora la eficiencia y el aprovechamiento del hardware. | Destruye la escalabilidad y ralentiza el sistema. |
+| **Solución típica** | Usar hilos, programación asíncrona, procesos. | Usar estructuras *lock-free*, reducir el ámbito de los cerrojos o duplicar recursos. |
+
+### La paradoja del rendimiento
+
+Como ingeniero, tu meta suele ser aumentar la **concurrencia** para que tu aplicación sea más rápida. Sin embargo, si aumentas la concurrencia sin cuidar cómo se comparten los datos, crearás una alta **contención**, haciendo que tu sistema sea incluso más lento que si fuera secuencial (un solo hilo), debido al costo de coordinar y hacer esperar a tantos componentes.
+
