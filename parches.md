@@ -169,6 +169,15 @@ rpm -q openssl
 -- Interroga el registro de cambios (Changelog)
 rpm -q --changelog openssl | grep -i "CVE-AÑO-NUMERO"
 
+-- Si tu servidor o tu repositorio interno, ya sincronizó los paquetes de Red Hat pero tú aún no los instalas,
+-- puedes preguntarle a tu sistema cuál es el último paquete disponible esperando ser instalado usando:
+dnf info openssl --available
+
+
+-- ver todas las versiones que tu repositorio conoce (tanto la instalada como las disponibles para actualizar)
+dnf --showduplicates list openssl
+
+
 -- Aquí puedes buscar el CVE exacto y ver cómo afecta 
 access.redhat.com/security/security-updates/cve
 
