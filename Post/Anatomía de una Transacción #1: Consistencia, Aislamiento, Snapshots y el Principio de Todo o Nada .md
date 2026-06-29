@@ -2,6 +2,7 @@
 # Transacciones
 
 En el mundo de las bases de datos, una **transacción** es **una sola unidad de trabajo que contiene múltiples operaciones, las cuales deben ejecutarse bajo la premisa de "todo o nada"**.
+en postgresql para iniciar con una transaccion empaquetada puede hacerlo con `BEGIN` o `START TRANSACTION` que es lo mismo.
  
 
 ## 1. La Analogía Clásica: Una Compra en Línea
