@@ -73,7 +73,7 @@ https://hexacluster.ai/blog
 https://www.percona.com/blog/category/postgresql/
 https://percona.community/blog/
 https://www.cybertec-postgresql.com/en/postgresql-blog/
-
+https://techcommunity.microsoft.com/category/azuredatabases/blog/adforpostgresql
 -- Fujitsu PostgreSQL blog
 https://www.postgresql.fastware.com/blog
 https://dbasinapuros.com/blog/
