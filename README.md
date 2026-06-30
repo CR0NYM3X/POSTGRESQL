@@ -123,6 +123,7 @@ https://docs.digitalocean.com/products/databases/postgresql/
 https://www.paradedb.com/blog
 https://www.dbi-services.com/blog/
 https://clickhouse.com/blog
+https://oracle-dba-help.blogspot.com/
 
 
 ----- Eventos  de Postgresql:
