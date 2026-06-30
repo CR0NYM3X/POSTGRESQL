@@ -2022,7 +2022,7 @@ Cuando hay contención, el rendimiento del sistema cae en picado porque los hilo
 
 > 💡 **Analogía:** Siguiendo con la cocina, ahora imagina que hay 5 chefs (un procesador de 5 núcleos) trabajando de forma concurrente. Todos avanzan rápido, pero la cocina **solo tiene un cuchillo** (el recurso compartido). Cuando los 5 chefs necesitan picar vegetales a la vez, 4 de ellos tienen que cruzarse de brazos a esperar. La velocidad de la cocina se reduce drásticamente debido a la **contención** por el cuchillo.
 
----
+
 
 ## Resumen de Diferencias y Relación
 
@@ -2037,3 +2037,37 @@ Cuando hay contención, el rendimiento del sistema cae en picado porque los hilo
 
 Como ingeniero, tu meta suele ser aumentar la **concurrencia** para que tu aplicación sea más rápida. Sin embargo, si aumentas la concurrencia sin cuidar cómo se comparten los datos, crearás una alta **contención**, haciendo que tu sistema sea incluso más lento que si fuera secuencial (un solo hilo), debido al costo de coordinar y hacer esperar a tantos componentes.
 
+
+
+
+
+---
+---
+
+# **Condición de carrera** (o *race condition*) 
+es una anomalía que ocurre cuando dos o más procesos o transacciones intentan acceder, leer y modificar los mismos datos exactamente al mismo tiempo.
+El problema surge porque el resultado final de los datos dependerá del orden milimétrico (e impredecible) en el que la base de datos ejecute las instrucciones. Si no se controla, esto provoca corrupción de datos e inconsistencias graves.
+
+### El Ejemplo Clásico: La "Actualización Perdida" (*Lost Update*)
+
+Para entenderlo mejor, imagina el sistema de reservas de un cine donde solo queda **1 asiento disponible**.
+
+1. El **Usuario A** y el **Usuario B** entran a la aplicación y seleccionan ese último asiento al mismo tiempo.
+2. La **Transacción A** lee la base de datos: `Asientos_disponibles = 1`.
+3. Una fracción de milisegundo después, la **Transacción B** también lee la base de datos: `Asientos_disponibles = 1`.
+4. La **Transacción A** procesa la compra, resta 1 y actualiza la base de datos: `Asientos_disponibles = 0`.
+5. La **Transacción B**, que ya había leído que había 1 asiento, también procesa su compra, resta 1 y actualiza la base de datos a `Asientos_disponibles = 0`.
+
+**El resultado:** El sistema le vendió el mismo asiento a dos personas diferentes porque las transacciones "corrieron" al mismo tiempo y se sobrescribieron sin darse cuenta la una de la otra.
+
+### ¿Cómo se previenen las condiciones de carrera?
+
+Los motores de bases de datos relacionales (como PostgreSQL, MySQL, SQL Server) y algunas NoSQL tienen mecanismos integrados para evitar esto, basados en las propiedades **ACID** (Atomicidad, Consistencia, Aislamiento, Durabilidad).
+
+Las soluciones más comunes son:
+
+* **Bloqueos Pesimistas (*Pessimistic Locking*):** Cuando el Usuario A lee la fila del asiento con la intención de modificarla, la base de datos "bloquea" esa fila. Si el Usuario B intenta leerla, la base de datos lo pone en espera hasta que A termine de comprar (o cancele).
+* **Bloqueos Optimistas (*Optimistic Locking*):** No se bloquea la fila al leerla, pero se le agrega un número de versión a los datos. Cuando A guarda su compra, la versión cambia de `v1` a `v2`. Cuando B intenta guardar su compra, el sistema nota que B está intentando modificar la `v1`, pero la base de datos ya está en la `v2`. La transacción de B es rechazada y se le pide que vuelva a intentarlo.
+* **Niveles de Aislamiento (*Isolation Levels*):** Se configura la base de datos en niveles más estrictos, como **Serializable**. Esto obliga a la base de datos a ejecutar las transacciones concurrentes exactamente como si se hubieran ejecutado de forma secuencial (una tras otra), eliminando la posibilidad de choques.
+* **Operaciones Atómicas:** En lugar de leer el valor, calcularlo en la aplicación y volverlo a guardar, se le envía a la base de datos una instrucción directa que se ejecuta en un solo paso indivisible (ej. `UPDATE asientos SET cantidad = cantidad - 1 WHERE id = 5 AND cantidad > 0`).
+  
