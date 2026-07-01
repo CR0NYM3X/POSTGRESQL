@@ -32,4 +32,5 @@ El post explica que la "solución" no es recuperar espacio en el disco, sino ent
 ### Links 
 ```
 https://boringsql.com/posts/vacuum-is-lie/
+https://minervadb.com/postgresql-autovacuum-tuning/
 ```
