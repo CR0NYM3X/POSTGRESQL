@@ -567,12 +567,92 @@ Mi responsabilidad es alertarte sobre cómo esta herramienta puede matar tu serv
 * **Saturación de Disco por Caída de Red (Replication Slots):** Cuando el nodo On-Premise y la Nube pierden conexión (por un fallo del ISP o un firewall mal configurado), el *Replication Slot* le ordena al servidor origen: *"No borres los archivos WAL (Logs de transacciones), el suscriptor de la nube no los ha leído"*. Si la caída de red dura varias horas y tu sistema es altamente transaccional, tu disco duro On-Premise se llenará al 100% y **tu base de datos en producción se detendrá abruptamente**. Es mandatorio monitorear la vista `pg_replication_slots` y el tamaño de `pg_wal`.
 
  
+---
+
+#  **6 cosas críticas antes de migrar**:
+
+* **Tablas sin llave primaria:** Encuentra los objetos que van a bloquear o hacer fallar la replicación de `pglogical`.
+* **Columnas con secuencias automáticas:** Detecta qué contadores debes sincronizar manualmente en la nube para evitar choques de IDs.
+* **Tamaño total en disco:** Mide el peso real de la tabla para calcular el tiempo de bloqueo al crearle la Llave Primaria.
+* **Volumen de inserciones, actualizaciones y borrados:** Identifica si la tabla recibe transacciones en vivo o si es data histórica inactiva.
+* **Total de escaneos secuenciales y por índice:** Cuantifica qué tan seguido lee tu aplicación esa tabla para medir su criticidad.
+  
+
+```
+---> 1.- Buscar sí la columna con secuencia pero sin pk tiene algun duplicado: esto para poder crear la columna en PK.
+---> 2.- Cambiar la a columna en PK en el serv migrado.
+---> 3.- Actualizar secuencias manualmente, ya que no se actualiza de manera automatica.
+
+COPY (
+    
+    WITH tablas_sin_pk AS (
+        -- 1. Aislamos todas las tablas de usuario que no tienen un constraint tipo 'p' (Primary Key)
+        -- Traemos 'c.reltuples' para obtener el total de filas estimado sin hacer COUNT(*)
+        SELECT
+            c.oid,
+            n.nspname AS esquema,
+            c.relname AS tabla,
+            c.reltuples::bigint AS total_filas_estimado
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE c.relkind = 'r' 
+        AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+        AND NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint con
+            WHERE con.conrelid = c.oid
+                AND con.contype = 'p'
+        )
+    ),
+    columnas_con_secuencia AS (
+        -- 2. Buscamos columnas que utilicen DEFAULT nextval() o que sean tipo IDENTITY nativo
+        SELECT
+            a.attrelid,
+            a.attname AS columna_secuencia,
+            pg_get_expr(d.adbin, d.adrelid) AS expresion_defecto
+        FROM pg_attribute a
+        LEFT JOIN pg_attrdef d ON a.attrelid = d.adrelid AND a.attnum = d.adnum
+        WHERE a.attnum > 0
+        AND NOT a.attisdropped
+        AND (
+            (d.adbin IS NOT NULL AND pg_get_expr(d.adbin, d.adrelid) ILIKE '%nextval%')
+            OR a.attidentity IN ('a', 'd')
+        )
+    )
+    -- 3. Integramos todo con las estadísticas de uso operativo, tamaño físico y conteo de filas
+    SELECT
+        tsp.esquema,
+        tsp.tabla,
+        tsp.total_filas_estimado, -- NUEVA COLUMNA AGREGADA DESDE PG_CLASS
+        pg_size_pretty(pg_total_relation_size(tsp.oid)) AS tamano_total,
+        COALESCE(ccs.columna_secuencia, 'Sin Secuencia') AS columna,
+        CASE 
+            WHEN ccs.columna_secuencia IS NOT NULL THEN 'SI' 
+            ELSE 'NO' 
+        END AS tiene_secuencia,
+        ps.n_tup_ins AS filas_insertadas,
+        ps.n_tup_upd AS filas_actualizadas,
+        ps.n_tup_del AS filas_borradas,
+        ps.seq_scan AS escaneos_secuenciales,
+        ps.idx_scan AS escaneos_por_indice,
+        (COALESCE(ps.seq_scan, 0) + COALESCE(ps.idx_scan, 0)) AS total_escaneos,
+        COALESCE(TO_CHAR(ps.last_autovacuum, 'YYYY-MM-DD HH24:MI:SS'), 'Nunca') AS ultimo_autovacuum
+    FROM tablas_sin_pk tsp
+    LEFT JOIN columnas_con_secuencia ccs ON tsp.oid = ccs.attrelid
+    LEFT JOIN pg_stat_user_tables ps ON tsp.oid = ps.relid
+    ORDER BY 
+        tiene_secuencia DESC,
+        total_escaneos DESC,
+        pg_total_relation_size(tsp.oid) DESC,
+        ps.n_tup_ins DESC NULLS LAST, 
+        tsp.esquema, 
+        tsp.tabla 
+
+) TO '/tmp/auditoria_deuda_tecnica.csv' WITH CSV HEADER DELIMITER ',';
 
 
 
-
-
-
+```
 
 
 ---
