@@ -520,6 +520,62 @@ GRANT SELECT ON pglogical.subscription TO migration_admin;
 
 ```
 
+---
+
+# Requisitos y Desventajas
+
+La herramienta que elegiste, `pglogical`, es un arma excelente para este trabajo porque permite migraciones con *downtime* casi nulo, pero si no conoces sus puntos ciegos operativos, el proyecto colapsará antes de tocar la nube.
+
+
+### ⚙️ FASE 1: Requisitos de Infraestructura y Motor (Habla Javier)
+
+Para que `pglogical` pueda extraer la información en vivo sin destruir el rendimiento de tu servidor, necesitamos modificar el núcleo operativo de tu base de datos On-Premise.
+
+* **Parámetros Críticos de Memoria (Reclaman Reinicio):**
+* `wal_level = logical`: Absolutamente obligatorio. Le dice al motor que guarde el detalle lógico de cada transacción, no solo bloques físicos.
+* `max_worker_processes`: Debes aumentarlo. `pglogical` lanza múltiples hilos de fondo por cada suscripción. Si este límite se topa, tu base de datos abortará conexiones legítimas.
+* `max_replication_slots`: Mínimo 1 por cada base de datos que vayas a mover, pero te exijo configurar al menos 5 para tener margen de maniobra.
+* `max_wal_senders`: Debe ser al menos igual al número de slots más tus procesos de respaldo físico actuales.
+* `shared_preload_libraries`: Debes incluir `'pglogical'` en este parámetro en el archivo `postgresql.conf`.
+
+
+* **Permisos de Red y Conectividad (Reglas de Lucas):** El servidor en la nube (Suscriptor) debe tener línea de vista directa (TCP/IP) hacia el puerto 5432 (o el que uses) de tu máquina On-Premise (Publicador).
+* **Privilegios de Usuario (Reglas de Diego):** Necesitas un rol dedicado para la replicación con el atributo `REPLICATION`. Por estándares de confianza cero, no uses al superusuario `postgres` para esto.
+
+### 📐 FASE 2: Requisitos de Estructura de Datos (Habla Marcos)
+
+`pglogical` no lee los datos como archivos crudos, lee estructuras lógicas. Si tu diseño de datos es débil, la herramienta se negará a operar.
+
+* **Llaves Primarias (Primary Keys) Obligatorias:** Este es un requisito inquebrantable. Cada tabla que desees replicar **DEBE** tener una llave primaria o una restricción de unicidad declarada como `REPLICA IDENTITY UNIQUE`. Si una tabla carece de esto, las operaciones `UPDATE` y `DELETE` fallarán en el destino porque el motor no sabrá qué fila modificar.
+* **Instalación de la Extensión:** Debes instalar los binarios de `pglogical` a nivel de sistema operativo (con `apt` o `yum`) en ambos nodos, y luego ejecutar `CREATE EXTENSION pglogical;` en la base de datos origen y en la de destino.
+* **Esquema Pre-existente:** Antes de encender la sincronización, el servidor en la nube debe tener creadas las bases de datos, los roles y la estructura vacía de las tablas (el DDL).
+
+
+### 🚨 FASE 3: Desventajas y Vectores de Falla Crítica (Habla Rodrigo - El Gatekeeper)
+
+Aquí es donde los desarrolladores novatos destruyen clústeres. `pglogical` no hace magia; es estrictamente un replicador de DML (Data Manipulation Language). Si asumes que es un espejo perfecto, fracasarás.
+
+* **El DDL NO se Replica:** Si en el origen ejecutas un `ALTER TABLE`, `CREATE INDEX`, `TRUNCATE` o añades una nueva columna, **este cambio no viajará a la nube**. Debes coordinar y ejecutar manualmente los cambios estructurales primero en el destino y luego en el origen para no romper la replicación.
+* **Las Secuencias (SERIAL/IDENTITY) son Estáticas:** La replicación lógica traslada el número insertado en la fila, pero **no sincroniza el estado del objeto de la secuencia**. Cuando hagas el *Switchover* (el corte final) para que tu aplicación empiece a escribir en la nube, si no actualizas manualmente las secuencias, tendrás colisiones de llave primaria masivas e inmediatas (`duplicate key value violates unique constraint`).
+* **Sin Soporte para Large Objects:** Si tu base de datos utiliza la antigua API de `pg_largeobject` para guardar archivos binarios, `pglogical` los ignorará por completo.
+* **Fragilidad ante Conflictos Lógicos:** Si un desarrollador o administrador inserta o borra una fila manualmente en el servidor de la Nube mientras la replicación está activa, generarás un conflicto. El hilo de `pglogical` chocará, se detendrá y comenzará a acumular lag.
+
+### 💣 FASE 4: El Escenario de Desastre (Habla Héctor)
+
+Mi responsabilidad es alertarte sobre cómo esta herramienta puede matar tu servidor principal si no la monitoreas.
+
+* **Saturación de Disco por Caída de Red (Replication Slots):** Cuando el nodo On-Premise y la Nube pierden conexión (por un fallo del ISP o un firewall mal configurado), el *Replication Slot* le ordena al servidor origen: *"No borres los archivos WAL (Logs de transacciones), el suscriptor de la nube no los ha leído"*. Si la caída de red dura varias horas y tu sistema es altamente transaccional, tu disco duro On-Premise se llenará al 100% y **tu base de datos en producción se detendrá abruptamente**. Es mandatorio monitorear la vista `pg_replication_slots` y el tamaño de `pg_wal`.
+
+ 
+
+
+
+
+
+
+
+
+---
 
 ## Bibliografía
 ```
