@@ -124,7 +124,7 @@ https://www.paradedb.com/blog
 https://www.dbi-services.com/blog/
 https://clickhouse.com/blog
 https://oracle-dba-help.blogspot.com/
-
+https://minervadb.com/blog/
 
 ----- Eventos  de Postgresql:
 https://postgrespro.com/events
