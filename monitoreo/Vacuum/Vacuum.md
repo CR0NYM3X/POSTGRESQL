@@ -33,6 +33,8 @@ El post explica que la "solución" no es recuperar espacio en el disco, sino ent
 ```
 https://oracle-dba-help.blogspot.com/2026/06/postgresql-vacuum-bloat-autovacuum-and.html
 
+https://oracle-dba-help.blogspot.com/2026/06/postgresql-vacuum-bloat-autovacuum-and.html
+
 https://boringsql.com/posts/vacuum-is-lie/
 https://minervadb.com/postgresql-autovacuum-tuning/
 ```
