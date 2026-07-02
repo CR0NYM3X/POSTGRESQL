@@ -1183,6 +1183,9 @@ En conclusión: Necesitas configurar las tres capas porque si la válvula princi
 
 ### Links de referenicias 
 ```bash
+
+huge_pages  -> https://oracle-dba-help.blogspot.com/2026/06/postgresql-hugepages-explained-for-dbas.html
+
 https://github.com/howtomgr/databases
 
 https://tomasz-gintowt.medium.com/tuning-ubuntu-debian-pod-postgresql-ea1bb71633d8
