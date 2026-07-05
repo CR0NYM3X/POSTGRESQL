@@ -2098,3 +2098,56 @@ Volviendo al ejemplo del asiento de cine:
 | **Contención** | "Tráfico pesado". Varios procesos intentando usar lo mismo a la vez. | No, es un estado del sistema. | Lentitud, transacciones en espera o *timeouts*. |
 | **Condición de Carrera** | "Accidente de tráfico". Los procesos chocaron por falta de semáforos. | **Sí**, es un fallo de diseño. | Corrupción de datos, información inconsistente. |
 
+----
+
+
+
+
+
+# ¿Qué es un Pipeline?
+
+Un **Pipeline** (tubería o cadena de procesos) es un concepto lógico. Describe una serie de pasos automatizados donde la salida de un paso se convierte en la entrada del siguiente.
+
+* **Enfoque:** Se centra en el *flujo* de trabajo o de datos. ¿De dónde vienen los datos? ¿Cómo se transforman? ¿A dónde van?
+* **Ejemplos:** * Un pipeline de datos ETL (Extraer, Transformar, Cargar).
+* Un pipeline de CI/CD (Integración Continua / Despliegue Continuo) en ingeniería de software.
+
+
+* **Estructura:** Puede ser una simple línea recta (Paso A $\rightarrow$ Paso B $\rightarrow$ Paso C). Conceptualmente, un pipeline *podría* tener bucles o ciclos (aunque no es lo ideal).
+* **Analogía:** Una línea de ensamblaje en una fábrica de coches. Entra metal por un lado y sale un coche por el otro tras pasar por varias estaciones.
+
+### ¿Qué es un DAG?
+
+Un **DAG** significa *Directed Acyclic Graph* (Grafo Acíclico Dirigido). Es un concepto tomado de las matemáticas y la teoría de grafos que describe cómo se relacionan las tareas entre sí.
+
+* **Grafo (Graph):** Está compuesto por "nodos" (las tareas) y "aristas" (las líneas que las conectan).
+* **Dirigido (Directed):** Las conexiones tienen una dirección clara. Si la Tarea A apunta a la Tarea B, significa que A debe terminar antes de que B empiece.
+* **Acíclico (Acyclic):** **No hay bucles infinitos ni ciclos.** La Tarea B no puede depender de la Tarea A y, al mismo tiempo, hacer que la Tarea A dependa de la Tarea B. La ejecución siempre avanza hacia adelante.
+* **Enfoque:** Se centra en la *orquestación y las dependencias*.
+* **Ejemplos:** Apache Airflow, Prefect, Dagster y dbt utilizan DAGs para estructurar la ejecución de sus procesos.
+* **Analogía:** El mapa de prerrequisitos de una carrera universitaria. Debes aprobar "Matemáticas 1" antes de cursar "Matemáticas 2", y no puedes retroceder.
+
+### La principal diferencia
+
+La diferencia radica en que **el Pipeline es el trabajo que se está haciendo** y **el DAG es el motor lógico subyacente que garantiza que se haga en el orden correcto.**
+
+| Característica | Pipeline | DAG |
+| --- | --- | --- |
+| **Naturaleza** | Concepto de negocio/ingeniería (Flujo de trabajo). | Estructura matemática (Gestión de dependencias). |
+| **Objetivo** | Mover y transformar datos o código del punto A al punto B. | Asegurar que las tareas se ejecuten en el orden correcto según sus dependencias. |
+| **¿Permite bucles?** | Conceptualmente sí (aunque en la práctica se evitan). | **Estrictamente NO.** Si hay un ciclo, el DAG falla. |
+| **Relación** | Un Pipeline puede estar estructurado como un DAG (y hoy en día, casi todos los pipelines complejos lo están). | Un DAG es el "esqueleto" que muchas herramientas usan para construir y ejecutar un Pipeline. |
+
+
+
+### Analogía : Una línea de ensamblaje de autos 🚗
+
+* **El Pipeline:** Es la **cinta transportadora de la fábrica**. El chasis del auto se mueve físicamente a través de la fábrica recibiendo piezas. El objetivo de la cinta es *mover* el auto del punto A al punto B.
+* **El DAG:** Es el **sistema de semáforos y sensores** que controla la cinta. El motor del DAG dice: "El semáforo de la estación de pintura no se pondrá en verde hasta que la estación de soldadura mande la señal de que ya terminó".
+
+ 
+### El resumen definitivo
+**En resumen:** Cuando usas una herramienta moderna como Apache Airflow, estás construyendo un **Pipeline** de datos, y el código que escribes para decirle a Airflow en qué orden ejecutar las tareas forma un **DAG**.
+
+* **Pipeline = El *Qué*.** "Quiero mover estos datos desde mi base de datos hasta un tablero de Excel, limpiándolos en el camino".
+* **DAG = El *Cómo* organizas las reglas.** "Para lograr ese Pipeline, la Tarea 1 va primero, la Tarea 2 y 3 van después al mismo tiempo, y si alguna falla, todo se detiene porque no podemos viajar en el tiempo ni hacer bucles infinitos".
