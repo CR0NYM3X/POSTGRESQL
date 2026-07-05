@@ -108,6 +108,7 @@ https://hackorum.dev/
 https://pgstef.github.io/
 https://thebuild.com/blog/
 https://www.gpsos.es/blogs/
+https://sambasivareddy.in/
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
 https://scalegrid.io/blog/
