@@ -273,4 +273,52 @@ https://password.kaspersky.com/es/
 https://ciberprotector.com/comprobador-de-contrase%C3%B1as/
 
 
+----------
+
+
+
+https://www.abctelefonos.com/search?q=&l=&t=telefono&country=mexico
+https://portal.crt.gob.mx/gestion-de-lineas-telefonicas-moviles
+https://sync.me/es/search/?number=526623263678
+https://duriva.com/osint-busqueda-personas/
+https://ciberpatrulla.com/herramientas-osint-facebook/
+https://www.plataformadetransparencia.org.mx/
+
+
+-- Recuperar cuenta de FB 
+https://www.facebook.com/login/identify/?ctx=self_identify_hacked&ars=facebook_login
+
+
+
+-- buscadores 
+https://yandex.com/
+https://www.ecosia.org/?q=Mexico+Telefonos
+https://www.ask.com/web?q=Mexico+Telefonos
+https://search.yahoo.com/
+https://www.bing.com/search
+
+
+--- 1) Para validar si un RFC si esta registrado en el SAT links:
+https://www.cloudb.sat.gob.mx/datos_fiscales/regimen
+https://portalsat.plataforma.sat.gob.mx/RecuperacionDeCertificados/faces/consultaCertificados.xhtml
+https://agsc.siat.sat.gob.mx/PTSC/ValidaRFC/index.jsf
+https://portalsat.plataforma.sat.gob.mx/ConsultaRFC/captcha.faces
+https://www.sat.gob.mx/aplicacion/operacion/29073/verifica-si-estas-registrado-en-el-rfc
+
+--- 2) Si cliente no se sabe su rfc se puede obtener el rfc del cliente desde el portal: https://consisa.com.mx/rfc
+
+
+---- eXTRAS 
+https://www.sat.gob.mx/portal/public/tramites/factura-electronica
+
+
+-- DIRECTORIOS LOCALES
+Todalocas.org
+Numerostelefono.com
+
+---- bUSQUEDAS 
+Registro Nacional de Profesionistas (SEP)  Para verificar si la persona cuenta con una cédula profesiona
+
+Búho Legal / Poder Judicial: Puedes buscar el nombre completo en bases de datos de boletines judiciales o tribunales estatales para verificar si existe historial de demandas, amparos o antecedentes civiles/penales.
+
 ```
