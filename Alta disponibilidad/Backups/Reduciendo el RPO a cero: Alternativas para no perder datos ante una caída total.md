@@ -72,9 +72,13 @@ Para entender la diferencia, imagina que estás enviando documentos importantes 
 * **WAL Archivado (Basado en archivos):** Es como enviar cajas por mensajería. PostgreSQL va llenando un archivo (la caja) con las transacciones. Esta caja tiene un tamaño fijo, normalmente de 16MB. Solo cuando la caja se llena por completo, se cierra (rota) y se ejecuta el `archive_command` para enviarla a tu almacenamiento seguro (S3, NFS, etc.).
 * **WAL Streaming (Basado en red):** Es como tener una tubería directa a la bóveda. No esperas a que se llene ninguna caja. A medida que las transacciones ocurren en la memoria y se escriben en el disco local, se envían casi de inmediato, bloque por bloque a través de la red, utilizando el protocolo de replicación de PostgreSQL.
  
+
+
+ 
+ 
 ## Ventajas y Desventajas
 
-### WAL Archivado Clásico (`archive_command`)
+### 1. WAL Archivado Clásico (`archive_command` tradicional)
 
 **Ventajas:**
 
@@ -87,7 +91,7 @@ Para entender la diferencia, imagina que estás enviando documentos importantes 
 * **RPO mayor a cero:** Si el servidor explota, pierdes todo lo que estaba en el archivo WAL que aún no se había llenado (el famoso "tercer WAL" del que hablábamos antes).
 * **Dependencia del tráfico:** Si hay pocas transacciones, el archivo tardará mucho en llenarse. Forzar la rotación con `archive_timeout` genera una avalancha de archivos pequeños que son ineficientes de gestionar.
 
-### WAL Streaming (`pg_receivewal` / Herramientas modernas)
+### 2. WAL Streaming (`pg_receivewal` / Herramientas modernas de red)
 
 **Ventajas:**
 
@@ -100,7 +104,26 @@ Para entender la diferencia, imagina que estás enviando documentos importantes 
 * **Requiere conexión continua:** Necesita una conexión de red activa, constante y estable entre el servidor principal y el repositorio de backups.
 * **Mayor complejidad:** Requiere configurar roles de replicación, `pg_hba.conf` y gestionar *Replication Slots* para evitar que el servidor principal borre los WALs si la red se cae.
 
- 
+### 3. El Enfoque Nube / Alto Rendimiento: WAL-G (La opción más usada en contenedores y Cloud)
+
+*Nota: Por defecto, WAL-G utiliza el mecanismo de archivado (`wal-push`), pero altamente vitaminado, aunque también soporta streaming.*
+
+**Ventajas:**
+
+* **Velocidad y Paralelismo extremo:** WAL-G satura intencionalmente la CPU y la red para comprimir y enviar múltiples archivos WAL al mismo tiempo. Es insuperable en tiempos de recuperación (RTO).
+* **Backups Delta (Incrementales por bloque):** A diferencia de las herramientas clásicas, WAL-G es capaz de escanear y enviar solo las páginas (bloques) de datos que cambiaron, ahorrando muchísimo espacio en la nube.
+* **Integración Cloud Nativa:** Está diseñado para hablar directamente con S3, Google Cloud Storage o Azure Blob Storage sin necesidad de herramientas intermedias, gestionando su propia retención.
+
+**Desventajas:**
+
+* **RPO mayor a cero (por defecto):** Si solo usas su configuración más popular (`wal-push`), sigues esperando a que el archivo WAL de 16MB rote. Para bajar el RPO a cero, tienes que configurar obligatoriamente su demonio de streaming secundario (`wal-receive`), lo que suma complejidad.
+* **Consumo intensivo de recursos:** Su mayor ventaja es su debilidad. Si no limitas adecuadamente el consumo de WAL-G (throttling), su agresivo paralelismo puede robarle recursos de CPU y disco a tu base de datos principal durante un backup.
+* **Curva de aprendizaje:** Configurar WAL-G implica manejar múltiples variables de entorno y entender bien su arquitectura, siendo menos intuitivo al principio que un simple comando de copiado.
+
+
+
+
+
 
 ## Cuadro Comparativo: Archivado vs Streaming
 
