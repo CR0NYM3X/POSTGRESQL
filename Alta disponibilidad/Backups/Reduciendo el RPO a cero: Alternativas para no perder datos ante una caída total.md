@@ -104,7 +104,7 @@ Para entender la diferencia, imagina que estás enviando documentos importantes 
 * **Requiere conexión continua:** Necesita una conexión de red activa, constante y estable entre el servidor principal y el repositorio de backups.
 * **Mayor complejidad:** Requiere configurar roles de replicación, `pg_hba.conf` y gestionar *Replication Slots* para evitar que el servidor principal borre los WALs si la red se cae.
 
-### 3. El Enfoque Nube / Alto Rendimiento: WAL-G (La opción más usada en contenedores y Cloud)
+### 3. El Enfoque Nube / Alto Rendimiento: [WAL-G](https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md) (La opción más usada en contenedores y Cloud)
 
 *Nota: Por defecto, WAL-G utiliza el mecanismo de archivado (`wal-push`), pero altamente vitaminado, aunque también soporta streaming.*
 
