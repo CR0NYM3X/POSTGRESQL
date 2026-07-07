@@ -655,10 +655,80 @@ COPY (
 ```
 
 
+ 
+
+## El Problema: ¿Qué pasa con las tablas sin Primary Key?
+
+La replicación lógica (`pglogical` o nativa) funciona leyendo los cambios del WAL (Write-Ahead Log) y aplicándolos en el destino. Para hacer un `INSERT`, no hay problema. El caos empieza con los **`UPDATE`** y **`DELETE`**.
+
+Si modificas o borras una fila, PostgreSQL necesita una forma inequívoca de saber *cuál* fila debe modificar en la base de datos de destino. Si no hay Primary Key (o un índice único equivalente):
+
+1. **En `pglogical`:** Directamente **no se replicarán los `UPDATE` ni los `DELETE**` para esa tabla. La extensión no soporta la estrategia de respaldo `REPLICA IDENTITY FULL` de manera nativa (o genera errores/comportamiento indefinido según la versión exacta).
+2. **En PostgreSQL Nativo / Cloud SQL:** Si intentas hacer un `UPDATE` o `DELETE` en la tabla origen, la base de datos arrojará un error inmediato bloqueando la transacción (`ERROR: cannot update table "nombre" because it does not have a replica identity`).
+
+> ⚠️ **Excepción:** Si tu tabla es estrictamente de "solo inserción" (Append-only, como logs o históricos de auditoría) donde **nunca** se ejecuta un `UPDATE` ni un `DELETE`, la replicación funcionará. Pero si alguien o un proceso borra o edita algo, la replicación se romperá o ignorará el cambio.
+
+---
+
+## Soluciones Técnicas
+
+Si no puedes agregar una Primary Key real por restricciones de la aplicación, tienes dos alternativas:
+
+1. **Definir un Índice Único como Replica Identity:** Si la tabla tiene una combinación de columnas únicas que no aceptan nulos (`NOT NULL`), puedes decirle a Postgres que use ese índice para identificarse:
+```sql
+ALTER TABLE mi_tabla REPLICA IDENTITY USING INDEX mi_indice_unico;
+
+```
+
+
+2. **REPLICA IDENTITY FULL (Solo para Replicación Nativa de Postgres, no recomendado en pglogical):** Esto obliga a Postgres a usar **toda la fila completa** como llave.
+```sql
+ALTER TABLE mi_tabla REPLICA IDENTITY FULL;
+
+```
+
+
+*¡Cuidado!* Esto causa un impacto masivo en el rendimiento (Performance Penalty) porque en cada `UPDATE` o `DELETE`, el nodo destino tiene que hacer un *Sequential Scan* (escanear toda la tabla fila por fila) para encontrar el registro.
+
+---
+
+## Documentación Oficial
+
+Para soportar esto con la documentación técnica de respaldo, aquí tienes los enlaces oficiales:
+
+### 1. Documentación Oficial de `pglogical` (EnterpriseDB / 2ndQuadrant)
+
+En la sección de limitaciones explícitas de `pglogical`, se especifica que requiere obligatoriamente una Primary Key o un índice válido para `UPDATE` y `DELETE`, y aclara que `REPLICA IDENTITY FULL` no es una opción viable de forma nativa para ellos:
+
+* [EDB Docs - pglogical Limitations and restrictions](https://www.enterprisedb.com/docs/supported-open-source/pglogical2/limitations-and-restrictions/)
+> *"PRIMARY KEY or REPLICA IDENTITY required. UPDATEs and DELETEs cannot be replicated for tables that lack a PRIMARY KEY or other valid replica identity..."*
+
+
+
+### 2. Documentación Oficial de Google Cloud SQL (PostgreSQL)
+
+Google Cloud SQL utiliza tanto la replicación nativa como `pglogical` dependiendo de tu configuración. En sus guías de arquitectura (como AlloyDB/Cloud SQL con entornos pglogical) especifican la recomendación crítica de las llaves primarias:
+
+* [Google Cloud Docs - About the pglogical extension / Implementations](https://docs.cloud.google.com/alloydb/omni/linux/current/docs/about-pglogical)
+> *"It is recommended that all replication tables must have a primary key... Tables that don't have primary keys, are static in nature, and are never UPDATED or DELETED, and supports only INSERTS."*
+
+
+
+### 3. Documentación Core de PostgreSQL (Restricciones de Replicación Lógica)
+
+Dado que Cloud SQL y `pglogical` corren sobre el motor de Postgres, las reglas de restricción del motor aplican siempre. La documentación oficial de Postgres explica el comportamiento del error por falta de identidad de réplica:
+
+* [PostgreSQL Official Documentation - Logical Replication Restrictions](https://www.postgresql.org/docs/current/logical-replication-restrictions.html)
+> *"If a table juxtaposed for replication lacks a primary key or a suitable unique index, replicating UPDATE or DELETE operations is not possible under the default replica identity."*
+
+ 
 ---
 
 ## Bibliografía
 ```
+
+https://github.com/2ndQuadrant/pglogical
+
 Réplicas de lectura de PostgreSQL: guía completa para comprenderlas, implementarlas y decidir cuándo las necesita -> https://medium.com/@jleonro/postgresql-read-replicas-complete-guide-to-understanding-implementing-and-deciding-when-you-need-c870f615930b
 
 [PostgreSQL Replication Deep Dive] - https://medium.com/@danielonthenet/postgresql-replication-deep-dive-53b593243f3f
