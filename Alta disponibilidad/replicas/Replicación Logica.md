@@ -158,6 +158,9 @@ select * from clientes;
 
 -- OR, for specific DML operations (less common for full migration)
 -- CREATE PUBLICATION my_inserts_only_pub FOR TABLE my_table WITH (publish = 'insert');
+
+-- Creas la publicación indicando que incluya todo el catálogo:
+CREATE PUBLICATION mi_publicacion_global FOR ALL TABLES;
 ```
 
 **Validar status publicacion**
