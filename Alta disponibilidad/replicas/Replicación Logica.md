@@ -724,7 +724,66 @@ Dado que Cloud SQL y `pglogical` corren sobre el motor de Postgres, las reglas d
 * [PostgreSQL Official Documentation - Logical Replication Restrictions](https://www.postgresql.org/docs/current/logical-replication-restrictions.html)
 > *"If a table juxtaposed for replication lacks a primary key or a suitable unique index, replicating UPDATE or DELETE operations is not possible under the default replica identity."*
 
+---
+
+
+#  **`REPLICA IDENTITY FULL`** 
+## ¿Para qué sirve exactamente?
+
+En términos sencillos, **`REPLICA IDENTITY FULL`** es una configuración a nivel de tabla en PostgreSQL que le dice al motor: *"Si no hay una llave primaria para identificar las filas de esta tabla, usa **todos los campos de la fila completa combinados** como si fueran su firma o llave única durante la replicación"*.
+
+Sirve principalmente como un mecanismo de **salvavidas** o de última instancia para poder replicar modificaciones (`UPDATE`) y eliminaciones (`DELETE`) en tablas que **no tienen Primary Key ni un índice único disponible**.
+
  
+
+Cuando se realiza replicación lógica (ya sea nativa o a través de herramientas de captura de datos como Debezium), PostgreSQL escribe los cambios en el log de transacciones (WAL).
+
+### 1. Permitir UPDATEs y DELETEs en tablas sin llave única
+
+Por defecto (`REPLICA IDENTITY DEFAULT`), si haces un `UPDATE`, Postgres guarda en el log: *"Busca el ID 5 en el destino y cambia su nombre a Juan"*.
+Si la tabla no tiene ID ni llave alguna, Postgres entra en pánico porque no sabe qué fila cambiar en el destino, arrojando un error y bloqueando la transacción. Al activar `FULL`, Postgres guarda: *"Busca la fila que tenga exactamente `nombre='Pedro', edad=30, pais='México', fecha='2026-05-10'` y cámbiala por los nuevos valores"*.
+
+### 2. Capturar valores "Antes" y "Después" (Sistemas CDC)
+
+Herramientas de analítica o auditoría necesitan saber exactamente qué valor había *antes* de que se modificara. Por defecto, Postgres solo guarda el valor de la llave primaria en el log. Al activar `FULL`, el log almacena obligatoriamente el estado completo de la fila previa al cambio, permitiendo auditorías perfectas.
+ 
+
+## El "Costo Oculto": ¿Por qué debes usarlo con extrema precaución?
+
+Aunque suena como la solución perfecta para no tener que crear llaves primarias, tiene un costo de rendimiento altísimo debido a dos factores:
+
+1. **Escaneo Secuencial Obligatorio (En el Destino):** Al no haber un índice para buscar la fila en la base de datos de destino, el nodo receptor tiene que hacer un **Sequential Scan** (revisar la tabla fila por fila desde el inicio) por cada `UPDATE` o `DELETE` que procese. Si tu tabla tiene millones de filas, la replicación se volverá extremadamente lenta y acumulará un retraso (lag) masivo.
+2. **Engrosamiento del WAL (En el Origen):** Escribir cada una de las columnas con sus valores viejos y nuevos duplica o triplica el tamaño de los logs de transacciones generados. Esto incrementa de golpe el uso de disco de tu base de datos origen y satura el ancho de banda de tu red.
+
+ 
+## Cómo se activa
+
+Se aplica de manera individual por tabla mediante un comando estándar de alteración:
+
+```sql
+ALTER TABLE mi_tabla_sin_pk REPLICA IDENTITY FULL;
+
+```
+ 
+
+## Documentación Oficial
+
+### 1. Documentación Core de PostgreSQL (Comportamiento y Sintaxis)
+
+La sección de comandos `ALTER TABLE` detalla exhaustivamente qué información se guarda en el WAL según el tipo de identidad de réplica seleccionado:
+
+* [PostgreSQL Official Documentation - ALTER TABLE (REPLICA IDENTITY)](https://www.google.com/search?q=https://www.postgresql.org/docs/current/sql-altertable.html%23SQL-ALTERTABLE-REPLICA-IDENTITY)
+
+> *"FULL records the old values of all columns in the row. This option has a significant performance penalty on the subscriber side when UPDATE or DELETE operations are applied."*
+
+### 2. Documentación de Replicación Lógica de PostgreSQL (Eficiencia de Búsqueda)
+
+Explica cómo el nodo destino intenta procesar los datos de entrada y la ineficiencia de no poseer un índice btree o hash equivalente:
+
+* [PostgreSQL Official Documentation - Logical Replication Publication (Replica Identity)](https://www.postgresql.org/docs/current/logical-replication-publication.html)
+
+> *"If the table does not have any suitable key, then it can be set to replica identity FULL, which means the entire row becomes the key... If there are no such suitable indexes, the search on the subscriber side can be very inefficient..."*
+
 ---
 
 ## Bibliografía
