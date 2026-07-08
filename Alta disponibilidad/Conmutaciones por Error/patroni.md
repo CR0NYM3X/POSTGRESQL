@@ -1113,7 +1113,7 @@ Por eso, con Patroni logras que PostgreSQL sea tolerante a fallos en su infraest
 
 ## Links
 ```conf
-
+https://opensource-db.com/understanding-standby-clusters-in-patroni-cross-datacenter-disaster-recovery-for-postgresql/
 
 https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-clusterpart-1-etcd
 https://www.pgedge.com/blog/using-patroni-to-build-a-highly-available-postgres-clusterpart-2-postgres-and-patroni
