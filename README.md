@@ -111,6 +111,7 @@ https://www.gpsos.es/blogs/
 https://sambasivareddy.in/
 
 --- Blog de base de datos (POSTGRESQL, MYSQL, MSSQL)
+https://opensource-db.com/blog/
 https://scalegrid.io/blog/
 https://www.datasunrise.com/es/informacion-profesional/
 https://www.mydbops.com/blog
