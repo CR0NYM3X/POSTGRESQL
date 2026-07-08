@@ -151,3 +151,9 @@ spec:
 
 Si el **Disco C (Logs)** se llena por completo debido a un error masivo de la aplicación que inunda la bitácora, el sistema operativo bloqueará la escritura en `/var/log/postgresql`. Sin embargo, como el **Disco A (Datos)** y el **Disco B (WAL)** están en piezas de hardware totalmente independientes con sus propios límites de espacio, Postgres seguirá procesando transferencias de dinero y cobros sin enterarse de que el disco de logs se quedó sin espacio. Tu producción Fintech sigue a salvo.
 
+
+
+
+```yaml
+https://www.cybertec-postgresql.com/en/going-multi-region-how-to-set-up-cloudnativepgcnpg-distributed-topology/
+```
