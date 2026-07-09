@@ -163,6 +163,7 @@ https://www.youtube.com/watch?v=E2s9Prs7PFc&list=PLOBORF8Y_l8g&index=1
 
 
 ---- Personas profesionales y sus blogs de PostgreSQL ---
+Tejaswi -> https://dbadevops.com/
 Laetitia Avrot -> https://mydbanotebook.org/posts/
 Richard Yen -> https://richyen.com/
 https://databaserookies.wordpress.com/about-deepakmahto/
