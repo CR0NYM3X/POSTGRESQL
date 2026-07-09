@@ -199,7 +199,7 @@ https://medium.com/@jramcloud1/02-postgresql-performance-tuning-understanding-po
 # Performance
 ```
 
-
+https://dbadevops.com/postgresql-performance-tuning-deep-dive/
 
 PostgreSQL Just Got Its Biggest Upgrade That Will Change Database Performance in 2026 -> https://medium.com/@CodingWithAbhi/postgresql-17-performance-upgrade-2026-f4222e71f577
 
