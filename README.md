@@ -2,6 +2,10 @@
 
 # Páginas para adquirir conocimientos
 ```
+
+-- (Open Alliance for PostgreSQL Education)  un programa de certificación abierto, independiente y gestionado por la comunidad para PostgreSQL.
+https://www.oapg-edu.org/
+
  -----------  Reforzar temas  -----------
 -> Implementación de MFA/2FA con Google Authenticator en PostgreSQL
  
