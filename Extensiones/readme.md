@@ -518,7 +518,7 @@ PeerDB   -  fue adquirida por ClickHouse Sirve para extraer información de una 
 
 * **decoderbufs:** Es una extensión lógica de decodificación que utiliza **Protocol Buffers (Protobuf)**. Sirve principalmente para enviar cambios de la base de datos a herramientas de terceros como **Debezium**, facilitando la arquitectura de *Change Data Capture* (CDC).
 * **pgq (PostgreSQL Queue):** Un sistema de **colas genérico** de alto rendimiento. Se usa cuando necesitas procesar eventos de forma asíncrona dentro de la base de datos (por ejemplo, "enviar un correo después de que se inserte un usuario").
-
+PgQue -- Un sistema de **colas genérico** de alto rendimiento. mejor que pgq  -- https://github.com/NikolayS/PgQue
 
 * **pgfaceting:** Diseñada para implementar **búsquedas por facetas** de manera ultra rápida (como los filtros de "Talla", "Color" o "Marca" en Amazon). Optimiza la computación de estos filtros sobre grandes volúmenes de datos.
  
