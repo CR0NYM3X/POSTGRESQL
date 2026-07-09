@@ -169,6 +169,8 @@ Neon recomienda no quedarse solo con la generación de logs, sino:
 
 # Links
 ```
+https://dbadevops.com/database-auditing-using-pgaudit/
+
 pgaudit -> https://github.com/pgaudit/pgaudit
 pgauditlogtofile -> https://github.com/fmbiete/pgauditlogtofile
 https://github.com/pgaudit/pgaudit_analyze
