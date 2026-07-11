@@ -198,7 +198,7 @@ La regla establece:
 ## Bibliografía 
 ```
 PostgreSQL backup and restore — Complete guide to backing up and restoring databases -> https://medium.com/@pawale7663/postgresql-backup-and-restore-complete-guide-to-backing-up-and-restoring-databases-14d19bb57329
-
+https://www.youtube.com/watch?v=YIC5IbywGUM&list=PLMX6JrOPvSV0&index=7
 
 https://www.crunchydata.com/blog/introduction-to-postgres-backups
 https://dbsguru.com/physical-postgresql-backup/
