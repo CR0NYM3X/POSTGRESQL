@@ -2,7 +2,7 @@
 ## 🧩 herramientas para migración a PostgreSQL
 
 
-
+[pgdiff COMPARA ESQUEMAS](https://github.com/joncrlsn/pgdiff)
 
 
 ### 1. **Estuary Flow** – *De pago (con opción gratuita limitada)*
