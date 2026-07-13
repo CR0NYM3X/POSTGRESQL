@@ -786,6 +786,37 @@ Explica cómo el nodo destino intenta procesar los datos de entrada y la inefici
 
 ---
 
+
+
+
+# Obtener los owner en tablas y sus alter 
+
+
+```SQL
+SELECT 
+    n.nspname AS esquema,
+    c.relname AS tabla,
+    r.rolname AS owner,
+    format('ALTER TABLE %I.%I OWNER TO %I;', n.nspname, c.relname, r.rolname) AS comando_alter
+FROM 
+    pg_class c
+JOIN 
+    pg_namespace n ON n.oid = c.relnamespace
+JOIN 
+    pg_roles r ON r.oid = c.relowner
+WHERE 
+    c.relkind IN ('r', 'p') -- 'r' = tablas normales, 'p' = tablas particionadas
+    AND n.nspname NOT IN ('information_schema', 'pg_catalog') -- Excluye esquemas principales del sistema
+    AND n.nspname NOT LIKE 'pg_toast%' -- Excluye esquemas internos de TOAST
+    AND n.nspname NOT LIKE 'pg_temp%'  -- Excluye esquemas temporales
+ORDER BY 
+    n.nspname, 
+    c.relname;
+```
+
+
+---
+
 ## Bibliografía
 ```
 
