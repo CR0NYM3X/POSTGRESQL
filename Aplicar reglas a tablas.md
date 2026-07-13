@@ -510,6 +510,14 @@ SELECT * FROM v WHERE slow_func(id) = 0;
 
 # Temas  Importantes : 
 ```
+LA VERDAD INCÓMODA SOBRE ROW-LEVEL SECURITY (RLS) -> 
+    https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Post/LA%20VERDAD%20INC%C3%93MODA%20SOBRE%20ROW-LEVEL%20SECURITY%20(RLS).md
+
+El Riesgo de Declaras LEAKPROOF por Error - Beneficiando al Query Planner y Rompiendo el Blindaje RLS -> 
+    https://github.com/CR0NYM3X/POSTGRESQL/blob/main/Post/El%20Riesgo%20de%20Declaras%20LEAKPROOF%20por%20Error%20-%20Beneficiando%20al%20Query%20Planner%20y%20Rompiendo%20el%20Blindaje%20RLS.md
+
+
+
 https://hexacluster.ai/blog/row-level-and-column-level-security-oracle-vs-postgresql
 
 Abusing SECURITY DEFINER functions in PostgreSQL : https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
