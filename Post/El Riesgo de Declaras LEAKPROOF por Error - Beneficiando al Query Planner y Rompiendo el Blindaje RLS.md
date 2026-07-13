@@ -213,7 +213,7 @@ SELECT
   relname AS table_name,
   relrowsecurity AS row_security_enabled,
   relforcerowsecurity AS force_row_security FROM 
-  pg_classWHERE 
+  pg_class WHERE 
   relname = 'operaciones_blackops';
 ```
 
