@@ -207,6 +207,16 @@ PostgreSQL tiene tres niveles de jerarquía ante el RLS:
 `ALTER TABLE operaciones_blackops FORCE ROW LEVEL SECURITY;`
 Con esto le dices al motor: *"Me importa un demonio que él haya creado la tabla, oblígalo a pasar por el filtro RLS como a cualquier otro mortal"*.
 
+
+```SQL
+SELECT 
+  relname AS table_name,
+  relrowsecurity AS row_security_enabled,
+  relforcerowsecurity AS force_row_security FROM 
+  pg_classWHERE 
+  relname = 'operaciones_blackops';
+```
+
 **3. El Usuario Normal / Aplicación (`agente_pedro`):**
 
 * **Comportamiento:** El RLS se le aplica **por defecto** en el instante en que ejecutas `ENABLE ROW LEVEL SECURITY`.
