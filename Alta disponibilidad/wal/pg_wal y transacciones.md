@@ -824,6 +824,13 @@ postgres@postgres# select *from  pg_control_checkpoint();
 
 ### Ejemplos de Uso
 
+**Ver el primer archivo wal que ocupa postgresql para recuperarse**
+```sh
+pg_controldata /ruta/al/datadir | grep -i "REDO location"
+SELECT redo_wal_file,checkpoint_lsn, checkpoint_time, redo_lsn FROM pg_control_checkpoint();
+select * from pg_walfile_name(pg_current_wal_lsn());
+```
+
 1. **Modo de Prueba (Dry Run)**:
    ```sh
    pg_archivecleanup -n /ruta/al/archivo 00000001000000000000001E
