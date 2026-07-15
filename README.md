@@ -17,6 +17,7 @@ https://database.build/db/m6elcqyum78z69ug
 
 --- Certificaciones
 https://www.enterprisedb.com/course/postgresql-12-professional-certification
+https://training.enterprisedb.com/pages/27/course-catalog
 https://www.todopostgresql.com/certificaciones-postgresql/
 https://www.todopostgresql.com/carreras/
 
