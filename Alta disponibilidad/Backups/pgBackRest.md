@@ -58,6 +58,8 @@
  
 
  ```
+https://stormatics.tech/blogs/postgresql-disaster-recovery-with-pgbackrest-tls-transport
+
 https://pgbackrest.org/
 https://dbsguru.com/setup-streaming-replication-with-pgbackrest-in-postgresql/
 https://dev.to/hujan/pgbackrest-configuration-from-standby-database-iho
@@ -77,3 +79,5 @@ https://www.youtube.com/watch?v=Yapbg0i_9w4
 https://www.youtube.com/watch?v=eyda4r6T3Ek
 
 ```
+
+
