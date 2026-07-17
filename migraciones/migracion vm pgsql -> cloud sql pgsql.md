@@ -209,6 +209,7 @@ Este documento establece un marco técnico sólido. Nuestro siguiente paso ideal
 
 # Ref
 ```
+Solución de problemas : https://docs.cloud.google.com/sql/docs/postgres/troubleshooting?hl=es-419
 Importa y exporta mediante pg_dump, pg_dumpall y pg_restore : https://docs.cloud.google.com/sql/docs/postgres/import-export/import-export-dmp?hl=es-419
 Recomendaciones para la importación y exportación de datos : https://docs.cloud.google.com/sql/docs/postgres/import-export?hl=es-419
 Importa y exporta archivos en paralelo: https://docs.cloud.google.com/sql/docs/postgres/import-export/import-export-parallel?hl=es-419
