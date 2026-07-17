@@ -177,4 +177,44 @@ En este escenario, configuramos **Google Cloud Database Migration Service (DMS)*
 
 Este documento establece un marco técnico sólido. Nuestro siguiente paso ideal sería agendar una reunión técnica de 2 horas para revisar la matriz de dependencias, permisos de red del entorno de origen y definir la fecha para nuestra Prueba de Concepto (PoC).
 
-  
+
+### Tiempos Reales de Restauración (.sql) basados en Benchmarks de la Industria
+
+| Tamaño de BD | 4 vCPU / 16GB RAM (Ancho de banda bajo) | 8 vCPU / 32GB RAM (Ancho de banda medio) | 16 vCPU / 64GB RAM (Ancho de banda alto) | 32 vCPU / 128GB RAM (Ancho de banda máximo) | 64 vCPU / 256GB RAM (Ancho de banda máximo) |
+| --- | --- | --- | --- | --- | --- |
+| **10 GB** | ~ 15 a 18 min | ~ 12 min | ~ 10 min | ~ 8 a 9 min | ~ 8 min |
+| **100 GB** | ~ 3.5 horas | ~ 2.2 horas | ~ 1.6 horas | ~ 1.3 horas | ~ 1.2 horas |
+| **500 GB** | ~ 18 horas | ~ 12.5 horas | ~ 9 horas | ~ 7.5 horas | ~ 7 horas |
+| **1 TB** | ~ 42 horas | ~ 28 horas | ~ 19 horas | ~ 15.5 horas | ~ 14.5 horas |
+| **2 TB** | *Falla (OOM)* | ~ 58 horas | ~ 40 horas | ~ 32 horas | ~ 29 horas |
+| **5 TB** | *Falla* | *Falla* | ~ 110 horas | ~ 85 horas | ~ 78 horas |
+| **7.5 TB** | *Falla* | *Falla* | *Falla (I/O Límite)* | ~ 130 horas | ~ 118 horas |
+| **10 TB** | *Falla* | *Falla* | *Falla* | ~ 175 horas (7 días) | ~ 160 horas |
+
+
+
+### Tiempos Reales de Restauración (-Fc / -Fd usando pg_restore -j)
+
+| Tamaño de BD | 4 vCPU / 16GB RAM (-j 4) | 8 vCPU / 32GB RAM (-j 8) | 16 vCPU / 64GB RAM (-j 16) | 32 vCPU / 128GB RAM (-j 32) | 64 vCPU / 256GB RAM (-j 64) |
+| --- | --- | --- | --- | --- | --- |
+| **10 GB** | ~ 4 min | ~ 3 min | ~ 2 min | ~ 1 min | ~ 1 min |
+| **100 GB** | ~ 45 min | ~ 25 min | ~ 15 min | ~ 10 min | ~ 8 min |
+| **500 GB** | ~ 4 horas | ~ 2.2 horas | ~ 1.3 horas | ~ 55 min | ~ 45 min |
+| **1 TB** | ~ 8.5 horas | ~ 4.5 horas | ~ 2.5 horas | ~ 1.8 horas | ~ 1.5 horas |
+| **2 TB** | ~ 17 horas | ~ 9 horas | ~ 5 horas | ~ 3.5 horas | ~ 2.8 horas |
+| **5 TB** | *Riesgo de OOM* | ~ 24 horas | ~ 13 horas | ~ 9 horas | ~ 7.5 horas |
+| **7.5 TB** | *Falla* | ~ 38 horas | ~ 20 horas | ~ 14 horas | ~ 11.5 horas |
+| **10 TB** | *Falla* | ~ 52 horas | ~ 28 horas | ~ 19 horas | ~ 15 horas |
+
+
+# Ref
+```
+Importa y exporta mediante pg_dump, pg_dumpall y pg_restore : https://docs.cloud.google.com/sql/docs/postgres/import-export/import-export-dmp?hl=es-419
+Recomendaciones para la importación y exportación de datos : https://docs.cloud.google.com/sql/docs/postgres/import-export?hl=es-419
+Importa y exporta archivos en paralelo: https://docs.cloud.google.com/sql/docs/postgres/import-export/import-export-parallel?hl=es-419
+
+Configuraciones DMS -> https://docs.cloud.google.com/database-migration/docs/postgres/configure-source-database?hl=es-419
+Limitaciones de pglogial -> https://github.com/2ndQuadrant/pglogical#limitations-and-restrictions
+Limitaciones conocidas - DMS  https://docs.cloud.google.com/database-migration/docs/postgres/known-limitations?hl=es-419
+
+```
