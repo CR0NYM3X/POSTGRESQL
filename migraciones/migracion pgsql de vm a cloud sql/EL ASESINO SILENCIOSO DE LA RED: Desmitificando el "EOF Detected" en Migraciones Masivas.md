@@ -61,3 +61,17 @@ PGPASSWORD='miPassword123' PGTCPKEEPALIVES=1 PGTCPKEEPALIVEIDLE=5 PGTCPKEEPALIVE
 ## 5. Resumen Ejecutivo (TL;DR)
 
 Si tu base de datos procesa una tarea masiva y la conexión muere con `EOF detected`, no busques errores en el servidor. Tu balanceador de carga cortó la conexión por inactividad. **Nunca** uses `PGOPTIONS` para solucionar cortes del cliente; la actividad debe originarse en la herramienta que espera la respuesta. Utiliza siempre las variables de entorno `PGTCPKEEPALIVES` para bombardear al balanceador con latidos y mantener el canal de comunicación abierto de forma quirúrgica y limpia.
+
+
+## 📐 PARTE 1: DIFERENCIA ENTRE `pre-data`, `data` Y `post-data`
+
+Cuando PostgreSQL realiza un respaldo en formato de directorio (`-F d`) o *Custom* (`-F c`), divide lógicamente todo el contenido de la base de datos en **3 secciones independientes**. Puedes restaurarlas juntas o por separado mediante la bandera `--section`:
+
+```
+   [ ARCHIVO DE RESPALDO / DUMP ]
+                 │
+   ├── 1. PRE-DATA  ──> (Crea el Cascarón / Tablas vacías)
+   ├── 2. DATA      ──> (Inyecta los Gigabytes de registros)
+   └── 3. POST-DATA ──> (Construye Índices, LLaves Foráneas y Triggers)
+
+```
