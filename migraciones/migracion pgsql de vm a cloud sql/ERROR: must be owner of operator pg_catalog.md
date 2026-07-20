@@ -69,7 +69,7 @@ pg_restore -l backup_dir_dump > lista_objetos.toc
 Aplicamos un filtro automatizado con `sed` sobre el archivo de índice generado para eliminar del mapa de ruta cualquier intento de recreación de operadores en el esquema público.
 
 ```bash
-sed '/OPERATOR public\./d' lista_objetos.toc > lista_limpia.toc
+sed '/OPERATOR public/d' lista_objetos.toc > lista_limpia.toc
 
 ```
 
