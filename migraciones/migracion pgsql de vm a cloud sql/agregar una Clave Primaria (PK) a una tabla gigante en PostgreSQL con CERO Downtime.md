@@ -262,3 +262,9 @@ ALTER TABLE public.ordenes_venta
 ## Conclusión
 
 Aplicar cambios estructurales a bases de datos de alto volumen requiere pasar de comandos destructivos a patrones progresivos. Dividir la migración en creación de metadatos, actualización asíncrona en segundo plano e indexación concurrente es el estándar de la industria para mantener disponibilidad del **99.99%** sin degradar la experiencia de tus usuarios.
+
+
+## Extras
+```
+ALTER SEQUENCE public.ctl_mensajeriaresponse_idx_seq RESTART WITH 1;
+```
