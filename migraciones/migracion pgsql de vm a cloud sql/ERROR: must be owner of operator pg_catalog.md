@@ -82,6 +82,12 @@ nohup sh -c "echo '=== INICIO RESTAURACIÓN LIMPIA:' \$(date) && pg_restore -h [
 
 ```
 
+### Segunda opcion
+En caso de que no funcione el pg_restore, puedes convertir 
+```
+nohup sh -c "echo '=== INICIO CONVERSIÓN:' \$(date) && pg_restore -f - --no-owner -L lista_limpia.toc /sysx/db_test_backup/backup_20260719.dump | gzip -c > /sysx/db_test_backup/backup_db_test.sql.gz && echo '=== FIN CONVERSIÓN:' \$(date)" > /sysx/db_test_backup/conversion.log 2>&1 &
+```
+
 ---
 
 ## 3. PROTOCOLO DE AUDITORÍA Y MONITOREO
