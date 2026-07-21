@@ -78,15 +78,26 @@ sed '/OPERATOR public/d' lista_objetos.toc > lista_limpia.toc
 Lanzamos la inyección asíncrona en segundo plano obligando a `pg_restore` a seguir estrictamente la hoja de ruta del índice modificado (`-L lista_limpia.toc`). De esta forma, el motor saltará los operadores obsoletos y procesará la carga de datos en paralelo a máxima velocidad.
 
 ```bash
-nohup sh -c "echo '=== INICIO RESTAURACIÓN LIMPIA:' \$(date) && pg_restore -h [IP_INSTANCIA_CLOUD] -U [USUARIO_DESTINO] -d [BD_DESTINO] -F d -j 30 -L lista_limpia.toc --no-owner backup_dir_dump && echo '=== FIN RESTAURACIÓN LIMPIA:' \$(date)" > restauracion_final_perfecta.log 2>&1 &
-
+nohup bash -c '
+  export PGPASSWORD="password123"
+  export PGOPTIONS="-c max_parallel_maintenance_workers=8 -c maintenance_work_mem=9GB -c tcp_keepalives_idle=5 -c tcp_keepalives_interval=10 -c tcp_keepalives_count=3"
+  
+  echo "=== INICIO RESTAURACIÓN: $(date)" && 
+  pg_restore -h 10.0.0.100 -U postgres2 -d db_test -F d -L lista_limpia.toc --no-owner -j 10 /backup/db_test.dump &&
+  echo "=== FIN RESTAURACIÓN: $(date)"
+' > fullbck.log 2>&1 &
+ 
 ```
 
 ### Segunda opcion
-En caso de que no funcione el pg_restore, puedes convertir 
+En caso de que no funcione el pg_restore, puedes convertir el dump a sql
 ```
 nohup sh -c "echo '=== INICIO CONVERSIÓN:' \$(date) && pg_restore -f - --no-owner -L lista_limpia.toc /sysx/db_test_backup/backup_20260719.dump | gzip -c > /sysx/db_test_backup/backup_db_test.sql.gz && echo '=== FIN CONVERSIÓN:' \$(date)" > /sysx/db_test_backup/conversion.log 2>&1 &
 ```
+
+
+
+
 
 ---
 
