@@ -76,6 +76,13 @@ Cuando PostgreSQL realiza un respaldo en formato de directorio (`-F d`) o *Custo
 
 ```
 
+### Error
+el error que se comete muy frecuente es usar `-j` en la etapa de `post-data`.
+Las claves foráneas e índices tienen dependencias entre sí; cargarlas en paralelo con `-j` suele generar bloqueos de tablas (*locks*) y fallos de referencia.
+
+**Para ejecutar el `post-data` correctamente:**
+ **NO uses `-j`** (ejecuta en un solo hilo).
+
 
 ## Info extra
 
