@@ -24,6 +24,76 @@ En este artículo aprenderás la estrategia definitiva para agregar una PK auton
 
 ## Guía Paso a Paso
 
+## Buscar tablas sin PK 
+```sql
+
+
+
+select  tamano_total,'ALTER TABLE '|| esquema ||'.'|| tabla || ' ADD COLUMN idx BIGSERIAL PRIMARY KEY;'  from (   WITH tablas_sin_pk AS (
+        -- 1. Aislamos todas las tablas de usuario que no tienen un constraint tipo 'p' (Primary Key)
+        -- Traemos 'c.reltuples' para obtener el total de filas estimado sin hacer COUNT(*)
+        SELECT
+            c.oid,
+            n.nspname AS esquema,
+            c.relname AS tabla,
+            c.reltuples::bigint AS total_filas_estimado
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE c.relkind = 'r' 
+        AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+        AND NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint con
+            WHERE con.conrelid = c.oid
+                AND con.contype = 'p'
+        )
+    ),
+    columnas_con_secuencia AS (
+        -- 2. Buscamos columnas que utilicen DEFAULT nextval() o que sean tipo IDENTITY nativo
+        SELECT
+            a.attrelid,
+            a.attname AS columna_secuencia,
+            pg_get_expr(d.adbin, d.adrelid) AS expresion_defecto
+        FROM pg_attribute a
+        LEFT JOIN pg_attrdef d ON a.attrelid = d.adrelid AND a.attnum = d.adnum
+        WHERE a.attnum > 0
+        AND NOT a.attisdropped
+        AND (
+            (d.adbin IS NOT NULL AND pg_get_expr(d.adbin, d.adrelid) ILIKE '%nextval%')
+            OR a.attidentity IN ('a', 'd')
+        )
+    )
+    -- 3. Integramos todo con las estadísticas de uso operativo, tamaño físico y conteo de filas
+    SELECT
+        tsp.esquema,
+        tsp.tabla,
+        tsp.total_filas_estimado, -- NUEVA COLUMNA AGREGADA DESDE PG_CLASS
+        pg_size_pretty(pg_total_relation_size(tsp.oid)) AS tamano_total,
+        COALESCE(ccs.columna_secuencia, 'Sin Secuencia') AS columna,
+        CASE 
+            WHEN ccs.columna_secuencia IS NOT NULL THEN 'SI' 
+            ELSE 'NO' 
+        END AS tiene_secuencia,
+        ps.n_tup_ins AS filas_insertadas,
+        ps.n_tup_upd AS filas_actualizadas,
+        ps.n_tup_del AS filas_borradas,
+        ps.seq_scan AS escaneos_secuenciales,
+        ps.idx_scan AS escaneos_por_indice,
+        (COALESCE(ps.seq_scan, 0) + COALESCE(ps.idx_scan, 0)) AS total_escaneos,
+        COALESCE(TO_CHAR(ps.last_autovacuum, 'YYYY-MM-DD HH24:MI:SS'), 'Nunca') AS ultimo_autovacuum
+    FROM tablas_sin_pk tsp
+    LEFT JOIN columnas_con_secuencia ccs ON tsp.oid = ccs.attrelid
+    LEFT JOIN pg_stat_user_tables ps ON tsp.oid = ps.relid
+    ORDER BY 
+        pg_total_relation_size(tsp.oid) desc, 
+        tsp.esquema, 
+        tsp.tabla ) as a
+        
+        where tiene_secuencia = 'NO'   
+        ;
+```
+
+
 ### Paso 1: Activar el temporizador (Opcional)
 
 Si estás ejecutando el script desde la CLI de `psql`, habilita la medición de tiempo para controlar el rendimiento de cada bloque.
