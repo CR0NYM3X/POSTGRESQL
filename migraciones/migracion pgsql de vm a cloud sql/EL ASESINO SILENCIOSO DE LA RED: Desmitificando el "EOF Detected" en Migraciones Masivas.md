@@ -75,3 +75,18 @@ Cuando PostgreSQL realiza un respaldo en formato de directorio (`-F d`) o *Custo
    └── 3. POST-DATA ──> (Construye Índices, LLaves Foráneas y Triggers)
 
 ```
+
+
+## Info extra
+
+```
+
+sysctl net.ipv4.tcp_keepalive_time net.ipv4.tcp_keepalive_intvl net.ipv4.tcp_keepalive_probes
+
+# Esto forzará al sistema operativo a enviar latidos de red cada 5 segundos tras apenas 10 segundos de inactividad:
+sudo sysctl -w net.ipv4.tcp_keepalive_time=60
+sudo sysctl -w net.ipv4.tcp_keepalive_intvl=10
+sudo sysctl -w net.ipv4.tcp_keepalive_probes=3
+
+
+```
