@@ -365,6 +365,9 @@ se veran temas :
 - Distribución de carga 
  ETc 
 ```
+https://richyen.com/postgres/2026/06/15/disaster_recovery_is_a_process.html
+
+
 -- Proyecto para habilitar un HADR para la nube
 https://github.com/vitabaks/autobase
 https://autobase.tech/docs
