@@ -24,12 +24,55 @@ En este artículo aprenderás la estrategia definitiva para agregar una PK auton
 
 ## Guía Paso a Paso
 
+**Crear tabla para guardar los registros de actividad**
+```sql
+CREATE TABLE registro_tiempos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    tipo VARCHAR(10), -- 'INICIO' o 'FIN'
+    momento TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+INSERT INTO registro_tiempos (nombre, tipo, momento) VALUES ('agregando pk', 'INICIO', clock_timestamp()); 
+select pg_sleep(100); 
+
+INSERT INTO registro_tiempos (nombre, tipo, momento) VALUES ('agregando pk', 'FIN' , clock_timestamp());
+
+
+select * from registro_tiempos; 
+
+SELECT 
+    nombre,
+    MIN(momento) FILTER (WHERE tipo = 'INICIO') AS fecha_inicio,
+    MAX(momento) FILTER (WHERE tipo = 'FIN') AS fecha_fin,
+    MAX(momento) FILTER (WHERE tipo = 'FIN') - MIN(momento) FILTER (WHERE tipo = 'INICIO') AS duracion
+FROM registro_tiempos
+GROUP BY nombre;
+```
+
+
+
 ## Buscar tablas sin PK 
 ```sql
 
 
 
-select  tamano_total,'ALTER TABLE '|| esquema ||'.'|| tabla || ' ADD COLUMN idx BIGSERIAL PRIMARY KEY;'  from (   WITH tablas_sin_pk AS (
+COPY (
+select   tamano_total,
+case when (tiene_secuencia = 'SI') THEN 
+    'nohup psql -d ' || current_database() || ' -c "' ||
+     E'INSERT INTO registro_tiempos (nombre, tipo, momento) VALUES (\'' || esquema ||'.'|| tabla || E'\', \'INICIO\', clock_timestamp()); ' || 
+    'ALTER TABLE '|| esquema ||'.'|| tabla || ' ADD PRIMARY KEY (' || columna || ');'
+    ||  E'INSERT INTO registro_tiempos (nombre, tipo, momento) VALUES (\'' || esquema ||'.'|| tabla || E'\', \'FIN\', clock_timestamp()); ' || '"'
+ELSE 
+'psql -d ' || current_database() || ' -c "' ||
+ E'INSERT INTO registro_tiempos (nombre, tipo, momento) VALUES (\'' || esquema ||'.'|| tabla || E'\', \'INICIO\', clock_timestamp()); ' || 
+'ALTER TABLE '|| esquema ||'.'|| tabla || ' ADD COLUMN idx BIGSERIAL PRIMARY KEY;'  
+||  E'INSERT INTO registro_tiempos (nombre, tipo, momento) VALUES (\'' || esquema ||'.'|| tabla || E'\', \'FIN\', clock_timestamp()); ' || '" &'
+END as comando
+
+from (   WITH tablas_sin_pk AS (
         -- 1. Aislamos todas las tablas de usuario que no tienen un constraint tipo 'p' (Primary Key)
         -- Traemos 'c.reltuples' para obtener el total de filas estimado sin hacer COUNT(*)
         SELECT
@@ -89,8 +132,16 @@ select  tamano_total,'ALTER TABLE '|| esquema ||'.'|| tabla || ' ADD COLUMN idx 
         tsp.esquema, 
         tsp.tabla ) as a
         
-        where tiene_secuencia = 'NO'   
-        ;
+        where tiene_secuencia = 'NO'
+)
+TO '/tmp/duracion_actividades.csv'         
+WITH (
+    FORMAT csv,
+    HEADER true,
+    DELIMITER '|',
+    ENCODING 'UTF8'
+);        
+
 ```
 
 
