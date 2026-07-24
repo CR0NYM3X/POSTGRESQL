@@ -117,3 +117,80 @@ https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/use-the-pg-
 https://www.citusdata.com/blog/2023/10/26/making-postgres-tick-new-features-in-pg-cron/
 
 ```
+
+
+
+## **DBA SQUAD: REPORTE TÁCTICO DE ARQUITECTURA Y SEGURIDAD**
+
+
+
+### 🛡️ Análisis de Seguridad y Comportamiento del Motor (`pg_cron`)
+
+Excelente observación sobre el comportamiento del motor. Como **Directora de Calidad y Producto (Sofía)**, he convocado a **Pedro** (Desarrollo Core), **Diego** (Seguridad de Datos) y **Samuel** (S.O. Linux) para desglosar quirúrgicamente qué ocurre bajo el capó cuando alternas este parámetro.
+ 
+
+### 1. Comportamiento en `off`: Conexión vía Red (`libpq` / Sockets)
+
+Cuando el parámetro está desactivado (`cron.use_background_workers = off`), `pg_cron` actúa como si fuera una **aplicación cliente externa**:
+
+```
+[Proceso pg_cron] ---> (Red / Socket UNIX) ---> [Handshake pg_hba.conf] ---> [Autenticación Rol] ---> [Sesión Backend]
+
+```
+
+* **Autenticación y Permisos:** Utiliza el usuario explícito con el que fue programada la tarea mediante la función `cron.schedule()` o `cron.schedule_in_database()`.
+* **Validación de Capa de Red (`pg_hba.conf`):** PostgreSQL evalúa las reglas de `pg_hba.conf` para la interfaz declarada en `cron.host` (por defecto `/tmp` o `localhost`). El usuario configurado **debe** tener permisos explícitos para conectarse desde ese origen.
+* **Consumo de Conexiones:** Cada tarea activa abre un socket que consume una ranura real dentro de la tabla de conexiones globales (`max_connections`).
+
+ 
+### 2. Comportamiento en `on`: Procesos de Fondo Nativos (*Background Workers*)
+
+Cuando cambias el parámetro a activado (`cron.use_background_workers = on`), la arquitectura abandona por completo la capa de red y pasa a ejecutarse **en la memoria compartida del motor**:
+
+```
+[Proceso pg_cron] ---> (Memoria Compartida / Dynamic Background Worker) ---> [Llamada Interna al Motor] ---> [Ejecución Directa]
+
+```
+
+#### **¿Cómo funciona el tema del usuario y la seguridad?**
+
+1. **Bypass de `pg_hba.conf` (Sin Capa de Red):**
+Al no utilizar conexiones TCP ni sockets de red tradicionales, **`pg_cron` ignora por completo el archivo `pg_hba.conf**`. No hay validación de IP, ni de método de autenticación (md5, scram-sha-256, trust), ni de reglas de acceso a nivel de red.
+2. **Conservación de la Identidad del Rol (RBAC / Privilegios de Base de Datos):**
+A pesar de no usar la red, el motor **sí respeta la identidad del usuario que programó la tarea**. Internamente, el *Background Worker* ejecuta un cambio de contexto de seguridad implícito (`SetCurrentRoleId` / `InitializeSessionUserId`) asignando el ID de usuario (*OID*) registrado en la tabla `cron.job`.
+3. **Verificación de Permisos a Nivel de Objetos:**
+Si creaste un usuario con permisos limitados (por ejemplo, `usr_cron_limitado`), el *Background Worker* se ejecutará estrictamente con los privilegios de ese usuario:
+* **Si la tarea intenta un `DELETE`:** Y el usuario solo tiene `SELECT`, la consulta **fallará por permisos insuficientes** directamente en la máquina de estados de PostgreSQL.
+* **Seguridad de Esquemas:** Se respetan las listas de control de acceso (ACLs) y las políticas de seguridad a nivel de filas (RLS).
+
+ 
+
+### 📊 Tabla Comparativa de Seguridad y Operación
+
+| Métrica / Dimensión | `cron.use_background_workers = off` | `cron.use_background_workers = on` |
+| --- | --- | --- |
+| **Paso por `pg_hba.conf**` | **SÍ.** Si el usuario/host no está en `pg_hba.conf`, la tarea falla con `FATAL: no pg_hba.conf entry`. | **NO.** Inicia directo en memoria. Bypass total del filtro de red. |
+| **Identidad del Usuario** | Rol registrado en la tarea (`cron.job.username`). | Rol registrado en la tarea (`cron.job.username`). |
+| **Control de Acceso (RBAC)** | Valida permisos de tablas, funciones y esquemas. | Valida permisos de tablas, funciones y esquemas. |
+| **Impacto en Conexiones** | Ocupa ranuras de `max_connections`. | Ocupa ranuras de `max_worker_processes`. |
+| **Riesgo de Seguridad** | Expuesto a bloqueos por fallos de red o contraseña. | Requiere control estricto de quién tiene acceso a la tabla `cron.job`. |
+ 
+### ⚠️ Dictamen de Riesgo y Recomendación del Escuadrón
+
+> **Veto de Seguridad (Diego):**
+> "Al activar `cron.use_background_workers = on`, la seguridad se desplaza por completo de la red a la base de datos. Como se salta `pg_hba.conf`, **debes asegurar que la tabla `cron.job` esté blindada**. Si un usuario malicioso logra escribir directamente en `cron.job` asignándole el usuario `postgres`, el *Background Worker* se ejecutará como superusuario sin pedir contraseña ni validar origen de red."
+
+#### **Checklist de Auditoría para Activar `use_background_workers = on`:**
+
+1. Revocar permisos de modificación sobre el esquema `cron` al público:
+```sql
+REVOKE ALL ON SCHEMA cron FROM PUBLIC;
+REVOKE ALL ON ALL TABLES IN SCHEMA cron FROM PUBLIC;
+
+```
+
+
+2. Garantizar que solo los usuarios administradores autorizados puedan ejecutar `cron.schedule()`.
+3. Verificar que el parámetro global de PostgreSQL **`max_worker_processes`** tenga margen libre para soportar las tareas concurrentes configuradas en `cron.max_running_jobs`.
+
+
