@@ -33,7 +33,7 @@ Para construirlos en el origen, el dump intenta mapear propiedades lógicas (`CO
 Para evitar los cuellos de botella del procesamiento secuencial de archivos planos, se debe realizar el volcado utilizando el formato de directorio nativo multi-hilo (`-F d`), asignando cores concurrentes de acuerdo a la capacidad de cómputo del servidor de origen.
 
 ```bash
-nohup sh -c "echo '=== INICIO DUMP MULTINÚCLEO:' \$(date) && pg_dump -U [USUARIO_ORIGEN] -d [BD_ORIGEN] -F d -j 30 -f /infra/data/backup_dir_dump --no-owner --clean --if-exists --encoding=UTF8 && echo '=== FIN DUMP MULTINÚCLEO:' \$(date)" > dump_multicore.log 2>&1 &
+nohup sh -c "echo '=== INICIO DUMP MULTINÚCLEO:' \$(date) && pg_dump -U [USUARIO_ORIGEN] -d [BD_ORIGEN] -F d -j 30 -f /infra/data/backup_dir_dump --no-owner  --encoding=UTF8 && echo '=== FIN DUMP MULTINÚCLEO:' \$(date)" > dump_multicore.log 2>&1 &
 
 ```
 
@@ -83,9 +83,9 @@ nohup bash -c '
   export PGOPTIONS="-c max_parallel_maintenance_workers=8 -c maintenance_work_mem=9GB -c tcp_keepalives_idle=5 -c tcp_keepalives_interval=10 -c tcp_keepalives_count=3"
   
   echo "=== INICIO RESTAURACIÓN: $(date)" && 
-  pg_restore -h 10.0.0.100 -U postgres2 -d db_test -F d -L lista_limpia.toc --no-owner -j 10 /backup/db_test.dump &&
+  pg_restore -h 10.0.0.100 -U postgres2 -d db_test -F d -L lista_limpia.toc --no-owner -j 10 /backup/backup_20260723.dump &&
   echo "=== FIN RESTAURACIÓN: $(date)"
-' > fullbck.log 2>&1 &
+' > restore_20260723.log 2>&1 &
  
 ```
 
@@ -95,6 +95,44 @@ En caso de que no funcione el pg_restore, puedes convertir el dump a sql
 nohup sh -c "echo '=== INICIO CONVERSIÓN:' \$(date) && pg_restore -f - --no-owner -L lista_limpia.toc /sysx/db_test_backup/backup_20260719.dump | gzip -c > /sysx/db_test_backup/backup_db_test.sql.gz && echo '=== FIN CONVERSIÓN:' \$(date)" > /sysx/db_test_backup/conversion.log 2>&1 &
 ```
 
+
+
+
+
+### Para monitorear
+```
+watch -n 2 '
+  export PGPASSWORD="password123"
+
+  echo "=== ESTADO BASE DE DATOS Y CONEXIONES ==="
+  psql -h 10.0.0.100 -U postgres -d postgres -c "
+    SELECT d.datname AS base_de_datos, 
+           pg_catalog.pg_get_userbyid(d.datdba) AS dueño, 
+           pg_catalog.pg_size_pretty(pg_catalog.pg_database_size(d.datname)) AS tamaño_legible, 
+           pg_catalog.pg_database_size(d.datname) AS tamano_byte 
+    FROM pg_catalog.pg_database d 
+    WHERE d.datname = '\''db_test'\'  ';
+
+    SELECT pid, 
+           usename AS usuario, 
+           datname AS base_datos, 
+           client_addr AS ip_cliente, 
+           application_name AS aplicacion, 
+           age(clock_timestamp(), query_start) AS duracion, 
+           wait_event_type || '\'':'\'' || wait_event AS evento_espera, 
+           left(query, 80) || '\''...'\'' AS query_recortada 
+    FROM pg_stat_activity 
+    WHERE state = '\''active'\'' AND pid != pg_backend_pid() 
+    ORDER BY query_start ASC;
+  "
+
+  echo -e "\n=== ÚLTIMAS LÍNEAS DEL LOG ==="
+  tail -n 2 restore_20260723.log
+
+  echo -e "\n=== PROCESOS PG_RESTORE ACTIVOS ==="
+  pgrep -fc pg_restore
+'
+```
 
 
 
