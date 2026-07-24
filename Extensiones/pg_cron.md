@@ -174,6 +174,20 @@ Si creaste un usuario con permisos limitados (por ejemplo, `usr_cron_limitado`),
 | **Control de Acceso (RBAC)** | Valida permisos de tablas, funciones y esquemas. | Valida permisos de tablas, funciones y esquemas. |
 | **Impacto en Conexiones** | Ocupa ranuras de `max_connections`. | Ocupa ranuras de `max_worker_processes`. |
 | **Riesgo de Seguridad** | Expuesto a bloqueos por fallos de red o contraseña. | Requiere control estricto de quién tiene acceso a la tabla `cron.job`. |
+
+
+
+#### **Diferencias Técnicas: `off` vs `on**`
+
+| Característica | `cron.use_background_workers = off` *(Valor Actual)* | `cron.use_background_workers = on` |
+| --- | --- | --- |
+| **Mecanismo de Ejecución** | Conexiones de Red / Socket (`libpq`). | Procesos de Fondo Nativos (*Background Workers*). |
+| **Uso de Conexiones (`max_connections`)** | **Consume slots de conexión.** Cada tarea activa utiliza una conexión como si fuera un cliente externo. | **No consume slots de conexión.** Utiliza ranuras reservadas del sistema operativo/kernel. |
+| **Límite de Concurrencia** | Limitado por `cron.max_running_jobs` y la disponibilidad de conexiones (`max_connections`). | Limitado por el parámetro del motor **`max_worker_processes`**. |
+| **Autenticación y Red** | Requiere que el motor acepte conexiones locales (sockets/TCP) a través de `pg_hba.conf` y el parámetro `cron.host`. | Ejecución directa en memoria RAM; no pasa por la capa de red ni requiere validación de `pg_hba.conf`. |
+| **Sobrecarga (Overhead)** | Mayor latencia al iniciar la tarea por el proceso de *handshake* y apertura de sesión. | Ejecución casi instantánea con menor consumo de recursos por tarea. |
+ 
+
  
 ### ⚠️ Dictamen de Riesgo y Recomendación del Escuadrón
 
