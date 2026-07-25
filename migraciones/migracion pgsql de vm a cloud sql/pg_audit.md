@@ -20,7 +20,7 @@ ALTER SYSTEM SET cloudsql.pgaudit_chunksize = '92160';
 ALTER SYSTEM SET pgaudit.log = 'none';
 
 -- Registra consultas que acceden o modifican el catálogo/diccionario de datos (Seguridad Anti-Typosquatting)
-ALTER SYSTEM SET pgaudit.log_catalog = 'on';
+ALTER SYSTEM SET pgaudit.log_catalog = 'off';
 
 -- Desactiva la salida de mensajes de auditoría hacia el cliente para evitar fugas de información
 ALTER SYSTEM SET pgaudit.log_client = 'off';
