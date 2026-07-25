@@ -4,28 +4,38 @@
 Para que `pgaudit` intercepte las consultas y `pgauditlogtofile` secuestre esos mensajes antes de que toquen el log principal, debes modificar el archivo `postgresql.conf` con los siguientes parámetros a nivel de sistema e interceptor.
 
 ### 1. Parámetros de Inyección en Memoria (PostgreSQL Core)
+```sql
+# ==============================================================================
+# CONFIGURACIÓN RECOMENDADA EN PRODUCCIÓN: pgAudit + pgauditlogtofile
+# ==============================================================================
 
-Estos son los ganchos (*hooks*) que obligan al motor a cargar las librerías al momento de arrancar. **Requieren un reinicio total del servicio operativo.**
+# 1. CARGA DE LIBRERÍAS (Requiere reiniciar el servicio)
+shared_preload_libraries = 'pgaudit, pgauditlogtofile'
 
-| Parámetro | Valor Exigido | Justificación Táctica (Infraestructura / SO) |
-| --- | --- | --- |
-| **shared_preload_libraries** | `'pgaudit, pgauditlogtofile'` | **Crítico.** El orden es vital. Primero cargas `pgaudit` para que se enganche al planificador de consultas, y luego `pgauditlogtofile` para que intercepte la salida del primero. |
+# 2. ALMACENAMIENTO Y FORMATO DE LOGS
+# Se recomienda usar formato JSON para integraciones limpias con Datadog, ELK o SIEM.
+pgaudit.log_directory = '/var/log/postgresql/audit'   # Ruta absoluta recomendada
+pgaudit.log_filename = 'audit-%Y%m%d_%H%M.log'        # Archivos fechados
+pgaudit.log_format = 'json'                           # 'json' o 'csv' según tu colector
+pgaudit.log_file_mode = '0600'                        # Solo lectura/escritura para usuario postgres
 
-### 2. Parámetros de Enrutamiento Físico (`pgauditlogtofile`)
+# 3. ROTACIÓN Y MANTENIMIENTO
+pgaudit.log_rotation_age = 1440                       # Rotación diaria (1440 min)
+pgaudit.log_autoclose_minutes = 10                    # Cierra manejadores inactivos tras 10 min
 
-Ya que prohibiste los parámetros de comportamiento de pgAudit en esta solicitud, esta es la matriz exacta para configurar **el interceptor**. Estos parámetros le dicen a `pgauditlogtofile` dónde y cómo escribir el archivo físico que entregaremos a los auditores (SIEM).
+# 4. COMPRESIÓN (Optimización de Disco y CPU)
+# LZ4 ofrece compresión nativa ultrarrápida con menor consumo de CPU que gzip.
+pgaudit.log_compression = 'lz4'                       # 'off', 'lz4' o 'zstd'
+pgaudit.log_compression_level = 0                     # 0 usa la velocidad/compresión por defecto
 
-| Parámetro | Valor Exigido | Justificación Táctica (Infraestructura / SO) |
-| --- | --- | --- |
-| **pgauditlogtofile.log_directory** | `'audit_logs'` | Crea un directorio físicamente separado de `pg_log` y `pg_wal`. Aísla la auditoría para que los scripts de respaldo o limpieza del DBA no borren evidencias legales accidentalmente. |
-| **pgauditlogtofile.log_filename** | `'audit-%Y-%m-%d.log'` | Formato de marca de tiempo inmutable. Genera un archivo diario predecible, requisito indispensable para la ingesta automatizada de QRadar o Splunk. |
-| **pgauditlogtofile.log_rotation_age** | `1440` | Forzar la rotación del archivo cada 24 horas (1440 minutos). |
-| **pgauditlogtofile.log_rotation_size** | `0` | **Bloqueo Activo.** Desactiva la rotación por tamaño. Si un archivo llega a 10GB, seguirá en el mismo archivo hasta que acabe el día. Evita romper la cronología de eventos. |
-| **pgauditlogtofile.log_truncate_on_rotation** | `on` | Permite sobrescribir archivos viejos automáticamente si el ciclo de retención (ej. mensual) coincide con el nombre del archivo, evitando que el disco sufra un colapso por falta de espacio (*Out of Space*). |
- 
-> **DICTAMEN DE SAMUEL (INFRAESTRUCTURA LINUX):**
-> Para que los parámetros de `pgauditlogtofile` funcionen correctamente, el directorio físico que declares en `pgauditlogtofile.log_directory` (por ejemplo, `/var/lib/pgsql/15/data/audit_logs`) **debe existir a nivel del sistema operativo antes de reiniciar PostgreSQL**, y debe pertenecer estrictamente al usuario `postgres` con permisos `0700`. Si el directorio no existe o los permisos son incorrectos, el motor fallará al arrancar o el sistema operativo bloqueará la escritura (Permission Denied), provocando una caída catastrófica del servidor.
+# 5. AUDITORÍA DE CONEXIONES Y SESIONES
+pgaudit.log_connections = on                          # Intercepta eventos de inicio de sesión
+pgaudit.log_disconnections = on                       # Intercepta eventos de cierre de sesión
 
+# 6. TELEMETRÍA DE EJECUCIÓN (Avanzado / Opcional)
+pgaudit.log_execution_time = off                      # Poner 'on' solo si necesitas auditar latencias
+pgaudit.log_execution_memory = off                    # Poner 'on' solo si haces auditoría de recursos
+```
 ---
 
 
