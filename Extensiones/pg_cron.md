@@ -23,6 +23,15 @@ Aquí tienes el esquema completo adaptado exactamente a tu formato visual:
  │  └───────── A las 06 horas (6:00 AM)
  └──────────── En el minuto 00
 
+ 0 = Domingo
+ 1 = Lunes
+ 2 = Martes
+ 3 = Miércoles
+ 4 = Jueves
+ 5 = Viernes
+ 6 = Sábado
+ 7 = Domingo (equivalente a 0)
+
 ```
 ---
 
