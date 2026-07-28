@@ -511,3 +511,31 @@ ORDER BY porcentaje_basura DESC;
 # Mantenimiento #4 - 
 
 
+
+
+
+En los entornos de producción de misión crítica (como bancos, plataformas SaaS de alto tráfico o tiendas virtuales masivas), la regla de oro es **"Cero Downtime" (Cero tiempo de inactividad)**.
+
+Por lo tanto, los DBAs no solemos ejecutar comandos agresivos como `VACUUM FULL`. En su lugar, el estándar de la industria se resume en **estos 5 mantenimientos principales**, que son los que realmente mantienen vivo un motor PostgreSQL en producción:
+
+### 1. Afinación del Autovacuum (El mantenimiento preventivo)
+
+En lugar de programar limpiezas manuales masivas, el 90% del trabajo en producción es configurar el demonio interno `autovacuum` para que sea **más agresivo y constante**.
+
+* **Lo que se hace:** Se ajustan los parámetros a nivel de tabla (para que corra más rápido en las tablas que reciben muchos `UPDATE`/`DELETE`) y a nivel de servidor (aumentando `autovacuum_max_workers` y reduciendo el `autovacuum_vacuum_cost_delay`).
+* **El objetivo:** Limpiar la basura en micro-lotes durante todo el día para que el *bloat* nunca se acumule y jamás necesites un `VACUUM FULL`.
+
+### 2. Actualización de Estadísticas (`VACUUM ANALYZE`)
+
+Este es el mantenimiento nocturno más común (justo el que configuraste).
+
+* **Lo que se hace:** Se programa un `VACUUM (ANALYZE)` fuera de las horas pico.
+* **El objetivo:** No es tanto limpiar espacio, sino darle al **Planificador de Consultas (Query Planner)** un mapa exacto de cuántas filas hay, los valores más comunes y cómo están distribuidos los datos. Si las estadísticas están viejas, Postgres usará el índice equivocado y una consulta de 5 milisegundos tardará 20 segundos.
+
+### 3. Reorganización Física en Caliente (`pg_repack`)
+
+Cuando el *bloat* ya es un problema grave y el disco está lleno, **nadie usa `VACUUM FULL` en producción** porque bloquea la aplicación.
+
+* **Lo que se hace:** Se utiliza la extensión oficial **`pg_repack`**.
+* **El objetivo:** Crea una tabla nueva en segundo plano, migra los datos físicamente, reconstruye los índices y hace el intercambio (swap) de nombres en milisegundos. Recuperas gigabytes de disco sin interrumpir una sola venta en tu tienda.
+
