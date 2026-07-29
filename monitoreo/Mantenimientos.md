@@ -539,3 +539,9 @@ Cuando el *bloat* ya es un problema grave y el disco está lleno, **nadie usa `V
 * **Lo que se hace:** Se utiliza la extensión oficial **`pg_repack`**.
 * **El objetivo:** Crea una tabla nueva en segundo plano, migra los datos físicamente, reconstruye los índices y hace el intercambio (swap) de nombres en milisegundos. Recuperas gigabytes de disco sin interrumpir una sola venta en tu tienda.
 
+
+
+# links
+```
+https://oneuptime.com/blog/post/2026-02-17-how-to-tune-indexes-in-cloud-sql-postgresql-using-pg-stat-statements-and-index-advisor/view
+```
