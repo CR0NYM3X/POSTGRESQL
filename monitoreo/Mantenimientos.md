@@ -544,4 +544,10 @@ Cuando el *bloat* ya es un problema grave y el disco está lleno, **nadie usa `V
 # links
 ```
 https://oneuptime.com/blog/post/2026-02-17-how-to-tune-indexes-in-cloud-sql-postgresql-using-pg-stat-statements-and-index-advisor/view
+
+https://cloud.google.com/blog/products/databases/deep-dive-into-postgresql-vacuum-garbage-collector
+
+https://docs.cloud.google.com/solutions/optimizing-monitoring-troubleshooting-vacuum-operations-postgresql.pdf
+
+
 ```
