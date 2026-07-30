@@ -280,6 +280,8 @@ pgmonitor -> https://github.com/CrunchyData/pgmonitor
 
 pg_index_search -- automatiza los indices https://github.com/WardaBibi/pg_index_search -- https://stormatics.tech/blogs/automating-postgresql-index-tuning-using-ai
 
+PgToolkit -- herramientas para el mantenimiento de PostgreSQL -- https://github.com/grayhemp/pgtoolkit 
+
 - **pg_repack:** Reorganiza tablas e índices sin bloquear operaciones.
 
 - ** pg_squeeze:** Automatiza la compactación de tablas y sus índices para eliminar bloat sin necesidad de bloquear las tablas, mejorando el rendimiento en entornos de alta concurrencia.
