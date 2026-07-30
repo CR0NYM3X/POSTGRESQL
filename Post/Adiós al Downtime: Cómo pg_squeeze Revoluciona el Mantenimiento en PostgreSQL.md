@@ -69,3 +69,12 @@ La filosofía de `pg_squeeze` es atómica. Hasta que no se llega al 100% y se ha
 Para entornos modernos en la nube (como Google Cloud SQL o AWS RDS) donde no siempre tienes acceso por consola para ejecutar scripts externos complejos, **`pg_squeeze`** brilla con luz propia.
 
 Al ser 100% nativo de la base de datos y contar con su propio motor de planificación tipo Cron (`squeeze.tables`), te permite automatizar la guerra contra el *bloat* en la madrugada, garantizando el rendimiento de tus aplicaciones sin sacrificar un solo segundo de disponibilidad.
+
+
+
+# Link 
+```
+https://github.com/cybertec-postgresql/pg_squeeze
+https://www.cybertec-postgresql.com/en/products/pg_squeeze/
+https://www.cybertec-postgresql.com/en/introducing-pg_squeeze-a-postgresql-extension-to-auto-rebuild-bloated-tables/
+```
