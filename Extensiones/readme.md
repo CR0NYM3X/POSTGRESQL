@@ -675,4 +675,6 @@ postgresml -> convierte a tu base de datos PostgreSQL en una plataforma de ML co
 - pgvector
 - pg_vectorize
 
+Apache AGE -- Convierte una base de datos relacional en una base de datos multimodelo capaz de procesar datos en forma de grafos - -https://medium.com/@usman.khan9805/apache-age-af26f78b9158
+
 ```
