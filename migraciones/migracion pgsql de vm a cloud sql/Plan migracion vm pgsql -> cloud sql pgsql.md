@@ -240,4 +240,9 @@ Configuraciones DMS -> https://docs.cloud.google.com/database-migration/docs/pos
 Limitaciones de pglogial -> https://github.com/2ndQuadrant/pglogical#limitations-and-restrictions
 Limitaciones conocidas - DMS  https://docs.cloud.google.com/database-migration/docs/postgres/known-limitations?hl=es-419
 
+
+how-to-restore-a-cloud-sql -> https://oneuptime.com/blog/post/2026-02-17-how-to-restore-a-cloud-sql-instance-from-a-backup/view
+
+
+
 ```
