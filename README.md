@@ -132,6 +132,7 @@ https://www.dbi-services.com/blog/
 https://clickhouse.com/blog
 https://oracle-dba-help.blogspot.com/
 https://minervadb.com/blog/
+https://oneuptime.com/blog/tag/postgresql
 
 ----- Eventos  de Postgresql:
 https://postgrespro.com/events
