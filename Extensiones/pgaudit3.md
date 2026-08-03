@@ -114,111 +114,11 @@ Solo es **estrictamente obligatorio** hacer `CREATE EXTENSION pgaudit;` cuando v
 
 ---
 
-### 📚 Casos de Uso Comunes en Producción y sus Configuraciones
 
-Para todos los casos de uso asumiremos que `pgaudit` y `pgauditlogtofile` ya están en `shared_preload_libraries` en tu `postgresql.conf`.
 
----
 
-#### Caso 1: Mínimo Impacto / Cumplimiento Básico de Seguridad (Solo DDL y Cambios de Roles)
 
-* **Objetivo:** Registrar únicamente cuándo se crean/modifican/eliminan tablas, funciones, vistas o cuando se modifican usuarios, contraseñas y permisos. No audita lecturas ni escrituras de datos (`SELECT`, `INSERT`, `UPDATE`).
-* **Ventaja:** Cero impacto apreciable en el rendimiento (IOPS) y archivos de log muy pequeños.
 
-**Configuración (`postgresql.conf`):**
-
-```ini
-# En el archivo de configuración global
-pgaudit.log = 'ddl, role'
-
-```
-
-*(No requiere ejecutar ningún comando SQL en las bases de datos).*
-
----
-
-#### Caso 2: Auditoría por Base de Datos Crítica (Entorno Multi-tenant)
-
-* **Objetivo:** Tienes 10 bases de datos en la misma instancia, pero solo la base de datos `orders` (que procesa pagos) necesita auditar lecturas y escrituras por normativa PCI-DSS. Las otras 9 bases de datos no deben generar logs extra de auditoría.
-
-**Paso 1: Configurar nivel global bajo (`postgresql.conf`)**
-
-```ini
-# No poner 'all' globalmente
-pgaudit.log = 'ddl, role' 
-
-```
-
-*(Luego ejecuta `SELECT pg_reload_conf();`)*
-
-**Paso 2: Aplicar la regla granular en la base de datos específica**
-
-```sql
--- Conectado a la instancia de Postgres:
-ALTER DATABASE orders SET pgaudit.log = 'read, write, ddl, role';
-
-```
-
-* **Resultado:** Las bases de datos normales solo auditarán cambios de estructura (`ddl, role`), mientras que `orders` registrará también todos los `SELECT`, `INSERT`, `UPDATE` y `DELETE`.
-
----
-
-#### Caso 3: Auditoría por Objeto / Tabla Sensible (Reducción Máxima de Log)
-
-* **Objetivo:** En la base de datos `orders` hay millones de transacciones por minuto en tablas temporales o de métricas que **no** quieres auditar. Solo necesitas auditar quién consulta o modifica la tabla `public.tarjetas_credito`.
-
-**Paso 1: Configuración en `postgresql.conf**`
-
-```ini
-pgaudit.log = 'none' # O dejas solo 'ddl, role'
-
-```
-
-**Paso 2: Crear el rol de auditoría y la extensión (SQL)**
-
-```sql
--- 1. Conéctate a la base de datos 'orders'
-\c orders
-
--- 2. Crea la extensión (AQUÍ SÍ ES OBLIGATORIO)
-CREATE EXTENSION pgaudit;
-
--- 3. Crea un rol de auditoría (sin permisos de login)
-CREATE ROLE auditor_objetos NOLOGIN;
-
--- 4. Otorga al rol permisos sobre la tabla que quieres auditar
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.tarjetas_credito TO auditor_objetos;
-
--- 5. Configura pgaudit para que use ese rol en la base de datos
-ALTER DATABASE orders SET pgaudit.role = 'auditor_objetos';
-
-```
-
-* **Resultado:** Cada vez que *cualquier usuario* ejecute un `SELECT` o `UPDATE` sobre la tabla `tarjetas_credito`, `pgaudit` lo registrará. Todas las demás tablas del sistema serán ignoradas por la auditoría, ahorrando gigabytes de almacenamiento en disco.
-
----
-
-#### Caso 4: Excluir Usuarios de Servicio / Procesos Batch (Evitar Colapso de Logs)
-
-* **Objetivo:** Quieres auditar las lecturas y escrituras de todos los usuarios humanos, pero tienes un usuario de aplicación (`app_etl` o `monitoring_user`) que ejecuta 50,000 consultas por segundo de reportes automáticos y está llenando el disco.
-
-**Paso 1: Configurar la regla general para la base de datos (`postgresql.conf` o `ALTER DATABASE`)**
-
-```ini
-pgaudit.log = 'read, write, ddl'
-
-```
-
-**Paso 2: Sobrescribir y desactivar la auditoría para el usuario automatizado (SQL)**
-
-```sql
--- Desactivar pgaudit únicamente para el usuario de ETL/Sistema
-ALTER ROLE app_etl SET pgaudit.log = 'none';
-ALTER ROLE monitoring_user SET pgaudit.log = 'none';
-
-```
-
-* **Resultado:** Si un Administrador o un Usuario de negocio consulta la base de datos, queda registrado en `audit-YYYYMMDD.log`. Si el proceso automatizado `app_etl` ejecuta millones de operaciones, `pgaudit` lo omite, protegiendo tus IOPS.
 
 ---
 
@@ -233,6 +133,10 @@ ALTER ROLE monitoring_user SET pgaudit.log = 'none';
 
 ---
 ---
+
+
+
+
 
 postgres@postgres# CREATE EXTENSION pgaudit;
 CREATE EXTENSION
@@ -253,7 +157,6 @@ postgres@postgres# \dx+ pgaudit
 (4 rows)
 
 
-¡Excelente! Esa es **la evidencia perfecta** de lo que hace `pgaudit` a nivel de catálogo dentro de PostgreSQL.
 
 Como puedes ver en la salida de tu `\dx+ pgaudit`, la extensión solo crea **4 objetos**:
 
@@ -271,9 +174,6 @@ Porque el verdadero "corazón" de `pgaudit` no vive en la base de datos como tab
 * **Auditoría de Sesión y Sentencias DML (`SELECT`, `INSERT`, `UPDATE`, `DELETE`)**: Ocurre directamente en el motor de Postgres a nivel C interceptando el planificador/ejecutor de consultas. No necesita objetos en la BD para esto.
 * **Auditoría DDL (`CREATE TABLE`, `DROP TABLE`, etc.)**: Aquí es donde entran en juego los **Event Triggers** que acabas de listar. Postgres no tiene un *hook* nativo de C para DDLs tan granular, así que `pgaudit` instala estos Event Triggers para no perder el rastro de cuándo alguien modifica la estructura de la base de datos.
 
-### 💡 Conclusión clave
-
-Al no instalar tablas de almacenamiento ni vistas complejas, `pgaudit` es extremadamente ligero para el catálogo. Y gracias a que estás usando **`pgauditlogtofile`**, todas esas capturas se canalizan directamente hacia tus archivos externos (`audit-20260724.log`) sin sobrecargar las tablas internas de PostgreSQL. ¡Tu arquitectura está impecable!
 
 
 
