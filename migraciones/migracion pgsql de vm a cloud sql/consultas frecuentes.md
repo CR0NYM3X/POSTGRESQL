@@ -14,6 +14,12 @@ Este documento contiene una recopilación de snippets de código SQL esenciales 
 * [5. Mantenimiento y Configuración del Sistema](https://www.google.com/search?q=%235-mantenimiento-y-configuraci%C3%B3n-del-sistema)
 
 ---
+## Procesos de mantenimientos 
+```sql
+    select * from pg_stat_progress_vacuum;
+    select * from pg_stat_progress_analyze;
+```
+
 
 ## 1. Monitoreo y Sesiones Activas
 
