@@ -225,7 +225,7 @@ DECLARE
     v_grant_mode BOOLEAN := TRUE; 
     
     -- 3. EXCLUSIONES: Lista de usuarios a los que NUNCA tocará
-    v_excluded_users TEXT[] := ARRAY['postgres2', 'pg_database_owner', 'pg_read_all_data', 'pg_write_all_data', 'pg_monitor'];
+    v_excluded_users TEXT[] := ARRAY['postgres2', 'cloudsqladmin','pg_database_owner', 'pg_read_all_data', 'pg_write_all_data', 'pg_monitor'];
     
     -- 4. INCLUSIÓN SELECTIVA (Opcional):
     --    Si está VACÍO (ARRAY[]::TEXT[]), procesará A TODOS los usuarios.
@@ -267,7 +267,6 @@ BEGIN
     
     RAISE NOTICE '=== PROCESO COMPLETADO EXITOSAMENTE ===';
 END $$;
-
 ```
 
 
