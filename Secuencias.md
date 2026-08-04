@@ -7,6 +7,9 @@ Las Sequences se utilizan para generar valores autoincrementales, como claves pr
 
  por ejemplo Las operaciones de secuencia (NEXTVAL, CURRVAL, SETVAL, etc.) no son transaccionales. Esto significa que los cambios en las secuencias se mantienen incluso si la transacción en la que se realizaron esos cambios se deshace con un ROLLBACK
 
+
+
+
 ### Ejemplos de uso:
 
 ### Buscar secuencias 
@@ -16,6 +19,17 @@ select c.relname FROM pg_class c WHERE c.relkind = 'S';
 SELECT schemaname, sequencename  FROM pg_sequences WHERE schemaname = 'public';
 SELECT * FROM information_schema.sequences;
 ```
+
+## ERROR:  cannot change owner of sequence 
+
+Si observas los nombres de las secuencias, todos terminan en `_id_seq` o `_seq` (por ejemplo, `mov_clientes_id_seq`). Esto indica que son secuencias creadas automáticamente por columnas de tipo `SERIAL`, `BIGSERIAL` o `IDENTITY` en tus tablas.
+
+En PostgreSQL existe una regla estricta: **Si una secuencia está ligada a una columna de una tabla (usando la dependencia `OWNED BY`), no puedes cambiarle el dueño directamente a la secuencia.**
+
+PostgreSQL asume que la secuencia y la tabla son "una sola entidad" para propósitos de seguridad. Cuando le cambias el dueño a la tabla, PostgreSQL le cambia automáticamente el dueño a la secuencia.
+
+Postgres rechazá la instrucción específica porque te dice: "No puedes cambiar el dueño de esta secuencia manualmente, yo ya la administro a través de su tabla padre".
+ 
 
 ### Saber en que valor esta la secuencia 
 ```sql
