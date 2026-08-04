@@ -158,3 +158,54 @@ Al visualizar la estampa final `=== FIN RESTAURACIÓN LIMPIA: [Fecha/Hora]`, el 
 psql -h [IP_INSTANCIA_CLOUD] -U [USUARIO_DESTINO] -d [BD_DESTINO] -c "SELECT count(*) FROM pg_tables WHERE schemaname='public';"
 
 ```
+
+
+
+----
+---
+# Obtener solo los owner de un backup
+
+
+### Paso 1: Generar la lista de objetos (TOC)
+
+Primero, le pedimos a `pg_restore` que lea el índice del backup y nos escupa todo el contenido en un archivo de texto.
+
+```bash
+pg_restore -l /ruta/a/tu/backup_dir > backup_completo.list
+
+```
+
+### Paso 2: Filtrar solo las asignaciones de Owner
+
+Ahora, usamos `grep` para buscar dentro de esa lista únicamente las líneas que corresponden a la asignación de dueños (`OWNER`) y las guardamos en una lista filtrada.
+
+```bash
+grep -i " OWNER " backup_completo.list > lista_owners.list
+
+```
+
+*Nota: Si abres `lista_owners.list`, verás el ID interno de Postgres para cada objeto, el tipo y el dueño, algo parecido a esto:*
+
+```text
+3456; 0 0 ACL public mi_tabla usuario_prod
+3457; 1259 16401 TABLE public clientes usuario_prod
+
+```
+
+### Paso 3: Generar el script SQL puro
+
+Finalmente, viene la magia. Le dices a `pg_restore` que lea tu directorio de backup, pero que **solo procese y exporte en formato SQL** los elementos que dejaste en tu `lista_owners.list`.
+
+```bash
+pg_restore -L lista_owners.list /ruta/a/tu/backup_dir > script_owners_del_backup.sql
+
+```
+
+
+## Extra
+
+```bash
+ pg_dump -h tu_host -U tu_usuario -d tu_base_de_datos --schema-only | grep -E "^ALTER .* OWNER TO " > direct_owners.sql
+ pg_restore --schema-only /ruta/a/tu/backup_dir | grep -E "^ALTER .* OWNER TO " > direct_owners.sql
+```
+
