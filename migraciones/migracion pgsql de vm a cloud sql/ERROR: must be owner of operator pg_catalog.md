@@ -210,7 +210,6 @@ pg_restore -L lista_owners.list /ruta/a/tu/backup_dir > script_owners_del_backup
 ```
 
 
-
 # Ser miembro de todos los usuarios 
 
 ```bash
@@ -225,7 +224,7 @@ DECLARE
     v_grant_mode BOOLEAN := TRUE; 
     
     -- 3. EXCLUSIONES: Lista de usuarios a los que NUNCA tocará
-    v_excluded_users TEXT[] := ARRAY['postgres2', 'cloudsqladmin','pg_database_owner', 'pg_read_all_data', 'pg_write_all_data', 'pg_monitor'];
+    v_excluded_users TEXT[] := ARRAY['postgres2', 'cloudsqlsuperuser' ,'cloudsqladmin','pg_database_owner', 'pg_read_all_data', 'pg_write_all_data', 'pg_monitor'];
     
     -- 4. INCLUSIÓN SELECTIVA (Opcional):
     --    Si está VACÍO (ARRAY[]::TEXT[]), procesará A TODOS los usuarios.
