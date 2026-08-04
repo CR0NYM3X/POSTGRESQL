@@ -209,3 +209,81 @@ pg_restore -L lista_owners.list /ruta/a/tu/backup_dir > script_owners_del_backup
  pg_restore --schema-only /ruta/a/tu/backup_dir | grep -E "^ALTER .* OWNER TO " > direct_owners.sql
 ```
 
+
+
+# Ser miembro de todos los usuarios 
+
+```bash
+DO $$
+DECLARE
+    -- 1. TU USUARIO: El usuario con el que ejecutas los scripts
+    v_target_user TEXT := 'postgres2';
+    
+    -- 2. MODO DE OPERACIÓN:
+    --    TRUE  = Te hace miembro (GRANT) de todos los usuarios indicados.
+    --    FALSE = Te remueve la membresía (REVOKE) de los usuarios indicados.
+    v_grant_mode BOOLEAN := TRUE; 
+    
+    -- 3. EXCLUSIONES: Lista de usuarios a los que NUNCA tocará
+    v_excluded_users TEXT[] := ARRAY['postgres2', 'pg_database_owner', 'pg_read_all_data', 'pg_write_all_data', 'pg_monitor'];
+    
+    -- 4. INCLUSIÓN SELECTIVA (Opcional):
+    --    Si está VACÍO (ARRAY[]::TEXT[]), procesará A TODOS los usuarios.
+    --    Si agregas usuarios aquí (ej. ARRAY['usuario1', 'usuario2']), SOLO aplicará a esos.
+    v_selective_users TEXT[] := ARRAY[]::TEXT[];
+    
+    -- Variables internas
+    r RECORD;
+    v_sql TEXT;
+BEGIN
+    FOR r IN 
+        SELECT usename 
+        FROM pg_catalog.pg_shadow 
+        WHERE 
+            -- Excluir tu propio usuario
+            usename != v_target_user
+            -- CORRECCIÓN AQUÍ: Sintaxis válida para excluir elementos de un ARRAY
+            AND NOT (usename = ANY(v_excluded_users))
+            -- Excluir roles internos de Postgres que empiezan con pg_
+            AND usename NOT LIKE 'pg_%'
+            -- Si v_selective_users NO está vacío, filtrar solo los indicados en la lista
+            AND (
+                cardinality(v_selective_users) = 0 
+                OR usename = ANY(v_selective_users)
+            )
+    LOOP
+        IF v_grant_mode THEN
+            -- Construye y ejecuta el GRANT
+            v_sql := format('GRANT %I TO %I;', r.usename, v_target_user);
+            RAISE NOTICE 'Ejecutando: %', v_sql;
+            EXECUTE v_sql;
+        ELSE
+            -- Construye y ejecuta el REVOKE
+            v_sql := format('REVOKE %I FROM %I;', r.usename, v_target_user);
+            RAISE NOTICE 'Ejecutando: %', v_sql;
+            EXECUTE v_sql;
+        END IF;
+    END LOOP;
+    
+    RAISE NOTICE '=== PROCESO COMPLETADO EXITOSAMENTE ===';
+END $$;
+
+```
+
+
+## Ver de que usuario o rol soy miembro
+
+```
+SELECT 
+    r.rolname AS rol_del_que_es_miembro
+FROM 
+    pg_catalog.pg_roles r
+JOIN 
+    pg_catalog.pg_auth_members m ON r.oid = m.roleid
+JOIN 
+    pg_catalog.pg_roles u ON u.oid = m.member
+WHERE 
+    u.rolname = 'postgres2'
+ORDER BY 
+    r.rolname;
+```
