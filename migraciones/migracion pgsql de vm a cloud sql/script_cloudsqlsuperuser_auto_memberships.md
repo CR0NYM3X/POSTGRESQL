@@ -304,6 +304,7 @@ FROM pg_auth_members a
 JOIN pg_roles r ON a.roleid = r.oid
 JOIN pg_roles m ON a.member = m.oid
 JOIN pg_roles c ON a.grantor = c.oid
+where m.rolname  = 'cloudsqlsuperuser'
 ORDER BY rol_principal, miembro_asignado;
 ```
 ---
