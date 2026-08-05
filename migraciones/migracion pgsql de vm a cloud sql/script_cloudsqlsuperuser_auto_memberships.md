@@ -5,11 +5,10 @@
 Primero, creamos el esquema y la tabla de bitácora (*State Table*). Esta tabla será nuestra fuente de verdad. Registrará quién fue agregado, cuándo, y si la membresía está activa.
 
 ```sql
--- 1. Crear un esquema dedicado a la administración interna (Mejor práctica)
-CREATE SCHEMA IF NOT EXISTS dba_admin;
+
 
 -- 2. Crear la tabla de estado y bitácora
-CREATE TABLE IF NOT EXISTS dba_admin.audit_role_memberships (
+CREATE TABLE IF NOT EXISTS public.audit_role_memberships (
     target_user TEXT NOT NULL,       -- El usuario que recibe el poder (ej. cloudsqlsuperuser)
     granted_role TEXT NOT NULL,      -- El usuario del cual nos hicimos miembros
     is_active BOOLEAN NOT NULL,      -- TRUE si fue agregado por el script, FALSE si se hizo rollback
@@ -19,7 +18,7 @@ CREATE TABLE IF NOT EXISTS dba_admin.audit_role_memberships (
 );
 
 -- Comentario para el diccionario de datos
-COMMENT ON TABLE dba_admin.audit_role_memberships IS 'Bitácora de DBA SQUAD para automatización de membresías y Rollback';
+COMMENT ON TABLE public.audit_role_memberships IS 'Bitácora de DBA SQUAD para automatización de membresías y Rollback';
 
 ```
 
@@ -30,7 +29,7 @@ COMMENT ON TABLE dba_admin.audit_role_memberships IS 'Bitácora de DBA SQUAD par
 Este procedimiento almacenado recibe el modo (`GRANT` o `ROLLBACK`). Usa `ON CONFLICT` (Upsert) para mantener la tabla actualizada sin duplicar registros, y `pg_has_role()` para jamás ejecutar código redundante.
 
 ```sql
-CREATE OR REPLACE PROCEDURE dba_admin.sp_auto_manage_memberships(
+CREATE OR REPLACE PROCEDURE public.sp_auto_manage_memberships(
     p_target_user TEXT DEFAULT 'cloudsqlsuperuser',
     p_mode TEXT DEFAULT 'GRANT' -- Opciones válidas: 'GRANT', 'ROLLBACK'
 )
@@ -66,7 +65,7 @@ BEGIN
                 EXECUTE v_sql;
                 
                 -- 2. Actualizar Bitácora (Upsert: Inserta si no existe, actualiza si ya existía pero estaba en FALSE)
-                INSERT INTO dba_admin.audit_role_memberships (target_user, granted_role, is_active, updated_at)
+                INSERT INTO public.audit_role_memberships (target_user, granted_role, is_active, updated_at)
                 VALUES (p_target_user, r.rolname, TRUE, CURRENT_TIMESTAMP)
                 ON CONFLICT (target_user, granted_role) 
                 DO UPDATE SET is_active = TRUE, updated_at = CURRENT_TIMESTAMP;
@@ -84,7 +83,7 @@ BEGIN
         -- ========================================================
         FOR r IN 
             SELECT granted_role 
-            FROM dba_admin.audit_role_memberships 
+            FROM public.audit_role_memberships 
             WHERE target_user = p_target_user AND is_active = TRUE
         LOOP
             -- VALIDACIÓN: Verificar si AÚN somos miembros antes de revocar (evita errores si alguien lo quitó manual)
@@ -95,7 +94,7 @@ BEGIN
                 EXECUTE v_sql;
                 
                 -- 2. Marcar en la bitácora como inactivo
-                UPDATE dba_admin.audit_role_memberships 
+                UPDATE public.audit_role_memberships 
                 SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP
                 WHERE target_user = p_target_user AND granted_role = r.granted_role;
                 
@@ -121,7 +120,7 @@ $$;
 **1. Para ejecutarlo manualmente y que asimile a todos los usuarios actuales:**
 
 ```sql
-CALL dba_admin.sp_auto_manage_memberships('cloudsqlsuperuser', 'GRANT');
+CALL public.sp_auto_manage_memberships('cloudsqlsuperuser', 'GRANT');
 
 ```
 
@@ -131,7 +130,7 @@ CALL dba_admin.sp_auto_manage_memberships('cloudsqlsuperuser', 'GRANT');
 
 ```sql
 SELECT target_user, granted_role, is_active, created_at, updated_at 
-FROM dba_admin.audit_role_memberships
+FROM public.audit_role_memberships
 ORDER BY updated_at DESC;
 
 ```
@@ -140,7 +139,7 @@ ORDER BY updated_at DESC;
 Si algo sale mal o la auditoría de seguridad te exige deshacer los permisos:
 
 ```sql
-CALL dba_admin.sp_auto_manage_memberships('cloudsqlsuperuser', 'ROLLBACK');
+CALL public.sp_auto_manage_memberships('cloudsqlsuperuser', 'ROLLBACK');
 
 ```
 
@@ -160,7 +159,7 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 SELECT cron.schedule(
     'Mantenimiento_Membresias_CloudSQL', -- Nombre de la tarea
     '0 2 * * *',                         -- A las 2:00 AM todos los días
-    $$ CALL dba_admin.sp_auto_manage_memberships('cloudsqlsuperuser', 'GRANT'); $$
+    $$ CALL public.sp_auto_manage_memberships('cloudsqlsuperuser', 'GRANT'); $$
 );
 
 ```
