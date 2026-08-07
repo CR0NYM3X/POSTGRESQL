@@ -43,7 +43,7 @@ DECLARE
     -- 1. PARÁMETROS DE CONFIGURACIÓN
     -- =========================================================================
     -- Usuario objetivo que recibirá las membresías
-    v_target_user TEXT := 'cloudsqlsuperuser';
+    v_target_user TEXT := 'postgres';
     
     -- Modo de ejecución: 'GRANT' para mantenimiento diario / 'ROLLBACK' para reversión
     v_mode TEXT := 'GRANT'; 
@@ -213,7 +213,7 @@ SELECT cron.schedule(
     $cron_job$
     DO $$
     DECLARE
-        v_target_user TEXT := 'cloudsqlsuperuser';
+        v_target_user TEXT := 'postgres';
         v_mode TEXT := 'GRANT'; 
         v_excluded_users_grant TEXT[] := ARRAY['cloudsqladmin'];
         r RECORD;
@@ -304,10 +304,52 @@ FROM pg_auth_members a
 JOIN pg_roles r ON a.roleid = r.oid
 JOIN pg_roles m ON a.member = m.oid
 JOIN pg_roles c ON a.grantor = c.oid
-where m.rolname  = 'cloudsqlsuperuser'
+where m.rolname  = 'postgres'
 ORDER BY rol_principal, miembro_asignado;
 ```
 ---
+
+
+## Probar herramienta 
+```sql
+
+create user  nuevo_usuario_admin;
+create user  nuevo_usuario_admin2;
+create user  nuevo_usuario_admin3;
+
+
+CREATE TABLE public.instancias_cloud_sql (
+    id SERIAL PRIMARY KEY,
+    nombre_instancia VARCHAR(100) NOT NULL,
+    edicion VARCHAR(50) NOT NULL, -- Enterprise / Enterprise Plus
+    tiene_ha BOOLEAN DEFAULT false,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+INSERT INTO public.instancias_cloud_sql (nombre_instancia, edicion, tiene_ha) 
+VALUES 
+    ('psql-ec-hcl-be-tvirtual-dev05', 'Enterprise', false),
+    ('csql-postgres-ec-gcobranza-prod-01', 'Enterprise', true),
+    ('csql-postgres-core-prod-02', 'Enterprise Plus', true);
+
+ALTER TABLE public.instancias_cloud_sql OWNER TO nuevo_usuario_admin;
+
+revoke all privileges on all tables in schema public from  nuevo_usuario_admin;
+revoke all privileges on all tables in schema public from  nuevo_usuario_admin2;
+revoke all privileges on all tables in schema public from  nuevo_usuario_admin3;
+
+drop table public.instancias_cloud_sql1;
+drop table public.instancias_cloud_sql2;
+drop table public.instancias_cloud_sql3;
+
+
+drop user  nuevo_usuario_admin;
+drop user  nuevo_usuario_admin2;
+drop user  nuevo_usuario_admin3;
+
+```
+
 
 ### ⚖️ VEREDICTO DE LIBERACIÓN (Rodrigo - Gatekeeper)
 
