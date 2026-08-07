@@ -201,64 +201,31 @@ Conéctate a la base de datos `postgres` como `cloudsqlsuperuser` y programa la 
 
 ```sql
 SELECT cron.schedule(
-    'Mantenimiento_Membresias_Seguras', -- Nombre de tu tarea
-    '0 2 * * *',                        -- Expresión Cron (02:00 AM)
+    'Mantenimiento_Membresias_Seguras', -- Nombre de la tarea
+    '0 2 * * *',                          -- Expresión Cron (02:00 AM diario)
     $script_cron$
 DO $$
 DECLARE
     -- =========================================================================
-    -- 1. PARÁMETROS DE CONFIGURACIÓN PRINCIPAL
+    -- 1. PARÁMETROS PRINCIPALES
     -- =========================================================================
     v_target_user TEXT := 'postgres';
-    v_mode TEXT := 'GRANT'; -- Se ejecutará en modo GRANT automáticamente
-
+    
     -- =========================================================================
-    -- 2. LISTAS DE INCLUSIÓN Y EXCLUSIÓN (Control Total del Usuario)
+    -- 2. FILTROS
     -- =========================================================================
     v_included_users_only TEXT[] := ARRAY[]::TEXT[]; 
+    v_excluded_users_grant TEXT[] := ARRAY['cloudsqladmin'];
 
-    v_excluded_users_grant TEXT[] := ARRAY[
-        'cloudsqladmin'
-    ];
-
-    v_excluded_users_rollback TEXT[] := ARRAY[
-        'cloudsqladmin', 'cloudsqlsuperuser'
-    ];
-
-    -- Variables internas
+    -- =========================================================================
+    -- 3. VARIABLES INTERNAS
+    -- =========================================================================
     r RECORD;
     v_sql TEXT;
     v_procesados INT := 0;
-    v_fallidos INT := 0;
-    v_err_msg TEXT;
-    v_is_already_member BOOLEAN;
 BEGIN
     -- =========================================================================
-    -- FASE 1: SINCRONIZACIÓN ABSOLUTA DEL CATÁLOGO 
-    -- =========================================================================
-    INSERT INTO public.audit_role_memberships (target_user, granted_role, is_active, granted_by_script, error_message)
-    SELECT 
-        v_target_user, 
-        roles.rolname, 
-        EXISTS (
-            SELECT 1 
-            FROM pg_catalog.pg_auth_members am
-            JOIN pg_catalog.pg_roles m ON am.member = m.oid
-            WHERE am.roleid = roles.oid AND m.rolname = v_target_user
-        ), 
-        FALSE, 
-        'INFO: Sincronización base del catálogo.'
-    FROM pg_catalog.pg_roles roles
-    WHERE roles.rolname != v_target_user
-    ON CONFLICT (target_user, granted_role) 
-    DO UPDATE SET 
-        is_active = EXCLUDED.is_active,
-        updated_at = CURRENT_TIMESTAMP,
-        error_message = 'INFO: Cambio de estado detectado en sincronización.'
-    WHERE public.audit_role_memberships.is_active != EXCLUDED.is_active;
-
-    -- =========================================================================
-    -- FASE 1.5: CAZAFANTASMAS (Sincronización de roles eliminados manualmente)
+    -- FASE 1: CAZAFANTASMAS (Sincronización de roles eliminados manualmente)
     -- =========================================================================
     UPDATE public.audit_role_memberships
     SET 
@@ -271,95 +238,67 @@ BEGIN
       AND error_message != 'INFO: El rol fue eliminado del motor (DROP manual detectado).';
 
     -- =========================================================================
-    -- FASE 2: EJECUCIÓN TÁCTICA Y TOMA DE DECISIONES
+    -- FASE 2: MOTOR DELTA INTELIGENTE (Procesa roles nuevos o revocados)
     -- =========================================================================
-    IF v_mode = 'GRANT' THEN
-        FOR r IN 
-            SELECT rolname FROM pg_catalog.pg_roles WHERE rolname != v_target_user
-        LOOP
-            BEGIN
-                IF array_length(v_included_users_only, 1) > 0 AND NOT (r.rolname = ANY(v_included_users_only)) THEN
-                    UPDATE public.audit_role_memberships SET error_message = 'INFO: Ignorado (Fuera de lista de inclusión)' WHERE target_user = v_target_user AND granted_role = r.rolname;
-                    CONTINUE;
-                END IF;
+    FOR r IN 
+        SELECT roles.rolname, roles.oid 
+        FROM pg_catalog.pg_roles roles
+        LEFT JOIN public.audit_role_memberships arm 
+          ON roles.rolname = arm.granted_role AND arm.target_user = v_target_user
+        WHERE roles.rolname != v_target_user 
+          AND (
+              -- CASO A: El rol no existe en nuestra bitácora (100% Nuevo)
+              arm.granted_role IS NULL 
+              
+              -- CASO B: Está en la bitácora, pero físicamente NO somos miembros 
+              OR NOT EXISTS (          
+                  SELECT 1 FROM pg_catalog.pg_auth_members am
+                  JOIN pg_catalog.pg_roles m ON am.member = m.oid
+                  WHERE am.roleid = roles.oid AND m.rolname = v_target_user
+              )
+          )
+    LOOP
+        BEGIN
+            -- 1. Registrar intención en la bitácora
+            INSERT INTO public.audit_role_memberships (target_user, granted_role, is_active, granted_by_script, error_message)
+            VALUES (v_target_user, r.rolname, FALSE, FALSE, 'INFO: Evaluación Delta iniciada.')
+            ON CONFLICT (target_user, granted_role) 
+            DO UPDATE SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP;
 
-                IF (r.rolname = ANY(v_excluded_users_grant)) THEN
-                    UPDATE public.audit_role_memberships SET error_message = 'INFO: Ignorado (Regla de Exclusión definida por el usuario)' WHERE target_user = v_target_user AND granted_role = r.rolname;
-                    CONTINUE;
-                END IF;
+            -- 2. Filtros de Exclusión
+            IF array_length(v_included_users_only, 1) > 0 AND NOT (r.rolname = ANY(v_included_users_only)) THEN
+                UPDATE public.audit_role_memberships SET error_message = 'INFO: Ignorado (Fuera de lista de inclusión)' WHERE target_user = v_target_user AND granted_role = r.rolname;
+                CONTINUE;
+            END IF;
 
-                SELECT is_active INTO v_is_already_member 
-                FROM public.audit_role_memberships 
-                WHERE target_user = v_target_user AND granted_role = r.rolname;
+            IF (r.rolname = ANY(v_excluded_users_grant)) THEN
+                UPDATE public.audit_role_memberships SET error_message = 'INFO: Ignorado (Regla de Exclusión)' WHERE target_user = v_target_user AND granted_role = r.rolname;
+                CONTINUE;
+            END IF;
 
-                IF NOT v_is_already_member THEN
-                    v_sql := format('GRANT %I TO %I;', r.rolname, v_target_user);
-                    EXECUTE v_sql;
-                    
-                    UPDATE public.audit_role_memberships 
-                    SET is_active = TRUE, granted_by_script = TRUE, updated_at = CURRENT_TIMESTAMP, error_message = 'OK: GRANT otorgado por script'
-                    WHERE target_user = v_target_user AND granted_role = r.rolname;
-                    
-                    v_procesados := v_procesados + 1;
-                ELSE
-                    UPDATE public.audit_role_memberships 
-                    SET error_message = 'INFO: Membresía preexistente confirmada.'
-                    WHERE target_user = v_target_user AND granted_role = r.rolname AND granted_by_script = FALSE;
-                END IF;
+            -- 3. Ejecución del GRANT
+            v_sql := format('GRANT %I TO %I;', r.rolname, v_target_user);
+            EXECUTE v_sql;
+            
+            UPDATE public.audit_role_memberships 
+            SET is_active = TRUE, granted_by_script = TRUE, updated_at = CURRENT_TIMESTAMP, error_message = 'OK: GRANT otorgado por script (Cron Nocturno)'
+            WHERE target_user = v_target_user AND granted_role = r.rolname;
+            
+            v_procesados := v_procesados + 1;
 
-            EXCEPTION WHEN OTHERS THEN
-                v_err_msg := SQLERRM;
-                v_fallidos := v_fallidos + 1;
-                UPDATE public.audit_role_memberships 
-                SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP, error_message = 'ERROR CRÍTICO: ' || v_err_msg
-                WHERE target_user = v_target_user AND granted_role = r.rolname;
-            END;
-        END LOOP;
-        
-        RAISE NOTICE '=== FASE DE GRANT FINALIZADA === | Otorgados Nuevos: % | Fallidos: %', v_procesados, v_fallidos;
-
-    ELSIF v_mode = 'ROLLBACK' THEN
-        FOR r IN 
-            SELECT granted_role FROM public.audit_role_memberships 
-            WHERE target_user = v_target_user 
-              AND is_active = TRUE 
-              AND granted_by_script = TRUE 
-        LOOP
-            BEGIN
-                IF array_length(v_included_users_only, 1) > 0 AND NOT (r.granted_role = ANY(v_included_users_only)) THEN
-                    CONTINUE;
-                END IF;
-
-                IF (r.granted_role = ANY(v_excluded_users_rollback)) THEN
-                    CONTINUE;
-                END IF;
-
-                v_sql := format('REVOKE %I FROM %I;', r.granted_role, v_target_user);
-                EXECUTE v_sql;
-
-                UPDATE public.audit_role_memberships 
-                SET is_active = FALSE, granted_by_script = FALSE, updated_at = CURRENT_TIMESTAMP, error_message = 'OK: ROLLBACK EXITOSO. Permiso revocado.'
-                WHERE target_user = v_target_user AND granted_role = r.granted_role;
-                
-                v_procesados := v_procesados + 1;
-
-            EXCEPTION WHEN OTHERS THEN
-                v_err_msg := SQLERRM;
-                v_fallidos := v_fallidos + 1;
-                UPDATE public.audit_role_memberships 
-                SET updated_at = CURRENT_TIMESTAMP, error_message = 'ERROR ROLLBACK: ' || v_err_msg
-                WHERE target_user = v_target_user AND granted_role = r.granted_role;
-            END;
-        END LOOP;
-        
-        RAISE NOTICE '=== ROLLBACK QUIRÚRGICO FINALIZADO === | Revocados: % | Fallidos: %', v_procesados, v_fallidos;
-
-    ELSE
-        RAISE EXCEPTION 'Modo de ejecución inválido ("%"). Usa "GRANT" o "ROLLBACK".', v_mode;
-    END IF;
+        EXCEPTION WHEN OTHERS THEN
+            UPDATE public.audit_role_memberships 
+            SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP, error_message = 'ERROR CRÍTICO: ' || SQLERRM
+            WHERE target_user = v_target_user AND granted_role = r.rolname;
+        END;
+    END LOOP;
+    
+    -- El cron de PostgreSQL captura los RAISE LOG en sus propios archivos de registro sin inundar la consola
+    RAISE LOG '=== CAZADOR NOCTURNO FINALIZADO === Roles procesados/reparados: %', v_procesados;
 END $$;
     $script_cron$
 );
+
 ```
 
 ## Ver tareas 
