@@ -528,7 +528,10 @@ limitado por `max_parallel_workers`
 
 
 max_wal_size = 2GB  #  cuánto espacio en disco pueden ocupar los archivos WAL en el directorio pg_wal antes de que el motor de PostgreSQL sea forzado a ejecutar un Checkpoint
-min_wal_size = 1GB
+
+min_wal_size = 2GB :  2048/16 = 128 archivos wal ->  Define la cantidad mínima espacio  de archivos WAL, que Postgres siempre mantendrá reservada, esto para reutilizarlos, Al mantener archivos físicos pre-asignados (bloques de 16 MB), el motor sobrescribe sobre el espacio existente en lugar de solicitar asignaciones de espacio adicionales al kernel del sistema operativo, eliminando llamadas de I/O costosas.
+Ejemplo: A las 3:00 AM no hay nadie. Haces un CHECKPOINT. Postgres limpia la casa pero deja 128 archivos de 16 MB (2 GB) intactos en el disco, renombrándolos hacia el futuro.
+A las 3:01 AM llega el cliente. Postgres no le pide nada al Kernel de Linux; simplemente toma los archivos que ya estaban creados y sobrescribe sobre ellos.  Resultado: Latencia de escritura cercana a cero milisegundos.
 
 wal_keep_size -> specifica la cantidad mínima de archivos WAL pasados que el servidor Maestro está obligado a retener en su disco, sin importar si ya les hizo un Checkpoint y ya no los necesita para su propia recuperación. (Nota: En versiones anteriores a PostgreSQL 13, este parámetro se llamaba wal_keep_segments). el Maestro jamás borrará los últimos 5 GB de transacciones de su carpeta pg_wal, incluso si max_wal_size es menor.
 
