@@ -232,6 +232,8 @@ SIEM  detección de amenazas
 Wazuh es una plataforma de seguridad de código abierto que ofrece una amplia gama de funcionalidades para la detección de amenazas, el monitoreo de integridad y la respuesta a incidente
 
 
+powa-archivist -> https://github.com/powa-team/powa-archivist
+
 pgmonitor -> https://github.com/CrunchyData/pgmonitor
 
 | **[check_postgres](https://github.com/bucardo/check_postgres)** | Script de monitoreo basado en Nagios que automatiza la verificación de salud de la DB (bloqueos, replicación, espacio). | **Para Alertas:** Es el "perro guardián". Se integra con sistemas como Zabbix o Nagios para disparar correos o alarmas cuando algo sale de los parámetros normales. |
