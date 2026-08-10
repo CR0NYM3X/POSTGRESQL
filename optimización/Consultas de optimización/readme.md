@@ -25,7 +25,10 @@ A diferencia del resto de elementos de la lista, **Cache Hit Ratio** es una cons
 ---
 
 
-
+-----------------
+Disco. 
+CPU.
+Memoria.
 
 
 
@@ -54,3 +57,23 @@ FROM pg_stat_bgwriter;
 
 
 https://github.com/CR0NYM3X/POSTGRESQL/blob/6ea6d24c132757bea70dea761fd51290d812b52d/monitoreo/Monitoreo%2C%20optimizaci%C3%B3n%20y%20mantenimientos.md
+
+
+postgres@centraldata# select table_schema,table_name from information_schema.tables where table_name ilike '%io\_%' and table_schema in('information_schema','pg_catalog');
++--------------+--------------------------+
+| table_schema |        table_name        |
++--------------+--------------------------+
+| pg_catalog   | pg_statio_user_tables    |
+| pg_catalog   | pg_statio_all_sequences  |
+| pg_catalog   | pg_statio_sys_sequences  |
+| pg_catalog   | pg_statio_user_sequences |
+| pg_catalog   | pg_statio_sys_indexes    |
+| pg_catalog   | pg_statio_user_indexes   |
+| pg_catalog   | pg_statio_all_indexes    |
+| pg_catalog   | pg_statio_all_tables     |
+| pg_catalog   | pg_statio_sys_tables     |
++--------------+--------------------------+
+
+
+
+
