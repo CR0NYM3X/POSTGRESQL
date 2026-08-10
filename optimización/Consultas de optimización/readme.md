@@ -59,6 +59,10 @@ FROM pg_stat_bgwriter;
 https://github.com/CR0NYM3X/POSTGRESQL/blob/6ea6d24c132757bea70dea761fd51290d812b52d/monitoreo/Monitoreo%2C%20optimizaci%C3%B3n%20y%20mantenimientos.md
 
 
+https://github.com/CR0NYM3X/POSTGRESQL/blob/284c2f3de0d7c3d38847cf59ec6c287c14419f1d/Memorias%20de%20postgresql.md
+
+
+
 postgres@centraldata# select table_schema,table_name from information_schema.tables where table_name ilike '%io\_%' and table_schema in('information_schema','pg_catalog');
 +--------------+--------------------------+
 | table_schema |        table_name        |
