@@ -319,8 +319,92 @@ postgres@test# SELECT * FROM pg_visibility_map_summary('produccion_diaria');
 
 Time: 1.034 ms
 
+---------------------------------------------------------------------------------------------------------------------
+Prueba #2
+
+CREATE TABLE produccion_diaria (
+    id SERIAL PRIMARY KEY,
+    fecha DATE,
+    cantidad INT
+);
+
+INSERT INTO produccion_diaria (fecha, cantidad)
+SELECT CURRENT_DATE - i, (random() * 100)::int
+FROM generate_series(1, 1000) AS i;
+
+postgres@db_test# SELECT * FROM pg_visibility('produccion_diaria') LIMIT 10;
++-------+-------------+------------+----------------+
+| blkno | all_visible | all_frozen | pd_all_visible |
++-------+-------------+------------+----------------+
+|     0 | f           | f          | f              |
+|     1 | f           | f          | f              |
+|     2 | f           | f          | f              |
+|     3 | f           | f          | f              |
+|     4 | f           | f          | f              |
+|     5 | f           | f          | f              |
++-------+-------------+------------+----------------+
+(6 rows)
+
+Time: 0.429 ms
+
+--- en otra terminal abre el mismo servidor y ejecuta eso
+begin ;
+postgres@db_test#* update produccion_diaria set cantidad = 55 where id = 1000 ;
+UPDATE 1
+Time: 2.916 ms
+
+---- Despues de aqui regresate a la terminal principal
+postgres@db_test# vacuum produccion_diaria;
+VACUUM
+Time: 6.139 ms
+
+postgres@db_test# SELECT * FROM pg_visibility('produccion_diaria') LIMIT 10;
++-------+-------------+------------+----------------+
+| blkno | all_visible | all_frozen | pd_all_visible |
++-------+-------------+------------+----------------+
+|     0 | t           | f          | t              |
+|     1 | t           | f          | t              |
+|     2 | t           | f          | t              |
+|     3 | t           | f          | t              |
+|     4 | t           | f          | t              |
+|     5 | f           | f          | f              |   <---- esta no se aplico 
++-------+-------------+------------+----------------+
+(6 rows)
+
+Time: 0.558 ms
+
 
 ```
+
+
+### 1. ¿Por qué el Bloque 5 quedó en `all_visible = f`?
+
+El registro con `id = 1000` se encuentra físicamente almacenado en el **Bloque 5** de la tabla.
+
+* En la **Terminal B**, abriste una transacción (`BEGIN;`) y ejecutaste un `UPDATE` sobre ese registro.
+* Bajo el modelo MVCC de PostgreSQL, un `UPDATE` no sobreescribe el dato: **marca la fila vieja como muerta y crea una versión nueva de la fila** con el ID de transacción (XID) activo de la Terminal B.
+* Como la Terminal B **aún no ha hecho `COMMIT**`, la nueva versión de la fila solo es visible para la Terminal B, mientras que las demás sesiones aún ven la versión anterior.
+* Cuando la **Terminal A** ejecutó `VACUUM produccion_diaria;`, el motor revisó el Bloque 5 y dijo: *"En este bloque hay filas asociadas a una transacción abierta (no confirmada). No todas las transacciones ven lo mismo aquí"*.
+* Por lo tanto, el motor **no puede marcar el Bloque 5 como `all_visible` (`f`)**.
+
+##  ¿Por qué los demas si se congelaron?
+### 3. Ahorro de I/O a futuro (*Eager Freezing*)
+
+El motor de PostgreSQL razona de la siguiente manera:
+
+> *"Ya que estoy gastando recursos leyendo esta página de 8 KB desde el disco hacia la memoria RAM, y veo que el 100% de las filas aquí están confirmadas y no hay transacciones viejas abiertas... **¿para qué voy a regresar dentro de unos meses a congelarlas?** Las congelo de una vez (`all_frozen = t`), así en los próximos `VACUUM` me salto esta página por completo y le ahorro trabajo al disco."*
+
+ 
+### ¿Qué gana PostgreSQL con esto?
+
+A partir de este momento, como esas 6 páginas tienen `all_frozen = t` en el Visibility Map:
+
+* **Los próximos `VACUUM` las ignorarán:** No perderán tiempo leyendo esos 6 bloques mientras no reciban un `UPDATE` o `DELETE`.
+* **Protección contra Wraparound:** Esas filas ya son inmortales (tienen el número mágico `2`), por lo que ya no empujan a la base de datos hacia el límite de transacciones.
+
+
+
+---
  
 
 ##  Explicación de Funciones y Columnas
