@@ -82,9 +82,9 @@ CREATE TABLE public.maintenance_jobs (
 );
 
 -- 2. TABLA HIJA: Trazabilidad Forense por Tabla (CON TELEMETRÍA Y SLOTS)
--- DROP TABLE IF EXISTS public.maintenance_tasks CASCADE;
--- TRUNCATE TABLE public.maintenance_tasks RESTART IDENTITY ;
-CREATE TABLE public.maintenance_tasks (
+-- DROP TABLE IF EXISTS public.mant_analyze_task CASCADE;
+-- TRUNCATE TABLE public.mant_analyze_task RESTART IDENTITY ;
+CREATE TABLE public.mant_analyze_task (
     task_id SERIAL PRIMARY KEY,
     job_id INT NOT NULL REFERENCES public.maintenance_jobs(job_id) ON DELETE CASCADE,
     schema_name TEXT NOT NULL,
@@ -102,7 +102,7 @@ CREATE TABLE public.maintenance_tasks (
 );
 
 
-SELECT * FROM public.maintenance_tasks;
+SELECT * FROM public.mant_analyze_task;
 SELECT * FROM public.maintenance_jobs;
 ```
 
@@ -162,7 +162,7 @@ BEGIN
 
         -- POBLAR COLA PARA LA FASE ACTUAL
         IF p_job_type = 'SMART' THEN
-            INSERT INTO public.maintenance_tasks (
+            INSERT INTO public.mant_analyze_task (
                 job_id, schema_name, table_name, total_filas, filas_afectadas, drift_pct, stage_number
             )
             SELECT 
@@ -178,7 +178,7 @@ BEGIN
             ORDER BY COALESCE(n_mod_since_analyze, 0) DESC;
         ELSE
             -- ALL o PRELOAD
-            INSERT INTO public.maintenance_tasks (
+            INSERT INTO public.mant_analyze_task (
                 job_id, schema_name, table_name, total_filas, filas_afectadas, drift_pct, stage_number
             )
             SELECT 
@@ -191,7 +191,7 @@ BEGIN
         COMMIT;
 
         SELECT COUNT(*) INTO v_total_tasks 
-        FROM public.maintenance_tasks 
+        FROM public.mant_analyze_task 
         WHERE job_id = v_job_id AND stage_number = v_current_stage;
 
         IF v_current_stage = 1 AND v_total_tasks = 0 THEN
@@ -206,7 +206,7 @@ BEGIN
             -- A. RECOLECTOR DE MEMORIA
             FOR r_finished IN 
                 SELECT task_id, child_pid
-                FROM public.maintenance_tasks 
+                FROM public.mant_analyze_task 
                 WHERE job_id = v_job_id AND stage_number = v_current_stage 
                   AND status IN ('SUCCESS', 'FAILED') AND child_pid IS NOT NULL
             LOOP
@@ -216,13 +216,13 @@ BEGIN
                     NULL;
                 END;
 
-                UPDATE public.maintenance_tasks SET child_pid = NULL WHERE task_id = r_finished.task_id;
+                UPDATE public.mant_analyze_task SET child_pid = NULL WHERE task_id = r_finished.task_id;
                 COMMIT;
             END LOOP;
 
             -- B. DETECTOR DE ZOMBIS
             WITH zombis AS (
-                UPDATE public.maintenance_tasks
+                UPDATE public.mant_analyze_task
                 SET status = 'FAILED', ended_at = clock_timestamp(), error_log = 'Process died or aborted before completion.'
                 WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'RUNNING'
                   AND child_pid NOT IN (SELECT pid FROM pg_stat_activity WHERE backend_type = 'pg_background')
@@ -234,7 +234,7 @@ BEGIN
             -- C. REPORTE VISUAL
             IF p_verbose THEN
                 FOR v_schema, v_table, v_task_id IN 
-                    SELECT schema_name, table_name, task_id FROM public.maintenance_tasks 
+                    SELECT schema_name, table_name, task_id FROM public.mant_analyze_task 
                     WHERE job_id = v_job_id AND stage_number = v_current_stage 
                       AND status = 'SUCCESS' AND ended_at >= (clock_timestamp() - INTERVAL '1.5 seconds')
                 LOOP
@@ -243,8 +243,8 @@ BEGIN
             END IF;
 
             -- D. CONTEO DE ESTADO
-            SELECT COUNT(*) INTO v_active_workers FROM public.maintenance_tasks WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'RUNNING';
-            SELECT COUNT(*) INTO v_pending_tasks FROM public.maintenance_tasks WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'PENDING';
+            SELECT COUNT(*) INTO v_active_workers FROM public.mant_analyze_task WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'RUNNING';
+            SELECT COUNT(*) INTO v_pending_tasks FROM public.mant_analyze_task WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'PENDING';
 
             IF v_active_workers = 0 AND v_pending_tasks = 0 THEN 
                 EXIT; -- Terminó la Fase actual, sale del bucle interno
@@ -253,12 +253,12 @@ BEGIN
             -- E. DESPACHADOR DE TAREAS
             WHILE v_active_workers < p_parallel_workers AND v_pending_tasks > 0 LOOP
                 SELECT task_id, schema_name, table_name INTO v_task_id, v_schema, v_table
-                FROM public.maintenance_tasks
+                FROM public.mant_analyze_task
                 WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'PENDING' 
                 ORDER BY task_id ASC LIMIT 1;
 
                 IF v_task_id IS NOT NULL THEN
-                    UPDATE public.maintenance_tasks SET status = 'RUNNING', started_at = clock_timestamp() WHERE task_id = v_task_id;
+                    UPDATE public.mant_analyze_task SET status = 'RUNNING', started_at = clock_timestamp() WHERE task_id = v_task_id;
                     COMMIT;
 
                     v_raw_sql := 'SET maintenance_work_mem = ''8GB''; SET max_parallel_maintenance_workers = 4; SET vacuum_cost_delay = 0; ';
@@ -276,11 +276,11 @@ BEGIN
                         v_raw_sql := v_raw_sql || format('ANALYZE %I.%I; ', v_schema, v_table);
                     END IF;
 
-                    v_raw_sql := v_raw_sql || format('UPDATE public.maintenance_tasks SET status = ''SUCCESS'', ended_at = clock_timestamp() WHERE task_id = %s;', v_task_id);
+                    v_raw_sql := v_raw_sql || format('UPDATE public.mant_analyze_task SET status = ''SUCCESS'', ended_at = clock_timestamp() WHERE task_id = %s;', v_task_id);
 
                     v_child_pid := public.pg_background_launch(v_raw_sql);
 
-                    UPDATE public.maintenance_tasks SET child_pid = v_child_pid WHERE task_id = v_task_id;
+                    UPDATE public.mant_analyze_task SET child_pid = v_child_pid WHERE task_id = v_task_id;
                     COMMIT;
 
                     v_active_workers := v_active_workers + 1;
@@ -611,7 +611,7 @@ ORDER BY query_start ASC;
 
 ---
 
-### 2. MONITOREO FORENSE DESDE `public.maintenance_tasks`
+### 2. MONITOREO FORENSE DESDE `public.mant_analyze_task`
 
 *(Monitorea el progreso de la cola, qué tabla está corriendo, cuál terminó, cuál falló y el porcentaje de cambio/desfase)*
 
@@ -628,7 +628,7 @@ SELECT
     t.child_pid,
     COALESCE(t.ended_at, clock_timestamp()) - t.started_at AS duracion,
     COALESCE(t.error_log, 'Ninguno') AS detalle_error
-FROM public.maintenance_tasks t
+FROM public.mant_analyze_task t
 JOIN public.maintenance_jobs j ON t.job_id = j.job_id
 WHERE t.job_id = (SELECT MAX(job_id) FROM public.maintenance_jobs)
 ORDER BY t.task_id ASC;
@@ -639,13 +639,13 @@ SELECT
     schema_name || '.' || table_name AS tabla,
     status AS estatus,
     ROUND(EXTRACT(EPOCH FROM (ended_at - started_at))::numeric, 3) AS duracion_segundos
-FROM public.maintenance_tasks
+FROM public.mant_analyze_task
 WHERE job_id = (SELECT MAX(job_id) FROM public.maintenance_jobs)
 ORDER BY schema_name, table_name, stage_number;
 
 select * from public.maintenance_jobs;
 
-select * from public.maintenance_tasks;
+select * from public.mant_analyze_task;
 
 ```
 
@@ -695,7 +695,7 @@ BEGIN
 
     -- 2. Poblar Cola
     IF p_job_type = 'SMART' THEN
-        INSERT INTO public.maintenance_tasks (
+        INSERT INTO public.mant_analyze_task (
             job_id, schema_name, table_name, total_filas, filas_afectadas, drift_pct
         )
         SELECT 
@@ -709,7 +709,7 @@ BEGIN
           )
         ORDER BY COALESCE(n_mod_since_analyze, 0) DESC;
     ELSE
-        INSERT INTO public.maintenance_tasks (
+        INSERT INTO public.mant_analyze_task (
             job_id, schema_name, table_name, total_filas, filas_afectadas, drift_pct
         )
         SELECT 
@@ -720,7 +720,7 @@ BEGIN
     END IF;
     COMMIT;
 
-    SELECT COUNT(*) INTO v_total_tasks FROM public.maintenance_tasks WHERE job_id = v_job_id;
+    SELECT COUNT(*) INTO v_total_tasks FROM public.mant_analyze_task WHERE job_id = v_job_id;
     
     IF p_verbose THEN
         RAISE INFO '[+] JOB ID Asignado: %', v_job_id;
@@ -740,7 +740,7 @@ BEGIN
         -- A. RECOLECTOR DE MEMORIA OFICIAL
         FOR r_finished IN 
             SELECT task_id, child_pid, slot_id
-            FROM public.maintenance_tasks 
+            FROM public.mant_analyze_task 
             WHERE job_id = v_job_id AND status IN ('SUCCESS', 'FAILED') AND child_pid IS NOT NULL
         LOOP
             BEGIN
@@ -750,13 +750,13 @@ BEGIN
                 NULL; -- Ignorar si ya fue liberado
             END;
 
-            UPDATE public.maintenance_tasks SET child_pid = NULL, slot_id = NULL WHERE task_id = r_finished.task_id;
+            UPDATE public.mant_analyze_task SET child_pid = NULL, slot_id = NULL WHERE task_id = r_finished.task_id;
             COMMIT;
         END LOOP;
 
         -- B. DETECTOR DE ZOMBIS
         WITH zombis AS (
-            UPDATE public.maintenance_tasks
+            UPDATE public.mant_analyze_task
             SET status = 'FAILED', ended_at = clock_timestamp(), error_log = 'Process died or aborted before completion.'
             WHERE job_id = v_job_id AND status = 'RUNNING'
               AND child_pid NOT IN (SELECT pid FROM pg_stat_activity WHERE backend_type = 'pg_background')
@@ -770,7 +770,7 @@ BEGIN
         -- C. REPORTE VISUAL
         IF p_verbose THEN
             FOR v_schema, v_table, v_task_id IN 
-                SELECT schema_name, table_name, task_id FROM public.maintenance_tasks 
+                SELECT schema_name, table_name, task_id FROM public.mant_analyze_task 
                 WHERE job_id = v_job_id AND status = 'SUCCESS' AND ended_at >= (clock_timestamp() - INTERVAL '1.5 seconds')
             LOOP
                 RAISE INFO '   [✓] ÉXITO -> Tabla: %.% (Task ID: %)', v_schema, v_table, v_task_id;
@@ -778,19 +778,19 @@ BEGIN
         END IF;
 
         -- D. CONTEO DE ESTADO
-        SELECT COUNT(*) INTO v_active_workers FROM public.maintenance_tasks WHERE job_id = v_job_id AND status = 'RUNNING';
-        SELECT COUNT(*) INTO v_pending_tasks FROM public.maintenance_tasks WHERE job_id = v_job_id AND status = 'PENDING';
+        SELECT COUNT(*) INTO v_active_workers FROM public.mant_analyze_task WHERE job_id = v_job_id AND status = 'RUNNING';
+        SELECT COUNT(*) INTO v_pending_tasks FROM public.mant_analyze_task WHERE job_id = v_job_id AND status = 'PENDING';
 
         IF v_active_workers = 0 AND v_pending_tasks = 0 THEN EXIT; END IF;
 
         -- E. DESPACHADOR DE TAREAS CON API V2.0 NATIVA
         WHILE v_active_workers < p_parallel_workers AND v_pending_tasks > 0 LOOP
             SELECT task_id, schema_name, table_name INTO v_task_id, v_schema, v_table
-            FROM public.maintenance_tasks
+            FROM public.mant_analyze_task
             WHERE job_id = v_job_id AND status = 'PENDING' ORDER BY task_id ASC LIMIT 1;
 
             IF v_task_id IS NOT NULL THEN
-                UPDATE public.maintenance_tasks SET status = 'RUNNING', started_at = clock_timestamp() WHERE task_id = v_task_id;
+                UPDATE public.mant_analyze_task SET status = 'RUNNING', started_at = clock_timestamp() WHERE task_id = v_task_id;
                 COMMIT;
 
                 v_raw_sql := 'SET maintenance_work_mem = ''8GB''; SET max_parallel_maintenance_workers = 4; SET vacuum_cost_delay = 0; ';
@@ -803,13 +803,13 @@ BEGIN
                     v_raw_sql := v_raw_sql || format('ANALYZE %I.%I; ', v_schema, v_table);
                 END IF;
 
-                v_raw_sql := v_raw_sql || format('UPDATE public.maintenance_tasks SET status = ''SUCCESS'', ended_at = clock_timestamp() WHERE task_id = %s;', v_task_id);
+                v_raw_sql := v_raw_sql || format('UPDATE public.mant_analyze_task SET status = ''SUCCESS'', ended_at = clock_timestamp() WHERE task_id = %s;', v_task_id);
 
                 -- Retorno directo al tipo pg_background_handle
                 v_handle := public.pg_background_launch(v_raw_sql);
 
                 -- Guardamos pid (int4) y cookie (int8) en campos BIGINT
-                UPDATE public.maintenance_tasks 
+                UPDATE public.mant_analyze_task 
                 SET child_pid = v_handle.pid, 
                     slot_id   = v_handle.cookie 
                 WHERE task_id = v_task_id;
