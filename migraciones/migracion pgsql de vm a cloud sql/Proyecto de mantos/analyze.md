@@ -80,6 +80,7 @@ CREATE TABLE public.maintenance_tasks (
     status VARCHAR(20) DEFAULT 'PENDING', 
     slot_id BIGINT,                         -- <--- COLUMNA CRÍTICA DE GESTIÓN DE HILOS
     child_pid BIGINT,
+    stage_number INT DEFAULT 1,
     started_at TIMESTAMPTZ,
     ended_at TIMESTAMPTZ,
     error_log TEXT
@@ -611,6 +612,16 @@ JOIN public.maintenance_jobs j ON t.job_id = j.job_id
 WHERE t.job_id = (SELECT MAX(job_id) FROM public.maintenance_jobs)
 ORDER BY t.task_id ASC;
 
+
+SELECT 
+    stage_number AS fase,
+    schema_name || '.' || table_name AS tabla,
+    status AS estatus,
+    ROUND(EXTRACT(EPOCH FROM (ended_at - started_at))::numeric, 3) AS duracion_segundos
+FROM public.maintenance_tasks
+WHERE job_id = (SELECT MAX(job_id) FROM public.maintenance_jobs)
+ORDER BY schema_name, table_name, stage_number;
+
 select * from public.maintenance_jobs;
 
 select * from public.maintenance_tasks;
@@ -636,19 +647,24 @@ DECLARE
     v_task_id INT;
     v_schema TEXT;
     v_table TEXT;
-    v_child_pid INT;                     -- En v1.4 pg_background_launch retorna directamente INT (PID)
+    v_child_pid INT;
     v_active_workers INT;
     v_pending_tasks INT;
     v_total_tasks INT;
     v_raw_sql TEXT;
     v_start_time TIMESTAMPTZ := clock_timestamp();
-    r_finished RECORD;                  -- Variable de registro para bucles
+    r_finished RECORD;
+    v_current_stage INT := 1;            -- Manejador de Fases para PRELOAD
+    v_max_stages INT := 1;
 BEGIN
-    SET client_min_messages = notice;
+    IF p_job_type = 'PRELOAD' THEN
+        v_max_stages := 3;               -- PRELOAD ejecutará 3 Fases globales
+    END IF;
+
     IF p_verbose THEN
         RAISE INFO '=========================================================';
         RAISE INFO '[DBA SQUAD] INICIANDO ORQUESTADOR VANGUARD (PG_BACKGROUND 1.4)';
-        RAISE INFO 'TIPO: % | ACCIÓN: ANALYZE | HILOS: % | UMBRAL: %%%', p_job_type, p_parallel_workers, (p_threshold_pct * 100);
+        RAISE INFO 'TIPO: % | ACCIÓN: ANALYZE | HILOS: % | FASES: %', p_job_type, p_parallel_workers, v_max_stages;
         RAISE INFO '=========================================================';
     END IF;
 
@@ -658,135 +674,146 @@ BEGIN
     RETURNING job_id INTO v_job_id;
     COMMIT;
 
-    -- 2. Poblar Cola
-    IF p_job_type = 'SMART' THEN
-        INSERT INTO public.maintenance_tasks (
-            job_id, schema_name, table_name, total_filas, filas_afectadas, drift_pct
-        )
-        SELECT 
-            v_job_id, schemaname, relname, n_live_tup, COALESCE(n_mod_since_analyze, 0),
-            ROUND((COALESCE(n_mod_since_analyze, 0)::numeric / NULLIF(n_live_tup, 0)) * 100, 2)
-        FROM pg_stat_user_tables
-        WHERE COALESCE(n_mod_since_analyze, 0) >= p_min_rows
-          AND (
-              (COALESCE(n_mod_since_analyze, 0)::numeric / NULLIF(n_live_tup, 0)) >= p_threshold_pct 
-              OR COALESCE(n_mod_since_analyze, 0) >= 50000 
-          )
-        ORDER BY COALESCE(n_mod_since_analyze, 0) DESC;
-    ELSE
-        INSERT INTO public.maintenance_tasks (
-            job_id, schema_name, table_name, total_filas, filas_afectadas, drift_pct
-        )
-        SELECT 
-            v_job_id, schemaname, relname, n_live_tup, COALESCE(n_mod_since_analyze, 0),
-            ROUND((COALESCE(n_mod_since_analyze, 0)::numeric / NULLIF(n_live_tup, 0)) * 100, 2)
-        FROM pg_stat_user_tables
-        ORDER BY COALESCE(n_mod_since_analyze, 0) DESC, n_live_tup DESC;
-    END IF;
-    COMMIT;
+    -- 2. BUCLE GLOBAL DE FASES (Para PRELOAD ejecuta 3 Pasadas con su propio registro)
+    WHILE v_current_stage <= v_max_stages LOOP
 
-    SELECT COUNT(*) INTO v_total_tasks FROM public.maintenance_tasks WHERE job_id = v_job_id;
-    
-    IF p_verbose THEN
-        RAISE INFO '[+] JOB ID Asignado: %', v_job_id;
-        RAISE INFO '[+] Total de tablas que requieren intervención: %', v_total_tasks;
-        RAISE INFO '---------------------------------------------------------';
-    END IF;
-
-    IF v_total_tasks = 0 THEN
-        IF p_verbose THEN RAISE INFO '[✓] El sistema está óptimo. Ninguna tabla superó los umbrales.'; END IF;
-        UPDATE public.maintenance_jobs SET status = 'COMPLETED', ended_at = clock_timestamp() WHERE job_id = v_job_id;
-        COMMIT;
-        RETURN;
-    END IF;
-
-    -- 3. BUCLE PRINCIPAL (Monitoreo y Despacho)
-    LOOP
-        -- A. RECOLECTOR DE MEMORIA (PG_BACKGROUND 1.4)
-        -- Se ejecuta pg_background_detach pasando únicamente el PID (INT)
-        FOR r_finished IN 
-            SELECT task_id, child_pid
-            FROM public.maintenance_tasks 
-            WHERE job_id = v_job_id AND status IN ('SUCCESS', 'FAILED') AND child_pid IS NOT NULL
-        LOOP
-            BEGIN
-                PERFORM public.pg_background_detach(r_finished.child_pid::INT);
-            EXCEPTION WHEN OTHERS THEN
-                NULL; -- Ignorar si el PID ya fue desvinculado
-            END;
-
-            UPDATE public.maintenance_tasks SET child_pid = NULL WHERE task_id = r_finished.task_id;
-            COMMIT;
-        END LOOP;
-
-        -- B. DETECTOR DE ZOMBIS
-        WITH zombis AS (
-            UPDATE public.maintenance_tasks
-            SET status = 'FAILED', ended_at = clock_timestamp(), error_log = 'Process died or aborted before completion.'
-            WHERE job_id = v_job_id AND status = 'RUNNING'
-              AND child_pid NOT IN (SELECT pid FROM pg_stat_activity WHERE backend_type = 'pg_background')
-            RETURNING task_id
-        )
-        SELECT count(*) FROM zombis INTO v_task_id; 
-        
-        IF p_verbose AND v_task_id > 0 THEN RAISE INFO '[☠️] ALERTA: Se detectaron y purgaron % procesos zombis.', v_task_id; END IF;
-        COMMIT;
-
-        -- C. REPORTE VISUAL
-        IF p_verbose THEN
-            FOR v_schema, v_table, v_task_id IN 
-                SELECT schema_name, table_name, task_id FROM public.maintenance_tasks 
-                WHERE job_id = v_job_id AND status = 'SUCCESS' AND ended_at >= (clock_timestamp() - INTERVAL '1.5 seconds')
-            LOOP
-                RAISE INFO '   [✓] ÉXITO -> Tabla: %.% (Task ID: %)', v_schema, v_table, v_task_id;
-            END LOOP;
+        IF p_job_type = 'PRELOAD' AND p_verbose THEN
+            RAISE INFO '---------------------------------------------------------';
+            RAISE INFO '>>> INICIANDO FASE % DE 3 (REGISTRO INDEPENDIENTE) <<<', v_current_stage;
+            RAISE INFO '---------------------------------------------------------';
         END IF;
 
-        -- D. CONTEO DE ESTADO
-        SELECT COUNT(*) INTO v_active_workers FROM public.maintenance_tasks WHERE job_id = v_job_id AND status = 'RUNNING';
-        SELECT COUNT(*) INTO v_pending_tasks FROM public.maintenance_tasks WHERE job_id = v_job_id AND status = 'PENDING';
+        -- POBLAR COLA PARA LA FASE ACTUAL
+        IF p_job_type = 'SMART' THEN
+            INSERT INTO public.maintenance_tasks (
+                job_id, schema_name, table_name, total_filas, filas_afectadas, drift_pct, stage_number
+            )
+            SELECT 
+                v_job_id, schemaname, relname, n_live_tup, COALESCE(n_mod_since_analyze, 0),
+                ROUND((COALESCE(n_mod_since_analyze, 0)::numeric / NULLIF(n_live_tup, 0)) * 100, 2),
+                v_current_stage
+            FROM pg_stat_user_tables
+            WHERE COALESCE(n_mod_since_analyze, 0) >= p_min_rows
+              AND (
+                  (COALESCE(n_mod_since_analyze, 0)::numeric / NULLIF(n_live_tup, 0)) >= p_threshold_pct 
+                  OR COALESCE(n_mod_since_analyze, 0) >= 50000 
+              )
+            ORDER BY COALESCE(n_mod_since_analyze, 0) DESC;
+        ELSE
+            -- ALL o PRELOAD
+            INSERT INTO public.maintenance_tasks (
+                job_id, schema_name, table_name, total_filas, filas_afectadas, drift_pct, stage_number
+            )
+            SELECT 
+                v_job_id, schemaname, relname, n_live_tup, COALESCE(n_mod_since_analyze, 0),
+                ROUND((COALESCE(n_mod_since_analyze, 0)::numeric / NULLIF(n_live_tup, 0)) * 100, 2),
+                v_current_stage
+            FROM pg_stat_user_tables
+            ORDER BY COALESCE(n_mod_since_analyze, 0) DESC, n_live_tup DESC;
+        END IF;
+        COMMIT;
 
-        IF v_active_workers = 0 AND v_pending_tasks = 0 THEN EXIT; END IF;
+        SELECT COUNT(*) INTO v_total_tasks 
+        FROM public.maintenance_tasks 
+        WHERE job_id = v_job_id AND stage_number = v_current_stage;
 
-        -- E. DESPACHADOR DE TAREAS (PG_BACKGROUND 1.4 NATIVO)
-        WHILE v_active_workers < p_parallel_workers AND v_pending_tasks > 0 LOOP
-            SELECT task_id, schema_name, table_name INTO v_task_id, v_schema, v_table
-            FROM public.maintenance_tasks
-            WHERE job_id = v_job_id AND status = 'PENDING' ORDER BY task_id ASC LIMIT 1;
+        IF v_current_stage = 1 AND v_total_tasks = 0 THEN
+            IF p_verbose THEN RAISE INFO '[✓] El sistema está óptimo. Ninguna tabla superó los umbrales.'; END IF;
+            UPDATE public.maintenance_jobs SET status = 'COMPLETED', ended_at = clock_timestamp() WHERE job_id = v_job_id;
+            COMMIT;
+            RETURN;
+        END IF;
 
-            IF v_task_id IS NOT NULL THEN
-                UPDATE public.maintenance_tasks SET status = 'RUNNING', started_at = clock_timestamp() WHERE task_id = v_task_id;
+        -- BUCLE PRINCIPAL DE DESPACHO DE LA FASE EN CURSO
+        LOOP
+            -- A. RECOLECTOR DE MEMORIA
+            FOR r_finished IN 
+                SELECT task_id, child_pid
+                FROM public.maintenance_tasks 
+                WHERE job_id = v_job_id AND stage_number = v_current_stage 
+                  AND status IN ('SUCCESS', 'FAILED') AND child_pid IS NOT NULL
+            LOOP
+                BEGIN
+                    PERFORM public.pg_background_detach(r_finished.child_pid::INT);
+                EXCEPTION WHEN OTHERS THEN
+                    NULL;
+                END;
+
+                UPDATE public.maintenance_tasks SET child_pid = NULL WHERE task_id = r_finished.task_id;
                 COMMIT;
+            END LOOP;
 
-                v_raw_sql := 'SET maintenance_work_mem = ''8GB''; SET max_parallel_maintenance_workers = 4; SET vacuum_cost_delay = 0; ';
+            -- B. DETECTOR DE ZOMBIS
+            WITH zombis AS (
+                UPDATE public.maintenance_tasks
+                SET status = 'FAILED', ended_at = clock_timestamp(), error_log = 'Process died or aborted before completion.'
+                WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'RUNNING'
+                  AND child_pid NOT IN (SELECT pid FROM pg_stat_activity WHERE backend_type = 'pg_background')
+                RETURNING task_id
+            )
+            SELECT count(*) FROM zombis INTO v_task_id; 
+            COMMIT;
 
-                IF p_job_type = 'PRELOAD' THEN
-                    v_raw_sql := v_raw_sql || format('SET default_statistics_target = 1; ANALYZE %I.%I; ', v_schema, v_table);
-                    v_raw_sql := v_raw_sql || format('SET default_statistics_target = 10; ANALYZE %I.%I; ', v_schema, v_table);
-                    v_raw_sql := v_raw_sql || format('RESET default_statistics_target; ANALYZE %I.%I; ', v_schema, v_table);
-                ELSE
-                    v_raw_sql := v_raw_sql || format('ANALYZE %I.%I; ', v_schema, v_table);
-                END IF;
-
-                v_raw_sql := v_raw_sql || format('UPDATE public.maintenance_tasks SET status = ''SUCCESS'', ended_at = clock_timestamp() WHERE task_id = %s;', v_task_id);
-
-                -- En pg_background v1.4, launch retorna un escalar INT directamente
-                v_child_pid := public.pg_background_launch(v_raw_sql);
-
-                UPDATE public.maintenance_tasks 
-                SET child_pid = v_child_pid 
-                WHERE task_id = v_task_id;
-                COMMIT;
-
-                IF p_verbose THEN 
-                    RAISE INFO '   [>] LANZANDO -> Hilo PID % asignado a Tabla: %.%', v_child_pid, v_schema, v_table; 
-                END IF;
-
-                v_active_workers := v_active_workers + 1;
-                v_pending_tasks := v_pending_tasks - 1;
+            -- C. REPORTE VISUAL
+            IF p_verbose THEN
+                FOR v_schema, v_table, v_task_id IN 
+                    SELECT schema_name, table_name, task_id FROM public.maintenance_tasks 
+                    WHERE job_id = v_job_id AND stage_number = v_current_stage 
+                      AND status = 'SUCCESS' AND ended_at >= (clock_timestamp() - INTERVAL '1.5 seconds')
+                LOOP
+                    RAISE INFO '   [✓] ÉXITO (Fase %) -> Tabla: %.% (Task ID: %)', v_current_stage, v_schema, v_table, v_task_id;
+                END LOOP;
             END IF;
+
+            -- D. CONTEO DE ESTADO
+            SELECT COUNT(*) INTO v_active_workers FROM public.maintenance_tasks WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'RUNNING';
+            SELECT COUNT(*) INTO v_pending_tasks FROM public.maintenance_tasks WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'PENDING';
+
+            IF v_active_workers = 0 AND v_pending_tasks = 0 THEN 
+                EXIT; -- Terminó la Fase actual, sale del bucle interno
+            END IF;
+
+            -- E. DESPACHADOR DE TAREAS
+            WHILE v_active_workers < p_parallel_workers AND v_pending_tasks > 0 LOOP
+                SELECT task_id, schema_name, table_name INTO v_task_id, v_schema, v_table
+                FROM public.maintenance_tasks
+                WHERE job_id = v_job_id AND stage_number = v_current_stage AND status = 'PENDING' 
+                ORDER BY task_id ASC LIMIT 1;
+
+                IF v_task_id IS NOT NULL THEN
+                    UPDATE public.maintenance_tasks SET status = 'RUNNING', started_at = clock_timestamp() WHERE task_id = v_task_id;
+                    COMMIT;
+
+                    v_raw_sql := 'SET maintenance_work_mem = ''8GB''; SET max_parallel_maintenance_workers = 4; SET vacuum_cost_delay = 0; ';
+
+                    -- CONFIGURACIÓN DINÁMICA DE LA FASE
+                    IF p_job_type = 'PRELOAD' THEN
+                        IF v_current_stage = 1 THEN
+                            v_raw_sql := v_raw_sql || format('SET default_statistics_target = 1; ANALYZE %I.%I; ', v_schema, v_table);
+                        ELSIF v_current_stage = 2 THEN
+                            v_raw_sql := v_raw_sql || format('SET default_statistics_target = 10; ANALYZE %I.%I; ', v_schema, v_table);
+                        ELSE
+                            v_raw_sql := v_raw_sql || format('RESET default_statistics_target; ANALYZE %I.%I; ', v_schema, v_table);
+                        END IF;
+                    ELSE
+                        v_raw_sql := v_raw_sql || format('ANALYZE %I.%I; ', v_schema, v_table);
+                    END IF;
+
+                    v_raw_sql := v_raw_sql || format('UPDATE public.maintenance_tasks SET status = ''SUCCESS'', ended_at = clock_timestamp() WHERE task_id = %s;', v_task_id);
+
+                    v_child_pid := public.pg_background_launch(v_raw_sql);
+
+                    UPDATE public.maintenance_tasks SET child_pid = v_child_pid WHERE task_id = v_task_id;
+                    COMMIT;
+
+                    v_active_workers := v_active_workers + 1;
+                    v_pending_tasks := v_pending_tasks - 1;
+                END IF;
+            END LOOP;
+            PERFORM pg_sleep(1);
         END LOOP;
-        PERFORM pg_sleep(1);
+
+        v_current_stage := v_current_stage + 1;
     END LOOP;
 
     -- 4. FIN DE OPERACIONES
@@ -795,7 +822,7 @@ BEGIN
 
     IF p_verbose THEN
         RAISE INFO '---------------------------------------------------------';
-        RAISE INFO '[DBA SQUAD] ORQUESTACIÓN FINALIZADA CON ÉXITO.';
+        RAISE INFO '[DBA SQUAD] ORQUESTACIÓN PRELOAD FINALIZADA CON ÉXITO.';
         RAISE INFO 'Tiempo Total: %', (clock_timestamp() - v_start_time);
         RAISE INFO '=========================================================';
     END IF;
