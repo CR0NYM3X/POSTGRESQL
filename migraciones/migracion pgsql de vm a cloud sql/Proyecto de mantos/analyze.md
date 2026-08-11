@@ -1,5 +1,51 @@
  
 
+### 1. `'SMART'` (El Mantenimiento Quirúrgico Diario)
+
+* **¿Para qué sirve?:** Es el modo **inteligente y autónomo**. En lugar de procesar toda la base de datos a ciegas, lee la telemetría interna del motor (`pg_stat_user_tables`) y selecciona **única y exclusivamente las tablas que están "sucias" o desfasadas**.
+* **Criterio de selección:**
+* Ignora la "morralla" (tablas con menos de `p_min_rows` modificaciones; por defecto **1,000** filas).
+* Evalúa si sufrieron alta volatilidad (cambios mayor a `p_threshold_pct`; por defecto **5%**).
+* O si sufrieron un volumen masivo absoluto (más de **50,000** modificaciones sin importar el porcentaje).
+
+
+* **Caso de uso ideal:** **Mantenimiento nocturno programado de rutina** (vía `pg_cron` a la 1:00 AM o 2:00 AM). Procesa lo que se ensució en el día en cuestión de minutos, ahorrando ciclos de CPU y lecturas de disco SSD.
+
+---
+
+### 2. `'ALL'` (El Mantenimiento Masivo de Catálogo)
+
+* **¿Para qué sirve?:** Ejecuta un `ANALYZE` **sobre absolutamente todas las tablas de usuario** existentes en el catálogo, sin importar si sufrieron cambios o no.
+* **Criterio de selección:** Lee `pg_stat_user_tables` completo y ordena las tablas para procesar primero las que tienen mayor volumen de filas modificadas y vivas.
+* **Caso de uso ideal:** Mantenimientos profundos de **fin de semana** o ventanas de mantenimiento generales donde se requiere forzar la actualización del 100% de los histogramas del optimizador de la base de datos.
+ 
+### 3. `'PRELOAD'` (La Recuperación de Emergencia en Fases)
+
+* **¿Para qué sirve?:** Emula el flag `--analyze-in-stages` del binario de Linux `vacuumdb`. Ejecuta **3 pasadas consecutivas de `ANALYZE` por cada tabla**, manipulando dinámicamente el parámetro `default_statistics_target`:
+1. *Fase 1 (`target = 1`):* Muestra ultra rápida para dar un mapa básico de inmediato.
+2. *Fase 2 (`target = 10`):* Muestra media para ajustar histogramas.
+3. *Fase 3 (`RESET target`):* Análisis profundo definitivo (target por defecto del servidor, usualmente 100).
+
+
+* **Caso de uso ideal:** **Exclusivo para escenarios post-desastre:** inmediatamente después de una restauración de base de datos (Point-in-Time Recovery), post-migración de servidor o al levantar un entorno desde cero, permitiendo que el planificador de consultas tenga estadísticas útiles de inmediato sin esperar a que termine un análisis completo.
+
+ 
+### 📋 RESUMEN TÁCTICO DE INVOCACIÓN
+
+```sql
+-- 1. Mantenimiento Diario Autónomo (Recomendado)
+CALL public.sp_orchestrate_maintenance(p_job_type => 'SMART', p_parallel_workers => 4, p_verbose => TRUE);
+
+-- 2. Mantenimiento Masivo de Fin de Semana
+CALL public.sp_orchestrate_maintenance(p_job_type => 'ALL', p_parallel_workers => 8, p_verbose => FALSE);
+
+-- 3. Mantenimiento de Emergencia Post-Restauración
+CALL public.sp_orchestrate_maintenance(p_job_type => 'PRELOAD', p_parallel_workers => 8, p_verbose => TRUE);
+
+```
+
+---
+
 ### 1. LAS TABLAS DE ESTADO (ESQUEMA PUBLIC)
 
 **Habla Marcos (Arquitectura):**
@@ -74,16 +120,18 @@ DECLARE
     v_pending_tasks INT;
     v_total_tasks INT;
     v_raw_sql TEXT;
+    v_raw_output TEXT; 
     v_start_time TIMESTAMPTZ := clock_timestamp();
+    r_finished RECORD;
 BEGIN
     IF p_verbose THEN
         RAISE INFO '=========================================================';
-        RAISE INFO '[DBA SQUAD] INICIANDO ORQUESTADOR DE MANTENIMIENTO VANGUARD';
-        RAISE INFO 'TIPO: % | ACCIÓN: ANALYZE | HILOS: % | UMBRAL: %%% | MIN CAMBIOS: %', p_job_type, p_parallel_workers, (p_threshold_pct * 100), p_min_rows;
+        RAISE INFO '[DBA SQUAD] INICIANDO ORQUESTADOR VANGUARD V4.0 (NATIVO)';
+        RAISE INFO 'TIPO: % | ACCIÓN: ANALYZE | HILOS: % | UMBRAL: %%%', p_job_type, p_parallel_workers, (p_threshold_pct * 100);
         RAISE INFO '=========================================================';
     END IF;
 
-    -- 1. Crear Job
+    -- 1. Crear Job Padre
     INSERT INTO public.maintenance_jobs (job_type, maintenance_action, threshold_pct, parallel_workers, status)
     VALUES (p_job_type, 'ANALYZE', p_threshold_pct, p_parallel_workers, 'RUNNING')
     RETURNING job_id INTO v_job_id;
@@ -131,8 +179,27 @@ BEGIN
         RETURN;
     END IF;
 
-    -- 3. Bucle Principal
+    -- 3. BUCLE PRINCIPAL
     LOOP
+        -- A. RECOLECTOR DE BASURA (GC) - ¡AHORA NATIVO Y CON TIPADO FUERTE!
+        FOR r_finished IN 
+            SELECT task_id, child_pid 
+            FROM public.maintenance_tasks 
+            WHERE job_id = v_job_id AND status IN ('SUCCESS', 'FAILED') AND child_pid IS NOT NULL
+        LOOP
+            BEGIN
+                -- Consumimos el resultado explícitamente definiendo la columna esperada
+                PERFORM * FROM public.pg_background_result(r_finished.child_pid) AS pbg(dummy INT);
+            EXCEPTION WHEN OTHERS THEN
+                -- Si falla la recolección, ya no silenciamos el error, lo reportamos.
+                IF p_verbose THEN RAISE WARNING '[GC] Falló liberación de PID %: %', r_finished.child_pid, SQLERRM; END IF;
+            END;
+
+            UPDATE public.maintenance_tasks SET child_pid = NULL WHERE task_id = r_finished.task_id;
+            COMMIT;
+        END LOOP;
+
+        -- B. DETECTOR DE ZOMBIS
         WITH zombis AS (
             UPDATE public.maintenance_tasks
             SET status = 'FAILED', ended_at = clock_timestamp(), error_log = 'Process died or aborted before completion.'
@@ -142,9 +209,10 @@ BEGIN
         )
         SELECT count(*) FROM zombis INTO v_task_id; 
         
-        IF p_verbose AND v_task_id > 0 THEN RAISE INFO '[X] ALERTA: Se detectaron y purgaron % procesos zombis.', v_task_id; END IF;
+        IF p_verbose AND v_task_id > 0 THEN RAISE INFO '[☠️] ALERTA: Se detectaron y purgaron % procesos zombis.', v_task_id; END IF;
         COMMIT;
 
+        -- C. REPORTE VISUAL
         IF p_verbose THEN
             FOR v_schema, v_table, v_task_id IN 
                 SELECT schema_name, table_name, task_id FROM public.maintenance_tasks 
@@ -154,11 +222,13 @@ BEGIN
             END LOOP;
         END IF;
 
+        -- D. CONTEO DE ESTADO
         SELECT COUNT(*) INTO v_active_workers FROM public.maintenance_tasks WHERE job_id = v_job_id AND status = 'RUNNING';
         SELECT COUNT(*) INTO v_pending_tasks FROM public.maintenance_tasks WHERE job_id = v_job_id AND status = 'PENDING';
 
         IF v_active_workers = 0 AND v_pending_tasks = 0 THEN EXIT; END IF;
 
+        -- E. DESPACHADOR DE TAREAS
         WHILE v_active_workers < p_parallel_workers AND v_pending_tasks > 0 LOOP
             SELECT task_id, schema_name, table_name INTO v_task_id, v_schema, v_table
             FROM public.maintenance_tasks
@@ -178,15 +248,19 @@ BEGIN
                     v_raw_sql := v_raw_sql || format('ANALYZE %I.%I; ', v_schema, v_table);
                 END IF;
 
-                v_raw_sql := v_raw_sql || format('UPDATE public.maintenance_tasks SET status = ''SUCCESS'', ended_at = clock_timestamp() WHERE task_id = %s;', v_task_id);
+                v_raw_sql := v_raw_sql || format('UPDATE public.maintenance_tasks SET status = ''SUCCESS'', ended_at = clock_timestamp() WHERE task_id = %s; ', v_task_id);
+                
+                -- 👈 TOQUE TÁCTICO: Obligamos a la cadena SQL a devolver un entero (1) al finalizar.
+                v_raw_sql := v_raw_sql || 'SELECT 1::INT;';
 
-                --  AQUÍ ESTÁ EL FIX (Se eliminó el casteo explícito de tabla)
-                SELECT pid INTO v_child_pid FROM public.pg_background_launch(v_raw_sql);
+                -- Extraemos el PID de forma segura desde la cadena
+                v_raw_output := public.pg_background_launch(v_raw_sql)::TEXT;
+                v_child_pid  := split_part(btrim(v_raw_output, '()'), ',', 1)::INT;
 
                 UPDATE public.maintenance_tasks SET child_pid = v_child_pid WHERE task_id = v_task_id;
                 COMMIT;
 
-                IF p_verbose THEN RAISE INFO '   [>] LANZANDO -> Hilo % asignado a Tabla: %.% (Task ID: %)', v_child_pid, v_schema, v_table, v_task_id; END IF;
+                IF p_verbose THEN RAISE INFO '   [>] LANZANDO -> Hilo PID % asignado a Tabla: %.%', v_child_pid, v_schema, v_table; END IF;
 
                 v_active_workers := v_active_workers + 1;
                 v_pending_tasks := v_pending_tasks - 1;
@@ -195,6 +269,7 @@ BEGIN
         PERFORM pg_sleep(1);
     END LOOP;
 
+    -- 4. FIN DE OPERACIONES
     UPDATE public.maintenance_jobs SET status = 'COMPLETED', ended_at = clock_timestamp() WHERE job_id = v_job_id;
     COMMIT;
 
