@@ -1,4 +1,15 @@
  
+## 🛠️ ¿PARA QUÉ SIRVE EL ORQUESTADOR analyze?
+
+Es un **motor de mantenimiento asíncrono y paralelo para PostgreSQL** diseñado para mantener al optimizador de consultas en su punto máximo de rendimiento.
+
+* **Evita la degradación del sistema:** Automatiza el refresco de estadísticas (`ANALYZE`)  sin bloquear las transacciones activas de los usuarios.
+* **Control de recursos de bajo nivel:** Administra pools de hilos concurrentes, elimina procesos zombis automáticamente y realiza recolección de memoria (GC) para jamás saturar la RAM ni el CPU.
+* **Trazabilidad Forense:** Guarda un historial inmutable de cada intervención (filas afectadas, tiempos de ejecución y porcentaje de desfase `drift_pct`) en tablas de auditoría.
+
+---
+
+## 🚦 MODOS DE EJECUCIÓN (`p_job_type`)
 
 ### 1. `'SMART'` (El Mantenimiento Quirúrgico Diario)
 
@@ -18,7 +29,9 @@
 * **¿Para qué sirve?:** Ejecuta un `ANALYZE` **sobre absolutamente todas las tablas de usuario** existentes en el catálogo, sin importar si sufrieron cambios o no.
 * **Criterio de selección:** Lee `pg_stat_user_tables` completo y ordena las tablas para procesar primero las que tienen mayor volumen de filas modificadas y vivas.
 * **Caso de uso ideal:** Mantenimientos profundos de **fin de semana** o ventanas de mantenimiento generales donde se requiere forzar la actualización del 100% de los histogramas del optimizador de la base de datos.
- 
+
+---
+
 ### 3. `'PRELOAD'` (La Recuperación de Emergencia en Fases)
 
 * **¿Para qué sirve?:** Emula el flag `--analyze-in-stages` del binario de Linux `vacuumdb`. Ejecuta **3 pasadas consecutivas de `ANALYZE` por cada tabla**, manipulando dinámicamente el parámetro `default_statistics_target`:
@@ -29,6 +42,7 @@
 
 * **Caso de uso ideal:** **Exclusivo para escenarios post-desastre:** inmediatamente después de una restauración de base de datos (Point-in-Time Recovery), post-migración de servidor o al levantar un entorno desde cero, permitiendo que el planificador de consultas tenga estadísticas útiles de inmediato sin esperar a que termine un análisis completo.
 
+---
  
 ### 📋 RESUMEN TÁCTICO DE INVOCACIÓN
 
