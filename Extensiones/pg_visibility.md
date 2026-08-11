@@ -1,3 +1,61 @@
+
+
+El **Visibility Map (Mapa de Visibilidad)** o **VM** es una estructura de datos interna y muy ligera que PostgreSQL mantiene de forma independiente para cada tabla de la base de datos.
+
+Su único objetivo es **ahorrar lecturas de disco (I/O) marcando qué bloques (páginas de 8 KB) de una tabla contienen datos 100% estables**.
+
+ 
+
+### ¿Cómo funciona físicamente?
+
+Una tabla en PostgreSQL está dividida físicamente en bloques de 8 KB. Por cada bloque de datos que tiene tu tabla, el Visibility Map guarda únicamente **2 bits de información**:
+
+| Bit | Nombre | ¿Qué significa si está activo (`true`)? |
+| --- | --- | --- |
+| **Bit 1** | `all_visible` | **Todas las filas de este bloque son visibles para todos.** No hay tuplas muertas (basura de `UPDATE`/`DELETE`) ni transacciones en curso (`BEGIN`) modificando el bloque. |
+| **Bit 2** | `all_frozen` | **Todas las filas de este bloque están congeladas.** Ninguna fila del bloque necesita preocuparse por el límite de transacciones (*Transaction ID Wraparound*). |
+ 
+### ¿Por qué es fundamental para el rendimiento?
+
+Gracias a estos 2 bits por bloque, PostgreSQL logra dos optimizaciones gigantescas que vimos en tus pruebas en la terminal:
+
+#### 1. Permite el "Index-Only Scan" (Consultas ultra rápidas)
+
+En PostgreSQL, los índices B-Tree normales **no guardan información de visibilidad (MVCC)**. En versiones muy viejas de Postgres, aunque buscaras un dato mediante un índice, el motor estaba obligado a ir a la tabla principal (disco) a comprobar si esa fila estaba viva o muerta.
+
+Hoy en día, cuando haces una consulta, el motor mira el Visibility Map:
+
+* Si el bloque en el mapa dice **`all_visible = true`**, el motor sabe que todas las filas ahí están vivas. **Responde la consulta usando únicamente el Índice**, sin tocar la tabla en disco (*Index-Only Scan*).
+
+#### 2. Hace que el `VACUUM` sea rápido
+
+Sin el Visibility Map, cada vez que corrieras un `VACUUM`, PostgreSQL tendría que leer terabytes de datos en disco revisando bloque por bloque.
+
+Con el VM:
+
+* Cuando el `VACUUM` pasa por una tabla, consulta el mapa de visibilidad.
+* Si un bloque está marcado como **`all_visible = true`**, el `VACUUM` **se salta ese bloque por completo** y no gasta disco ni CPU leyéndolo.
+* Si el bloque está marcado como **`all_frozen = true`**, el `VACUUM` ni siquiera lo considera para el proceso de *freeze* de emergencia.
+
+ 
+
+### ¿Quién modifica o actualiza el Visibility Map?
+
+1. **Un `INSERT` / `UPDATE` / `DELETE` desactiva el mapa:** En cuanto una transacción modifica o inserta algo en una página, los bits `all_visible` y `all_frozen` de esa página en particular cambian a `false` automáticamente.
+2. **El comando `VACUUM` activa el mapa:** Es el proceso principal que escanea las páginas, limpia la basura y, al confirmar que una página quedó limpia y confirmada, vuelve a encender los bits `all_visible` y `all_frozen` a `true` (tal como comprobaste en tu terminal).
+
+### Resumen
+
+El Visibility Map es el "índice de salud" de los bloques de tu tabla. Le evita a PostgreSQL leer del disco datos que ya sabe que están limpios y confirmados.
+
+
+
+
+
+
+
+
+----
 ## 🧠 Análisis estructurado: `pg_visibility`
 
 ### 🎯 Objetivo
