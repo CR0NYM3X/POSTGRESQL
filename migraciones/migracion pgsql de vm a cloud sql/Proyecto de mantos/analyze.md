@@ -1,4 +1,5 @@
- 
+**Futura actualización se agregara el modo agresivo - pg_stat_all_tables**
+
 ## 🛠️ ¿PARA QUÉ SIRVE EL ORQUESTADOR analyze?
 
 Es un **motor de mantenimiento asíncrono y paralelo para PostgreSQL** diseñado para mantener al optimizador de consultas en su punto máximo de rendimiento.
