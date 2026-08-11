@@ -122,6 +122,7 @@ DECLARE
     v_start_time TIMESTAMPTZ := clock_timestamp();
     r_finished RECORD;                  -- Variable de registro para bucles
 BEGIN
+    SET client_min_messages = notice;
     IF p_verbose THEN
         RAISE INFO '=========================================================';
         RAISE INFO '[DBA SQUAD] INICIANDO ORQUESTADOR VANGUARD V5.2 (OFICIAL)';
@@ -643,6 +644,7 @@ DECLARE
     v_start_time TIMESTAMPTZ := clock_timestamp();
     r_finished RECORD;                  -- Variable de registro para bucles
 BEGIN
+    SET client_min_messages = notice;
     IF p_verbose THEN
         RAISE INFO '=========================================================';
         RAISE INFO '[DBA SQUAD] INICIANDO ORQUESTADOR VANGUARD (PG_BACKGROUND 1.4)';
