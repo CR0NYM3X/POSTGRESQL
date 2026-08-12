@@ -37,81 +37,26 @@ Estandarizamos los nombres de los perfiles y sus banderas nativas en PostgreSQL:
 
 ---
 
-## 🧠 2. EL MOTOR DE CONTINUIDAD Y PRIORIZACIÓN (Carryover Engine)
 
-**Habla Marcos (Arquitecto Senior):**
+ 
+### 🏛️ FASE 1: LOS CIMIENTOS (DDL y Estructuras)
 
-Para lograr que el domingo a las 4:00 AM el orquestador sepa exactamente cuáles 400 tablas se quedaron pendientes la semana pasada, implementamos el **Algoritmo de Priorización de Continuidad**.
-
-### ¿Cómo calcula el orden de las tablas en la cola?
-
-En lugar de ordenar simplemente por `n_dead_tup DESC`, la consulta de inserción calcula un **Peso de Prioridad**:
-
-1. **Prioridad 1 (Tablas Incompletas/Expiradas):** Busca en la tabla `public.vacuum_tasks` la última ejecución con la misma firma (`job_type` + `scope` + `profile`) que se hayan quedado en estatus `'SKIPPED_TIME_LIMIT'` o `'PENDING'`.
-2. **Prioridad 2 (Tiempo transcurrido desde el último Vacuum):** Evalúa la vista `pg_stat_user_tables.last_vacuum` y prioriza las tablas que llevan **más tiempo sin recibir mantenimiento**.
-3. **Prioridad 3 (Volumen de tuplas muertas):** Ordena por la cantidad de tuplas muertas (`n_dead_tup DESC`).
+Ejecuta este bloque para crear las tablas maestras, hijas y de telemetría forense.
 
 ```sql
-ORDER BY 
-    -- 1° Las que se quedaron pendientes en la última ejecución similar
-    CASE WHEN t_prev.status = 'SKIPPED_TIME_LIMIT' THEN 0 ELSE 1 END ASC,
-    -- 2° Las que llevan más tiempo sin VACUUM (o nunca han recibido uno)
-    COALESCE(st.last_vacuum, '1970-01-01'::timestamptz) ASC,
-    -- 3° Mayor cantidad de tuplas muertas
-    st.n_dead_tup DESC
+-- 1. TABLA PADRE: Orquestación Global
+CREATE TABLE IF NOT EXISTS public.maintenance_jobs (
+    job_id SERIAL PRIMARY KEY,
+    job_type VARCHAR(50) NOT NULL,       
+    maintenance_action VARCHAR(20) NOT NULL, 
+    threshold_pct NUMERIC DEFAULT 0.05,  
+    parallel_workers INT NOT NULL,       
+    status VARCHAR(30) DEFAULT 'INITIALIZING',
+    started_at TIMESTAMPTZ DEFAULT clock_timestamp(),
+    ended_at TIMESTAMPTZ
+);
 
-```
-
----
-
-## ⏱️ 3. MANEJO DE LA VENTANA DE TIEMPO (Cutoff Time)
-
-**Habla Pedro (Desarrollo Core):**
-
-Añadimos el parámetro `p_cutoff_time TIME` (ejemplo: `'06:00:00'::TIME`).
-
-### Lógica de control en el bucle principal:
-
-En cada iteración del bucle principal (antes de despachar un nuevo hilo), el procedimiento evalúa:
-
-```sql
-IF p_cutoff_time IS NOT NULL AND LOCALTIME >= p_cutoff_time THEN
-    -- 1. Detiene la asignación de NUEVAS tareas
-    -- 2. Deja que los hilos RUNNING que ya están en ejecución terminen limpiamente
-    -- 3. Actualiza las tareas PENDING que no alcanzaron a salir a estatus 'SKIPPED_TIME_LIMIT'
-    -- 4. Marca el Job Padre como 'COMPLETED_WITH_CUTOFF'
-    EXIT;
-END IF;
-
-```
-
----
-
-## 🗄️ 4. NUEVOS ESTATUS DE AUDITORÍA EN LAS TABLAS
-
-Para identificar exactamente qué pasó con cada proceso en los paneles de control, agregamos los siguientes estados estándar:
-
-* **Estatus en `public.maintenance_jobs` (Padre):**
-* `'COMPLETED'` -> Finalizó el 100% de las tablas dentro de la ventana.
-* `'COMPLETED_WITH_CUTOFF'` -> Llegó a la hora límite (ej. 6:00 AM), detuvo el lanzamiento de nuevas tareas y esperó a que los hilos activos terminaran.
-
-
-* **Estatus en `public.vacuum_tasks` (Hija):**
-* `'SUCCESS'` -> Vacuum ejecutado exitosamente.
-* `'RUNNING'` -> En ejecución activa.
-* `'FAILED'` -> Explotó o se convirtió en zombi.
-* `'SKIPPED_TIME_LIMIT'` -> **Nueva:** La tarea estaba en cola pero no se lanzó porque el reloj alcanzó la hora límite (`p_cutoff_time`).
-
-
-
----
-
-## 🛡️ 5. DDL Y PROCEDIMIENTO VANGUARD VACUUM CON ESTADO Y VENTANA DE TIEMPO
-
-### A. Estructura de Tablas Homologada
-
-```sql
--- TABLA HIJA EXCLUSIVA PARA VACUUM (Soporta Ventanas de Tiempo y Priorización)
+-- 2. TABLA HIJA: Tareas de Vacuum con Estado (Carryover)
 CREATE TABLE IF NOT EXISTS public.vacuum_tasks (
     task_id SERIAL PRIMARY KEY,
     job_id INT NOT NULL REFERENCES public.maintenance_jobs(job_id) ON DELETE CASCADE,
@@ -120,268 +65,301 @@ CREATE TABLE IF NOT EXISTS public.vacuum_tasks (
     n_live_tup BIGINT,
     n_dead_tup BIGINT,
     dead_pct NUMERIC(5,2),
-    status VARCHAR(25) DEFAULT 'PENDING', -- 'PENDING', 'RUNNING', 'SUCCESS', 'FAILED', 'SKIPPED_TIME_LIMIT'
+    status VARCHAR(30) DEFAULT 'PENDING', -- PENDING, RUNNING, SUCCESS, FAILED, SKIPPED_TIME_LIMIT
     child_pid INT,
     started_at TIMESTAMPTZ,
     ended_at TIMESTAMPTZ,
     error_log TEXT
 );
 
+-- 3. TABLA DE CONTROL: Filtros Globales (Blacklist / Whitelist)
+CREATE TABLE IF NOT EXISTS public.maintenance_filters (
+    filter_id SERIAL PRIMARY KEY,
+    schema_name VARCHAR(255) NOT NULL,
+    table_name VARCHAR(255) NOT NULL,
+    is_ignored BOOLEAN NOT NULL DEFAULT FALSE,        -- KILL SWITCH Supremo
+    force_maintenance BOOLEAN NOT NULL DEFAULT FALSE, -- PASE VIP para CUSTOM_LIST
+    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    updated_by VARCHAR(100) DEFAULT current_user,
+    CONSTRAINT uq_maintenance_filters_schema_table UNIQUE (schema_name, table_name)
+);
+
+-- 4. TABLA DE TELEMETRÍA: Triage Predictivo de 2 Etapas
+CREATE TABLE IF NOT EXISTS public.vacuum_full_triage (
+    triage_id BIGSERIAL PRIMARY KEY,
+    evaluation_week DATE NOT NULL DEFAULT date_trunc('week', current_date),
+    schema_name VARCHAR(255) NOT NULL,
+    table_name VARCHAR(255) NOT NULL,
+    approx_scanned BOOLEAN NOT NULL DEFAULT FALSE,
+    approx_evaluated_at TIMESTAMPTZ,
+    approx_table_len BIGINT,
+    approx_dead_tuple_percent NUMERIC(5,2),
+    approx_free_percent NUMERIC(5,2),
+    approx_scanned_percent NUMERIC(5,2),
+    deep_scanned BOOLEAN NOT NULL DEFAULT FALSE,
+    deep_evaluated_at TIMESTAMPTZ,
+    deep_table_len BIGINT,
+    deep_dead_tuple_percent NUMERIC(5,2),
+    deep_free_percent NUMERIC(5,2),
+    CONSTRAINT uq_triage_week_schema_table UNIQUE (evaluation_week, schema_name, table_name)
+);
+
 ```
 
-### B. Procedimiento Armado (`sp_orchestrate_vacuum`)
+---
+
+### ⚙️ FASE 2: EL MOTOR (Procedimientos Almacenados)
+
+#### A. El Escáner Dominical (`sp_populate_vacuum_triage`)
+
+Ejecuta la extensión `pgstattuple` con protección de I/O en dos etapas.
 
 ```sql
-CREATE OR REPLACE PROCEDURE public.sp_orchestrate_vacuum(
-    p_scope VARCHAR DEFAULT 'SMART_USER',-- 1. 'SMART_USER', 'SMART_SYSTEM_USER', 'ALL_USER', 'ALL_SYSTEM_USER', 'ALL_SYSTEM'
-    p_profile VARCHAR DEFAULT 'BALANCED',-- 2. 'LIGHT', 'BALANCED', 'AGGRESSIVE', 'FULL_COMPACTION'
-    p_parallel_workers INT DEFAULT 4,   -- 3. Cantidad de hilos paralelos
-    p_cutoff_time TIME DEFAULT NULL,    -- 4. Hora límite de detención (ej. '06:00:00'::TIME)
-    p_verbose BOOLEAN DEFAULT FALSE,    -- 5. Diagnóstico visual
-    p_threshold_pct NUMERIC DEFAULT 0.05,-- 6. Umbral tuplas muertas (% de bloat)
-    p_min_dead_tup INT DEFAULT 5000     -- 7. Mínimo de tuplas muertas
+CREATE OR REPLACE PROCEDURE public.sp_populate_vacuum_triage(
+    p_free_pct_threshold NUMERIC DEFAULT 15.00,  
+    p_dead_pct_threshold NUMERIC DEFAULT 20.00,  
+    p_verbose BOOLEAN DEFAULT FALSE
 )
 LANGUAGE plpgsql AS $$
 DECLARE
-    v_job_id INT;
-    v_task_id INT;
-    v_schema TEXT;
-    v_table TEXT;
-    v_child_pid INT;
-    v_active_workers INT;
-    v_pending_tasks INT;
-    v_total_tasks INT;
-    v_raw_sql TEXT;
-    v_effective_workers INT := p_parallel_workers;
-    v_start_time TIMESTAMPTZ := clock_timestamp();
-    r_finished RECORD;
-    v_last_job_id INT;
+    r_table RECORD; r_approx RECORD; r_deep RECORD;
+    v_week DATE := date_trunc('week', current_date)::DATE;
+    v_processed INT := 0; v_sniped INT := 0;
 BEGIN
-    -- Forzar a 1 solo worker si se solicita FULL_COMPACTION para proteger el servidor
-    IF p_profile = 'FULL_COMPACTION' THEN
-        v_effective_workers := 1;
+    IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgstattuple') THEN
+        RAISE EXCEPTION 'CRÍTICO: La extensión "pgstattuple" no está instalada.';
     END IF;
 
-    IF p_verbose THEN
-        RAISE INFO '=========================================================';
-        RAISE INFO '[DBA SQUAD] ORQUESTADOR VACUUM V1.4 STATEFUL & TIME-AWARE';
-        RAISE INFO 'SCOPE: % | PERFIL: % | HILOS: % | HORA LÍMITE: %', 
-                   p_scope, p_profile, v_effective_workers, COALESCE(p_cutoff_time::text, 'SIN LÍMITE');
-        RAISE INFO '=========================================================';
-    END IF;
+    FOR r_table IN (
+        SELECT c.oid AS table_oid, n.nspname AS schema_name, c.relname AS table_name
+        FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE c.relkind IN ('r', 'm') 
+          AND n.nspname NOT IN ('pg_toast', 'information_schema')
+          AND NOT EXISTS (SELECT 1 FROM public.maintenance_filters f WHERE f.schema_name = n.nspname AND f.table_name = c.relname AND f.is_ignored = TRUE)
+    ) LOOP
+        BEGIN
+            -- ETAPA 1: Radar (Approx)
+            SELECT * INTO r_approx FROM pgstattuple_approx(r_table.table_oid);
 
-    -- 1. Registrar el Job Padre
+            INSERT INTO public.vacuum_full_triage (
+                evaluation_week, schema_name, table_name, approx_scanned, approx_evaluated_at, approx_table_len, approx_dead_tuple_percent, approx_free_percent, approx_scanned_percent
+            ) VALUES (
+                v_week, r_table.schema_name, r_table.table_name, TRUE, clock_timestamp(), r_approx.table_len, r_approx.dead_tuple_percent, r_approx.approx_free_percent, r_approx.scanned_percent
+            ) ON CONFLICT (evaluation_week, schema_name, table_name) DO UPDATE SET
+                approx_scanned = TRUE, approx_evaluated_at = clock_timestamp(), approx_table_len = EXCLUDED.approx_table_len, approx_dead_tuple_percent = EXCLUDED.approx_dead_tuple_percent, approx_free_percent = EXCLUDED.approx_free_percent, approx_scanned_percent = EXCLUDED.approx_scanned_percent;
+            v_processed := v_processed + 1;
+
+            -- ETAPA 2: Francotirador (Profundo)
+            IF r_approx.approx_free_percent >= p_free_pct_threshold OR r_approx.dead_tuple_percent >= p_dead_pct_threshold THEN
+                SELECT * INTO r_deep FROM pgstattuple(r_table.table_oid);
+                UPDATE public.vacuum_full_triage SET
+                    deep_scanned = TRUE, deep_evaluated_at = clock_timestamp(), deep_table_len = r_deep.table_len, deep_dead_tuple_percent = r_deep.dead_tuple_percent, deep_free_percent = r_deep.free_percent
+                WHERE evaluation_week = v_week AND schema_name = r_table.schema_name AND table_name = r_table.table_name;
+                v_sniped := v_sniped + 1;
+            END IF;
+            COMMIT; -- Libera bloqueos rápido
+        EXCEPTION WHEN OTHERS THEN
+            ROLLBACK;
+        END;
+    END LOOP;
+    IF p_verbose THEN RAISE INFO '[✓] TRIAGE FINALIZADO. Aprox: %, Profundos: %', v_processed, v_sniped; END IF;
+END;
+$$;
+
+```
+
+#### B. El Orquestador Maestro (`sp_orchestrate_vacuum`)
+
+El motor asíncrono con herencia dinámica de GUC, control de tiempo y triage inteligente.
+
+```sql
+CREATE OR REPLACE PROCEDURE public.sp_orchestrate_vacuum(
+    p_scope VARCHAR DEFAULT 'SMART_USER',
+    p_profile VARCHAR DEFAULT 'BALANCED',
+    p_parallel_workers INT DEFAULT 4,    
+    p_cutoff_time TIME DEFAULT NULL,     
+    p_verbose BOOLEAN DEFAULT FALSE,     
+    p_threshold_pct NUMERIC DEFAULT 0.05,
+    p_min_dead_tup INT DEFAULT 5000      
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_job_id INT; v_task_id INT; v_schema TEXT; v_table TEXT; v_child_pid INT;
+    v_active_workers INT; v_pending_tasks INT; v_total_tasks INT; v_raw_sql TEXT;
+    v_effective_workers INT := p_parallel_workers; r_finished RECORD; v_last_job_id INT;
+    v_guc_work_mem TEXT := current_setting('maintenance_work_mem');
+    v_guc_io_conc TEXT := current_setting('maintenance_io_concurrency');
+    v_guc_max_par TEXT := current_setting('max_parallel_maintenance_workers');
+    v_guc_cost_del TEXT := current_setting('vacuum_cost_delay');
+BEGIN
+    IF p_profile IN ('VACUUM_FULL', 'SMART_VACUUM_FULL') THEN v_effective_workers := 1; END IF;
+
     INSERT INTO public.maintenance_jobs (job_type, maintenance_action, threshold_pct, parallel_workers, status)
-    VALUES (p_scope || '_' || p_profile, 'VACUUM', p_threshold_pct, v_effective_workers, 'RUNNING')
-    RETURNING job_id INTO v_job_id;
+    VALUES (p_scope || '_' || p_profile, 'VACUUM', p_threshold_pct, v_effective_workers, 'RUNNING') RETURNING job_id INTO v_job_id;
     COMMIT;
 
-    -- 2. Buscar el último Job similar para identificar si quedaron tablas pendientes (SKIPPED_TIME_LIMIT)
-    SELECT MAX(job_id) INTO v_last_job_id
-    FROM public.maintenance_jobs
-    WHERE job_type = (p_scope || '_' || p_profile)
-      AND maintenance_action = 'VACUUM'
-      AND job_id < v_job_id;
+    SELECT MAX(job_id) INTO v_last_job_id FROM public.maintenance_jobs WHERE job_type = (p_scope || '_' || p_profile) AND maintenance_action = 'VACUUM' AND job_id < v_job_id;
 
-    -- 3. Poblar la cola priorizando pendientes anteriores y excluyendo pg_toast
-    INSERT INTO public.vacuum_tasks (
-        job_id, schema_name, table_name, n_live_tup, n_dead_tup, dead_pct
-    )
-    SELECT 
-        v_job_id, 
-        st.schemaname, 
-        st.relname, 
-        st.n_live_tup, 
-        st.n_dead_tup,
-        ROUND((st.n_dead_tup::numeric / NULLIF(st.n_live_tup + st.n_dead_tup, 0)) * 100, 2)
+    INSERT INTO public.vacuum_tasks (job_id, schema_name, table_name, n_live_tup, n_dead_tup, dead_pct)
+    SELECT v_job_id, st.schemaname, st.relname, st.n_live_tup, st.n_dead_tup, ROUND(COALESCE(vft.deep_free_percent, (st.n_dead_tup::numeric / NULLIF(st.n_live_tup + st.n_dead_tup, 0)) * 100), 2)
     FROM pg_stat_all_tables st
-    LEFT JOIN public.vacuum_tasks prev_t ON prev_t.job_id = v_last_job_id 
-                                        AND prev_t.schema_name = st.schemaname 
-                                        AND prev_t.table_name = st.relname
-    WHERE 
-        -- EXCLUSIÓN RIGUROSA: pg_toast NUNCA se procesa directamente
-        st.schemaname <> 'pg_toast'
-        AND (
-            -- SMART_USER / ALL_USER: Solo tablas de usuario
-            (p_scope IN ('SMART_USER', 'ALL_USER') AND st.schemaname NOT IN ('pg_catalog', 'information_schema'))
-            OR 
-            -- SMART_SYSTEM_USER / ALL_SYSTEM_USER: Usuario + Sistema
-            (p_scope IN ('SMART_SYSTEM_USER', 'ALL_SYSTEM_USER'))
-            OR
-            -- ALL_SYSTEM: Única y exclusivamente catálogo interno del sistema
-            (p_scope = 'ALL_SYSTEM' AND st.schemaname IN ('pg_catalog', 'information_schema'))
-        )
-        AND
-        -- Filtro por Umbral (Aplica únicamente en modos SMART)
-        (
-            p_scope NOT LIKE 'SMART%'
-            OR
-            (
-                st.n_dead_tup >= p_min_dead_tup
-                AND (
-                    (st.n_dead_tup::numeric / NULLIF(st.n_live_tup + st.n_dead_tup, 0)) >= p_threshold_pct 
-                    OR st.n_dead_tup >= 100000 
-                )
-            )
-        )
-    ORDER BY 
-        -- PRIORIDAD 1: Tablas omitidas en la ejecución anterior por hora límite
-        CASE WHEN prev_t.status = 'SKIPPED_TIME_LIMIT' THEN 0 ELSE 1 END ASC,
-        -- PRIORIDAD 2: Tablas con más tiempo sin recibir VACUUM
-        COALESCE(st.last_vacuum, '1970-01-01'::timestamptz) ASC,
-        -- PRIORIDAD 3: Mayor volumen de tuplas muertas
-        st.n_dead_tup DESC;
+    LEFT JOIN public.vacuum_tasks prev_t ON prev_t.job_id = v_last_job_id AND prev_t.schema_name = st.schemaname AND prev_t.table_name = st.relname
+    LEFT JOIN public.maintenance_filters mf ON mf.schema_name = st.schemaname AND mf.table_name = st.relname
+    LEFT JOIN public.vacuum_full_triage vft ON vft.schema_name = st.schemaname AND vft.table_name = st.relname AND vft.evaluation_week = date_trunc('week', current_date)::DATE
+    WHERE st.schemaname <> 'pg_toast' AND COALESCE(mf.is_ignored, FALSE) = FALSE
+      AND (
+          (p_scope = 'CUSTOM_LIST' AND mf.force_maintenance = TRUE) OR
+          (p_scope IN ('SMART_USER', 'ALL_USER') AND st.schemaname NOT IN ('pg_catalog', 'information_schema')) OR
+          (p_scope IN ('SMART_SYSTEM_USER', 'ALL_SYSTEM_USER')) OR
+          (p_scope = 'ALL_SYSTEM' AND st.schemaname IN ('pg_catalog', 'information_schema'))
+      )
+      AND (
+          (p_profile = 'SMART_VACUUM_FULL' AND vft.deep_scanned = TRUE AND vft.deep_free_percent >= (p_threshold_pct * 100)) OR
+          (p_profile <> 'SMART_VACUUM_FULL' AND p_scope LIKE 'SMART%' AND st.n_dead_tup >= p_min_dead_tup AND ((st.n_dead_tup::numeric / NULLIF(st.n_live_tup + st.n_dead_tup, 0)) >= p_threshold_pct OR st.n_dead_tup >= 100000)) OR
+          (p_profile <> 'SMART_VACUUM_FULL' AND p_scope NOT LIKE 'SMART%')
+      )
+    ORDER BY CASE WHEN prev_t.status = 'SKIPPED_TIME_LIMIT' THEN 0 ELSE 1 END ASC, CASE WHEN p_profile = 'SMART_VACUUM_FULL' THEN COALESCE(vft.deep_free_percent, 0) ELSE 0 END DESC, COALESCE(st.last_vacuum, '1970-01-01'::timestamptz) ASC, st.n_dead_tup DESC;
     COMMIT;
 
     SELECT COUNT(*) INTO v_total_tasks FROM public.vacuum_tasks WHERE job_id = v_job_id;
-    
-    IF p_verbose THEN
-        RAISE INFO '[+] JOB ID Asignado: %', v_job_id;
-        RAISE INFO '[+] Total de tablas en cola para intervención: %', v_total_tasks;
-        RAISE INFO '---------------------------------------------------------';
-    END IF;
-
     IF v_total_tasks = 0 THEN
-        IF p_verbose THEN RAISE INFO '[✓] El sistema está limpio. Ninguna tabla requiere intervención.'; END IF;
         UPDATE public.maintenance_jobs SET status = 'COMPLETED', ended_at = clock_timestamp() WHERE job_id = v_job_id;
-        COMMIT;
-        RETURN;
+        COMMIT; RETURN;
     END IF;
 
-    -- 4. BUCLE PRINCIPAL DE DESPACHO
     LOOP
-        -- A. RECOLECTOR DE MEMORIA (PG_BACKGROUND 1.4)
-        FOR r_finished IN 
-            SELECT task_id, child_pid FROM public.vacuum_tasks 
-            WHERE job_id = v_job_id AND status IN ('SUCCESS', 'FAILED') AND child_pid IS NOT NULL
-        LOOP
-            BEGIN 
-                PERFORM public.pg_background_detach(r_finished.child_pid::INT); 
-            EXCEPTION WHEN OTHERS THEN 
-                NULL; 
-            END;
-
-            UPDATE public.vacuum_tasks SET child_pid = NULL WHERE task_id = r_finished.task_id;
-            COMMIT;
+        FOR r_finished IN SELECT task_id, child_pid FROM public.vacuum_tasks WHERE job_id = v_job_id AND status IN ('SUCCESS', 'FAILED') AND child_pid IS NOT NULL LOOP
+            BEGIN PERFORM public.pg_background_detach(r_finished.child_pid::INT); EXCEPTION WHEN OTHERS THEN NULL; END;
+            UPDATE public.vacuum_tasks SET child_pid = NULL WHERE task_id = r_finished.task_id; COMMIT;
         END LOOP;
 
-        -- B. DETECTOR DE ZOMBIS
         WITH zombis AS (
-            UPDATE public.vacuum_tasks
-            SET status = 'FAILED', ended_at = clock_timestamp(), error_log = 'Process died or aborted before completion.'
-            WHERE job_id = v_job_id AND status = 'RUNNING'
-              AND child_pid NOT IN (SELECT pid FROM pg_stat_activity WHERE backend_type = 'pg_background')
-            RETURNING task_id
-        )
-        SELECT count(*) FROM zombis INTO v_task_id; 
-        COMMIT;
+            UPDATE public.vacuum_tasks SET status = 'FAILED', ended_at = clock_timestamp(), error_log = 'Dead/Aborted'
+            WHERE job_id = v_job_id AND status = 'RUNNING' AND child_pid NOT IN (SELECT pid FROM pg_stat_activity WHERE backend_type = 'pg_background') RETURNING task_id
+        ) SELECT count(*) FROM zombis INTO v_task_id; COMMIT;
 
-        -- C. EVALUACIÓN DE HORA LÍMITE (Cutoff Time)
         IF p_cutoff_time IS NOT NULL AND LOCALTIME >= p_cutoff_time THEN
-            IF p_verbose THEN
-                RAISE INFO '---------------------------------------------------------';
-                RAISE INFO '[⏹] HORA LÍMITE ALCANZADA (%). Deteniendo lanzamientos...', p_cutoff_time;
-                RAISE INFO '---------------------------------------------------------';
-            END IF;
-
-            -- Marcar las tareas PENDING pendientes como SKIPPED_TIME_LIMIT
-            UPDATE public.vacuum_tasks 
-            SET status = 'SKIPPED_TIME_LIMIT', error_log = 'Omitido por alcanzar la hora limite de la ventana de mantenimiento.'
-            WHERE job_id = v_job_id AND status = 'PENDING';
-            COMMIT;
+            UPDATE public.vacuum_tasks SET status = 'SKIPPED_TIME_LIMIT', error_log = 'Cutoff Time' WHERE job_id = v_job_id AND status = 'PENDING'; COMMIT;
         END IF;
 
-        -- D. CONTEO DE ESTADO
         SELECT COUNT(*) INTO v_active_workers FROM public.vacuum_tasks WHERE job_id = v_job_id AND status = 'RUNNING';
         SELECT COUNT(*) INTO v_pending_tasks FROM public.vacuum_tasks WHERE job_id = v_job_id AND status = 'PENDING';
-
         IF v_active_workers = 0 AND v_pending_tasks = 0 THEN EXIT; END IF;
 
-        -- E. DESPACHADOR DE TAREAS
         WHILE v_active_workers < v_effective_workers AND v_pending_tasks > 0 LOOP
-            
-            -- Freno de emergencia por hora límite
-            IF p_cutoff_time IS NOT NULL AND LOCALTIME >= p_cutoff_time THEN
-                EXIT;
-            END IF;
+            IF p_cutoff_time IS NOT NULL AND LOCALTIME >= p_cutoff_time THEN EXIT; END IF;
 
-            SELECT task_id, schema_name, table_name INTO v_task_id, v_schema, v_table
-            FROM public.vacuum_tasks
-            WHERE job_id = v_job_id AND status = 'PENDING' ORDER BY task_id ASC LIMIT 1;
-
+            SELECT task_id, schema_name, table_name INTO v_task_id, v_schema, v_table FROM public.vacuum_tasks WHERE job_id = v_job_id AND status = 'PENDING' ORDER BY task_id ASC LIMIT 1;
             IF v_task_id IS NOT NULL THEN
-                UPDATE public.vacuum_tasks SET status = 'RUNNING', started_at = clock_timestamp() WHERE task_id = v_task_id;
-                COMMIT;
+                UPDATE public.vacuum_tasks SET status = 'RUNNING', started_at = clock_timestamp() WHERE task_id = v_task_id; COMMIT;
 
-                -- CONSTRUCCIÓN DINÁMICA DEL COMANDO VACUUM SEGÚN EL PERFIL
-                v_raw_sql := 'SET maintenance_work_mem = ''8GB''; SET vacuum_cost_delay = 0; ';
+                v_raw_sql := format('SET maintenance_work_mem = %L; SET maintenance_io_concurrency = %L; SET max_parallel_maintenance_workers = %L; SET vacuum_cost_delay = %L; ', v_guc_work_mem, v_guc_io_conc, v_guc_max_par, v_guc_cost_del);
                 
-                IF p_profile = 'LIGHT' THEN
-                    v_raw_sql := v_raw_sql || format('VACUUM (SKIP_LOCKED ON, INDEX_CLEANUP OFF) %I.%I; ', v_schema, v_table);
-                ELSIF p_profile = 'BALANCED' THEN
-                    v_raw_sql := v_raw_sql || format('VACUUM (INDEX_CLEANUP AUTO) %I.%I; ', v_schema, v_table);
-                ELSIF p_profile = 'AGGRESSIVE' THEN
-                    v_raw_sql := v_raw_sql || format('VACUUM (INDEX_CLEANUP AUTO, PARALLEL 4, ANALYZE) %I.%I; ', v_schema, v_table);
-                ELSIF p_profile = 'FULL_COMPACTION' THEN
-                    v_raw_sql := v_raw_sql || format('VACUUM FULL %I.%I; ', v_schema, v_table);
-                END IF;
+                IF p_profile = 'LIGHT' THEN v_raw_sql := v_raw_sql || format('VACUUM (SKIP_LOCKED ON, INDEX_CLEANUP OFF) %I.%I; ', v_schema, v_table);
+                ELSIF p_profile = 'BALANCED' THEN v_raw_sql := v_raw_sql || format('VACUUM (INDEX_CLEANUP AUTO) %I.%I; ', v_schema, v_table);
+                ELSIF p_profile = 'AGGRESSIVE' THEN v_raw_sql := v_raw_sql || format('VACUUM (INDEX_CLEANUP AUTO, PARALLEL 4, ANALYZE) %I.%I; ', v_schema, v_table);
+                ELSIF p_profile IN ('VACUUM_FULL', 'SMART_VACUUM_FULL') THEN v_raw_sql := v_raw_sql || format('VACUUM FULL %I.%I; ', v_schema, v_table); END IF;
 
                 v_raw_sql := v_raw_sql || format('UPDATE public.vacuum_tasks SET status = ''SUCCESS'', ended_at = clock_timestamp() WHERE task_id = %s;', v_task_id);
-
-                -- pg_background 1.4: Asignación escalar directamente a INT
                 v_child_pid := public.pg_background_launch(v_raw_sql);
+                UPDATE public.vacuum_tasks SET child_pid = v_child_pid WHERE task_id = v_task_id; COMMIT;
 
-                UPDATE public.vacuum_tasks SET child_pid = v_child_pid WHERE task_id = v_task_id;
-                COMMIT;
-
-                IF p_verbose THEN 
-                    RAISE INFO '   [>] LANZANDO [%] -> Hilo PID % asignado a Tabla: %.%', p_profile, v_child_pid, v_schema, v_table; 
-                END IF;
-
-                v_active_workers := v_active_workers + 1;
-                v_pending_tasks := v_pending_tasks - 1;
+                IF p_verbose THEN RAISE INFO '   [>] LANZANDO [%] PID % -> %.%', p_profile, v_child_pid, v_schema, v_table; END IF;
+                v_active_workers := v_active_workers + 1; v_pending_tasks := v_pending_tasks - 1;
             END IF;
         END LOOP;
         PERFORM pg_sleep(1);
     END LOOP;
 
-    -- 5. Actualizar Estatus Final del Job Padre
     IF EXISTS (SELECT 1 FROM public.vacuum_tasks WHERE job_id = v_job_id AND status = 'SKIPPED_TIME_LIMIT') THEN
         UPDATE public.maintenance_jobs SET status = 'COMPLETED_WITH_CUTOFF', ended_at = clock_timestamp() WHERE job_id = v_job_id;
     ELSE
         UPDATE public.maintenance_jobs SET status = 'COMPLETED', ended_at = clock_timestamp() WHERE job_id = v_job_id;
     END IF;
     COMMIT;
-
-    IF p_verbose THEN
-        RAISE INFO '---------------------------------------------------------';
-        RAISE INFO '[DBA SQUAD] ORQUESTACIÓN DE VACUUM FINALIZADA.';
-        RAISE INFO 'Tiempo Total: %', (clock_timestamp() - v_start_time);
-        RAISE INFO '=========================================================';
-    END IF;
 END;
 $$;
+
 ```
 
 ---
 
-## 🎮 EJEMPLO DE INVOCACIÓN (DOMINGO A LAS 4:00 AM)
+### 🧪 FASE 3: LABORATORIO DE COMBATE (Prueba de Fuego Real)
 
-Invocas el Vacuum para tablas de usuario en modo balanceado con 8 hilos, pero con orden explícita de detener lanzamientos a las 06:00 AM:
+Copia y pega este script en tu consola `psql` para ver el ecosistema funcionar en vivo.
 
 ```sql
+-- 1. Asegurar extensión
+CREATE EXTENSION IF NOT EXISTS pgstattuple;
+CREATE EXTENSION IF NOT EXISTS pg_background;
+
+-- 2. Crear Tablas de Laboratorio
+CREATE TABLE public.lab_clientes (id SERIAL, data TEXT);
+CREATE TABLE public.lab_historial (id SERIAL, data TEXT);
+CREATE TABLE public.lab_facturas (id SERIAL, data TEXT);
+
+-- 3. Generar "Basura" y "Bloat" (Insertar y luego Eliminar/Actualizar masivamente)
+INSERT INTO public.lab_clientes(data) SELECT 'Dato ' || g FROM generate_series(1, 50000) g;
+DELETE FROM public.lab_clientes WHERE id % 2 = 0; -- Genera ~50% de tuplas muertas
+
+INSERT INTO public.lab_historial(data) SELECT 'Historial ' || g FROM generate_series(1, 20000) g;
+DELETE FROM public.lab_historial WHERE id < 10000; -- Genera basura
+
+INSERT INTO public.lab_facturas(data) SELECT 'Factura ' || g FROM generate_series(1, 10000) g;
+UPDATE public.lab_facturas SET data = 'Actualizado'; -- Genera tuplas muertas
+
+-- Forzamos la actualización de estadísticas para que el catálogo detecte la basura
+ANALYZE public.lab_clientes;
+ANALYZE public.lab_historial;
+ANALYZE public.lab_facturas;
+
+-- 4. Configurar Filtros (El Escudo y El VIP)
+INSERT INTO public.maintenance_filters (schema_name, table_name, is_ignored, force_maintenance)
+VALUES 
+    ('public', 'lab_historial', TRUE, FALSE), -- BLOQUEADA: Jamás se tocará
+    ('public', 'lab_facturas', FALSE, TRUE);  -- VIP: Lista blanca habilitada
+
+-- =========================================================================
+-- PRUEBA 1: EL TRIAGE DOMINICAL
+-- =========================================================================
+CALL public.sp_populate_vacuum_triage(p_free_pct_threshold => 5.00, p_dead_pct_threshold => 10.00, p_verbose => TRUE);
+
+-- (Verifica lo que guardó el francotirador)
+SELECT table_name, approx_scanned, approx_free_percent, deep_scanned, deep_free_percent 
+FROM public.vacuum_full_triage WHERE table_name LIKE 'lab_%';
+
+-- =========================================================================
+-- PRUEBA 2: ORQUESTADOR - MODO INTELIGENTE EXTREMO (SMART_VACUUM_FULL)
+-- =========================================================================
+-- Configuramos memoria para la sesión padre (Los hilos hijos la heredarán)
+SET maintenance_work_mem = '128MB';
+
 CALL public.sp_orchestrate_vacuum(
-    p_scope            => 'SMART_USER',
-    p_profile          => 'BALANCED',
-    p_parallel_workers => 8,
-    p_cutoff_time      => '06:00:00'::TIME, -- 👈 Si dan las 6:00 AM, frena limpio
-    p_verbose          => TRUE
+    p_scope => 'SMART_USER',
+    p_profile => 'SMART_VACUUM_FULL',
+    p_threshold_pct => 0.05, -- Lanzará Full a las tablas con >5% de deep_free_percent (Ignorará lab_historial)
+    p_verbose => TRUE
 );
 
+-- =========================================================================
+-- PRUEBA 3: ORQUESTADOR - MODO LISTA BLANCA (CUSTOM_LIST)
+-- =========================================================================
+-- Forzará el mantenimiento AGGRESSIVE solo sobre 'lab_facturas' (La única con force_maintenance = TRUE)
+CALL public.sp_orchestrate_vacuum(
+    p_scope => 'CUSTOM_LIST',
+    p_profile => 'AGGRESSIVE',
+    p_parallel_workers => 2,
+    p_verbose => TRUE
+);
+
+-- 5. AUDITORÍA FINAL
+SELECT j.job_id, j.job_type, t.table_name, t.status, t.dead_pct, t.error_log
+FROM public.maintenance_jobs j
+JOIN public.vacuum_tasks t ON j.job_id = t.job_id
+ORDER BY j.job_id, t.table_name;
+
+-- 6. Limpiar Laboratorio
+-- DROP TABLE public.lab_clientes, public.lab_historial, public.lab_facturas;
+
 ```
-
-### ¿Qué sucederá el siguiente domingo a las 4:00 AM cuando se ejecute de nuevo?
-
-1. Consultará la tabla `maintenance_jobs` y detectará que el Job anterior terminó como `'COMPLETED_WITH_CUTOFF'`.
-2. Tomará las tablas marcadas con `'SKIPPED_TIME_LIMIT'` y **las colocará al principio de la fila**.
-3. Las procesará primero y luego continuará con las demás tablas ordenadas por antigüedad de Vacuum y volumen de tuplas muertas.
