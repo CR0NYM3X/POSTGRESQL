@@ -117,8 +117,11 @@ Ejecuta la extensión `pgstattuple` con protección de I/O en dos etapas.
 
 ```sql
 CREATE OR REPLACE PROCEDURE public.sp_populate_vacuum_triage(
-    p_free_pct_threshold NUMERIC DEFAULT 15.00,  
-    p_dead_pct_threshold NUMERIC DEFAULT 20.00,  
+    p_scope VARCHAR DEFAULT 'ALL_USER',          -- 🔥 NUEVO: Controla qué catálogo escanea el Radar
+    p_free_pct_threshold NUMERIC DEFAULT 15.00,  -- Gatillo 1: Proporción de fragmentación
+    p_free_mb_threshold NUMERIC DEFAULT 1024.00, -- 🔥 Gatillo 2 (Tu propuesta): Volumen absoluto de basura (ej. 1024 MB = 1GB)
+    p_dead_pct_threshold NUMERIC DEFAULT 20.00,  -- Gatillo 3: Basura activa
+    p_min_table_mb NUMERIC DEFAULT 10.00,        -- 🔥 Filtro Anti-Morralla: Ignora tablas menores a X MB
     p_verbose BOOLEAN DEFAULT FALSE
 )
 LANGUAGE plpgsql AS $$
@@ -126,17 +129,35 @@ DECLARE
     r_table RECORD; r_approx RECORD; r_deep RECORD;
     v_week DATE := date_trunc('week', current_date)::DATE;
     v_processed INT := 0; v_sniped INT := 0;
+    v_approx_free_mb NUMERIC;
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgstattuple') THEN
         RAISE EXCEPTION 'CRÍTICO: La extensión "pgstattuple" no está instalada.';
     END IF;
 
+    IF p_verbose THEN
+        RAISE INFO '=========================================================';
+        RAISE INFO '[DBA SQUAD] RADAR DE TRIAGE DOMINICAL INICIADO';
+        RAISE INFO 'SCOPE: % | IGNORANDO TABLAS MENORES A: % MB', p_scope, p_min_table_mb;
+        RAISE INFO 'GATILLOS DE FRANCOTIRADOR -> %%% Free Pct | % MB Free Absoluto', p_free_pct_threshold, p_free_mb_threshold;
+        RAISE INFO '=========================================================';
+    END IF;
+
     FOR r_table IN (
         SELECT c.oid AS table_oid, n.nspname AS schema_name, c.relname AS table_name
         FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+        -- 🔥 INTEGRACIÓN DEL SCOPE Y BLACKLIST
+        LEFT JOIN public.maintenance_filters mf ON mf.schema_name = n.nspname AND mf.table_name = c.relname
         WHERE c.relkind IN ('r', 'm') 
-          AND n.nspname NOT IN ('pg_toast', 'information_schema')
-          AND NOT EXISTS (SELECT 1 FROM public.maintenance_filters f WHERE f.schema_name = n.nspname AND f.table_name = c.relname AND f.is_ignored = TRUE)
+          AND n.nspname <> 'pg_toast'
+          AND COALESCE(mf.is_ignored, FALSE) = FALSE -- Escudo Blacklist
+          AND pg_relation_size(c.oid) >= (p_min_table_mb * 1024 * 1024) -- Filtro Anti-Morralla
+          AND (
+              (p_scope = 'CUSTOM_LIST' AND mf.force_maintenance = TRUE) OR
+              (p_scope IN ('SMART_USER', 'ALL_USER') AND n.nspname NOT IN ('pg_catalog', 'information_schema')) OR
+              (p_scope IN ('SMART_SYSTEM_USER', 'ALL_SYSTEM_USER')) OR
+              (p_scope = 'ALL_SYSTEM' AND n.nspname IN ('pg_catalog', 'information_schema'))
+          )
     ) LOOP
         BEGIN
             -- ETAPA 1: Radar (Approx)
@@ -148,25 +169,40 @@ BEGIN
                 v_week, r_table.schema_name, r_table.table_name, TRUE, clock_timestamp(), r_approx.table_len, r_approx.dead_tuple_percent, r_approx.approx_free_percent, r_approx.scanned_percent
             ) ON CONFLICT (evaluation_week, schema_name, table_name) DO UPDATE SET
                 approx_scanned = TRUE, approx_evaluated_at = clock_timestamp(), approx_table_len = EXCLUDED.approx_table_len, approx_dead_tuple_percent = EXCLUDED.approx_dead_tuple_percent, approx_free_percent = EXCLUDED.approx_free_percent, approx_scanned_percent = EXCLUDED.approx_scanned_percent;
+            
             v_processed := v_processed + 1;
 
-            -- ETAPA 2: Francotirador (Profundo)
-            IF r_approx.approx_free_percent >= p_free_pct_threshold OR r_approx.dead_tuple_percent >= p_dead_pct_threshold THEN
+            -- 🔥 EL GATILLO DUAL: Calculamos los MB absolutos estimados de espacio libre
+            v_approx_free_mb := (r_approx.table_len * (r_approx.approx_free_percent / 100.0)) / 1024 / 1024;
+
+            -- EVALUACIÓN DEL FRANCOTIRADOR (Etapa 2)
+            -- Dispara SI supera el Porcentaje OR SI supera los Megabytes OR SI tiene muchas tuplas muertas
+            IF r_approx.approx_free_percent >= p_free_pct_threshold 
+               OR v_approx_free_mb >= p_free_mb_threshold 
+               OR r_approx.dead_tuple_percent >= p_dead_pct_threshold 
+            THEN
                 SELECT * INTO r_deep FROM pgstattuple(r_table.table_oid);
                 UPDATE public.vacuum_full_triage SET
                     deep_scanned = TRUE, deep_evaluated_at = clock_timestamp(), deep_table_len = r_deep.table_len, deep_dead_tuple_percent = r_deep.dead_tuple_percent, deep_free_percent = r_deep.free_percent
                 WHERE evaluation_week = v_week AND schema_name = r_table.schema_name AND table_name = r_table.table_name;
+                
                 v_sniped := v_sniped + 1;
             END IF;
-            COMMIT; -- Libera bloqueos rápido
+
         EXCEPTION WHEN OTHERS THEN
-            ROLLBACK;
+            IF p_verbose THEN RAISE WARNING 'Error analizando %.%: %', r_table.schema_name, r_table.table_name, SQLERRM; END IF;
         END;
+        
+        COMMIT; 
     END LOOP;
-    IF p_verbose THEN RAISE INFO '[✓] TRIAGE FINALIZADO. Aprox: %, Profundos: %', v_processed, v_sniped; END IF;
+
+    IF p_verbose THEN 
+        RAISE INFO '---------------------------------------------------------';
+        RAISE INFO '[✓] TRIAGE FINALIZADO. Tablas filtradas: %, Escaneos profundos: %', v_processed, v_sniped; 
+        RAISE INFO '=========================================================';
+    END IF;
 END;
 $$;
-
 ```
 
 #### B. El Orquestador Maestro (`sp_orchestrate_vacuum`)
