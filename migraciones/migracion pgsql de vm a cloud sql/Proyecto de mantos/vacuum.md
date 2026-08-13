@@ -117,11 +117,11 @@ Ejecuta la extensión `pgstattuple` con protección de I/O en dos etapas.
 
 ```sql
 CREATE OR REPLACE PROCEDURE public.sp_populate_vacuum_triage(
-    p_scope VARCHAR DEFAULT 'ALL_USER',          -- 🔥 NUEVO: Controla qué catálogo escanea el Radar
-    p_free_pct_threshold NUMERIC DEFAULT 15.00,  -- Gatillo 1: Proporción de fragmentación
-    p_free_mb_threshold NUMERIC DEFAULT 1024.00, -- 🔥 Gatillo 2 (Tu propuesta): Volumen absoluto de basura (ej. 1024 MB = 1GB)
-    p_dead_pct_threshold NUMERIC DEFAULT 20.00,  -- Gatillo 3: Basura activa
-    p_min_table_mb NUMERIC DEFAULT 10.00,        -- 🔥 Filtro Anti-Morralla: Ignora tablas menores a X MB
+    p_scope VARCHAR DEFAULT 'ALL_USER',          
+    p_free_pct_threshold NUMERIC DEFAULT 15.00,  
+    p_free_mb_threshold NUMERIC DEFAULT 1024.00, 
+    p_dead_pct_threshold NUMERIC DEFAULT 20.00,  
+    p_min_table_mb NUMERIC DEFAULT 10.00,        
     p_verbose BOOLEAN DEFAULT FALSE
 )
 LANGUAGE plpgsql AS $$
@@ -146,11 +146,11 @@ BEGIN
     FOR r_table IN (
         SELECT c.oid AS table_oid, n.nspname AS schema_name, c.relname AS table_name
         FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-        -- 🔥 INTEGRACIÓN DEL SCOPE Y BLACKLIST
+        --   Se mantiene el JOIN para soportar el CUSTOM_LIST
         LEFT JOIN public.maintenance_filters mf ON mf.schema_name = n.nspname AND mf.table_name = c.relname
         WHERE c.relkind IN ('r', 'm') 
           AND n.nspname <> 'pg_toast'
-          AND COALESCE(mf.is_ignored, FALSE) = FALSE -- Escudo Blacklist
+          --   SE ELIMINÓ EL ESCUDO BLACKLIST: El radar ahora monitorea todo lo que cumpla el Scope
           AND pg_relation_size(c.oid) >= (p_min_table_mb * 1024 * 1024) -- Filtro Anti-Morralla
           AND (
               (p_scope = 'CUSTOM_LIST' AND mf.force_maintenance = TRUE) OR
@@ -172,11 +172,10 @@ BEGIN
             
             v_processed := v_processed + 1;
 
-            -- 🔥 EL GATILLO DUAL: Calculamos los MB absolutos estimados de espacio libre
+            -- CÁLCULO DE MASA CRÍTICA: Megabytes absolutos estimados de espacio libre
             v_approx_free_mb := (r_approx.table_len * (r_approx.approx_free_percent / 100.0)) / 1024 / 1024;
 
             -- EVALUACIÓN DEL FRANCOTIRADOR (Etapa 2)
-            -- Dispara SI supera el Porcentaje OR SI supera los Megabytes OR SI tiene muchas tuplas muertas
             IF r_approx.approx_free_percent >= p_free_pct_threshold 
                OR v_approx_free_mb >= p_free_mb_threshold 
                OR r_approx.dead_tuple_percent >= p_dead_pct_threshold 
@@ -198,7 +197,7 @@ BEGIN
 
     IF p_verbose THEN 
         RAISE INFO '---------------------------------------------------------';
-        RAISE INFO '[✓] TRIAGE FINALIZADO. Tablas filtradas: %, Escaneos profundos: %', v_processed, v_sniped; 
+        RAISE INFO '[✓] TRIAGE FINALIZADO. Tablas evaluadas: %, Escaneos profundos: %', v_processed, v_sniped; 
         RAISE INFO '=========================================================';
     END IF;
 END;
