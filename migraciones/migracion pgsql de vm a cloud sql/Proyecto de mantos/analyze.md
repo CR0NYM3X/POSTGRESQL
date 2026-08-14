@@ -546,11 +546,12 @@ Ahora, activa el arma. Pídele 4 hilos paralelos, un umbral del 5% (0.05) y enci
 
 ```sql
 CALL public.sp_orchestrate_maintenance(
-    p_job_type         => 'SMART', 
-    p_parallel_workers => 4, 
-    p_verbose          => TRUE,
-    p_threshold_pct    => 0.05, 
-    p_min_rows         => 1000  -- <-- ¡ESTA ES LA CLAVE PARA TU LABORATORIO!
+    p_job_type         => 'SMART',        -- Modo quirúrgico: Solo analiza lo que realmente mutó
+    p_parallel_workers => 4,              -- Fuerza bruta controlada: 4 núcleos de CPU trabajando en paralelo
+    p_verbose          => FALSE,          -- Silencioso: Como se ejecuta en automático, no saturamos el log
+    p_threshold_pct    => 0.05,           -- Umbral del 5%: Solo toca la tabla si el 5% de sus datos cambiaron
+    p_min_rows         => 1000,           -- Filtro anti-morralla: Ignora tablas con menos de 1,000 cambios
+    p_cutoff_time      => '06:00:00'::TIME -- [KILL SWITCH]: Aborto automático a las 6:00 AM exactas
 );
 ```
 
