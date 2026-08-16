@@ -11,7 +11,7 @@ Aquí tienes el esquema completo adaptado exactamente a tu formato visual:
  │   ┌────────────── hour (0 - 23)
  │   │ ┌─────────────── day of month (1 - 31) or last day of the month ($)
  │   │ │ ┌──────────────── month (1 - 12)
- │   │ │ │ ┌───────────────── day of week (0 - 6) (0 to 6 are Sunday to
+ │   │ │ │ ┌───────────────── day of week (0 - 6) ( 0 It is Sunday. )
  │   │ │ │ │                  Saturday, or use names; 7 is also Sunday)
  │   │ │ │ │
  │   │ │ │ │
