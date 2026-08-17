@@ -354,7 +354,7 @@ CALL public.poblar_idx_por_lotes(
     p_mostrar_progreso => TRUE
 );
 ```
----
+ 
 
 ### Paso 5: Construir el índice de forma concurrente
 
@@ -365,9 +365,7 @@ CREATE UNIQUE INDEX CONCURRENTLY ordenes_venta_pk_idx
 ON public.ordenes_venta (id_orden);
 
 ```
-
----
-
+ 
 ### Paso 6: Promover el índice a PRIMARY KEY
 
 Una vez que el índice único ha terminado de construirse en segundo plano de manera segura, el paso final es asociarlo formalmente como la restricción de Clave Primaria. Dado que el índice ya existe y contiene todos los datos validados, esta instrucción toma fracciones de segundo.
@@ -378,14 +376,247 @@ ALTER TABLE public.ordenes_venta
 
 ```
 
----
+ 
 
 ## Conclusión
 
 Aplicar cambios estructurales a bases de datos de alto volumen requiere pasar de comandos destructivos a patrones progresivos. Dividir la migración en creación de metadatos, actualización asíncrona en segundo plano e indexación concurrente es el estándar de la industria para mantener disponibilidad del **99.99%** sin degradar la experiencia de tus usuarios.
 
-
 ## Extras
 ```
 ALTER SEQUENCE public.ctl_mensajeriaresponse_idx_seq RESTART WITH 1;
 ```
+
+
+---
+# Opción #2 para agregar una columna PK
+
+### Laboratorio en Terminal: Backup y Restauración con Nueva PK
+
+
+
+#### 1. Preparación del entorno original (Antes del cambio)
+
+
+
+Primero, entramos a nuestra base de datos (supongamos que se llama `mi_empresa`) y creamos la tabla tal como la tienes antes de agregarle la llave primaria.
+
+
+
+**En la terminal:**
+
+
+
+```bash
+
+# Entramos a psql
+
+psql -d postgres -c "create database mi_empresa;"
+
+psql -d mi_empresa
+
+
+
+```
+
+
+
+**Dentro de psql:**
+
+
+
+```sql
+
+CREATE TABLE empleados (
+
+    nombre VARCHAR(50),
+
+    departamento VARCHAR(50)
+
+);
+
+
+
+INSERT INTO empleados (nombre, departamento) VALUES
+
+('Carlos Ruiz', 'Ventas'),
+
+('Laura Gómez', 'Sistemas'),
+
+('Pedro Díaz', 'Recursos Humanos');
+
+
+
+\q -- Salimos de psql
+
+
+
+```
+
+
+
+#### 2. Generación del Backup Real
+
+
+
+Ahora, creamos el backup de esa tabla simulando el archivo que ya tienes. Usaremos el formato "custom" (`-Fc`) de `pg_dump`, que es el más utilizado.
+
+
+
+**En la terminal de tu servidor:**
+
+
+
+```bash
+
+pg_dump -U postgres -d mi_empresa -t empleados -Fc -f backup_empleados.dump
+
+
+
+```
+
+
+
+*Ya tenemos nuestro archivo `backup_empleados.dump` con los datos de las 2 columnas.*
+
+
+
+#### 3. Modificación de la Tabla (Tu situación actual)
+
+
+
+Volvemos a la base de datos, vaciamos la tabla (para simular que no tiene datos, solo estructura) y le agregamos la nueva columna de llave primaria autoincremental.
+
+
+
+**Entramos de nuevo a psql:**
+
+
+
+```bash
+
+psql -d mi_empresa
+
+
+
+```
+
+
+
+**Dentro de psql:**
+
+
+
+```sql
+
+-- Vaciamos la tabla
+
+TRUNCATE TABLE empleados;
+
+
+
+-- Agregamos la llave primaria con su secuencia
+
+ALTER TABLE empleados
+
+ADD COLUMN id_empleado INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY;
+
+
+
+\q -- Salimos de psql
+
+
+
+```
+
+
+
+*En este momento, la tabla en la base de datos tiene 3 columnas (`nombre`, `departamento`, `id_empleado`), pero tu backup solo tiene datos para 2.*
+
+
+
+#### 4. La Importación del Backup
+
+
+
+Aquí viene la magia. Usaremos `pg_restore` para inyectar *solo los datos* (`-a` o `--data-only`) del backup a tu tabla modificada.
+
+
+
+**En la terminal:**
+
+
+
+```bash
+
+pg_restore -U postgres -d mi_empresa --data-only -t empleados backup_empleados.dump
+
+
+
+```
+
+
+
+*Nota: PostgreSQL no te dará error. Internamente el backup dice "Copia estos datos a las columnas nombre y departamento", y PostgreSQL obedece, activando la secuencia de `id_empleado` de forma silenciosa para cada fila.*
+
+
+
+#### 5. Verificación del Resultado
+
+
+
+Revisemos cómo quedó la base de datos después de importar el backup.
+
+
+
+**Entramos a psql:**
+
+
+
+```bash
+
+psql -d mi_empresa -c "SELECT * FROM empleados ORDER BY id_empleado;"
+
+
+
+```
+
+
+
+**Salida real que verás en tu consola:**
+
+
+
+```text
+
+    nombre    |  departamento    | id_empleado
+
+--------------+------------------+-------------
+
+ Carlos Ruiz  | Ventas           |           1
+
+ Laura Gómez  | Sistemas         |           2
+
+ Pedro Díaz   | Recursos Humanos |           3
+
+(3 rows)
+
+
+
+```
+
+
+
+### Conclusión para tu entorno de producción:
+
+
+
+Puedes ejecutar la restauración de tu backup con total confianza. Solo asegúrate de dos cosas al restaurarlo:
+
+
+
+1. Usa la bandera de "solo datos" si es un archivo de volcado completo (en `pg_restore` es la bandera `-a` o `--data-only`).
+
+2. Verifica que la tabla en destino ya tenga la columna PK creada como `SERIAL` o `IDENTITY` antes de inyectar los datos. PostgreSQL hará el emparejamiento por ti. 
+
+
