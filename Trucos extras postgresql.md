@@ -1,4 +1,22 @@
 
+# Declarar variables Cliente vs Servidor 
+
+```
+-- Variables de Configuración en Memoria (GUC - Grand Unified Configuration). Estas variables viven solo durante la sesión o transacción actual.
+--------- la variable viene en la memoria del Servidor PostgreSQL (Sesión actual). -------
+SET custom.usuario_id = '101';
+select set_config('esquema.variable', 'texto perron', false);
+select current_setting('esquema.variable', true);
+select current_setting('custom.usuario_id', true);
+
+--------- la variable viene en la memoria de la consola psql (Cliente). -*------------
+\set id_producto random(1, 1000000);
+select :id_producto;
+
+\set mi_nombre 'Carlos Ruiz'
+select :'mi_nombre';
+```
+
 
 
  # Saber el tipo 
@@ -2477,15 +2495,6 @@ SELECT 15 %+ 7 AS resultado; -->   2
 ```
 
 
-
-# GUC
-Variables de Configuración en Memoria (GUC - Grand Unified Configuration). Estas variables viven solo durante la sesión o transacción actual.
-
-```
-select set_config('esquema.variable', 'texto perron', false);
-
-select current_setting('esquema.variable', true);
-```
 
 # Control de errores en scripts de PostgreSQL con ON_ERROR_STOP
 
