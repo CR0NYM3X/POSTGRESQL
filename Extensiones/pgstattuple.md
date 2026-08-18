@@ -35,17 +35,7 @@ Esta función devuelve estadísticas sobre un índice específico, incluyendo la
 SELECT * FROM pgstatindex('nombre_de_tu_indice');
 ```
 
-#### Columnas de Salida:
-- **version**: Versión del índice.
-- **tree_level**: Nivel del árbol B.
-- **index_size**: Tamaño del índice en bytes.
-- **root_block_no**: Número de bloque raíz.
-- **internal_pages**: Número de páginas internas.
-- **leaf_pages**: Número de páginas hoja.
-- **empty_pages**: Número de páginas vacías.
-- **deleted_pages**: Número de páginas eliminadas.
-- **avg_leaf_density**: Densidad promedio de las páginas hoja.
-- **leaf_fragmentation**: Fragmentación de las páginas hoja⁵.
+
 
 ### Ejemplo Completo
 
@@ -75,6 +65,80 @@ Estas funciones son especialmente útiles para:
 
 ---
 
+
+### Qué significa cada columna
+
+
+Cuando ejecutas `pgstattuple('tabla')`, el motor entra al disco duro y escanea byte por byte cada bloque físico de la tabla. Esta es la traducción exacta de lo que te está reportando:
+
+| Columna | Significado Matemático y Físico | El Diagnóstico del DBA SQUAD |
+| --- | --- | --- |
+| **`table_len`** | Tamaño físico total de la tabla en el disco duro (en bytes). | Es el límite de tu contenedor. Todo lo que pasa adentro debe sumar este número. |
+| **`tuple_count`** | Cantidad de filas **vivas** y útiles. | Tus datos reales. Lo que le importa a la aplicación. |
+| **`tuple_len`** | Suma total en bytes del peso de tus filas vivas. | El "Payload" o carga útil. Es lo que realmente pesan tus datos puros sin la estructura de PostgreSQL. |
+| **`tuple_percent`** | Porcentaje de la tabla ocupado por filas vivas (`tuple_len / table_len * 100`). | **Eficiencia de almacenamiento.** Si es del 90%, tu disco se usa excelente. Si es del 10%, estás quemando dinero en AWS/GCP para guardar aire. |
+| **`dead_tuple_count`** | Cantidad de filas **muertas** (basura dejada por `UPDATEs` o `DELETEs`). | El tamaño del cementerio. Si este número sube rápido, tu Autovacuum no está dando abasto. |
+| **`dead_tuple_len`** | Suma total en bytes del peso de la basura. | La cantidad física de disco duro que estás desperdiciando en cadáveres. |
+| **`dead_tuple_percent`** | Porcentaje de la tabla ocupado por filas muertas. | **Nivel de Toxicidad.** Si supera el 20%, el rendimiento de tus consultas (`Seq Scans`) se está degradando severamente. |
+| **`free_space`** | Cantidad de bytes completamente vacíos y listos para recibir nuevos `INSERTs`. | Espacio reciclado por el VACUUM o bloques físicos que aún no se han llenado. |
+| **`free_percent`** | Porcentaje de la tabla que es puro espacio vacío y libre (`(free_space / table_len) * 100`). | **Índice de Cráteres.** Un porcentaje muy alto aquí indica que borraste muchos datos, pero Linux aún no ha recuperado ese espacio físico. |
+
+---
+
+### 🏛️ EL MISTERIO DEL "IMPUESTO OCULTO" (El Overhead)
+
+
+
+Si sumas `tuple_percent` (vivos) + `dead_tuple_percent` (muertos) + `free_percent` (espacio libre), **jamás te dará el 100%**.
+
+Siempre faltará un porcentaje (generalmente entre el 1% y el 5%). Este es el **Overhead Estructural**.
+El disco duro no solo guarda tus datos. Para que el motor sepa dónde está cada cosa a la velocidad de la luz, PostgreSQL cobra un impuesto de espacio en cada bloque de 8 KB que incluye:
+
+* Las cabeceras de los bloques (*Page Headers*).
+* Los punteros de memoria (*Line Pointers*).
+* El *Padding* (espacios en blanco para que el procesador pueda leer en saltos de 8 bytes).
+
+Ese porcentaje fantasma es el costo de mantener la arquitectura interna de la base de datos funcionando.
+
+---
+
+### ⚔️ LAS REGLAS DE INTERVENCIÓN (Cuándo entrar en pánico)
+
+
+No corras comandos forenses si no sabes qué decisión tomar con los resultados. Te voy a dar la doctrina de VANGUARD para leer estos porcentajes y tomar acción táctica:
+
+**1. El Escenario Sano (Operación Normal):**
+
+* `tuple_percent`: > 70%
+* `dead_tuple_percent`: < 5%
+* `free_percent`: < 15%
+* **Veredicto:** No toques nada. Tu base de datos está respirando perfectamente. El Autovacuum está haciendo su trabajo.
+
+**2. Alerta de Asfixia (Autovacuum Ahogado):**
+
+* `dead_tuple_percent`: **> 15%**
+* **Veredicto:** Tienes un problema de fragmentación activa. Tus procesos de borrado o actualización son más rápidos que tus procesos de limpieza.
+* **Acción:** Dispara un `VACUUM` manual de inmediato para convertir ese `dead_tuple` en `free_space`, o afina los parámetros `autovacuum_vacuum_cost_limit` para darle más velocidad a la recolección de basura.
+
+**3. El Colapso de Inflación (Table Bloat Crítico):**
+
+* `free_percent`: **> 40%** (y el `tuple_percent` es muy bajo).
+* **Veredicto:** Tienes una base de datos "queso gruyer". Está llena de agujeros gigantes. Hiciste un `DELETE` masivo, el VACUUM limpió las tuplas muertas y las convirtió en espacio libre, pero **Linux no ha recuperado esos Gigabytes**. Tus respaldos y escaneos son ineficientes.
+* **Acción:** Necesitas recuperar ese espacio físico al sistema operativo. El VACUUM estándar no sirve aquí. Tienes que usar artillería pesada.
+
+
+
+
+**JAMÁS ejecutes `pgstattuple('tabla_gigante')` en un servidor en producción.**
+Como te explicó Pedro, este comando escanea la tabla físicamente byte por byte. Si le haces esto a una tabla de 5 Terabytes, vas a asfixiar los discos duros de tu servidor haciendo un *Sequential Scan* masivo solo para satisfacer tu curiosidad matemática.
+
+Por eso existe **`pgstattuple_approx`**.. Lee el mapa del FSM en milisegundos, no toca los discos de datos, y aunque te da un número ligeramente redondeado hacia abajo (4,928 en lugar de 5,024), te entrega el 99% de precisión con un **0% de impacto en el rendimiento** de tus clientes.
+
+
+
+
+
+---
 
 
 ##   Interpretación rápida y acciones
