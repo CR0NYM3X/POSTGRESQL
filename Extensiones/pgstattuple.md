@@ -67,7 +67,24 @@ Estas funciones son especialmente útiles para:
 
 
 ### Qué significa cada columna
+```sql
+postgres@db_destination# SELECT * FROM pgstattuple_approx('produccion_diaria');
++-----------+-----------------+--------------------+------------------+----------------------+------------------+----------------+--------------------+-------------------+---------------------+
+| table_len | scanned_percent | approx_tuple_count | approx_tuple_len | approx_tuple_percent | dead_tuple_count | dead_tuple_len | dead_tuple_percent | approx_free_space | approx_free_percent |
++-----------+-----------------+--------------------+------------------+----------------------+------------------+----------------+--------------------+-------------------+---------------------+
+|     49152 |               0 |                999 |            44224 |    89.97395833333333 |                0 |              0 |                  0 |              4928 |  10.026041666666666 |
++-----------+-----------------+--------------------+------------------+----------------------+------------------+----------------+--------------------+-------------------+---------------------+
+(1 row)
 
+Time: 0.404 ms
+postgres@db_destination# SELECT * FROM pgstattuple('produccion_diaria');
++-----------+-------------+-----------+---------------+------------------+----------------+--------------------+------------+--------------+
+| table_len | tuple_count | tuple_len | tuple_percent | dead_tuple_count | dead_tuple_len | dead_tuple_percent | free_space | free_percent |
++-----------+-------------+-----------+---------------+------------------+----------------+--------------------+------------+--------------+
+|     49152 |         999 |     35964 |         73.17 |                0 |              0 |                  0 |       5024 |        10.22 |
++-----------+-------------+-----------+---------------+------------------+----------------+--------------------+------------+--------------+
+(1 row)
+```
 
 Cuando ejecutas `pgstattuple('tabla')`, el motor entra al disco duro y escanea byte por byte cada bloque físico de la tabla. Esta es la traducción exacta de lo que te está reportando:
 
