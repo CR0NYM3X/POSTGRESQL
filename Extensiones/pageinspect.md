@@ -69,42 +69,88 @@ SELECT table_len / current_setting('block_size')::int AS total_pages FROM pgstat
 ```
 CREATE EXTENSION IF NOT EXISTS pageinspect;
 
- 
-create table test2 (nombre varchar,numero int);
-insert into  test2 select 'jose',100;
-insert into  test2 select 'maria',200;
-delete from test2 where nombre = 'jose';
 
+CREATE TABLE produccion_diaria (
+    id SERIAL PRIMARY KEY,
+    fecha DATE,
+    cantidad INT,
+    hecho TEXT
+);
+CREATE TABLE
+Time: 6.169 ms
+
+ 
+INSERT INTO produccion_diaria (fecha, cantidad, hecho) VALUES
+(CURRENT_DATE, 45, 'Mantenimiento preventivo en línea 1'),
+(CURRENT_DATE - 1, 80, 'Producción normal sin novedades'),
+(CURRENT_DATE - 2, 0, 'Falla eléctrica general en la planta'),
+(CURRENT_DATE - 3, 95, 'RRecord de producción alcanzado');
+INSERT 0 4
+Time: 1.665 ms
+
+
+select xmin,xmax,ctid,* from produccion_diaria;
++------+------+-------+----+------------+----------+--------------------------------------+
+| xmin | xmax | ctid  | id |   fecha    | cantidad |                hecho                 |
++------+------+-------+----+------------+----------+--------------------------------------+
+|  984 |    0 | (0,1) |  1 | 2026-08-18 |       45 | Mantenimiento preventivo en línea 1  |
+|  984 |    0 | (0,2) |  2 | 2026-08-17 |       80 | Producción normal sin novedades      |
+|  984 |    0 | (0,3) |  3 | 2026-08-16 |        0 | Falla eléctrica general en la planta |
+|  984 |    0 | (0,4) |  4 | 2026-08-15 |       95 | RRecord de producción alcanzado      |
++------+------+-------+----+------------+----------+--------------------------------------+
+
+
+delete from produccion_diaria where id = 3;
+DELETE 1
+Time: 1.095 ms
 
 
 WITH h AS (
   SELECT lp, t_data, t_infomask, t_infomask2, t_bits,
-  case when t_xmax = 0  then false else true end as is_delete
-  FROM heap_page_items(get_raw_page('test2', 0))
+         CASE WHEN t_xmax = 0 THEN false ELSE true END AS is_delete
+  FROM heap_page_items(get_raw_page('produccion_diaria', 0))
 ),
 split AS (
-  SELECT lp,is_delete,
-         tuple_data_split('test2'::regclass,
+  SELECT lp, is_delete,
+         tuple_data_split('produccion_diaria'::regclass,
                           t_data, t_infomask, t_infomask2, t_bits,
-                          true) AS attrs  -- do_detoast = true
+                          true) AS attrs
   FROM h
 )
-SELECT lp,is_delete,
-       convert_from(attrs[1], 'UTF8') AS nombre,                            -- texto legible
-       (get_byte(attrs[2],0)
-        + get_byte(attrs[2],1)*256
-        + get_byte(attrs[2],2)*65536
-        + get_byte(attrs[2],3)*16777216)::int AS numero                     -- int4 little-endian
-FROM split;
+SELECT 
+    lp,
+    is_delete,
+    -- Columna 1: id (INT)
+    (get_byte(attrs[1], 0)
+     + (get_byte(attrs[1], 1) << 8)
+     + (get_byte(attrs[1], 2) << 16)
+     + (get_byte(attrs[1], 3) << 24))::int AS id,
+     
+    -- Columna 2: fecha (DATE)
+    DATE '2000-01-01' + (
+        get_byte(attrs[2], 0)
+        + (get_byte(attrs[2], 1) << 8)
+        + (get_byte(attrs[2], 2) << 16)
+        + (get_byte(attrs[2], 3) << 24)
+    )::int AS fecha,
+    
+    -- Columna 3: cantidad (INT)
+    (get_byte(attrs[3], 0)
+     + (get_byte(attrs[3], 1) << 8)
+     + (get_byte(attrs[3], 2) << 16)
+     + (get_byte(attrs[3], 3) << 24))::int AS cantidad,
 
-+----+-----------+--------+--------+
-| lp | is_delete | nombre | numero |
-+----+-----------+--------+--------+
-|  1 | t         | jose   |    100 |
-|  2 | f         | maria  |    200 |
-+----+-----------+--------+--------+
-(2 rows)
+    -- Columna 4: hecho (TEXT)
+    convert_from(attrs[4], 'UTF8') AS hecho
 
+FROM split 
+WHERE is_delete = true;
++----+-----------+----+------------+----------+--------------------------------------+
+| lp | is_delete | id |   fecha    | cantidad |                hecho                 |
++----+-----------+----+------------+----------+--------------------------------------+
+|  3 | t         |  3 | 2026-08-16 |        0 | Falla eléctrica general en la planta |
++----+-----------+----+------------+----------+--------------------------------------+
+(1 row)
 
 
 -----------------
