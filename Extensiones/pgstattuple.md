@@ -96,8 +96,8 @@ Cuando ejecutas `pgstattuple('tabla')`, el motor entra al disco duro y escanea b
 | **`tuple_percent`** | Porcentaje de la tabla ocupado por filas vivas (`tuple_len / table_len * 100`). | **Eficiencia de almacenamiento.** Si es del 90%, tu disco se usa excelente. Si es del 10%, estás quemando dinero en AWS/GCP para guardar aire. |
 | **`dead_tuple_count`** | Cantidad de filas **muertas** (basura dejada por `UPDATEs` o `DELETEs`). | El tamaño del cementerio. Si este número sube rápido, tu Autovacuum no está dando abasto. |
 | **`dead_tuple_len`** | Suma total en bytes del peso de la basura. | La cantidad física de disco duro que estás desperdiciando en cadáveres. |
-| **`dead_tuple_percent`** | Porcentaje de la tabla ocupado por filas muertas. | **Nivel de Toxicidad.** Si supera el 20%, el rendimiento de tus consultas (`Seq Scans`) se está degradando severamente. |
-| **`free_space`** | Cantidad de bytes completamente vacíos y listos para recibir nuevos `INSERTs`. | Espacio reciclado por el VACUUM o bloques físicos que aún no se han llenado. |
+| **`dead_tuple_percent`** | Porcentaje de la tabla ocupado por filas muertas. (`(dead_tuple_len / table_len ) * 100`) | **Nivel de Toxicidad.** Si supera el 20%, el rendimiento de tus consultas (`Seq Scans`) se está degradando severamente. |
+| **`free_space`** | Cantidad de bytes completamente vacíos y listos para recibir nuevos `INSERTs`. (`table_len * (approx_free_percent / 100)`) | Espacio reciclado por el VACUUM o bloques físicos que aún no se han llenado. |
 | **`free_percent`** | Porcentaje de la tabla que es puro espacio vacío y libre (`(free_space / table_len) * 100`). | **Índice de Cráteres.** Un porcentaje muy alto aquí indica que borraste muchos datos, pero Linux aún no ha recuperado ese espacio físico. |
 
 ---
