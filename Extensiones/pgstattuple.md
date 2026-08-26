@@ -85,7 +85,7 @@ postgres@db_destination# SELECT * FROM pgstattuple('produccion_diaria');
 +-----------+-------------+-----------+---------------+------------------+----------------+--------------------+------------+--------------+
 (1 row)
 ```
-
+# pgstattuple
 Cuando ejecutas `pgstattuple('tabla')`, el motor entra al disco duro y escanea byte por byte cada bloque físico de la tabla. Esta es la traducción exacta de lo que te está reportando:
 
 | Columna | Significado Matemático y Físico | El Diagnóstico del DBA SQUAD |
@@ -101,6 +101,10 @@ Cuando ejecutas `pgstattuple('tabla')`, el motor entra al disco duro y escanea b
 | **`free_percent`** | Porcentaje de la tabla que es puro espacio vacío y libre (`(free_space / table_len) * 100`). | **Índice de Cráteres.** Un porcentaje muy alto aquí indica que borraste muchos datos, pero Linux aún no ha recuperado ese espacio físico. |
 
 ---
+
+
+
+
 
 ### 🏛️ EL MISTERIO DEL "IMPUESTO OCULTO" (El Overhead)
 
@@ -157,6 +161,34 @@ Por eso existe **`pgstattuple_approx`**.. Lee el mapa del FSM en milisegundos, n
 
 ---
 
+
+
+# pgstatindex
+Cuando ejecutas `pgstatindex('nombre_del_indice')`, PostgreSQL analiza bloque por bloque la estructura en árbol (B-Tree) del índice. Esta es la traducción exacta de sus columnas:
+
+| Columna | Significado Matemático y Físico | El Diagnóstico del DBA SQUAD |
+| --- | --- | --- |
+| **`version`** | Versión del formato interno del B-Tree de PostgreSQL (actualmente suele ser `4`). | Identificador interno del motor. Si ves un número diferente, el índice fue creado en una versión muy antigua de Postgres. |
+| **`tree_level`** | Profundidad del árbol B-Tree (distancia desde la raíz hasta las hojas). | **La latitud de tus consultas.** Un índice sano suele medir entre 2 y 4 niveles. Si supera los 5 niveles, cada búsqueda requiere más I/O de disco para recorrer el árbol. |
+| **`index_size`** | Tamaño total del archivo de índice en el disco (en bytes). | El espacio en disco consumido. Si este número supera al tamaño de la tabla misma, tu índice sufre de bloat extremo. |
+| **`root_block_no`** | Número del bloque físico que almacena el nodo raíz (*root node*). | Dirección física en disco del punto de entrada. Es donde el motor inicia cualquier búsqueda B-Tree. |
+| **`internal_pages`** | Cantidad de bloques de tipo "nodo interno" en el árbol. | Los cruces de caminos del índice. Contienen punteros hacia otras páginas para navegar de la raíz a las hojas. |
+| **`leaf_pages`** | Cantidad de bloques de tipo "hoja" (*leaf nodes*). | **Las páginas donde viven las llaves.** Son los bloques donde residen los valores indexados y los punteros (`TID`) hacia las filas de la tabla. |
+| **`empty_pages`** | Bloques marcados como totalmente vacíos dentro del archivo del índice. | Páginas liberadas por borrados o `VACUUM` que aún no han sido reutilizadas por el motor. |
+| **`deleted_pages`** | Páginas que han sido marcadas para borrado pero que siguen en uso temporal por transacciones activas. | El cementerio de páginas del índice. Se convertirán en `empty_pages` en el siguiente paso de mantenimiento. |
+| **`avg_leaf_density`** | Porcentaje promedio de llenado dentro de las páginas hoja (`0` a `100%`). | **Eficiencia del Índice (Bloat de Hojas).** Si es menor al 50-60%, el índice está "hinchado" (*bloated*). Significa que estás pagando RAM por páginas medio vacías. |
+| **`leaf_fragmentation`** | Porcentaje de páginas hoja que no están ordenadas secuencialmente en el disco (`0` a `100%`). | **Nivel de Fragmentación de Disco.** Si es muy alto, los `Index Scans` lentos están obligando al disco a dar saltos aleatorios de lectura en lugar de lecturas secuenciales. |
+
+---
+
+### La regla de oro para lanzar un `REINDEX`
+
+Para evaluar el estado del índice con `pgstatindex`, revisa estas métricas clave:
+
+* **Poca densidad:** Si **`avg_leaf_density`** baja del **60%**, tienes espacio desperdiciado por `DELETEs` o `UPDATEs` que desfragmentaron el árbol.
+* **Alta fragmentación:** Si **`leaf_fragmentation`** supera el **20-30%**, el rendimiento de lectura se degrada.
+
+En ambos casos, ejecutar un **`REINDEX INDEX CONCURRENTLY`** compactará las páginas, aumentará la densidad cercana al 90% y reseteará la fragmentación a 0.
 
 ##   Interpretación rápida y acciones
 
