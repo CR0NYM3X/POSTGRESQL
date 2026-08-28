@@ -1,4 +1,4 @@
-<img width="1707" height="770" alt="image" src="https://github.com/user-attachments/assets/6eeb0d00-95da-49e2-a14c-00c7570f8e90" /> 
+
 # 🐘 PostgreSQL Cheat Sheet: Consultas Frecuentes para DBA y Diagnóstico
 
 Este documento contiene una recopilación de snippets de código SQL esenciales para la administración, monitoreo, análisis de espacio y gestión de permisos en PostgreSQL.
