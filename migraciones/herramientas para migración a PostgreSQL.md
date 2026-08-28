@@ -177,7 +177,7 @@
 
 # Links
 ```
-
+pg_bulkload
 peerdb -> https://clickhouse.com/blog/practical-postgres-migrations-at-scale-peerdb
 
 15 Best Postgres Database Migration Tools in 2025 -> https://www.matillion.com/learn/blog/postgres-database-migration-platforms
