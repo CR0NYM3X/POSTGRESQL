@@ -179,7 +179,24 @@ Cuando ejecutas `pgstatindex('nombre_del_indice')`, PostgreSQL analiza bloque po
 | **`avg_leaf_density`** | Porcentaje promedio de llenado dentro de las páginas hoja (`0` a `100%`). | **Eficiencia del Índice (Bloat de Hojas).** Si es menor al 50-60%, el índice está "hinchado" (*bloated*). Significa que estás pagando RAM por páginas medio vacías. |
 | **`leaf_fragmentation`** | Porcentaje de páginas hoja que no están ordenadas secuencialmente en el disco (`0` a `100%`). | **Nivel de Fragmentación de Disco.** Si es muy alto, los `Index Scans` lentos están obligando al disco a dar saltos aleatorios de lectura en lugar de lecturas secuenciales. |
 
+
+## el avg_leaf_density es promedio o porcentaje? 
+
+El nombre exacto de la columna `avg_leaf_density` se traduce como "Densidad promedio de las hojas", y se lee de la siguiente manera:
+
+1. **Es un Porcentaje:** El número que te devuelve (por ejemplo, `66.4`) representa un **66.4%**. Indica qué porcentaje del bloque de memoria (la página hoja) está realmente ocupado por datos útiles (tus claves y punteros).
+2. **Es un Promedio (Average = avg):** Como un índice puede tener miles de páginas hoja, algunas pueden estar llenas al 100%, otras al 50% y otras casi vacías tras eliminar registros. PostgreSQL suma el espacio usado de todas esas páginas, lo divide por el número total de páginas y te da el **promedio global**.
+
+### En resumen:
+
+Si tu `avg_leaf_density` es **66.4**, significa que, en *promedio*, las páginas de tu índice están llenas al **66.4%** de su capacidad.
+
+Por eso, para sacar el porcentaje de **bloat** (espacio vacío/desperdiciado), simplemente le restamos ese valor al 100%:
+`100% - 66.4% = 33.6% de bloat promedio.`
+
+
 ---
+
 
 ### La regla de oro para lanzar un `REINDEX`
 
