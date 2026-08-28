@@ -38,7 +38,38 @@ Supongamos que buscas el número "42" en una tabla con millones de registros.
 
 
  --- 
+# El indice almacena los datos?
 
+En PostgreSQL, los índices B-Tree **siempre almacenan el valor de la columna indexada (la clave) y un puntero (TID - Tuple Identifier)** que apunta a la fila completa en la tabla física (el *heap*).
+
+A diferencia de motores como SQL Server o MySQL (InnoDB), PostgreSQL **no tiene índices agrupados (clustered indexes) reales** donde el nivel hoja del índice sea la tabla misma. En Postgres, la tabla y el índice siempre son estructuras separadas en disco.
+
+Sin embargo, hay una diferencia crucial en cuánta "data real" decides guardar dentro del índice, lo cual divide a los índices en dos categorías:
+
+* **Índices Estándar (Clave + Puntero):** Almacenan exclusivamente el dato que usaste para crear el índice y el puntero hacia la tabla. Si haces un `SELECT nombre, correo FROM usuarios WHERE id = 5`, el índice busca el `id = 5`, toma el puntero, y luego PostgreSQL tiene que ir a la tabla a leer el `nombre` y el `correo`.
+* **Índices de Cobertura (Claves + Punteros + Datos extra):** Creados usando la cláusula `INCLUDE`. Permiten guardar copias de otras columnas directamente en las hojas del índice sin usarlas para ordenar. Por ejemplo: `CREATE INDEX idx_user ON usuarios (id) INCLUDE (nombre, correo);`. Si ejecutas la misma consulta, PostgreSQL lee el índice, encuentra el `id`, y como el `nombre` y `correo` ya están ahí pegados en la hoja, **no necesita ir a la tabla**. Esto se llama *Index-Only Scan*.
+
+Para identificar qué índices son estándar y cuáles traen columnas de datos reales empaquetadas (`INCLUDE`), puedes consultar las tablas de catálogo del sistema comparando el número de columnas que se usan como clave (`indnkeyatts`) contra el total de columnas guardadas en el índice (`indnatts`).
+
+```sql
+SELECT 
+    i.relname AS nombre_indice,
+    t.relname AS tabla,
+    ix.indnkeyatts AS num_columnas_clave,
+    ix.indnatts AS num_columnas_totales,
+    CASE 
+        WHEN ix.indnatts > ix.indnkeyatts THEN 'Trae datos reales (INCLUDE)'
+        ELSE 'Solo claves y punteros'
+    END AS que_almacena
+FROM pg_class i
+JOIN pg_index ix ON i.oid = ix.indexrelid
+JOIN pg_class t ON ix.indrelid = t.oid
+WHERE i.relkind = 'i' 
+  AND i.relnamespace = 'public'::regnamespace; -- Cambia 'public' por tu esquema si es distinto
+
+```
+
+---
 
 ## Impacto diferente en las operaciones de `INSERT`, `UPDATE` y `DELETE` en comparación con las consultas `SELECT`.
 
