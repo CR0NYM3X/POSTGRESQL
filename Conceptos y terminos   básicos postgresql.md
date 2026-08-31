@@ -2151,3 +2151,26 @@ La diferencia radica en que **el Pipeline es el trabajo que se está haciendo** 
 
 * **Pipeline = El *Qué*.** "Quiero mover estos datos desde mi base de datos hasta un tablero de Excel, limpiándolos en el camino".
 * **DAG = El *Cómo* organizas las reglas.** "Para lograr ese Pipeline, la Tarea 1 va primero, la Tarea 2 y 3 van después al mismo tiempo, y si alguna falla, todo se detiene porque no podemos viajar en el tiempo ni hacer bucles infinitos".
+
+---
+
+
+En PostgreSQL (y en el desarrollo de software en general), segmentar los entornos en diferentes servidores evita que un error de código o una prueba destruya datos reales de clientes. Cada servidor cumple una función específica dentro del **Ciclo de Vida de Desarrollo de Software (SDLC)**.
+
+---
+
+### Entornos de Base de Datos y sus Propósitos
+
+| Entorno | Objetivo | Propósito de la Base de Datos | Tipo de Datos |
+| --- | --- | --- | --- |
+| **DEV** *(Development)* | Desarrollo y construcción inicial. | Permitir a los desarrolladores crear esquemas, probar consultas (`queries`) complejas y ejecutar migraciones sin miedo a romper nada. | Datos totalmente ficticios, sintéticos o *mock data*. |
+| **QA** *(Quality Assurance)* | Pruebas funcionales y de integración. | Validar que las nuevas funciones (tablas, procedimientos almacenados, funciones de PostgreSQL) funcionen correctamente junto con el código de la aplicación. | Datos de prueba estructurados y escenarios de prueba específicos (casos al límite). |
+| **STAGING** | Réplica exacta de producción. | Simular el comportamiento del sistema en un entorno idéntico al real antes del despliegue final. Permite hacer pruebas de estrés, rendimiento y validar migraciones complejas. | Copia de datos de producción **anonimizados/enmascarados** o un conjunto representativo a gran escala. |
+| **PRE-PROD** *(Pre-Productivo)* | Ensayo general del despliegue (*Dry Run*). | Validar que el script de migración SQL se ejecute sin errores en el menor tiempo posible y comprobar la compatibilidad exacta con la versión final. | Réplica reciente o clon exacto de producción (idealmente con datos enmascarados si aplica regulación). |
+| **PROD** *(Productivo)* | Operación real del negocio. | Servir a los usuarios finales con la máxima disponibilidad, integridad, seguridad y rendimiento. | Datos reales de la empresa y clientes (alta confidencialidad). |
+ 
+### Buenas Prácticas en PostgreSQL según el Entorno
+
+* **DEV / QA:** Suelen configurarse con parámetros de memoria y disco moderados. Es común restaurar volcados (`pg_dump`) rápidos o recrear la base de datos frecuentemente.
+* **STAGING / PRE-PROD:** Deben replicar la configuración de `postgresql.conf` de producción (`shared_buffers`, `work_mem`, etc.) para que las consultas se ejecuten con los mismos planes de explicación (`EXPLAIN ANALYZE`).
+* **PROD:** Prioriza alta disponibilidad (replicación con `pg_stat_replication`), respaldos automáticos en tiempo real (WAL archiving con herramientas como *pgBackRest*) y estricto control de accesos (`pg_hba.conf`).
