@@ -187,3 +187,97 @@ access.redhat.com/errata
 ```
 
 
+
+
+
+---
+
+
+
+ 
+# 📐 Guía Universal de Versionado Semántico (SemVer)
+
+Es vital entender este estándar para que todo nuestro código, documentación y etiquetas de Git en **DBA SQUAD: VANGUARD BLACK-OPS** se mantengan impecables ante cualquier auditoría internacional.
+
+El sistema que utilizamos se llama **Versionado Semántico (Semantic Versioning o SemVer)**. Se estructura oficialmente bajo la nomenclatura:
+
+$$\text{\textbf{MAJOR . MINOR . PATCH}}$$
+
+---
+
+### 1. ESTRUCTURA Y REGLAS DEL VERSIONADO
+
+```
+                      MAJOR . MINOR . PATCH
+                        │       │       │
+                        │       │       └── 3. Correcciones de bugs y parches (Sin romper nada).
+                        │       └────────── 2. Nuevas características (Compatibles hacia atrás).
+                        └────────────────── 1. Cambios rompedores (Incompatibles hacia atrás).
+
+```
+
+---
+
+#### 🟢 **PATCH (El tercer número — Ej: 1.0.0 ➔ 1.0.1)**
+
+* **Nombre:** *Patch / Corrección / Parche de Mantenimiento.*
+* **Cuándo se aumenta:** Cuando realizas correcciones de errores (*bug fixes*), parches de seguridad menores, optimizaciones internas de rendimiento o refactorizaciones internas que **NO alteran la forma en que el usuario o la aplicación interactúan con el sistema**.
+* **Regla de Oro:** Es 100% compatible hacia atrás. Las aplicaciones cliente o scripts automáticos no necesitan modificar una sola línea de código para seguir funcionando.
+* **Frecuencia:** Alta (días o semanas).
+* **Ejemplos Generales:**
+* Corregir una condición de búsqueda (`WHERE`) en una consulta interna que devolvía un conteo incorrecto.
+* Cambiar los mensajes de error o logs internos de un idioma a otro (ej. mensajes en consola o archivos de registro).
+* Optimizar el rendimiento de un algoritmo interno sin modificar sus parámetros de entrada ni los tipos de datos que devuelve.
+* Renombrar una variable local interna dentro de una función o código procedural.
+
+
+
+---
+
+#### 🟡 **MINOR (El segundo número — Ej: 1.0.0 ➔ 1.1.0)**
+
+* **Nombre:** *Minor / Versión Menor / Nueva Funcionalidad.*
+* **Cuándo se aumenta:** Cuando agregas **nuevas funcionalidades, nuevos parámetros opcionales** o nuevas capacidades a un sistema, **PERO mantienes la compatibilidad total con lo que ya existía**.
+* **Regla de Oro:** Todo el código o scripts antiguos siguen funcionando sin errores (retrocompatibilidad intacta), pero el sistema ahora ofrece nuevas capacidades si el usuario decide utilizarlas. Al incrementar MINOR, el número de PATCH se reinicia a cero.
+* **Frecuencia:** Media (semanas o meses).
+* **Ejemplos Generales:**
+* Agregar un nuevo parámetro de entrada opcional a una función o API asignándole un valor por defecto (`DEFAULT`).
+* Incorporar un nuevo módulo o tabla opcional dentro del sistema sin modificar las estructuras existentes.
+* Cambiar un algoritmo de ordenamiento interno para hacerlo más inteligente o eficiente, manteniendo intacta la firma de la función.
+* Agregar una nueva tabla de catálogo o un nuevo perfil de configuración predeterminado que no interfiere con los flujos actuales.
+
+
+
+---
+
+#### 🔴 **MAJOR (El primer número — Ej: 1.5.2 ➔ 2.0.0)**
+
+* **Nombre:** *Major / Versión Mayor / Cambio Rompedor (Breaking Change).*
+* **Cuándo se aumenta:** Cuando realizas modificaciones profundas que **ROMPE la compatibilidad hacia atrás**. El código antiguo, consultas o aplicaciones clientes fallarán si no se actualizan para adaptarse a la nueva versión.
+* **Regla de Oro:** Exige que los usuarios o sistemas dependientes actualicen su código, modifiquen nombres de variables/parámetros obligatorios o apliquen migraciones de base de datos destructivas. Al incrementar MAJOR, tanto MINOR como PATCH se reinician a cero.
+* **Frecuencia:** Baja (meses o años).
+* **Ejemplos Generales:**
+* Eliminar un parámetro obligatorio de una función o modificar su nombre/tipo de dato sin dejar un alias de compatibilidad.
+* Eliminar o renombrar una tabla o columna existente en la base de datos de la cual dependen aplicaciones externas.
+* Reestructurar por completo la respuesta de una API o la firma de ejecución de un procedimiento almacenado.
+* Elevar los requisitos mínimos del entorno (ej. requerir una nueva versión mayor del motor de base de datos o del sistema operativo que invalida versiones anteriores).
+
+
+
+---
+
+### 📊 CUADRO RESUMEN DE DECISIONES
+
+| Tipo de Cambio Realizado | ¿Rompe los sistemas existentes? | ¿Qué número se incrementa? | Ejemplo de Transición |
+| --- | --- | --- | --- |
+| Corregir un bug interno, traducir un log o refactorizar variables locales. | **NO** | **PATCH** | `1.0.0` ➔ **`1.0.1`** |
+| Agregar un parámetro opcional con valor por defecto o una nueva vista de lectura. | **NO** | **MINOR** | `1.0.1` ➔ **`1.1.0`** *(PATCH vuelve a 0)* |
+| Eliminar un parámetro, renombrar una columna de producción o borrar un procedimiento. | **SÍ** | **MAJOR** | `1.1.0` ➔ **`2.0.0`** *(MINOR y PATCH vuelven a 0)* |
+
+---
+
+### 💡 LÓGICA DE EVOLUCIÓN DE VERSIONES
+
+* Si un sistema se encuentra en la versión **`1.0.0`** y aplicamos una mejora estructural estandarizada en la interfaz (como la adición de nuevos parámetros opcionales o refactorizaciones con nuevos contratos de datos), la versión evoluciona a **`1.1.0` (MINOR)**.
+* Si posteriormente solo aplicamos correcciones de errores de tipeo, ajustes de logs o parches de mantenimiento interno que no alteran la firma ni la estructura, la versión evoluciona a **`1.1.1` (PATCH)**.
+* Si en el futuro se toma la decisión de reestructurar los nombres de las funciones o eliminar parámetros obligatorios rompiendo la compatibilidad anterior, la versión evoluciona a **`2.0.0` (MAJOR)**.
