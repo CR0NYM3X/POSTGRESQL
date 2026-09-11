@@ -4,6 +4,10 @@
 https://www.tigerdata.com/blog/its-2026-just-use-postgres
 ```
 
+# Varios articulos
+```
+https://github.com/PMSQLDBA/PostgreSQL_Admin_Articles/tree/main
+```
 
 # Post Medium
 Aquí encontraras los links gratis de Medium que te ayudaran adquirir más conocimientos del funcionamiento de postgresql
