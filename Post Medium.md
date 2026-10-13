@@ -414,3 +414,20 @@ Window Functions : https://medium.com/@rizqimulkisrc/advanced-analytics-in-postg
 
 
 
+--------
+# Cursos 
+```
+PostgreSQL DBA-1: Domain 1 — Installation, Versioning & Basic Configuration (all 14 exam topics)
+https://www.youtube.com/watch?v=iIyFH8HSZEA
+
+PostgreSQL DBA-1: Domain 2 — Connecting, Database Objects & Basic SQL (all 11 exam topics)
+https://www.youtube.com/watch?v=-ZcEyoLggLA
+
+PostgreSQL DBA-1: Domains 3 & 4 — Roles, Privileges, Backup & Recovery (all 11 exam topics)
+https://www.youtube.com/watch?v=xUrJZmKO37U
+
+PostgreSQL DBA-1: Domain 5 — Server Architecture & Background Processes (all 8 exam topics)
+https://www.youtube.com/watch?v=BHlPTG4lmow
+```
+
+
