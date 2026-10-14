@@ -267,6 +267,11 @@ Aquí tienes la lista explicada de forma rápida y directa. Todas estas herramie
 
 
 ```
+
+-------- OSINT
+https://osintsearch.org/
+
+
 -- Paginas para ver si son debiles mis contraseñas
 https://haveibeenpwned.com/passwords
 https://password.kaspersky.com/es/
