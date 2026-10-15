@@ -1,7 +1,7 @@
 
 # inicializar postgresql
 ```sql
-/usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data    --data-checksums  &>/dev/null
+/usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data  -W  --data-checksums  &>/dev/null
 
   
 # checksum 
