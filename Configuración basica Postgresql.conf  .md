@@ -3,6 +3,9 @@
 ```sql
 /usr/pgsql-15/bin/initdb -E UTF-8 -D /sysx/data  -W  --data-checksums  &>/dev/null
 
+# opciones
+--waldir - Separa físicamente los discos de almacenamiento de la base de datos de los discos de log.
+--wal-segsize - Define el peso individual de cada archivo de registro WAL (por defecto 16MB). Aumentar a 64MB/128MB en bases de datos masivas (TB) o reducir a 1MB/4MB en dispositivos embebidos.
   
 # checksum 
 sirve para  Detectar corrupción a tiempo y puede salvarte de un desastre. PostgreSQL calcula una suma de verificación para cada bloque de datos que escribe en disco. Luego, al leer ese bloque, verifica que la suma coincida. Si no coincide, detecta corrupción silenciosa (por ejemplo, por fallos de hardware o discos defectuosos).  Puedes usarla como parte de un proceso de mantenimiento o verificación periódica.
