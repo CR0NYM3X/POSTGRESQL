@@ -1307,6 +1307,46 @@ Agrega una línea al final del archivo. La sintaxis del cron es: `Minuto Hora * 
 *(Nota: El parámetro `-f` le dice a logrotate "fuerza la rotación en este instante preciso", ignorando si el sistema cree que es muy temprano para hacerlo).*
 
 Con la **Opción 2**, tendrás la certeza absoluta de qué minuto y qué hora se congelará tu log de PgBouncer para convertirse en el archivo comprimido del día. ¿A qué hora te convendría más programarlo según la actividad de tu base de datos?
+---
+
+---
+
+
+# Flujo de PgBouncer
+
+PgBouncer **no abre los procesos antes de que llegue el primer cliente**. Funciona bajo demanda (forma "perezosa" o *lazy*).
+
+Dado que no hay contraseñas en el `pgbouncer.ini`, PgBouncer utiliza las credenciales que los mismos clientes le van proporcionando para "construir" el pool en tiempo real.
+
+Así es el ciclo exacto paso a paso:
+
+### 1. El estado inicial (Pool Vacío)
+
+Cuando enciendes PgBouncer, no hay **ninguna** conexión abierta hacia PostgreSQL. El pool está vacío. Como no tiene contraseñas en el `.ini`, no puede pre-conectar nada.
+
+### 2. Llega el Primer Cliente (Quien trae la llave)
+
+1. Un cliente intenta conectarse y envía a PgBouncer: `Usuario: juan` y `Password: 1234`.
+2. PgBouncer verifica esa contraseña contra su propio archivo `userlist.txt` (o mediante `auth_query`).
+3. Si es válida, PgBouncer revisa su pool y ve que está vacío.
+4. En ese momento, **PgBouncer toma ese mismo usuario y contraseña (`juan` / `1234`) y abre una conexión nueva hacia PostgreSQL**.
+5. PostgreSQL realiza su validación normal, acepta la conexión y le asigna un proceso backend. El cliente trabaja normalmente.
+
+### 3. La magia del Pool (El proceso se queda abierto)
+
+1. El primer cliente termina su transacción (si usas `pool_mode=transaction`) o se desconecta.
+2. Aquí ocurre el ahorro: **PgBouncer no cierra la conexión TCP con PostgreSQL**. Simplemente limpia el estado de la sesión, pero mantiene el socket de red abierto y el proceso de PostgreSQL "durmiendo" (`idle`).
+
+### 4. Llega el Segundo Cliente (La reutilización)
+
+1. Llega otro cliente queriendo conectarse con el `Usuario: juan` y `Password: 1234`.
+2. PgBouncer valida la contraseña *localmente* usando su `userlist.txt`. Todo es correcto.
+3. PgBouncer revisa el pool y ve que **ya tiene una conexión abierta** (la que dejó el primer cliente).
+4. PgBouncer simplemente enlaza el tráfico de este nuevo cliente hacia ese proceso que ya estaba abierto.
+
+**¿Por qué PostgreSQL no le vuelve a pedir contraseña a este segundo cliente?**
+Porque a nivel de red, PostgreSQL solo pide contraseña cuando se establece la conexión TCP por primera vez (el *handshake* inicial). Para PostgreSQL, la conexión nunca se cerró; sigue recibiendo comandos por el mismo "tubo" que abrió el primer cliente. Es PgBouncer quien hace el trabajo de intercambiar qué cliente está usando ese "tubo" en cada milisegundo, asegurándose de validarlos a todos en la puerta de entrada.
+
 
 
 
