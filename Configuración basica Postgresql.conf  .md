@@ -560,6 +560,88 @@ wal_buffers = 16MB  --  define la cantidad de memoria dedicada a almacenar los r
 
 ```
 
+
+
+### Escenario Real: Ciclo de vida en tu disco de 886 GB
+
+```text
+* **Disco total:** `886 GB`
+* **Datos de la base de datos (tablas/índices) + SO:** `600 GB` *(asumiendo que de tus 660 GB actuales, ~60 GB ya eran WAL)*
+* **Parámetros configurados:**
+* `min_wal_size` = **`1 GB`**
+* `max_wal_size` = **`2 GB`**
+* `wal_keep_size` = **`60 GB`**
+
+
+
+================================================================================
+MOMENTO 1: ESTADO ESTABLE (Base en 660 GB usados -> 74.5% del disco)
+================================================================================
+Disco [886 GB]: [ 600 GB Datos/SO ] + [ 60 GB pg_wal (Historial) ] + [ 226 GB Libres ]
+
+ -> Llega tráfico normal (INSERT/UPDATE).
+ -> PostgreSQL crea archivos WAL nuevos (de 16 MB c/u) al frente.
+ -> El tamaño de pg_wal sube de 60 GB -> 61 GB -> 62 GB.
+
+
+================================================================================
+MOMENTO 2: DISPARADOR DE CHECKPOINT (Se alcanza max_wal_size = 2 GB)
+================================================================================
+Disco [886 GB]: [ 600 GB Datos/SO ] + [ 62 GB pg_wal ] + [ 224 GB Libres ]
+                                        └─ 60 GB viejos + 2 GB nuevos
+
+ -> Al acumularse 2 GB nuevos, salta la alarma de max_wal_size.
+ -> Se ejecuta un CHECKPOINT: PostgreSQL guarda los cambios de RAM a los 600 GB de datos.
+ -> Ahora esos 2 GB más antiguos del bloque de 60 GB quedan "libres de uso local".
+
+
+================================================================================
+MOMENTO 3: EVALUACIÓN DE REGLAS (¿Se guarda, se recicla o se borra?)
+================================================================================
+PostgreSQL toma esos 2 GB más antiguos y los pasa por los dos filtros:
+
+  [Filtro 1: wal_keep_size = 60 GB]
+  Pregunta: "¿Si borro estos 2 GB, me siguen quedando al menos 60 GB en pg_wal?"
+  Cálculo:   62 GB actuales - 2 GB = 60 GB.
+  Respuesta: SÍ. (Cumple la regla de retención). Pasan al siguiente filtro.
+      │
+      ▼
+  [Filtro 2: min_wal_size = 1 GB]
+  Pregunta: "¿El total en pg_wal (60 GB) es MENOR que min_wal_size (1 GB)?"
+  Respuesta: NO. (60 GB es mucho mayor que 1 GB, no hace falta reciclar).
+      │
+      ▼
+  [Acción final: BORRADO (unlink)]
+  PostgreSQL elimina físicamente esos 2 GB del disco duro.
+
+
+================================================================================
+MOMENTO 4: REGRESO AL EQUILIBRIO
+================================================================================
+Disco [886 GB]: [ 600 GB Datos/SO ] + [ 60 GB pg_wal ] + [ 226 GB Libres ]
+
+ -> Tu disco regresa exactamente al 74.49% (660 GB usados).
+ -> El ciclo vuelve al MOMENTO 1 cada vez que escribes otros 2 GB de datos.
+
+```
+
+Los 60 GB siempre están llenos de archivos distintos: No son los mismos archivos congelados para siempre. Si hoy generaste 2 GB nuevos de transacciones, tras el checkpoint esos 2 GB entran al final de la fila de 60 GB, y los 2 GB más antiguos que estaban al principio de la fila son expulsados y borrados.
+
+---
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
 # REPLICATION
 ```
 # hot_standby = on
